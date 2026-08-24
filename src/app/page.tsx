@@ -1,69 +1,385 @@
-import Image from "next/image";
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Metadata } from 'next';
+import { 
+  MapPin, 
+  Sparkles, 
+  ShieldCheck, 
+  Crown, 
+  Award, 
+  Star, 
+  Medal, 
+  ChevronRight, 
+  Flame, 
+  Globe,
+  BadgeCheck,
+  Heart,
+  ArrowRight,
+  Sparkle
+} from 'lucide-react';
+import { getHomepageConfig, getAllLocations, getListings } from '@/lib/data';
+import connectToDatabase from '@/lib/mongodb';
+import VipModel from '@/models/VipModel';
+import HeroSlider from '@/components/home/HeroSlider';
+import CategoryShowcase from '@/components/home/CategoryShowcase';
+import CompactListingCard from '@/components/common/CompactListingCard';
 
-export default function Home() {
+export const revalidate = 3600;
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
+export const metadata: Metadata = {
+  title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu | 81 İl',
+  description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları. Bağımsız eskortlar, VIP bayanlar, Ultra VIP ve Gold vitrin ilanları. WhatsApp ile tek tıkla iletişim.',
+  keywords: [
+    'eskort ilanları', 'escort ilanları', 'eskort bayan', 'escort bayan',
+    'bağımsız eskort türkiye', 'vip eskort ilanları', 'vip escort',
+    'istanbul eskort', 'istanbul escort', 'ankara eskort', 'ankara escort',
+    'izmir eskort', 'antalya eskort', 'bursa eskort', 'adana eskort',
+    'whatsapp eskort', 'eskort numaraları',
+  ],
+  alternates: { canonical: siteUrl },
+  openGraph: {
+    title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
+    description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları ve WhatsApp iletişim hatları.',
+    url: siteUrl,
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'Best Eskort',
+  },
+};
+
+// Tier ranking priority score
+const TIER_ORDER: Record<string, number> = {
+  ultravip: 1,
+  vip: 2,
+  gold: 3,
+  silver: 4,
+  standart: 5,
+};
+
+export default async function HomePage() {
+  await connectToDatabase();
+
+  const [locations, rawListings, homepageConfig, vipCelebrityModels] = await Promise.all([
+    getAllLocations(),
+    getListings({ limit: 60 }),
+    getHomepageConfig(),
+    VipModel.find({ aktif: true }).sort({ likeSayisi: -1 }).limit(4).lean(),
+  ]);
+
+  // Sort all listings strictly by Tier Priority (Ultra VIP -> VIP -> Gold -> Silver) and then by Date
+  const allSortedListings = [...rawListings].sort((a: any, b: any) => {
+    const orderA = TIER_ORDER[a.rozet || 'silver'] || 5;
+    const orderB = TIER_ORDER[b.rozet || 'silver'] || 5;
+    if (orderA !== orderB) return orderA - orderB;
+    return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+  });
+
+  // Group listings by package tier
+  const ultraVipListings = allSortedListings.filter((l: any) => l.rozet === 'ultravip');
+  const vipListings = allSortedListings.filter((l: any) => l.rozet === 'vip');
+  const goldListings = allSortedListings.filter((l: any) => l.rozet === 'gold');
+  const silverListings = allSortedListings.filter((l: any) => l.rozet === 'silver' || !l.rozet || l.rozet === 'standart');
+
+  // Fallback if none in specific tier, pick top available
+  const displayUltraVip = ultraVipListings.length > 0 ? ultraVipListings : allSortedListings.slice(0, 4);
+
+  // Dynamic Selected Showcase from Admin Homepage Config
+  const selectedShowcaseIds = homepageConfig?.selectedShowcaseIds || [];
+  const dynamicShowcaseListings = selectedShowcaseIds.length > 0
+    ? selectedShowcaseIds
+        .map((id: string) => allSortedListings.find((l: any) => l._id.toString() === id))
+        .filter(Boolean)
+    : displayUltraVip;
+
+  // Grid listings
+  const gridListings = allSortedListings.slice(0, 48);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-col gap-8 pb-16 w-full max-w-full text-left">
+      
+      {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları) */}
+      <section className="w-full">
+        <HeroSlider slides={dynamicShowcaseListings.length > 0 ? dynamicShowcaseListings : displayUltraVip} />
+      </section>
+
+      {/* 2. TÜM TÜRKİYE İL LİSTESİ BUTONU */}
+      <div className="px-4">
+        <Link
+          href="/sehirler"
+          className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#1c180e] via-[#161b22] to-[#1c180e] border border-amber-500/40 hover:border-amber-400 flex items-center justify-between shadow-xl group transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col text-left">
+              <span className="font-black text-sm text-white font-heading group-hover:text-amber-400 transition-colors">
+                Türkiye Geneli 81 İl Eskort Listesi
+              </span>
+              <span className="text-xs text-[#8b949e]">
+                Bulunduğunuz ili ve ilçeyi seçerek en yakın ilanları listeleyin
+              </span>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+        </Link>
+      </div>
+
+      {/* 3. POPÜLER İLLER & KATEGORİ VİTRİNİ */}
+      <section className="w-full">
+        <CategoryShowcase
+          ultraVipCovers={ultraVipListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
+          ultraVipCount={ultraVipListings.length}
+          vipCovers={vipListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
+          vipCount={vipListings.length}
+          goldCovers={goldListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
+          goldCount={goldListings.length}
+          silverCount={silverListings.length}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+      </section>
+
+      {/* 4. TÜM İLANLAR GRID LİSTESİ */}
+      <section className="px-4 flex flex-col gap-4">
+        <div className="flex items-center justify-between pb-1 border-b border-[#30363d]">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center font-black shadow-md">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <h2 className="font-black text-sm text-white uppercase tracking-wider font-heading">
+              Günün Öne Çıkan Güncel İlanları
+            </h2>
+          </div>
+          <span className="text-xs text-[#8b949e] font-mono">
+            {gridListings.length} İlan
+          </span>
+        </div>
+
+        {/* 3 SÜTUNLU SIRALI DİKEY GRID (MOBİLDE 2 / DESKTOPTA 3 SÜTUN) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {gridListings.map((listing: any) => (
+            <CompactListingCard key={listing._id} listing={listing} />
+          ))}
+        </div>
+      </section>
+
+      {/* ── 5. POPÜLER VİP FENOMEN MODEL PORTFÖYÜ (LÜKS CREATOR SHOWCASE) ──────────────── */}
+      <section className="px-4 mt-6 flex flex-col gap-5">
+        
+        {/* Section Header */}
+        <div className="flex items-center justify-between pb-2 border-b border-rose-500/30">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-rose-600 via-rose-500 to-amber-500 text-white flex items-center justify-center font-black shadow-lg shadow-rose-600/30">
+              <Crown className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div className="flex flex-col">
+              <h2 className="font-black text-base sm:text-lg text-white uppercase tracking-wider font-heading flex items-center gap-2">
+                <span>🔥 Popüler VIP Fenomen &amp; Model Portföyü</span>
+                <span className="px-2 py-0.5 rounded-full bg-rose-600/30 text-rose-300 text-[10px] font-black border border-rose-500/40">
+                  ÖZEL
+                </span>
+              </h2>
+              <span className="text-xs text-[#8b949e]">
+                Sosyal medyada, OnlyFans ve Twitter'da milyonlarca takipçisi olan teyitli VIP modeller
+              </span>
+            </div>
+          </div>
+          
+          <span className="hidden sm:flex text-xs text-rose-400 font-bold font-heading items-center gap-1">
+            <Sparkle className="w-3.5 h-3.5" />
+            <span>%100 Teyitli</span>
+          </span>
+        </div>
+
+        {/* Lüks Fenomen Kartları Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {vipCelebrityModels && vipCelebrityModels.length > 0 ? (
+            vipCelebrityModels.map((m: any) => (
+              <Link
+                key={m._id}
+                href={`/${m.slug}`}
+                className="group relative rounded-[32px] overflow-hidden bg-gradient-to-r from-[#1c0a10] via-[#14080c] to-[#161b22] border-2 border-rose-500/40 hover:border-rose-400 shadow-2xl p-5 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-rose-600/20"
+              >
+                {/* Glow Accent */}
+                <div className="absolute top-0 right-0 w-48 h-48 bg-rose-600/10 rounded-full blur-2xl pointer-events-none group-hover:bg-rose-600/20 transition-all" />
+
+                {/* Model Fotoğrafı (Büyük Yuvarlak / Lüks Border) */}
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 border-2 border-rose-500/80 shadow-xl group-hover:border-rose-400 transition-colors">
+                  <Image
+                    src={m.anaFotografUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400'}
+                    alt={m.tamAd}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    sizes="(max-width: 768px) 100px, 120px"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                </div>
+
+                {/* Model Detayları */}
+                <div className="flex flex-col flex-1 min-w-0 gap-1.5 z-10">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="font-black text-base sm:text-lg text-white font-heading truncate group-hover:text-rose-400 transition-colors">
+                      {m.tamAd}
+                    </span>
+                    <BadgeCheck className="w-4 h-4 fill-blue-500 text-slate-950 shrink-0" />
+                  </div>
+
+                  <span className="text-xs text-rose-300/90 font-bold line-clamp-1 font-heading">
+                    {m.unvan || 'OnlyFans & Twitter Fenomeni'}
+                  </span>
+
+                  <p className="text-[11px] text-[#8b949e] line-clamp-2 leading-relaxed font-medium">
+                    {m.biyografi}
+                  </p>
+
+                  <div className="flex items-center justify-between pt-1 text-[11px] font-bold">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                        <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
+                        <span>{(m.likeSayisi || 24890).toLocaleString('tr-TR')} Hayran</span>
+                      </span>
+                      <span className="text-[#8b949e] text-[10px]">
+                        {m.yas} Yaş / {m.boy}cm
+                      </span>
+                    </div>
+
+                    <span className="text-emerald-400 font-black flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      <span>Profili Gör</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <>
+              {/* Fallback Gizem Bağdaçiçek */}
+              <Link
+                href="/gizem-bagdacicek"
+                className="group relative rounded-[32px] overflow-hidden bg-gradient-to-r from-[#1c0a10] via-[#14080c] to-[#161b22] border-2 border-rose-500/40 hover:border-rose-400 shadow-2xl p-5 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02]"
+              >
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 border-2 border-rose-500/80 shadow-xl">
+                  <Image
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400"
+                    alt="Gizem Bağdaçiçek"
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    sizes="110px"
+                  />
+                </div>
+                <div className="flex flex-col flex-1 min-w-0 gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-black text-base sm:text-lg text-white font-heading group-hover:text-rose-400 transition-colors">
+                      Gizem Bağdaçiçek
+                    </span>
+                    <BadgeCheck className="w-4 h-4 fill-blue-500 text-slate-950" />
+                  </div>
+                  <span className="text-xs text-rose-300 font-bold font-heading">
+                    OnlyFans &amp; Twitter Fenomeni &bull; VIP Model
+                  </span>
+                  <div className="flex items-center justify-between pt-2 text-[11px] font-bold">
+                    <span className="px-2 py-0.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                      <Heart className="w-3 h-3 fill-rose-500 text-rose-500" />
+                      <span>24.890 Hayran</span>
+                    </span>
+                    <span className="text-emerald-400 font-black flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      <span>Profili İncele ➔</span>
+                    </span>
+                  </div>
+                </div>
+              </Link>
+
+              {/* Fallback Merve Özdemir */}
+              <Link
+                href="/merve-ozdemir"
+                className="group relative rounded-[32px] overflow-hidden bg-gradient-to-r from-[#1c1208] via-[#140e08] to-[#161b22] border-2 border-amber-500/40 hover:border-amber-400 shadow-2xl p-5 flex items-center gap-5 transition-all duration-300 hover:scale-[1.02]"
+              >
+                <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 border-2 border-amber-500/80 shadow-xl">
+                  <Image
+                    src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"
+                    alt="Merve Özdemir"
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    sizes="110px"
+                  />
+                </div>
+                <div className="flex flex-col flex-1 min-w-0 gap-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-black text-base sm:text-lg text-white font-heading group-hover:text-amber-400 transition-colors">
+                      Merve Özdemir
+                    </span>
+                    <BadgeCheck className="w-4 h-4 fill-blue-500 text-slate-950" />
+                  </div>
+                  <span className="text-xs text-amber-300 font-bold font-heading">
+                    VIP Dijital Model &bull; Instagram Creator
+                  </span>
+                  <div className="flex items-center justify-between pt-2 text-[11px] font-bold">
+                    <span className="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                      <Heart className="w-3 h-3 fill-amber-500 text-amber-500" />
+                      <span>16.400 Hayran</span>
+                    </span>
+                    <span className="text-emerald-400 font-black flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                      <span>Profili İncele ➔</span>
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* ── 6. GÜVEN & DOĞRULAMA BİLGİ KUTUSU ──────────────── */}
+      <div className="px-4 mt-2">
+        <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-4 shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <div className="flex flex-col">
+            <h3 className="font-black text-sm text-white font-heading">%100 Doğrulanmış Güvenilir İlanlar</h3>
+            <p className="text-xs text-[#8b949e] mt-0.5 leading-relaxed">
+              Tüm ilanlar editörlerimizce manuel onaylanır. Doğrudan WhatsApp veya telefon ile güvenle iletişim kurabilirsiniz.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 7. EN ALTTTAKİ DÜZENLİ FOOTER (81 İL REHBERİ) ──────────────── */}
+      <footer className="px-4 mt-6">
+        <div className="p-6 rounded-[32px] bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-2xl text-xs text-[#8b949e] leading-relaxed">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 className="font-black text-sm text-white font-heading uppercase tracking-wider">
+              Türkiye Genelinde Bölgesel Eskort Rehberi
+            </h3>
+            <span className="text-amber-400 font-mono text-[11px] font-bold">81 İl Tam Kapsam</span>
+          </div>
+
+          <p>
+            Best Eskort; İstanbul, Ankara, İzmir, Bursa, Antalya, Adana, Konya ve Türkiye'nin tüm illerindeki en güncel bağımsız ve VIP eskort ilanlarını bir araya getiren güvenilir rehber platformudur.
           </p>
+
+          <div className="pt-2 border-t border-[#30363d] flex flex-wrap gap-x-3.5 gap-y-2.5 text-[11px] font-semibold">
+            <Link href="/istanbul" className="text-amber-400 hover:text-white transition-colors">İstanbul Eskort</Link>
+            <Link href="/ankara" className="text-amber-400 hover:text-white transition-colors">Ankara Eskort</Link>
+            <Link href="/izmir" className="text-amber-400 hover:text-white transition-colors">İzmir Eskort</Link>
+            <Link href="/bursa" className="text-amber-400 hover:text-white transition-colors">Bursa Eskort</Link>
+            <Link href="/antalya" className="text-amber-400 hover:text-white transition-colors">Antalya Eskort</Link>
+            <Link href="/adana" className="text-amber-400 hover:text-white transition-colors">Adana Eskort</Link>
+            <Link href="/konya" className="text-amber-400 hover:text-white transition-colors">Konya Eskort</Link>
+            <Link href="/gizem-bagdacicek" className="text-rose-400 font-black hover:text-rose-300 transition-colors">🔥 Gizem Bağdaçiçek</Link>
+            <Link href="/merve-ozdemir" className="text-amber-300 font-black hover:text-amber-200 transition-colors">👑 Merve Özdemir</Link>
+            <Link href="/sehirler" className="text-white font-bold bg-[#21262d] px-2.5 py-1 rounded-lg border border-white/10 hover:bg-amber-500 hover:text-slate-950 transition-all">→ Tüm 81 İl Listesi</Link>
+          </div>
+
+          <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-[#6e7681]">
+            <span>&copy; {new Date().getFullYear()} Best Eskort. Tüm hakları saklıdır.</span>
+            <span>Gizlilik &amp; Güvenlik Standartları</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </footer>
+
     </div>
   );
 }

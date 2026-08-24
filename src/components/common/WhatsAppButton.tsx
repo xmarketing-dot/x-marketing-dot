@@ -1,0 +1,102 @@
+'use client';
+
+import React from 'react';
+import { Phone } from 'lucide-react';
+
+interface ContactButtonsProps {
+  numara: string;
+  baslik: string;
+  listingId?: string;
+  compact?: boolean;
+  className?: string;
+}
+
+export const OfficialWhatsAppIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.461c-1.84 0-3.542-.495-5.013-1.357l-.36-.21-3.725.977.994-3.63-.231-.368c-.947-1.51-1.447-3.262-1.447-5.06 0-5.385 4.382-9.767 9.77-9.767 2.607 0 5.059 1.017 6.903 2.862 1.843 1.845 2.859 4.298 2.859 6.905 0 5.387-4.383 9.768-9.77 9.768m0-21.684C5.938.16.038 6.06.038 13.064c0 2.24.582 4.426 1.689 6.347L0 24l4.721-1.238c1.85 1.008 3.939 1.54 6.069 1.54 6.96 0 12.86-5.9 12.86-12.904 0-3.442-1.34-6.68-3.774-9.114C17.442 1.5 14.204.16 10.763.16z" />
+  </svg>
+);
+
+export default function WhatsAppButton({
+  numara,
+  baslik,
+  listingId,
+  compact = false,
+  className = '',
+}: ContactButtonsProps) {
+  const cleanNumber = numara.replace(/\D/g, '');
+  const formattedNumber = cleanNumber.startsWith('90') ? cleanNumber : `90${cleanNumber}`;
+  const displayPhone = numara.length > 5 ? numara : `0${cleanNumber}`;
+  const message = encodeURIComponent(`Merhaba, "${baslik}" ilanınız hakkında bilgi almak istiyorum.`);
+  const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
+  const telUrl = `tel:+${formattedNumber}`;
+
+  const handleClick = () => {
+    if (listingId) {
+      fetch('/api/listings/click-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listingId }),
+      }).catch(() => {});
+    }
+  };
+
+  if (compact) {
+    return (
+      <div className={`flex items-center gap-2 w-full justify-between ${className}`}>
+        {/* Apple iOS Native Call Button Pill */}
+        <a
+          href={telUrl}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-[#21262d] hover:bg-[#2d333b] text-amber-400 border border-[#30363d] font-extrabold text-xs shadow-sm transition-all active:scale-95 whitespace-nowrap font-heading"
+          title={`Hemen Ara: ${displayPhone}`}
+        >
+          <Phone className="w-3.5 h-3.5 stroke-[2.5] text-amber-400 shrink-0" />
+          <span className="truncate">Ara: {displayPhone}</span>
+        </a>
+
+        {/* Apple iOS Native WhatsApp Button Pill */}
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleClick}
+          className="flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs shadow-md active:scale-95 transition-all whitespace-nowrap shrink-0 font-heading"
+          title="WhatsApp'tan Mesaj Gönder"
+        >
+          <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950" />
+          <span>WhatsApp</span>
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col sm:flex-row items-center gap-2.5 w-full ${className}`}>
+      {/* Official WhatsApp Button */}
+      <a
+        href={waUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleClick}
+        className="w-full flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm shadow-xl active:scale-98 transition-all font-heading"
+      >
+        <OfficialWhatsAppIcon className="w-5 h-5 fill-slate-950" />
+        <span>WhatsApp ile Mesaj Yaz</span>
+      </a>
+
+      {/* Direct One-Tap Call Button */}
+      <a
+        href={telUrl}
+        className="w-full flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-xl active:scale-98 transition-all font-heading"
+      >
+        <Phone className="w-4 h-4 stroke-[3]" />
+        <span>Ara: {displayPhone}</span>
+      </a>
+    </div>
+  );
+}
