@@ -6,7 +6,7 @@ import CityExplorer from '@/components/locations/CityExplorer';
 
 export const revalidate = 60; // Refresh every minute for real-time counts
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf';
 
 export const metadata: Metadata = {
   title: 'Türkiye Şehirleri Eskort İlanları — Tüm İller ve İlçeler | Best Eskort',
@@ -95,3 +95,4 @@ export default async function SehirlerPage() {
     </div>
   );
 }
+

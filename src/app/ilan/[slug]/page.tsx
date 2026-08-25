@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'İlan Bulunamadı | Best Eskort' };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf';
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
   const coverImage = listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || '';
 
@@ -95,7 +95,7 @@ export default async function ListingDetailPage({ params }: Props) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf';
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
 
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');

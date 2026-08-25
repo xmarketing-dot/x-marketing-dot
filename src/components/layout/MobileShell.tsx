@@ -389,3 +389,4 @@ export default function MobileShell({ children }: MobileShellProps) {
     </div>
   );
 }
+

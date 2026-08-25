@@ -193,3 +193,4 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
     </div>
   );
 }
+

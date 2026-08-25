@@ -282,3 +282,4 @@ export default function CryptoPaymentCard({ onChatClick, className = '' }: Crypt
     </>
   );
 }
+

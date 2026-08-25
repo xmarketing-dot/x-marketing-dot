@@ -100,3 +100,4 @@ export default function ListingCard({ listing }: ListingCardProps) {
     </div>
   );
 }
+

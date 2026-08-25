@@ -492,3 +492,4 @@ Güzelliği, estetik tarzı ve samimi tavırlarıyla dijital dünyada en çok ko
     </div>
   );
 }
+

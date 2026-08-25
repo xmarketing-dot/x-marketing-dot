@@ -89,3 +89,4 @@ export default function CorporateLogo({ className = 'text-3xl' }: { className?: 
     </div>
   );
 }
+

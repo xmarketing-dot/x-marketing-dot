@@ -366,3 +366,4 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     </div>
   );
 }
+

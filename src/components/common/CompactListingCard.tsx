@@ -171,3 +171,4 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     </div>
   );
 }
+

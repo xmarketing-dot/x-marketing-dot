@@ -16,3 +16,4 @@ export default function BmsSecurePortalLayout({ children }: { children: React.Re
     </AdminAuthGate>
   );
 }
+

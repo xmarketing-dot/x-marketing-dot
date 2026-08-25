@@ -929,3 +929,4 @@ export default function PanelimPage() {
     </div>
   );
 }
+
