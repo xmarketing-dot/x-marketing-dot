@@ -292,52 +292,44 @@ const starterPackages = [
 
 async function seed() {
   try {
-    console.log('⏳ Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI as string);
-    console.log('✅ Connected successfully.');
 
     // 1. Seed Locations
-    console.log('📍 Seeding Locations (Provinces & Districts)...');
     for (const loc of turkeyProvinces) {
       await LocationModel.findOneAndUpdate({ ilSlug: loc.ilSlug }, loc, { upsert: true, returnDocument: 'after' });
     }
-    console.log(`✅ ${turkeyProvinces.length} Provinces seeded.`);
 
     // 2. Seed Categories
-    console.log('🏷️ Seeding Categories...');
+    // 2. Seed Categories
     const createdCategories: any[] = [];
     for (const cat of starterCategories) {
       const savedCat = await CategoryModel.findOneAndUpdate({ slug: cat.slug }, cat, { upsert: true, returnDocument: 'after' });
       createdCategories.push(savedCat);
     }
-    console.log(`✅ ${starterCategories.length} Categories seeded.`);
 
     // 3. Seed Packages
-    console.log('📦 Seeding Packages...');
     for (const pkg of starterPackages) {
       await PackageModel.findOneAndUpdate({ ad: pkg.ad }, pkg, { upsert: true, returnDocument: 'after' });
     }
-    console.log(`✅ ${starterPackages.length} Packages seeded.`);
 
     // 4. Seed Admin Account
-    console.log('👤 Seeding Admin Account...');
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@besteskort.com';
-    const rawPassword = process.env.ADMIN_PASSWORD || 'AdminPassword2026!';
-    const existingAdmin = await AdminModel.findOne({ email: adminEmail });
-    if (!existingAdmin) {
-      const passwordHash = await bcrypt.hash(rawPassword, 10);
-      await AdminModel.create({
-        email: adminEmail,
-        sifreHash: passwordHash,
-        role: 'superadmin',
-      });
-      console.log('✅ Admin initialized.');
-    } else {
-      console.log('ℹ️ Admin already exists.');
+    // 4. Seed Admin Account
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const rawPassword = process.env.ADMIN_PASSWORD;
+
+    if (adminEmail && rawPassword) {
+      const existingAdmin = await AdminModel.findOne({ email: adminEmail });
+      if (!existingAdmin) {
+        const passwordHash = await bcrypt.hash(rawPassword, 10);
+        await AdminModel.create({
+          email: adminEmail,
+          sifreHash: passwordHash,
+          role: 'superadmin',
+        });
+      }
     }
 
     // 5. Seed Initial Sample Listings with Ultravip, VIP, Gold, Silver tiers
-    console.log('📝 Seeding Sample Listings...');
     const sampleListings = [
       {
         slug: 'sarkoy-acik-deniz-tekne-turu-a1b2c3',
@@ -402,7 +394,6 @@ async function seed() {
     for (const listing of sampleListings) {
       await ListingModel.findOneAndUpdate({ slug: listing.slug }, listing, { upsert: true, new: true });
     }
-    console.log(`✅ ${sampleListings.length} Sample listings seeded.`);
 
     // 6. Homepage config
     await HomepageConfigModel.findOneAndUpdate(
@@ -421,9 +412,6 @@ async function seed() {
       },
       { upsert: true }
     );
-    console.log('✅ Homepage config initialized.');
-
-    console.log('🎉 Seed script completed successfully!');
     process.exit(0);
   } catch (error) {
     console.error('❌ Seed script error:', error);
