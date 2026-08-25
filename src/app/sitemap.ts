@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
 import { getAllLocations, getListings, getAllCategories } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
 import VipModel from '@/models/VipModel';
@@ -7,7 +8,10 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf').replace(/\/$/, '');
+  const headersList = await headers();
+  const host = headersList.get('host') || 'besteskort.devs.surf';
+  const protocol = headersList.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
+  const siteUrl = `${protocol}://${host}`;
 
   await connectToDatabase();
 
