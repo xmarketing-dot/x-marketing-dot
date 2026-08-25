@@ -269,14 +269,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             </Link>
 
             <Link
-              href="/bms-secure-portal/istatistik"
-              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
-            >
-              <Globe className="w-4 h-4 text-amber-400" />
-              <span>Detaylı İstatistikler</span>
-            </Link>
-
-            <Link
               href="/bms-secure-portal/ilanlar"
               className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
             >
