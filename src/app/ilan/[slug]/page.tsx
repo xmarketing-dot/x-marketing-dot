@@ -226,7 +226,7 @@ export default async function ListingDetailPage({ params }: Props) {
             {listing.aciklama}
           </div>
 
-          <ShareButtons url={canonicalUrl} title={metaTitle} />
+          <ShareButtons title={metaTitle} />
 
           {/* Bölgesel Hızlı Yönlendirme Linkleri */}
           <div className="pt-4 border-t border-[#30363d] flex flex-wrap justify-center gap-2 text-[11px] font-heading font-bold w-full">

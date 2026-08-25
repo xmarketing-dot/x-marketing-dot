@@ -1,18 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Share2, Check, Copy } from 'lucide-react';
 import { OfficialWhatsAppIcon } from './WhatsAppButton';
 
-export default function ShareButtons({ url, title }: { url: string; title: string }) {
+export default function ShareButtons({ title }: { url?: string; title: string }) {
   const [copied, setCopied] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState('');
 
-  const encodedUrl = encodeURIComponent(url);
+  useEffect(() => {
+    // Always use the real browser URL — no env var dependency
+    setCurrentUrl(window.location.href);
+  }, []);
+
+  const encodedUrl = encodeURIComponent(currentUrl);
   const encodedTitle = encodeURIComponent(title);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(currentUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -25,7 +31,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
       try {
         await navigator.share({
           title: title,
-          url: url,
+          url: currentUrl,
         });
       } catch (err) {
         console.error('Paylaşım hatası', err);
@@ -34,6 +40,8 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
       handleCopy();
     }
   };
+
+  if (!currentUrl) return null;
 
   return (
     <div className="flex flex-col items-center gap-3 w-full py-4 border-t border-[#30363d] mt-2 mb-2">
@@ -54,7 +62,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
 
         {/* WhatsApp */}
         <a
-          href={`https://wa.me/?text=${encodedTitle} - ${encodedUrl}`}
+          href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors border border-[#25D366]/30 text-xs font-bold"
@@ -90,7 +98,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
           href={`https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20 transition-colors border border-[#0088cc]/30 text-xs font-bold hidden sm:flex"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20 transition-colors border border-[#0088cc]/30 text-xs font-bold"
         >
           <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20.665 3.717l-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l.002.001-.314 4.692c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.282-1.434z"/></svg>
           <span>Telegram</span>
@@ -108,4 +116,3 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
     </div>
   );
 }
-
