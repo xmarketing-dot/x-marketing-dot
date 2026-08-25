@@ -139,7 +139,7 @@ export default async function CityOrModelPage({ params }: Props) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://` : 'http://localhost:3000');
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
 
   // Schema.org BreadcrumbList for Googlebot
   const jsonLd = {
