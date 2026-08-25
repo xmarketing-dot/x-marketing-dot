@@ -522,8 +522,8 @@ export default function AdminListingsPage() {
                 <div
                   key={item._id}
                   className={`p-5 rounded-3xl border transition-all flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-xl ${isPending
-                      ? 'bg-gradient-to-r from-amber-500/10 via-[#21262d] to-[#21262d] border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.15)]'
-                      : 'bg-[#21262d] border-[#363b42]'
+                    ? 'bg-gradient-to-r from-amber-500/10 via-[#21262d] to-[#21262d] border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.15)]'
+                    : 'bg-[#21262d] border-[#363b42]'
                     }`}
                 >
 
@@ -547,8 +547,8 @@ export default function AdminListingsPage() {
                         <h3 className="font-black text-sm sm:text-base text-white font-heading">{item.baslik}</h3>
 
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-heading ${isLive
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
                           }`}>
                           {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
                         </span>
@@ -873,7 +873,7 @@ export default function AdminListingsPage() {
                     />
                   </label>
                 </div>
-
+              </div>
               {/* Location */}
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
@@ -1014,8 +1014,8 @@ export default function AdminListingsPage() {
                       setTimeout(() => setCopiedCreds(false), 2500);
                     }}
                     className={`flex-1 py-3 px-4 rounded-xl font-black text-xs font-heading uppercase transition-all flex items-center justify-center gap-2 ${copiedCreds
-                        ? 'bg-emerald-500 text-slate-950 shadow-lg'
-                        : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
+                      ? 'bg-emerald-500 text-slate-950 shadow-lg'
+                      : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
                       }`}
                   >
                     {copiedCreds ? (

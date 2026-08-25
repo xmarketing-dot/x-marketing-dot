@@ -70,7 +70,7 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ listingId: current._id }),
-      }).catch(() => {});
+      }).catch(() => { });
     }
   };
 
@@ -90,9 +90,8 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
       {activeSlides.map((slide, idx) => (
         <div
           key={slide._id}
-          className={`absolute inset-0 transition-all duration-700 ease-in-out ${
-            idx === activeIdx ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-[1.02] z-0'
-          }`}
+          className={`absolute inset-0 transition-all duration-700 ease-in-out ${idx === activeIdx ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-[1.02] z-0'
+            }`}
         >
           <Image
             src={slide.anaFotograf?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=1200'}
@@ -124,7 +123,7 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
 
       {/* ── 3. ALT KART & BUTONLAR (KUSURSUZ 3'LÜ GRID DÜZENİ) ──────────────── */}
       <div className="relative z-30 px-3.5 pb-4 pt-2 flex flex-col gap-2.5 w-full">
-        
+
         {/* Başlık ve Konum Alanı */}
         <div className="flex flex-col gap-1 drop-shadow-lg">
           <div className="flex items-center gap-2">
@@ -143,7 +142,7 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
 
         {/* ── 2 AYRI NET VE BÜYÜK AKSİYON BUTONU (WHATSAPP & DETAY) ──────────────── */}
         <div className="grid grid-cols-2 gap-2.5 w-full font-heading">
-          
+
           {/* 1. WHATSAPP BUTONU */}
           <a
             href={waUrl}
@@ -154,7 +153,7 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
             title="WhatsApp ile İletişim"
           >
             <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950 shrink-0" />
-            <span className="truncate">WhatsApp ile Yaz</span>
+            <span className="truncate">WhatsApp'dan Yaz</span>
           </a>
 
           {/* 2. PROFİLİ İNCELE BUTONU */}
@@ -175,9 +174,8 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
               <button
                 key={idx}
                 onClick={() => setActiveIdx(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  idx === activeIdx ? 'w-8 bg-amber-400' : 'w-2 bg-white/40'
-                }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIdx ? 'w-8 bg-amber-400' : 'w-2 bg-white/40'
+                  }`}
                 aria-label={`Slide ${idx + 1}`}
               />
             ))}
