@@ -21,7 +21,9 @@ import {
   AlertCircle,
   Sparkles,
   ShieldAlert,
-  Crown
+  Crown,
+  Menu,
+  X
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 
@@ -36,6 +38,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Check existing session
   useEffect(() => {
@@ -210,26 +213,53 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
   // 3. AUTHENTICATED: Render Full Admin Portal Layout
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative">
       
-      {/* Desktop Admin Sidebar */}
-      <aside className="w-full md:w-64 bg-[#161b22] border-b md:border-b-0 md:border-r border-[#30363d] p-5 flex flex-col justify-between shrink-0 shadow-2xl">
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between bg-[#161b22] border-b border-[#30363d] p-4 sticky top-0 z-40">
+        <div className="flex items-center gap-2.5">
+          <CorporateLogo className="w-8 h-8" />
+          <span className="font-black text-sm text-white font-heading tracking-tight">BMS System Gate</span>
+        </div>
+        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -mr-2 text-white">
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Desktop Admin Sidebar / Mobile Drawer */}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-[260px] md:w-64 bg-[#161b22] border-r border-[#30363d] p-5 flex flex-col justify-between shrink-0 shadow-2xl transform transition-transform duration-300 md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
         <div className="flex flex-col gap-6">
           
           {/* Logo & Secret Gate Badge */}
-          <div className="flex items-center gap-3">
-            <CorporateLogo className="w-9 h-9" />
-            <div className="flex flex-col">
-              <span className="font-black text-base text-white font-heading">BMS System Gate</span>
-              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                Süper Yönetici Aktif
-              </span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <CorporateLogo className="w-9 h-9" />
+              <div className="flex flex-col">
+                <span className="font-black text-base text-white font-heading">BMS System Gate</span>
+                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Süper Yönetici Aktif
+                </span>
+              </div>
             </div>
+            <button className="md:hidden p-1 text-[#8b949e] hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex flex-col gap-1 text-xs font-extrabold uppercase tracking-wider font-heading">
+          <nav 
+            className="flex flex-col gap-1 text-xs font-extrabold uppercase tracking-wider font-heading"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             <Link
               href="/bms-secure-portal"
               className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
