@@ -874,18 +874,6 @@ export default function AdminListingsPage() {
                   </label>
                 </div>
 
-
-                <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                  Hizmet Mekanları
-                  <input
-                    type="text"
-                    placeholder="Kendi Evi, Lüks Otel, Rezidans, Seyahat"
-                    value={editForm.hizmetMekanlari}
-                    onChange={(e) => setEditForm({ ...editForm, hizmetMekanlari: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
-              </div>
               {/* Location */}
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
@@ -1254,30 +1242,6 @@ export default function AdminListingsPage() {
                     value={createForm.whatsappNumara}
                     onChange={(e) => setCreateForm({ ...createForm, whatsappNumara: e.target.value })}
                     className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
-              </div>
-
-
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                  Konuştuğu Diller
-                  <input
-                    type="text"
-                    value={createForm.diller}
-                    onChange={(e) => setCreateForm({ ...createForm, diller: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
-
-                <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                  Hizmet Mekanları
-                  <input
-                    type="text"
-                    value={createForm.hizmetMekanlari}
-                    onChange={(e) => setCreateForm({ ...createForm, hizmetMekanlari: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
