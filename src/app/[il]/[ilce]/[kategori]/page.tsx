@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -45,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const district = location.ilceler.find((d: any) => d.slug === ilceSlug);
   const districtName = district ? district.ad : ilceSlug;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
+  const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/${location.ilSlug}/${ilceSlug}/${kategoriSlug}`;
 
   return {
@@ -86,7 +87,7 @@ export default async function CategoryDistrictPage({ params }: Props) {
   const district = location.ilceler.find((d: any) => d.slug === ilceSlug);
   const districtName = district ? district.ad : ilceSlug;
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
+  const siteUrl = getSiteUrl();
 
   // Schema.org BreadcrumbList
   const jsonLd = {

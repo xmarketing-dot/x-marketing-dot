@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { getSiteUrl } from '@/lib/siteUrl';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import MobileShell from '@/components/layout/MobileShell';
@@ -16,7 +17,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000')),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
     template: '%s | Best Eskort',
@@ -79,7 +80,7 @@ export const metadata: Metadata = {
     images: ['/icon'],
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000'),
+    canonical: getSiteUrl(),
   },
   icons: {
     icon: '/icon',

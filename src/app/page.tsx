@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSiteUrl } from '@/lib/siteUrl';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
@@ -28,7 +29,7 @@ import CompactListingCard from '@/components/common/CompactListingCard';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
+const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
   title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu | 81 İl',

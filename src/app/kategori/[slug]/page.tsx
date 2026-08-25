@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -68,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Kategori Bulunamadı | Best Eskort' };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
+  const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/kategori/${slug}`;
 
   return {
@@ -114,7 +115,7 @@ export default async function CategoryDetailPage({ params }: Props) {
   });
 
   const Icon = tierInfo.icon;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
+  const siteUrl = getSiteUrl();
 
   const jsonLd = {
     '@context': 'https://schema.org',

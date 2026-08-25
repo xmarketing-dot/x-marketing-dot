@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'İlan Bulunamadı | Best Eskort' };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
+  const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
   const coverImage = listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || '';
 
@@ -95,7 +96,7 @@ export default async function ListingDetailPage({ params }: Props) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
+  const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
 
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');

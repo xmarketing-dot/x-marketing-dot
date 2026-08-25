@@ -1,17 +1,14 @@
 import { MetadataRoute } from 'next';
-import { headers } from 'next/headers';
 import { getAllLocations, getListings, getAllCategories } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
 import VipModel from '@/models/VipModel';
+import { getSiteUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const headersList = await headers();
-  const host = headersList.get('host') || process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '') || (process.env.VERCEL_URL ?? 'localhost:3000');
-  const protocol = headersList.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
-  const siteUrl = `${protocol}://${host}`;
+  const siteUrl = getSiteUrl();
 
   await connectToDatabase();
 

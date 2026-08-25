@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -139,7 +140,7 @@ export default async function CityOrModelPage({ params }: Props) {
     notFound();
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : 'http://localhost:3000');
+  const siteUrl = getSiteUrl();
 
   // Schema.org BreadcrumbList for Googlebot
   const jsonLd = {
