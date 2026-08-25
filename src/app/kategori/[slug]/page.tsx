@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Kategori Bulunamadı | Best Eskort' };
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://` : 'http://localhost:3000');
   const canonicalUrl = `${siteUrl}/kategori/${slug}`;
 
   return {
@@ -114,7 +114,7 @@ export default async function CategoryDetailPage({ params }: Props) {
   });
 
   const Icon = tierInfo.icon;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://` : 'http://localhost:3000');
 
   const jsonLd = {
     '@context': 'https://schema.org',

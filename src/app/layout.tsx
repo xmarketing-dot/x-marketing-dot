@@ -16,7 +16,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://` : 'http://localhost:3000')),
   title: {
     default: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
     template: '%s | Best Eskort',
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     images: ['/icon'],
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf',
+    canonical: process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://` : 'http://localhost:3000'),
   },
   icons: {
     icon: '/icon',

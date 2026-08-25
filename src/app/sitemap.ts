@@ -9,7 +9,7 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const headersList = await headers();
-  const host = headersList.get('host') || 'besteskort.devs.surf';
+  const host = headersList.get('host') || process.env.NEXT_PUBLIC_SITE_URL?.replace('https://', '') || (process.env.VERCEL_URL ?? 'localhost:3000');
   const protocol = headersList.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
   const siteUrl = `${protocol}://${host}`;
 
