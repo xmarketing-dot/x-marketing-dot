@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { 
   Lock, 
   KeyRound, 
@@ -39,6 +40,8 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const pathname = usePathname();
 
   // Check existing session
   useEffect(() => {
@@ -211,6 +214,12 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     );
   }
 
+  const getNavClass = (path: string) => `flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-colors ${
+    pathname === path 
+      ? 'bg-[#21262d] text-white border border-[#363b42]' 
+      : 'hover:bg-[#21262d] text-[#8b949e] hover:text-white border border-transparent'
+  }`;
+
   // 3. AUTHENTICATED: Render Full Admin Portal Layout
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative">
@@ -262,7 +271,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
           >
             <Link
               href="/bms-secure-portal"
-              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+              className={getNavClass('/bms-secure-portal')}
             >
               <BarChart3 className="w-4 h-4 text-amber-400" />
               <span>Trafik &amp; Analizler</span>
@@ -270,7 +279,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/ilanlar"
-              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+              className={getNavClass('/bms-secure-portal/ilanlar')}
             >
               <List className="w-4 h-4 text-amber-400" />
               <span>İlan Moderasyonu</span>
@@ -278,7 +287,11 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/modeller"
-              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-amber-400 hover:text-amber-300 font-bold border border-amber-500/20 bg-amber-500/5 transition-colors"
+              className={`flex items-center gap-2.5 px-3.5 py-3 rounded-xl font-bold transition-colors ${
+                pathname === '/bms-secure-portal/modeller'
+                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                  : 'hover:bg-[#21262d] text-amber-500/70 hover:text-amber-400 border border-transparent'
+              }`}
             >
               <Crown className="w-4 h-4 text-amber-400" />
               <span>👑 VIP Fenomen &amp; Model</span>
@@ -286,7 +299,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/kullanicilar"
-              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+              className={getNavClass('/bms-secure-portal/kullanicilar')}
             >
               <Users className="w-4 h-4 text-amber-400" />
               <span>Kullanıcı Hesapları</span>
@@ -294,7 +307,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/chat"
-              className="flex items-center justify-between px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors group"
+              className={`${getNavClass('/bms-secure-portal/chat')} justify-between group`}
             >
               <div className="flex items-center gap-2.5">
                 <MessageSquare className="w-4 h-4 text-amber-400" />
@@ -305,7 +318,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/anasayfa-yonetimi"
-              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+              className={getNavClass('/bms-secure-portal/anasayfa-yonetimi')}
             >
               <Sliders className="w-4 h-4 text-amber-400" />
               <span>Anasayfa &amp; Banner</span>
@@ -313,7 +326,11 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/guvenlik"
-              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-red-500/10 text-red-400 hover:text-red-300 border border-transparent hover:border-red-500/30 transition-colors"
+              className={`flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-colors ${
+                pathname === '/bms-secure-portal/guvenlik'
+                  ? 'bg-red-500/10 text-red-400 border border-red-500/30'
+                  : 'hover:bg-red-500/5 text-red-500/70 hover:text-red-300 border border-transparent hover:border-red-500/30'
+              }`}
             >
               <ShieldAlert className="w-4 h-4 text-red-400" />
               <span>Güvenlik &amp; IP Ban</span>
