@@ -21,17 +21,7 @@ export const OfficialWhatsAppIcon = ({ className = 'w-4 h-4' }: { className?: st
   </svg>
 );
 
-export function formatWhatsAppNumber(num: string): string {
-  let clean = (num || '').replace(/\D/g, '');
-  if (!clean) return '905000000000';
-  // Standard Turkish mobile 05xx... -> 905xx...
-  if (clean.startsWith('0') && clean.length === 11) {
-    clean = '90' + clean.slice(1);
-  } else if (clean.length === 10 && clean.startsWith('5')) {
-    clean = '90' + clean;
-  }
-  return clean;
-}
+import { formatWhatsAppNumber } from '@/lib/format';
 
 export default function WhatsAppButton({
   numara,

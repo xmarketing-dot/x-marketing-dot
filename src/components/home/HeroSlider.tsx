@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, ChevronRight, ShieldCheck, Crown, Sparkles, Phone } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, ShieldCheck, Phone, Crown, Sparkles } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { formatWhatsAppNumber } from '@/lib/format';
 
 export interface DynamicHeroSlide {
   _id: string;
@@ -41,23 +42,25 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
     },
   ];
 
-  const next = useCallback(() => setActiveIdx(p => (p + 1) % activeSlides.length), [activeSlides.length]);
-  const prev = useCallback(() => setActiveIdx(p => (p - 1 + activeSlides.length) % activeSlides.length), [activeSlides.length]);
+  const next = useCallback(() => {
+    setActiveIdx((prev) => (prev + 1) % Math.max(1, activeSlides.length));
+  }, [activeSlides.length]);
+
+  const prev = useCallback(() => {
+    setActiveIdx((prev) => (prev - 1 + activeSlides.length) % Math.max(1, activeSlides.length));
+  }, [activeSlides.length]);
 
   useEffect(() => {
     if (activeSlides.length <= 1) return;
-    const timer = setInterval(next, 5500);
+    const timer = setInterval(next, 5000);
     return () => clearInterval(timer);
   }, [activeSlides.length, next]);
 
-  const current = activeSlides[activeIdx] || activeSlides[0];
+  const current = activeSlides[activeIdx];
 
-  const cleanNumber = (current.whatsappNumara || '').replace(/\D/g, '');
-  const formattedNumber = cleanNumber.startsWith('0') && cleanNumber.length === 11 
-    ? '90' + cleanNumber.slice(1) 
-    : cleanNumber.length === 10 && cleanNumber.startsWith('5') 
-    ? '90' + cleanNumber 
-    : cleanNumber || '905000000000';
+  if (!current) return null;
+
+  const formattedNumber = formatWhatsAppNumber(current?.whatsappNumara || '');
   const message = encodeURIComponent(`Merhaba, "${current.baslik}" ilanınız için yazıyorum.`);
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 

@@ -21,7 +21,8 @@ import {
   Check
 } from 'lucide-react';
 import { getListingBySlug, getListings } from '@/lib/data';
-import WhatsAppButton, { OfficialWhatsAppIcon, formatWhatsAppNumber } from '@/components/common/WhatsAppButton';
+import WhatsAppButton, { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { formatWhatsAppNumber } from '@/lib/format';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import ImageSlider from '@/components/common/ImageSlider';
 import LikeButton from '@/components/common/LikeButton';

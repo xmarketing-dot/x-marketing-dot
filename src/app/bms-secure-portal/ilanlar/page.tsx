@@ -3,22 +3,22 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { 
-  List, 
-  CheckCircle2, 
-  Trash2, 
-  Edit3, 
-  MapPin, 
-  RefreshCw, 
-  Loader2, 
-  Sparkles, 
-  X, 
-  Save, 
-  Phone, 
-  Clock, 
-  Image as ImageIcon, 
-  Upload, 
-  Star, 
+import {
+  List,
+  CheckCircle2,
+  Trash2,
+  Edit3,
+  MapPin,
+  RefreshCw,
+  Loader2,
+  Sparkles,
+  X,
+  Save,
+  Phone,
+  Clock,
+  Image as ImageIcon,
+  Upload,
+  Star,
   Plus,
   KeyRound,
   MessageSquare,
@@ -339,8 +339,8 @@ export default function AdminListingsPage() {
 
     setCreating(true);
     try {
-      const defaultPhotos = createPhotoUrls.length > 0 
-        ? createPhotoUrls 
+      const defaultPhotos = createPhotoUrls.length > 0
+        ? createPhotoUrls
         : ['https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800'];
 
       const coverUrl = defaultPhotos[createCoverIdx] || defaultPhotos[0];
@@ -430,7 +430,7 @@ export default function AdminListingsPage() {
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-full">
-      
+
       {/* ── 1. HEADER BAR ──────────────── */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
@@ -473,18 +473,16 @@ export default function AdminListingsPage() {
       <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-[#161b22] border border-[#30363d] w-fit font-heading text-xs font-bold">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-xl transition-all ${
-            filter === 'all' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
-          }`}
+          className={`px-4 py-2 rounded-xl transition-all ${filter === 'all' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
+            }`}
         >
           Tüm İlanlar ({listings.length})
         </button>
 
         <button
           onClick={() => setFilter('onay_bekliyor')}
-          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
-            filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
-          }`}
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
+            }`}
         >
           <span>⏳ Onay Bekleyenler</span>
           {pendingCount > 0 && (
@@ -496,9 +494,8 @@ export default function AdminListingsPage() {
 
         <button
           onClick={() => setFilter('yayinda')}
-          className={`px-4 py-2 rounded-xl transition-all ${
-            filter === 'yayinda' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
-          }`}
+          className={`px-4 py-2 rounded-xl transition-all ${filter === 'yayinda' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
+            }`}
         >
           🟢 Yayındakiler ({listings.filter((l) => l.status === 'yayinda').length})
         </button>
@@ -522,15 +519,14 @@ export default function AdminListingsPage() {
               const isLive = item.status === 'yayinda';
 
               return (
-                <div 
-                  key={item._id} 
-                  className={`p-5 rounded-3xl border transition-all flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-xl ${
-                    isPending 
-                      ? 'bg-gradient-to-r from-amber-500/10 via-[#21262d] to-[#21262d] border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.15)]' 
+                <div
+                  key={item._id}
+                  className={`p-5 rounded-3xl border transition-all flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-xl ${isPending
+                      ? 'bg-gradient-to-r from-amber-500/10 via-[#21262d] to-[#21262d] border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.15)]'
                       : 'bg-[#21262d] border-[#363b42]'
-                  }`}
+                    }`}
                 >
-                  
+
                   {/* Left: Thumbnail & Info */}
                   <div className="flex items-start sm:items-center gap-4 w-full lg:w-auto">
                     <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117]">
@@ -549,12 +545,11 @@ export default function AdminListingsPage() {
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-black text-sm sm:text-base text-white font-heading">{item.baslik}</h3>
-                        
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-heading ${
-                          isLive 
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-heading ${isLive
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                             : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-                        }`}>
+                          }`}>
                           {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
                         </span>
 
@@ -589,7 +584,7 @@ export default function AdminListingsPage() {
 
                   {/* Right: Moderation Actions */}
                   <div className="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-white/10">
-                    
+
                     {/* TEK TIKLA ONAYLA (YAYINA AL) */}
                     {isPending ? (
                       <button
@@ -684,7 +679,7 @@ export default function AdminListingsPage() {
       {editingItem && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
           <div className="w-full max-w-2xl bg-[#161b22] border border-[#30363d] rounded-3xl p-6 flex flex-col gap-5 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
-            
+
             <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
               <div className="flex flex-col">
                 <h2 className="font-black text-lg text-white font-heading flex items-center gap-2">
@@ -705,7 +700,7 @@ export default function AdminListingsPage() {
             </div>
 
             <form onSubmit={handleSaveEdit} className="flex flex-col gap-5">
-              
+
               {/* Photo Management Section */}
               <div className="p-4 rounded-2xl bg-[#21262d] border border-[#363b42] flex flex-col gap-3">
                 <div className="flex items-center justify-between">
@@ -734,9 +729,8 @@ export default function AdminListingsPage() {
                     return (
                       <div
                         key={idx}
-                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-32 bg-[#0d1117] ${
-                          isCover ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-[#30363d]'
-                        }`}
+                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-32 bg-[#0d1117] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-[#30363d]'
+                          }`}
                       >
                         <img src={url} alt={`Resim ${idx}`} className="absolute inset-0 w-full h-full object-cover z-0" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 z-10"></div>
@@ -880,81 +874,6 @@ export default function AdminListingsPage() {
                   </label>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Yaş
-                    <input
-                      type="number"
-                      value={editForm.yas}
-                      onChange={(e) => setEditForm({ ...editForm, yas: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Boy (cm)
-                    <input
-                      type="number"
-                      value={editForm.boy}
-                      onChange={(e) => setEditForm({ ...editForm, boy: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Kilo (kg)
-                    <input
-                      type="number"
-                      value={editForm.kilo}
-                      onChange={(e) => setEditForm({ ...editForm, kilo: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Göğüs Ölçüsü
-                    <input
-                      type="text"
-                      placeholder="85C (Doğal)"
-                      value={editForm.gogusOlcusu}
-                      onChange={(e) => setEditForm({ ...editForm, gogusOlcusu: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Saç Rengi
-                    <input
-                      type="text"
-                      placeholder="Kumral"
-                      value={editForm.sacRengi}
-                      onChange={(e) => setEditForm({ ...editForm, sacRengi: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Göz Rengi
-                    <input
-                      type="text"
-                      placeholder="Ela"
-                      value={editForm.gozRengi}
-                      onChange={(e) => setEditForm({ ...editForm, gozRengi: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-                </div>
-
-                <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                  Konuştuğu Diller
-                  <input
-                    type="text"
-                    placeholder="Türkçe, İngilizce, Rusça"
-                    value={editForm.diller}
-                    onChange={(e) => setEditForm({ ...editForm, diller: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
 
                 <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
                   Hizmet Mekanları
@@ -967,7 +886,6 @@ export default function AdminListingsPage() {
                   />
                 </label>
               </div>
-
               {/* Location */}
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
@@ -1051,11 +969,11 @@ export default function AdminListingsPage() {
       )}
       {/* ── 5. QUICK USER ASSIGNMENT & CREDENTIALS MODAL ──────────────── */}
       {assignModalItem && (
-        <div 
+        <div
           onClick={() => setAssignModalItem(null)}
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950"
         >
-          <div 
+          <div
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-lg bg-[#161b22] border-2 border-amber-500/60 rounded-[32px] p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left"
           >
@@ -1107,11 +1025,10 @@ export default function AdminListingsPage() {
                       setCopiedCreds(true);
                       setTimeout(() => setCopiedCreds(false), 2500);
                     }}
-                    className={`flex-1 py-3 px-4 rounded-xl font-black text-xs font-heading uppercase transition-all flex items-center justify-center gap-2 ${
-                      copiedCreds
+                    className={`flex-1 py-3 px-4 rounded-xl font-black text-xs font-heading uppercase transition-all flex items-center justify-center gap-2 ${copiedCreds
                         ? 'bg-emerald-500 text-slate-950 shadow-lg'
                         : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
-                    }`}
+                      }`}
                   >
                     {copiedCreds ? (
                       <>
@@ -1136,7 +1053,7 @@ export default function AdminListingsPage() {
             ) : (
               /* Create Form */
               <form onSubmit={handleCreateAndAssignUser} className="flex flex-col gap-4 text-xs font-heading">
-                
+
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[#8b949e] font-black uppercase">Atanacak Kullanıcı Adı</label>
                   <input
@@ -1195,11 +1112,11 @@ export default function AdminListingsPage() {
 
       {/* ── 6. SIFIRDAN YENİ VİP MODEL & İLAN EKLEME MODALI ──────────────── */}
       {showCreateModal && (
-        <div 
+        <div
           onClick={() => setShowCreateModal(false)}
           className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950"
         >
-          <div 
+          <div
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-2xl bg-[#161b22] border-2 border-amber-500/60 rounded-[32px] p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left max-h-[90vh] overflow-y-auto"
           >
@@ -1228,7 +1145,7 @@ export default function AdminListingsPage() {
             </div>
 
             <form onSubmit={handleCreateSubmit} className="flex flex-col gap-4 text-xs font-heading">
-              
+
               {/* Başlık & Model Sahne Adı */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
@@ -1341,96 +1258,28 @@ export default function AdminListingsPage() {
                 </label>
               </div>
 
-              {/* ── ÖZEL VİP MODEL FİZİKSEL BİLGİLERİ ──────────────── */}
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/40 flex flex-col gap-3">
-                <span className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Crown className="w-4 h-4" />
-                  <span>Model Fiziksel Nitelikleri &amp; Portföy Detayları</span>
-                </span>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Yaş
-                    <input
-                      type="number"
-                      value={createForm.yas}
-                      onChange={(e) => setCreateForm({ ...createForm, yas: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
 
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Boy (cm)
-                    <input
-                      type="number"
-                      value={createForm.boy}
-                      onChange={(e) => setCreateForm({ ...createForm, boy: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
+                  Konuştuğu Diller
+                  <input
+                    type="text"
+                    value={createForm.diller}
+                    onChange={(e) => setCreateForm({ ...createForm, diller: e.target.value })}
+                    className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                  />
+                </label>
 
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Kilo (kg)
-                    <input
-                      type="number"
-                      value={createForm.kilo}
-                      onChange={(e) => setCreateForm({ ...createForm, kilo: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Göğüs Ölçüsü
-                    <input
-                      type="text"
-                      value={createForm.gogusOlcusu}
-                      onChange={(e) => setCreateForm({ ...createForm, gogusOlcusu: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Saç Rengi
-                    <input
-                      type="text"
-                      value={createForm.sacRengi}
-                      onChange={(e) => setCreateForm({ ...createForm, sacRengi: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Göz Rengi
-                    <input
-                      type="text"
-                      value={createForm.gozRengi}
-                      onChange={(e) => setCreateForm({ ...createForm, gozRengi: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Konuştuğu Diller
-                    <input
-                      type="text"
-                      value={createForm.diller}
-                      onChange={(e) => setCreateForm({ ...createForm, diller: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    Hizmet Mekanları
-                    <input
-                      type="text"
-                      value={createForm.hizmetMekanlari}
-                      onChange={(e) => setCreateForm({ ...createForm, hizmetMekanlari: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
-                    />
-                  </label>
-                </div>
+                <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
+                  Hizmet Mekanları
+                  <input
+                    type="text"
+                    value={createForm.hizmetMekanlari}
+                    onChange={(e) => setCreateForm({ ...createForm, hizmetMekanlari: e.target.value })}
+                    className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                  />
+                </label>
               </div>
 
               {/* Biyografi */}

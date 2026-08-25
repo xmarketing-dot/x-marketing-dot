@@ -264,38 +264,7 @@ export default async function ModelProfilePage({ params }: Props) {
           {/* Fiziksel Ölçüler & Biyometri Kartı */}
           <div className="p-6 rounded-[32px] bg-gradient-to-br from-[#1c180e] via-[#161b22] to-[#161b22] border-2 border-amber-500/40 shadow-2xl flex flex-col gap-5">
             
-            <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
-              <div className="flex items-center gap-2 text-white font-heading font-black text-base">
-                <Crown className="w-5 h-5 text-amber-400" />
-                <span>Fiziksel Nitelikler</span>
-              </div>
-              <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase font-heading">
-                VIP Tablo
-              </span>
-            </div>
 
-            {/* Özellikler Tablosu */}
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-0.5">
-                <span className="text-[10px] text-[#8b949e] font-bold uppercase">Yaş</span>
-                <span className="font-black text-base text-white font-heading">{model.yas || 23} Yaşında</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-0.5">
-                <span className="text-[10px] text-[#8b949e] font-bold uppercase">Boy &amp; Kilo</span>
-                <span className="font-black text-base text-white font-heading">{model.boy || 172} cm / {model.kilo || 53} kg</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-0.5">
-                <span className="text-[10px] text-[#8b949e] font-bold uppercase">Göğüs Ölçüsü</span>
-                <span className="font-black text-base text-amber-400 font-heading">{model.gogusOlcusu || '85C (Doğal)'}</span>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-0.5">
-                <span className="text-[10px] text-[#8b949e] font-bold uppercase">Saç &amp; Göz</span>
-                <span className="font-black text-base text-white font-heading">{model.sacRengi || 'Kumral'} / {model.gozRengi || 'Ela'}</span>
-              </div>
-            </div>
 
             {/* Mekanlar & Diller */}
             <div className="flex flex-col gap-3 text-xs pt-1">

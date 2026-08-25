@@ -299,45 +299,7 @@ export default function CelebrityModelView({ model }: CelebrityModelViewProps) {
                 ))}
               </div>
 
-              {/* ── HEADER'DAKİ TÜM FİZİKSEL BİYOMETRİ & ÖLÇÜLER KUTUSU ──────────────── */}
-              <div className="p-4 rounded-2xl bg-[#0d1117]/90 border border-rose-500/30 shadow-inner flex flex-col gap-2.5 mt-1">
-                <span className="text-[11px] font-black text-rose-400 uppercase tracking-wider flex items-center gap-1.5 font-heading">
-                  <Crown className="w-3.5 h-3.5" />
-                  <span>Fiziksel Nitelikler &amp; Biyometri</span>
-                </span>
 
-                <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="p-2.5 rounded-xl bg-[#161b22] border border-white/5 flex flex-col">
-                    <span className="text-[10px] text-[#8b949e] font-bold uppercase">Yaş</span>
-                    <span className="font-black text-sm text-white font-heading">{model.yas || 25}</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-[#161b22] border border-white/5 flex flex-col">
-                    <span className="text-[10px] text-[#8b949e] font-bold uppercase">Boy</span>
-                    <span className="font-black text-sm text-white font-heading">{model.boy || 171} cm</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-[#161b22] border border-white/5 flex flex-col">
-                    <span className="text-[10px] text-[#8b949e] font-bold uppercase">Kilo</span>
-                    <span className="font-black text-sm text-white font-heading">{model.kilo || 53} kg</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-[#161b22] border border-white/5 flex flex-col">
-                    <span className="text-[10px] text-[#8b949e] font-bold uppercase">Göğüs</span>
-                    <span className="font-black text-sm text-rose-400 font-heading">{model.gogusOlcusu || '85C (Doğal)'}</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-[#161b22] border border-white/5 flex flex-col">
-                    <span className="text-[10px] text-[#8b949e] font-bold uppercase">Saç &amp; Göz</span>
-                    <span className="font-black text-xs text-white font-heading">{model.sacRengi || 'Siyah'} / {model.gozRengi || 'Kahve'}</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-[#161b22] border border-white/5 flex flex-col">
-                    <span className="text-[10px] text-[#8b949e] font-bold uppercase">Burç</span>
-                    <span className="font-black text-xs text-amber-400 font-heading">{model.burc || 'Akrep'}</span>
-                  </div>
-                </div>
-              </div>
 
             </div>
 

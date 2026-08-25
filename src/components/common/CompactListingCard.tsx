@@ -4,7 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, ShieldCheck, ChevronRight, Crown, Star, Award, Medal } from 'lucide-react';
-import { OfficialWhatsAppIcon, formatWhatsAppNumber } from '@/components/common/WhatsAppButton';
+import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { formatWhatsAppNumber } from '@/lib/format';
 
 interface CompactListingCardProps {
   listing: {
