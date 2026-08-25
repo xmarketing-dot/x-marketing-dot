@@ -26,6 +26,7 @@ import { formatWhatsAppNumber } from '@/lib/format';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import ImageSlider from '@/components/common/ImageSlider';
 import LikeButton from '@/components/common/LikeButton';
+import ShareButtons from '@/components/common/ShareButtons';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -73,13 +74,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'article',
       locale: 'tr_TR',
       siteName: 'Best Eskort',
-      images: coverImage ? [{ url: coverImage, alt: listing.baslik, width: 1200, height: 630 }] : [],
+      images: coverImage 
+        ? [{ url: coverImage, alt: listing.baslik, width: 1200, height: 630 }] 
+        : [{ url: `${siteUrl}/icon`, width: 512, height: 512, alt: 'Best Eskort' }],
     },
     twitter: {
       card: 'summary_large_image',
       title: metaTitle,
       description: metaDescription,
-      images: coverImage ? [coverImage] : [],
+      images: coverImage ? [coverImage] : [`${siteUrl}/icon`],
     },
   };
 }
@@ -93,9 +96,11 @@ export default async function ListingDetailPage({ params }: Props) {
   }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
 
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');
   const ilceAdi = listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' ');
+  const metaTitle = `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort`;
 
   // Benzer İlanlar (Aynı şehirdeki diğer ilanlar)
   const similarListings = await getListings({
@@ -219,6 +224,8 @@ export default async function ListingDetailPage({ params }: Props) {
           <div className="text-base sm:text-lg text-[#f0f6fc] leading-relaxed whitespace-pre-line font-medium px-2">
             {listing.aciklama}
           </div>
+
+          <ShareButtons url={canonicalUrl} title={metaTitle} />
 
           {/* Bölgesel Hızlı Yönlendirme Linkleri */}
           <div className="pt-4 border-t border-[#30363d] flex flex-wrap justify-center gap-2 text-[11px] font-heading font-bold w-full">

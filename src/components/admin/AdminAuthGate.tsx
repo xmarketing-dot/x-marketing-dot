@@ -232,10 +232,18 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
           <nav className="flex flex-col gap-1 text-xs font-extrabold uppercase tracking-wider font-heading">
             <Link
               href="/bms-secure-portal"
-              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white hover:text-amber-400 border border-[#363b42] transition-colors"
+              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
             >
               <BarChart3 className="w-4 h-4 text-amber-400" />
               <span>Trafik &amp; Analizler</span>
+            </Link>
+
+            <Link
+              href="/bms-secure-portal/istatistik"
+              className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl hover:bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+            >
+              <Globe className="w-4 h-4 text-amber-400" />
+              <span>Detaylı İstatistikler</span>
             </Link>
 
             <Link
