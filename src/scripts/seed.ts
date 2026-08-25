@@ -320,19 +320,20 @@ async function seed() {
     console.log(`✅ ${starterPackages.length} Packages seeded.`);
 
     // 4. Seed Admin Account
-    console.log('👤 Seeding Superadmin Account...');
-    const adminEmail = 'ownmyofmyowner@gmail.com';
+    console.log('👤 Seeding Admin Account...');
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@besteskort.com';
+    const rawPassword = process.env.ADMIN_PASSWORD || 'AdminPassword2026!';
     const existingAdmin = await AdminModel.findOne({ email: adminEmail });
     if (!existingAdmin) {
-      const passwordHash = await bcrypt.hash('3428914285egypt@', 10);
+      const passwordHash = await bcrypt.hash(rawPassword, 10);
       await AdminModel.create({
         email: adminEmail,
         sifreHash: passwordHash,
         role: 'superadmin',
       });
-      console.log('✅ Superadmin created: ownmyofmyowner@gmail.com');
+      console.log('✅ Admin initialized.');
     } else {
-      console.log('ℹ️ Superadmin already exists.');
+      console.log('ℹ️ Admin already exists.');
     }
 
     // 5. Seed Initial Sample Listings with Ultravip, VIP, Gold, Silver tiers

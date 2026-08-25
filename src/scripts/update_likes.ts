@@ -37,10 +37,9 @@ async function updateAllListingLikes() {
 
     l.likeSayisi = base;
     await l.save();
-    console.log(`- [${l.rozet || 'silver'}] ${l.baslik}: ${base} Öneri`);
   }
 
-  console.log('All listing likes updated successfully in the 50 - 370 range!');
+  console.log('✅ All listing likes updated.');
   process.exit(0);
 }
 

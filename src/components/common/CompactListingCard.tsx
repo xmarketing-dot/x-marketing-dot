@@ -3,8 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, ShieldCheck, Phone, ChevronRight, Crown, Star, Award, Medal } from 'lucide-react';
-import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { MapPin, ShieldCheck, ChevronRight, Crown, Star, Award, Medal } from 'lucide-react';
+import { OfficialWhatsAppIcon, formatWhatsAppNumber } from '@/components/common/WhatsAppButton';
 
 interface CompactListingCardProps {
   listing: {
@@ -29,8 +29,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
 
   const coverUrl = listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=600';
 
-  const cleanNumber = listing.whatsappNumara.replace(/\D/g, '');
-  const formattedNumber = cleanNumber.startsWith('90') ? cleanNumber : `90${cleanNumber}`;
+  const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
   const message = encodeURIComponent(`Merhaba, "${listing.baslik}" ilanınız hakkında bilgi almak istiyorum.`);
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 

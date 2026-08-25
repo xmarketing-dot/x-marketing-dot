@@ -21,7 +21,7 @@ import {
   Check
 } from 'lucide-react';
 import { getListingBySlug, getListings } from '@/lib/data';
-import WhatsAppButton, { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import WhatsAppButton, { OfficialWhatsAppIcon, formatWhatsAppNumber } from '@/components/common/WhatsAppButton';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import ImageSlider from '@/components/common/ImageSlider';
 import LikeButton from '@/components/common/LikeButton';
@@ -113,12 +113,10 @@ export default async function ListingDetailPage({ params }: Props) {
   const isVip = rozet === 'vip';
   const isGold = rozet === 'gold';
 
-  // WhatsApp & Phone URLs for Sticky Bar
-  const cleanNumber = listing.whatsappNumara.replace(/\D/g, '');
-  const formattedNumber = cleanNumber.startsWith('90') ? cleanNumber : `90${cleanNumber}`;
+  // WhatsApp URL for Sticky Bar (Supports Turkish & International Numbers)
+  const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
   const message = encodeURIComponent(`Merhaba, "${listing.baslik}" (${ilceAdi} / ${ilAdi}) ilanınız için yazıyorum.`);
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
-  const telUrl = `tel:+${formattedNumber}`;
 
   // Rich Schema.org JSON-LD
   const jsonLd = {
@@ -340,29 +338,17 @@ export default async function ListingDetailPage({ params }: Props) {
         </div>
       )}
 
-      {/* ── 3. MOBİLDE ALTA YAPIŞIK SABİT İLETİŞİM BARI (STICKY ACTION BAR) ──────────────── */}
+      {/* ── 3. MOBİLDE ALTA YAPIŞIK SABİT İLETİŞİM BARI (STICKY WHATSAPP ACTION BAR) ──────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-[#0d1117]/95 backdrop-blur-xl border-t border-[#30363d] p-3 px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] pb-[max(env(safe-area-inset-bottom),12px)] max-w-lg mx-auto md:max-w-4xl">
-        <div className="grid grid-cols-2 gap-2.5 font-heading">
-          {/* WhatsApp Butonu */}
-          <a
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-3.5 px-3 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs sm:text-sm shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
-          >
-            <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950 shrink-0" />
-            <span>WhatsApp ile Yaz</span>
-          </a>
-
-          {/* Doğrudan Arama Butonu */}
-          <a
-            href={telUrl}
-            className="py-3.5 px-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
-          >
-            <Phone className="w-4 h-4 stroke-[3] fill-slate-950 shrink-0" />
-            <span>Hemen Ara</span>
-          </a>
-        </div>
+        <a
+          href={waUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="w-full py-4 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm shadow-2xl active:scale-98 transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider font-heading cursor-pointer"
+        >
+          <OfficialWhatsAppIcon className="w-5 h-5 fill-slate-950 shrink-0" />
+          <span>WhatsApp ile Hemen İletişime Geç</span>
+        </a>
       </div>
 
     </div>

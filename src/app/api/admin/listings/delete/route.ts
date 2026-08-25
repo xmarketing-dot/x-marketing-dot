@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
+import HomepageConfigModel from '@/models/HomepageConfig';
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -18,7 +20,30 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'İlan bulunamadı.' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true });
+    // Also remove from homepage showcase if selected
+    try {
+      await HomepageConfigModel.updateOne(
+        { key: 'singleton' },
+        { $pull: { selectedShowcaseIds: listingId } }
+      );
+    } catch (e) {}
+
+    // Invalidate caches immediately
+    try {
+      revalidatePath('/', 'page');
+      revalidatePath('/sehirler', 'page');
+      if (deleted.ilSlug) {
+        revalidatePath(`/${deleted.ilSlug}`, 'page');
+        if (deleted.ilceSlug) {
+          revalidatePath(`/${deleted.ilSlug}/${deleted.ilceSlug}`, 'page');
+        }
+      }
+      if (deleted.slug) {
+        revalidatePath(`/ilan/${deleted.slug}`, 'page');
+      }
+    } catch (e) {}
+
+    return NextResponse.json({ success: true, message: 'İlan başarıyla silindi ve tüm sayfalardan kaldırıldı.' });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Silme hatası' }, { status: 500 });
   }

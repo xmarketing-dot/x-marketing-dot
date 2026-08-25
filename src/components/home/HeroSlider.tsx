@@ -52,11 +52,14 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
 
   const current = activeSlides[activeIdx] || activeSlides[0];
 
-  const cleanNumber = current.whatsappNumara.replace(/\D/g, '');
-  const formattedNumber = cleanNumber.startsWith('90') ? cleanNumber : `90${cleanNumber}`;
-  const message = encodeURIComponent(`Merhaba, "${current.baslik}" ilanınız hakkında bilgi almak istiyorum.`);
+  const cleanNumber = (current.whatsappNumara || '').replace(/\D/g, '');
+  const formattedNumber = cleanNumber.startsWith('0') && cleanNumber.length === 11 
+    ? '90' + cleanNumber.slice(1) 
+    : cleanNumber.length === 10 && cleanNumber.startsWith('5') 
+    ? '90' + cleanNumber 
+    : cleanNumber || '905000000000';
+  const message = encodeURIComponent(`Merhaba, "${current.baslik}" ilanınız için yazıyorum.`);
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
-  const telUrl = `tel:+${formattedNumber}`;
 
   const handleWaClick = () => {
     if (current._id) {
@@ -135,8 +138,8 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
           </Link>
         </div>
 
-        {/* ── 3 AYRI NET VE BÜYÜK AKSİYON BUTONU (ASLA ÜST ÜSTE BİNMEZ) ──────────────── */}
-        <div className="grid grid-cols-3 gap-2 w-full font-heading">
+        {/* ── 2 AYRI NET VE BÜYÜK AKSİYON BUTONU (WHATSAPP & DETAY) ──────────────── */}
+        <div className="grid grid-cols-2 gap-2.5 w-full font-heading">
           
           {/* 1. WHATSAPP BUTONU */}
           <a
@@ -144,30 +147,20 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleWaClick}
-            className="py-3 px-2 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs shadow-xl active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            className="py-3.5 px-3 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs sm:text-sm shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
             title="WhatsApp ile İletişim"
           >
             <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950 shrink-0" />
-            <span className="truncate">WhatsApp</span>
+            <span className="truncate">WhatsApp ile Yaz</span>
           </a>
 
-          {/* 2. HEMEN ARA BUTONU */}
-          <a
-            href={telUrl}
-            className="py-3 px-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-xl active:scale-95 transition-all flex items-center justify-center gap-1.5"
-            title="Hemen Ara"
-          >
-            <Phone className="w-3.5 h-3.5 stroke-[3] fill-slate-950 shrink-0" />
-            <span className="truncate">Hemen Ara</span>
-          </a>
-
-          {/* 3. PROFİLİ İNCELE BUTONU */}
+          {/* 2. PROFİLİ İNCELE BUTONU */}
           <Link
             href={`/ilan/${current.slug}`}
-            className="py-3 px-2 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white font-black text-xs border border-[#363b42] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-1"
+            className="py-3.5 px-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white font-black text-xs sm:text-sm border border-[#363b42] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-1.5"
           >
-            <span className="truncate">İncele</span>
-            <ChevronRight className="w-3.5 h-3.5 text-amber-400 stroke-[3] shrink-0" />
+            <span className="truncate">Profili İncele</span>
+            <ChevronRight className="w-4 h-4 text-amber-400 stroke-[3] shrink-0" />
           </Link>
 
         </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Phone } from 'lucide-react';
 
 interface ContactButtonsProps {
   numara: string;
@@ -22,6 +21,18 @@ export const OfficialWhatsAppIcon = ({ className = 'w-4 h-4' }: { className?: st
   </svg>
 );
 
+export function formatWhatsAppNumber(num: string): string {
+  let clean = (num || '').replace(/\D/g, '');
+  if (!clean) return '905000000000';
+  // Standard Turkish mobile 05xx... -> 905xx...
+  if (clean.startsWith('0') && clean.length === 11) {
+    clean = '90' + clean.slice(1);
+  } else if (clean.length === 10 && clean.startsWith('5')) {
+    clean = '90' + clean;
+  }
+  return clean;
+}
+
 export default function WhatsAppButton({
   numara,
   baslik,
@@ -29,12 +40,9 @@ export default function WhatsAppButton({
   compact = false,
   className = '',
 }: ContactButtonsProps) {
-  const cleanNumber = numara.replace(/\D/g, '');
-  const formattedNumber = cleanNumber.startsWith('90') ? cleanNumber : `90${cleanNumber}`;
-  const displayPhone = numara.length > 5 ? numara : `0${cleanNumber}`;
+  const formattedNumber = formatWhatsAppNumber(numara);
   const message = encodeURIComponent(`Merhaba, "${baslik}" ilanınız hakkında bilgi almak istiyorum.`);
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
-  const telUrl = `tel:+${formattedNumber}`;
 
   const handleClick = () => {
     if (listingId) {
@@ -48,54 +56,33 @@ export default function WhatsAppButton({
 
   if (compact) {
     return (
-      <div className={`flex items-center gap-2 w-full justify-between ${className}`}>
-        {/* Apple iOS Native Call Button Pill */}
-        <a
-          href={telUrl}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-2xl bg-[#21262d] hover:bg-[#2d333b] text-amber-400 border border-[#30363d] font-extrabold text-xs shadow-sm transition-all active:scale-95 whitespace-nowrap font-heading"
-          title={`Hemen Ara: ${displayPhone}`}
-        >
-          <Phone className="w-3.5 h-3.5 stroke-[2.5] text-amber-400 shrink-0" />
-          <span className="truncate">Ara: {displayPhone}</span>
-        </a>
-
-        {/* Apple iOS Native WhatsApp Button Pill */}
+      <div className={`w-full ${className}`}>
         <a
           href={waUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleClick}
-          className="flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs shadow-md active:scale-95 transition-all whitespace-nowrap shrink-0 font-heading"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all font-heading"
           title="WhatsApp'tan Mesaj Gönder"
         >
           <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950" />
-          <span>WhatsApp</span>
+          <span>WhatsApp ile İletişim</span>
         </a>
       </div>
     );
   }
 
   return (
-    <div className={`flex flex-col sm:flex-row items-center gap-2.5 w-full ${className}`}>
-      {/* Official WhatsApp Button */}
+    <div className={`w-full ${className}`}>
       <a
         href={waUrl}
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="w-full flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm shadow-xl active:scale-98 transition-all font-heading"
+        className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm uppercase tracking-wider shadow-2xl active:scale-98 transition-all font-heading cursor-pointer"
       >
-        <OfficialWhatsAppIcon className="w-5 h-5 fill-slate-950" />
-        <span>WhatsApp ile Mesaj Yaz</span>
-      </a>
-
-      {/* Direct One-Tap Call Button */}
-      <a
-        href={telUrl}
-        className="w-full flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-xl active:scale-98 transition-all font-heading"
-      >
-        <Phone className="w-4 h-4 stroke-[3]" />
-        <span>Ara: {displayPhone}</span>
+        <OfficialWhatsAppIcon className="w-5 h-5 fill-slate-950 shrink-0" />
+        <span>WhatsApp ile Hemen İletişime Geç</span>
       </a>
     </div>
   );

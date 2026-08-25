@@ -1,13 +1,21 @@
 import { MetadataRoute } from 'next';
 import { getAllLocations, getListings, getAllCategories } from '@/lib/data';
+import connectToDatabase from '@/lib/mongodb';
+import VipModel from '@/models/VipModel';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf').replace(/\/$/, '');
 
-  const [locations, listings, categories] = await Promise.all([
+  await connectToDatabase();
+
+  const [locations, listings, categories, vipModels] = await Promise.all([
     getAllLocations(),
     getListings({ limit: 5000 }),
     getAllCategories(),
+    VipModel.find({ aktif: true }).lean(),
   ]);
 
   const now = new Date();
@@ -20,12 +28,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
     {
+      url: `${siteUrl}/sehirler`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.9,
+    },
+    {
       url: `${siteUrl}/ilan-ver`,
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.6,
     },
   ];
+
+  // VIP Influencer & Model pages (/gizem-bagdacicek, /merve-ozdemir)
+  for (const m of vipModels) {
+    routes.push({
+      url: `${siteUrl}/${m.slug}`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.95,
+    });
+  }
 
   // City pages (81 il) — high priority
   for (const loc of locations) {
@@ -58,12 +82,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Individual listing pages
-  for (const item of listings) {
+  for (const listing of listings) {
     routes.push({
-      url: `${siteUrl}/ilan/${item.slug}`,
-      lastModified: new Date(item.updatedAt || now),
-      changeFrequency: 'weekly',
-      priority: 0.75,
+      url: `${siteUrl}/ilan/${listing.slug}`,
+      lastModified: new Date(listing.updatedAt || listing.createdAt || now),
+      changeFrequency: 'daily',
+      priority: 0.8,
     });
   }
 

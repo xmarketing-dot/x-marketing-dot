@@ -25,9 +25,10 @@ import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
 
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.devs.surf';
 
 export const metadata: Metadata = {
   title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu | 81 İl',
