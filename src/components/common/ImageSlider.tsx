@@ -61,7 +61,7 @@ export default function ImageSlider({
           src={safeImages[currentIndex]?.url || safeImages[0].url}
           alt={`${alt} - ${currentIndex + 1}`}
           fill
-          priority={priority}
+          loading="lazy"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 800px"
           className="object-cover transition-all duration-700 ease-out group-hover:scale-105 cursor-pointer"
           onClick={openFullscreen}

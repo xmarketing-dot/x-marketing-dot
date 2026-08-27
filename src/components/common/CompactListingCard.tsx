@@ -140,7 +140,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
                 fill
                 sizes="(max-width: 640px) 50vw, 300px"
                 className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-100"
-                priority={idx === 0}
+                loading="lazy"
               />
             </div>
           ))}

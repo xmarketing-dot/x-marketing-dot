@@ -281,7 +281,7 @@ export default function SpecialAdPopup() {
                 fill
                 sizes="(max-width: 640px) 100vw, 360px"
                 className="object-cover group-hover:scale-105 transition-transform duration-700 brightness-[1.02]"
-                priority={idx === 0}
+                loading="lazy"
               />
             </div>
           ))}

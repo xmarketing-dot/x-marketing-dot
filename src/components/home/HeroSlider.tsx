@@ -97,7 +97,6 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
             src={slide.anaFotograf?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=1200'}
             alt={slide.baslik}
             fill
-            priority={idx === 0}
             sizes="(max-width: 600px) 100vw, 600px"
             className="object-cover object-top sm:object-center brightness-105 contrast-105"
           />

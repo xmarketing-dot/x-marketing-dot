@@ -208,7 +208,6 @@ export default function CryptoPaymentCard({ onChatClick, className = '' }: Crypt
                 fill
                 className="object-contain p-2"
                 unoptimized
-                priority
               />
             </div>
 

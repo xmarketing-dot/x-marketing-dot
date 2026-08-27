@@ -188,7 +188,6 @@ export default async function ListingDetailPage({ params }: Props) {
             images={allImages}
             alt={`${listing.baslik} ${ilceAdi} eskort`}
             aspectRatio="aspect-[3/4] sm:aspect-[4/5] min-h-[500px] h-[70vh] max-h-[660px]"
-            priority
             badge={`${rozet.toUpperCase()} VİTRİN`}
           />
         </div>
