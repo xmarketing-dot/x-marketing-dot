@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ImageResponse } from 'next/og';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
-import VipModel from '@/models/VipModel';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,16 +28,6 @@ export async function GET(
         listing.anaFotograf?.url ||
         (listing.fotograflar && listing.fotograflar.length > 0 ? listing.fotograflar[0]?.url : '') ||
         '';
-    } else {
-      // 2. Try finding in VIP Celebrity Models
-      const vipModel = await VipModel.findOne({ slug }).lean();
-      if (vipModel) {
-        listingData = vipModel;
-        photoUrl =
-          vipModel.anaFotografUrl ||
-          (vipModel.fotograflar && vipModel.fotograflar.length > 0 ? vipModel.fotograflar[0] : '') ||
-          '';
-      }
     }
 
     // Handle Data URL (Base64) from real listing upload

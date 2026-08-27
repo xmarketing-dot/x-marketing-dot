@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { getHomepageConfig, getAllLocations, getListings } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
-import VipModel from '@/models/VipModel';
 import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
@@ -78,11 +77,10 @@ const TIER_ORDER: Record<string, number> = {
 export default async function HomePage() {
   await connectToDatabase();
 
-  const [locations, rawListings, homepageConfig, vipCelebrityModels] = await Promise.all([
+  const [locations, rawListings, homepageConfig] = await Promise.all([
     getAllLocations(),
     getListings({ limit: 60 }),
     getHomepageConfig(),
-    VipModel.find({ aktif: true }).sort({ likeSayisi: -1 }).limit(4).lean(),
   ]);
 
   // Sort all listings strictly by Tier Priority (VIP -> Gold -> Silver) and then by Date

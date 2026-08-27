@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getAllLocations, getListings } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
-import VipModel from '@/models/VipModel';
 import { getSiteUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
@@ -12,10 +11,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   await connectToDatabase();
 
-  const [locations, listings, vipModels] = await Promise.all([
+  const [locations, listings] = await Promise.all([
     getAllLocations(),
     getListings({ limit: 5000 }),
-    VipModel.find({ aktif: true }).lean(),
   ]);
 
   const now = new Date();
@@ -58,16 +56,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     },
   ];
-
-  // VIP Influencer & Model pages (/gizem-bagdacicek, /merve-ozdemir)
-  for (const m of vipModels) {
-    routes.push({
-      url: `${siteUrl}/${m.slug}`,
-      lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.95,
-    });
-  }
 
   // City pages (81 il) — high priority
   for (const loc of locations) {

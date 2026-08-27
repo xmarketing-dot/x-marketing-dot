@@ -286,18 +286,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             </Link>
 
             <Link
-              href="/bms-secure-portal/modeller"
-              className={`flex items-center gap-2.5 px-3.5 py-3 rounded-xl font-bold transition-colors ${
-                pathname === '/bms-secure-portal/modeller'
-                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-                  : 'hover:bg-[#21262d] text-amber-500/70 hover:text-amber-400 border border-transparent'
-              }`}
-            >
-              <Crown className="w-4 h-4 text-amber-400" />
-              <span>👑 VIP Fenomen &amp; Model</span>
-            </Link>
-
-            <Link
               href="/bms-secure-portal/kullanicilar"
               className={getNavClass('/bms-secure-portal/kullanicilar')}
             >

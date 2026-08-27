@@ -2,15 +2,10 @@ import React from 'react';
 import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import connectToDatabase from '@/lib/mongodb';
-import ListingModel from '@/models/Listing';
-import VipModel from '@/models/VipModel';
-import { MapPin, ChevronRight, Sparkles, ShieldCheck, Globe } from 'lucide-react';
+import { MapPin, Sparkles } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
-import CelebrityModelView from '@/components/model/CelebrityModelView';
 
 interface Props {
   params: Promise<{ il: string }>;
@@ -23,54 +18,10 @@ export async function generateStaticParams() {
   return locations.map((loc: any) => ({ il: loc.ilSlug }));
 }
 
-async function findVipModel(slug: string) {
-  await connectToDatabase();
-  const vip = await VipModel.findOne({ slug }).lean();
-  if (vip) return vip;
-  return await ListingModel.findOne({ slug }).lean();
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { il: ilSlug } = await params;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://besteskort.com';
+  const siteUrl = getSiteUrl();
 
-  // 1. Check if it's a VIP Celebrity / Influencer Model
-  const model: any = await findVipModel(ilSlug);
-  if (model) {
-    const modelName = model.tamAd || model.baslik;
-    return {
-      title: `${modelName} — VIP Fenomen Model Biyografisi & Özel Fotoğrafları | Best Eskort`,
-      description: `${modelName} resmi VIP profil sayfası. Doğrulanmış fotoğraf galerisi, fiziksel ölçüleri (boy, kilo, yaş) ve hayran değerlendirmeleri.`,
-      keywords: [
-        `${modelName}`,
-        `${modelName} onlyfans`,
-        `${modelName} twitter`,
-        `${modelName} fotoğrafları`,
-        `${modelName} boy kilo`,
-        `${modelName} kimdir`,
-        `${modelName} biyografi`,
-        `${modelName} fenomen`,
-      ],
-      alternates: {
-        canonical: `${siteUrl}/${ilSlug}`,
-      },
-      openGraph: {
-        title: `${modelName} | VIP Fenomen & Model Portföyü`,
-        description: `${modelName} teyitli fotoğrafları ve resmi biyografisi.`,
-        url: `${siteUrl}/${ilSlug}`,
-        images: [
-          {
-            url: model.anaFotografUrl || model.anaFotograf?.url || '',
-            width: 800,
-            height: 1000,
-            alt: modelName,
-          }
-        ],
-      }
-    };
-  }
-
-  // 2. City Check
   const location = await getLocationBySlug(ilSlug);
 
   if (!location) {
@@ -80,8 +31,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = `${siteUrl}/${location.ilSlug}`;
 
   return {
-    title: `${location.il} Eskort İlanları & Bölgesel Rehber | Best Eskort`,
-    description: `${location.il} ilindeki tüm doğrulanmış güncel eskort ilanları ve iletişim numaraları. ${location.il} ilçelerindeki bağımsız eskortları keşfedin.`,
+    title: `${location.il} Eskort İlanları & Escort Rehberi | Best Eskort`,
+    description: `${location.il} ilindeki tüm doğrulanmış güncel eskort ve escort ilanları ve doğrudan WhatsApp iletişim numaraları.`,
     keywords: [
       `${location.il} eskort`,
       `${location.il} escort`,
@@ -93,46 +44,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `${location.il} vip eskort`,
       `${location.il} vip escort`,
       `${location.il} whatsapp eskort`,
+      `${location.il} whatsapp escort`,
     ],
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${location.il} Eskort & Bölgesel İlanlar | Best Eskort`,
-      description: `${location.il} genelinde eskort, araç, emlak ve bölgesel ilan rehberi.`,
+      title: `${location.il} Eskort & Escort İlanları | Best Eskort`,
+      description: `${location.il} genelinde teyitli eskort ilanları ve WhatsApp hatları.`,
       url: canonicalUrl,
+      images: [
+        {
+          url: `${siteUrl}/api/og/site`,
+          width: 1200,
+          height: 630,
+          alt: `${location.il} Eskort`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${location.il} Eskort İlanları | Best Eskort`,
+      description: `${location.il} genelinde teyitli eskort ilanları.`,
+      images: [`${siteUrl}/api/og/site`],
     },
   };
 }
 
-export default async function CityOrModelPage({ params }: Props) {
+export default async function CityPage({ params }: Props) {
   const { il: ilSlug } = await params;
 
-  // 1. Check if it's a VIP Celebrity Model (e.g. /gizem-bagdacicek, /merve-ozdemir)
-  const matchedModel: any = await findVipModel(ilSlug);
-  if (matchedModel) {
-    const formattedModel = {
-      ...matchedModel,
-      _id: matchedModel._id?.toString(),
-      anaFotografUrl: matchedModel.anaFotografUrl || matchedModel.anaFotograf?.url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800',
-      fotograflar: matchedModel.fotograflar && matchedModel.fotograflar.length > 0
-        ? matchedModel.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url))
-        : [matchedModel.anaFotografUrl || matchedModel.anaFotograf?.url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800'],
-      anonimYorumlar: matchedModel.anonimYorumlar?.map((c: any) => ({
-        yazar: c.yazar,
-        yorum: c.yorum,
-        puan: c.puan,
-        createdAt: c.createdAt,
-      })) || [],
-    };
-
-    return <CelebrityModelView model={formattedModel} />;
-  }
-
-  // 2. City Page
   const [location, listings] = await Promise.all([
     getLocationBySlug(ilSlug),
-    getListings({ ilSlug, limit: 30 }),
+    getListings({ ilSlug, limit: 60 }),
   ]);
 
   if (!location) {
@@ -180,10 +124,10 @@ export default async function CityOrModelPage({ params }: Props) {
           {location.il} Eskort İlanları
         </h1>
         <p className="text-xs text-[#8b949e] leading-relaxed max-w-2xl font-medium">
-          {location.il} merkez ve tüm ilçelerindeki doğrulanmış eskort bayan ilanları, bağımsız profiller ve VIP vitrin seçenekleri.
+          {location.il} merkez ve tüm ilçelerindeki doğrulanmış eskort ve escort bayan ilanları, bağımsız profiller ve VIP vitrin seçenekleri.
         </p>
 
-        {/* İlçe Hapları (Desktop & Mobile) */}
+        {/* İlçe Hapları */}
         {location.ilceler && location.ilceler.length > 0 && (
           <div className="flex items-center gap-2 pt-2 overflow-x-auto no-scrollbar py-1">
             {location.ilceler.map((ilce: any) => (
