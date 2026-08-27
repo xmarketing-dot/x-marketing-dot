@@ -18,6 +18,8 @@ const ChatMessageSchema = new Schema<IChatMessage>(
   { timestamps: true }
 );
 
+ChatMessageSchema.index({ threadId: 1, createdAt: 1 });
+
 if (mongoose.models.ChatMessage) {
   delete (mongoose.models as any).ChatMessage;
 }

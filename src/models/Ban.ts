@@ -25,5 +25,8 @@ const BanSchema = new Schema<IBan>(
   { timestamps: true }
 );
 
+BanSchema.index({ aktif: 1, ip: 1 });
+BanSchema.index({ aktif: 1, threadId: 1 });
+
 const BanModel: Model<IBan> = mongoose.models.Ban || mongoose.model<IBan>('Ban', BanSchema);
 export default BanModel;

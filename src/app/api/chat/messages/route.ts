@@ -15,9 +15,20 @@ export async function GET(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const messages = await ChatMessageModel.find({ threadId }).sort({ createdAt: 1 }).lean();
+    const messages = await ChatMessageModel.find({ threadId })
+      .select('_id threadId gonderenTipi mesaj okundu createdAt')
+      .sort({ createdAt: 1 })
+      .limit(300)
+      .lean();
 
-    return NextResponse.json({ messages: JSON.parse(JSON.stringify(messages)) });
+    return NextResponse.json(
+      { messages: JSON.parse(JSON.stringify(messages)) },
+      {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      }
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

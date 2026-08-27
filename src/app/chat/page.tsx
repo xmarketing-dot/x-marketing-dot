@@ -31,7 +31,12 @@ interface Message {
 }
 
 export default function ChatPage() {
-  const [threadId, setThreadId] = useState<string | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('best_eskort_chat_thread_id');
+    }
+    return null;
+  });
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
@@ -67,7 +72,7 @@ export default function ChatPage() {
     };
   }, []);
 
-  // 2. Initialize user thread on mount
+  // 2. Initialize / Validate user thread on mount
   useEffect(() => {
     const initThread = async () => {
       try {
@@ -85,7 +90,7 @@ export default function ChatPage() {
           return;
         }
 
-        if (data.thread?._id) {
+        if (data.thread?._id && data.thread._id !== threadId) {
           setThreadId(data.thread._id);
           localStorage.setItem('best_eskort_chat_thread_id', data.thread._id);
           window.dispatchEvent(new Event('storage'));

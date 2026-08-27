@@ -39,6 +39,9 @@ const ChatThreadSchema = new Schema<IChatThread>(
   { timestamps: true }
 );
 
+ChatThreadSchema.index({ updatedAt: -1 });
+ChatThreadSchema.index({ isBanned: 1, ip: 1 });
+
 if (mongoose.models.ChatThread) {
   delete (mongoose.models as any).ChatThread;
 }
