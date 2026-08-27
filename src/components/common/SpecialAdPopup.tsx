@@ -39,8 +39,11 @@ export default function SpecialAdPopup() {
   const touchEndXRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Don't show in admin portal or chat
+    // Strictly MOBILE-ONLY: Don't show on desktop web, admin portal or chat
     if (pathname?.startsWith('/bms-secure-portal') || pathname === '/chat') {
+      return;
+    }
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
       return;
     }
 
@@ -181,7 +184,7 @@ export default function SpecialAdPopup() {
   return (
     <div 
       onClick={handleClose}
-      className="fixed inset-0 z-[999999] bg-black/85 backdrop-blur-md flex items-center justify-center p-3.5 sm:p-4 animate-in fade-in duration-300 select-none overflow-y-auto"
+      className="md:hidden fixed inset-0 z-[999999] bg-black/85 backdrop-blur-md flex items-center justify-center p-3.5 sm:p-4 animate-in fade-in duration-300 select-none overflow-y-auto"
     >
       <div 
         onClick={(e) => e.stopPropagation()}

@@ -374,13 +374,13 @@ export default function MobileShell({ children }: MobileShellProps) {
         <main className="flex-1 overflow-y-auto pb-8 no-scrollbar w-full">
           {children}
         </main>
+
+        {/* Mobile-Only Sponsored VIP Ad Popup */}
+        <SpecialAdPopup />
       </div>
 
       {/* Global Real-Time Chat Notifications */}
       <GlobalChatNotification />
-
-      {/* Global Sponsored VIP Ad Popup */}
-      <SpecialAdPopup />
 
     </div>
   );
