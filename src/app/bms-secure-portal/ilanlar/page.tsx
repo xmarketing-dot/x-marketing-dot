@@ -837,10 +837,9 @@ export default function AdminListingsPage() {
                     onChange={(e) => setEditForm({ ...editForm, rozet: e.target.value })}
                     className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   >
-                    <option value="ultravip">💎 Ultra VIP</option>
-                    <option value="vip">⭐ VIP İlan</option>
-                    <option value="gold">🥇 Gold İlan</option>
-                    <option value="silver">🥈 Silver İlan</option>
+                    <option value="vip">👑 VIP Vitrin (En Üst Sıra)</option>
+                    <option value="gold">🥇 Gold Vitrin</option>
+                    <option value="silver">🥈 Silver Standart</option>
                   </select>
                 </label>
 

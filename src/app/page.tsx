@@ -102,7 +102,8 @@ export default async function HomePage() {
   const displayVip = vipListings.length > 0 ? vipListings : allSortedListings.slice(0, 4);
 
   // Dynamic Selected Showcase from Admin Homepage Config
-  const selectedShowcaseIds = homepageConfig?.selectedShowcaseIds || [];
+  const rawSliderIds = homepageConfig?.sliderIlanIds || homepageConfig?.selectedShowcaseIds || [];
+  const selectedShowcaseIds: string[] = rawSliderIds.map((id: any) => (id?.toString ? id.toString() : String(id)));
   const dynamicShowcaseListings = selectedShowcaseIds.length > 0
     ? selectedShowcaseIds
         .map((id: string) => allSortedListings.find((l: any) => l._id.toString() === id))

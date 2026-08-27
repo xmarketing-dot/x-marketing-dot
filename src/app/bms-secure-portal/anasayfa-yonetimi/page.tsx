@@ -48,7 +48,8 @@ export default function AdminHomepageConfigPage() {
         setBannerMetin(data.config.aktifBanner?.metin || '🎉 İlan verin, binlerce kullanıcıya hemen ulaşın!');
         setBannerLink(data.config.aktifBanner?.link || '/ilan-ver');
         setBannerAktif(data.config.aktifBanner?.aktif ?? true);
-        setSelectedListingIds(data.config.sliderIlanIds || []);
+        const rawIds = data.config.sliderIlanIds || [];
+        setSelectedListingIds(rawIds.map((id: any) => (id?._id ? id._id.toString() : (id?.toString ? id.toString() : String(id)))));
       }
       if (data.allListings) {
         setAllListings(data.allListings);
@@ -66,11 +67,11 @@ export default function AdminHomepageConfigPage() {
     );
   };
 
-  const handleSelectAllUltraVip = () => {
-    const ultraVipIds = allListings
-      .filter((l) => l.rozet === 'ultravip')
+  const handleSelectAllVip = () => {
+    const vipIds = allListings
+      .filter((l) => l.rozet === 'vip' || l.rozet === 'ultravip')
       .map((l) => l._id.toString());
-    setSelectedListingIds(ultraVipIds);
+    setSelectedListingIds(vipIds);
   };
 
   const handleClearAll = () => {
@@ -180,10 +181,10 @@ export default function AdminHomepageConfigPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleSelectAllUltraVip}
+                  onClick={handleSelectAllVip}
                   className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/40 transition-all"
                 >
-                  Tüm Ultra VIP'leri Seç
+                  Tüm VIP İlanları Seç
                 </button>
                 <button
                   type="button"
