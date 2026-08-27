@@ -8,12 +8,11 @@ export interface ITickerItem {
 
 export interface IOzelIlanReklam {
   aktif: boolean;
-  baslik: string;
-  spotMetin: string;
-  rozet: string;
-  resimUrl: string;
-  hedefUrl: string;
+  ilanId?: mongoose.Types.ObjectId | null;
   gecikmeSaniye: number;
+  baslik?: string;
+  spotMetin?: string;
+  rozet?: string;
 }
 
 export interface IHomepageConfig extends Document {
@@ -47,12 +46,11 @@ const TickerItemSchema = new Schema<ITickerItem>(
 const OzelIlanReklamSchema = new Schema<IOzelIlanReklam>(
   {
     aktif: { type: Boolean, default: false },
+    ilanId: { type: Schema.Types.ObjectId, ref: 'Listing', default: null },
+    gecikmeSaniye: { type: Number, default: 4 },
     baslik: { type: String, default: '👑 GÜNÜN ÖZEL VIP İLANI' },
     spotMetin: { type: String, default: 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı' },
     rozet: { type: String, default: '🔥 SPONSORLU ÖZEL İLAN' },
-    resimUrl: { type: String, default: 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800' },
-    hedefUrl: { type: String, default: '/ilan-ver' },
-    gecikmeSaniye: { type: Number, default: 4 },
   },
   { _id: false }
 );
@@ -75,12 +73,11 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
       type: OzelIlanReklamSchema,
       default: () => ({
         aktif: false,
+        ilanId: null,
+        gecikmeSaniye: 4,
         baslik: '👑 GÜNÜN ÖZEL VIP İLANI',
         spotMetin: 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı',
         rozet: '🔥 SPONSORLU ÖZEL İLAN',
-        resimUrl: 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800',
-        hedefUrl: '/ilan-ver',
-        gecikmeSaniye: 4,
       }),
     },
     duyurular: {

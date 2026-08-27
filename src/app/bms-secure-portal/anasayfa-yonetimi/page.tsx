@@ -35,6 +35,7 @@ interface TickerItem {
 export default function AdminHomepageConfigPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingAd, setSavingAd] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Form states
@@ -55,11 +56,8 @@ export default function AdminHomepageConfigPage() {
 
   // Special Sponsored Ad Popup State
   const [ozelAdAktif, setOzelAdAktif] = useState(false);
-  const [ozelAdBaslik, setOzelAdBaslik] = useState('👑 GÜNÜN ÖZEL VIP İLANI');
-  const [ozelAdSpotMetin, setOzelAdSpotMetin] = useState('Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı');
+  const [ozelAdIlanId, setOzelAdIlanId] = useState<string | null>(null);
   const [ozelAdRozet, setOzelAdRozet] = useState('🔥 SPONSORLU ÖZEL İLAN');
-  const [ozelAdResimUrl, setOzelAdResimUrl] = useState('https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800');
-  const [ozelAdHedefUrl, setOzelAdHedefUrl] = useState('/ilan-ver');
   const [ozelAdGecikmeSaniye, setOzelAdGecikmeSaniye] = useState(4);
 
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
@@ -85,11 +83,8 @@ export default function AdminHomepageConfigPage() {
         
         if (data.config.ozelIlanReklam) {
           setOzelAdAktif(data.config.ozelIlanReklam.aktif ?? false);
-          setOzelAdBaslik(data.config.ozelIlanReklam.baslik || '👑 GÜNÜN ÖZEL VIP İLANI');
-          setOzelAdSpotMetin(data.config.ozelIlanReklam.spotMetin || 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı');
+          setOzelAdIlanId(data.config.ozelIlanReklam.ilanId ? data.config.ozelIlanReklam.ilanId.toString() : null);
           setOzelAdRozet(data.config.ozelIlanReklam.rozet || '🔥 SPONSORLU ÖZEL İLAN');
-          setOzelAdResimUrl(data.config.ozelIlanReklam.resimUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800');
-          setOzelAdHedefUrl(data.config.ozelIlanReklam.hedefUrl || '/ilan-ver');
           setOzelAdGecikmeSaniye(data.config.ozelIlanReklam.gecikmeSaniye || 4);
         }
 
@@ -142,15 +137,14 @@ export default function AdminHomepageConfigPage() {
     setDuyurular((prev) => prev.filter((_, idx) => idx !== index));
   };
 
-  // 1-Click Pick Listing for Special Ad Popup
-  const handleSelectForSpecialAd = (listing: any) => {
+  // 1-Click Select Listing for Special Ad Popup
+  const handleSelectForSpecialAd = (listingId: string) => {
+    setOzelAdIlanId(listingId);
     setOzelAdAktif(true);
-    setOzelAdBaslik(`👑 ${listing.baslik}`);
-    setOzelAdSpotMetin(`${listing.ilSlug?.toUpperCase()} / ${listing.ilceSlug?.toUpperCase()} Doğrulanmış VIP Profil & WhatsApp`);
-    setOzelAdRozet('🔥 GÜNÜN ÖZEL SPONSORU');
-    setOzelAdResimUrl(listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || ozelAdResimUrl);
-    setOzelAdHedefUrl(`/ilan/${listing.slug}`);
-    setMessage({ type: 'success', text: `"${listing.baslik}" Özel İlan Popup olarak seçildi! Kaydetmeyi unutmayın.` });
+    const item = allListings.find((l) => l._id.toString() === listingId);
+    if (item) {
+      setMessage({ type: 'success', text: `"${item.baslik}" ilanı Özel Reklam Popup olarak seçildi! Kaydet butonuna basmayı unutmayın.` });
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -173,11 +167,8 @@ export default function AdminHomepageConfigPage() {
           sliderIlanIds: selectedListingIds,
           ozelIlanReklam: {
             aktif: ozelAdAktif,
-            baslik: ozelAdBaslik,
-            spotMetin: ozelAdSpotMetin,
+            ilanId: ozelAdIlanId || null,
             rozet: ozelAdRozet,
-            resimUrl: ozelAdResimUrl,
-            hedefUrl: ozelAdHedefUrl,
             gecikmeSaniye: Number(ozelAdGecikmeSaniye) || 4,
           },
         }),
@@ -185,7 +176,7 @@ export default function AdminHomepageConfigPage() {
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setMessage({ type: 'success', text: `Anasayfa vitrini, üst duyurular ve Özel İlan Reklam Popup başarıyla kaydedildi!` });
+        setMessage({ type: 'success', text: `Anasayfa vitrini ve Özel Reklam Popup başarıyla kaydedildi!` });
       } else {
         setMessage({ type: 'error', text: data.error || 'Ayarlar kaydedilemedi.' });
       }
@@ -195,6 +186,46 @@ export default function AdminHomepageConfigPage() {
       setSaving(false);
     }
   };
+
+  const handleSaveSpecialAdOnly = async () => {
+    setMessage(null);
+    setSavingAd(true);
+    try {
+      const res = await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          heroBaslik,
+          heroAltBaslik,
+          bannerMetin,
+          bannerLink,
+          bannerRozet,
+          bannerAktif,
+          duyurular,
+          sliderIlanIds: selectedListingIds,
+          ozelIlanReklam: {
+            aktif: ozelAdAktif,
+            ilanId: ozelAdIlanId || null,
+            rozet: ozelAdRozet,
+            gecikmeSaniye: Number(ozelAdGecikmeSaniye) || 4,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setMessage({ type: 'success', text: `🚀 Özel İlan Popup Reklamı anında kaydedildi ve yayına alındı!` });
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Reklam kaydedilemedi.' });
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: 'Hata oluştu.' });
+    } finally {
+      setSavingAd(false);
+    }
+  };
+
+  const selectedAdListing = allListings.find((l) => l._id.toString() === ozelAdIlanId);
 
   const filteredListings = allListings.filter((l) => {
     if (!searchTerm) return true;
@@ -217,7 +248,7 @@ export default function AdminHomepageConfigPage() {
           </div>
           <div className="flex flex-col">
             <h1 className="font-black text-2xl text-white font-heading">Anasayfa &amp; Reklam Yönetimi</h1>
-            <p className="text-xs text-[#8b949e]">Özel sponsorlu popup reklam, vitrin ilanları, duyuru bandı ve sloganlar.</p>
+            <p className="text-xs text-[#8b949e]">Özel sponsorlu popup reklam, vitrin ilanları ve duyuru bandı.</p>
           </div>
         </div>
 
@@ -247,10 +278,10 @@ export default function AdminHomepageConfigPage() {
       ) : (
         <form onSubmit={handleSave} className="flex flex-col gap-8">
 
-          {/* ── 1. ÖZEL İLAN POPUP REKLAM YÖNETİMİ (SPONSORED VIP POPUP) ──────────────── */}
+          {/* ── 1. ÖZEL İLAN POPUP REKLAM YÖNETİMİ (SIFIR MANUEL URL, DİREKT İLAN BAĞLANTISI) ──────────────── */}
           <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-b from-[#1c1813] to-[#161b22] border-2 border-amber-500/60 shadow-2xl flex flex-col gap-6">
             
-            <div className="flex items-center justify-between border-b border-amber-500/30 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-amber-500/30 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30">
                   <Flame className="w-6 h-6 fill-slate-950" />
@@ -259,17 +290,17 @@ export default function AdminHomepageConfigPage() {
                   <h2 className="font-black text-lg text-white font-heading flex items-center gap-2">
                     <span>👑 Özel Sponsorlu İlan &amp; Popup Reklam</span>
                     <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase">
-                      YÜKSEK DÖNÜŞÜM
+                      OTOMATİK LİNK &amp; FOTO
                     </span>
                   </h2>
                   <p className="text-xs text-[#8b949e]">
-                    Kullanıcı siteye girdikten 3-5 saniye sonra veya kaydırdığında dikkat çekici lüks popup reklam olarak açılır.
+                    Herhangi bir ilanı seçin; fotoğrafları, slug linki ve WhatsApp hattı popup'a otomatik bağlanır.
                   </p>
                 </div>
               </div>
 
               {/* Aktif / Pasif Toggle */}
-              <div className="flex items-center gap-3 bg-[#0d1117] p-2 px-3 rounded-2xl border border-[#30363d]">
+              <div className="flex items-center gap-3 bg-[#0d1117] p-2 px-3 rounded-2xl border border-[#30363d] self-start sm:self-auto">
                 <span className="text-xs font-bold text-white">Popup Durumu:</span>
                 <button
                   type="button"
@@ -288,29 +319,26 @@ export default function AdminHomepageConfigPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
-              {/* Form Alanları */}
+              {/* Sol: Ayarlar ve Seçim */}
               <div className="flex flex-col gap-4">
                 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-[#8b949e]">Reklam Başlığı (Göz Alıcı Renk ve Font ile Çıkar)</label>
-                  <input
-                    type="text"
-                    value={ozelAdBaslik}
-                    onChange={(e) => setOzelAdBaslik(e.target.value)}
-                    placeholder="👑 GÜNÜN ÖZEL VIP İLANI"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-bold"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-[#8b949e]">Spot Açıklama / Slogan</label>
-                  <input
-                    type="text"
-                    value={ozelAdSpotMetin}
-                    onChange={(e) => setOzelAdSpotMetin(e.target.value)}
-                    placeholder="Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
-                  />
+                  <label className="text-xs font-bold text-[#8b949e]">Popup'ta Gösterilecek İlanı Seçin</label>
+                  <select
+                    value={ozelAdIlanId || ''}
+                    onChange={(e) => {
+                      setOzelAdIlanId(e.target.value || null);
+                      if (e.target.value) setOzelAdAktif(true);
+                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-bold"
+                  >
+                    <option value="">-- İlan Seçilmedi --</option>
+                    {allListings.map((l) => (
+                      <option key={l._id} value={l._id}>
+                        {l.baslik} ({l.ilSlug?.toUpperCase()} - {l.rozet?.toUpperCase() || 'STANDART'})
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -338,68 +366,99 @@ export default function AdminHomepageConfigPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-[#8b949e]">Görsel URL'si (Fotoğraf)</label>
-                  <input
-                    type="text"
-                    value={ozelAdResimUrl}
-                    onChange={(e) => setOzelAdResimUrl(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-mono"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-[#8b949e]">Tıklanınca Gidilecek Hedef URL</label>
-                  <input
-                    type="text"
-                    value={ozelAdHedefUrl}
-                    onChange={(e) => setOzelAdHedefUrl(e.target.value)}
-                    placeholder="/ilan/ornek-ilan veya /ilan-ver"
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-mono"
-                  />
-                </div>
+                {selectedAdListing && (
+                  <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex items-center gap-3">
+                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                      <Image
+                        src={selectedAdListing.anaFotograf?.url || selectedAdListing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
+                        alt={selectedAdListing.baslik}
+                        fill
+                        sizes="56px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="font-black text-xs text-white truncate font-heading">
+                        {selectedAdListing.baslik}
+                      </span>
+                      <span className="text-[11px] text-amber-400 font-bold mt-0.5">
+                        📍 {selectedAdListing.ilSlug?.toUpperCase()} / {selectedAdListing.ilceSlug?.toUpperCase()}
+                      </span>
+                      <span className="text-[10px] text-emerald-400 font-mono">
+                        🔗 /ilan/{selectedAdListing.slug}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
               </div>
 
-              {/* Canlı Önizleme Kartı */}
+              {/* Sağ: Canlı Önizleme */}
               <div className="flex flex-col items-center justify-center p-4 rounded-3xl bg-[#0d1117] border border-[#30363d]">
                 <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading mb-3">
                   📱 Ziyaretçiye Açılacak Popup Önizlemesi
                 </span>
 
-                <div className="w-full max-w-[280px] rounded-3xl overflow-hidden bg-[#161b22] border-2 border-amber-400 shadow-[0_0_40px_rgba(245,158,11,0.4)] flex flex-col text-center">
-                  <div className="relative aspect-[4/3] w-full bg-[#0d1117]">
-                    <Image
-                      src={ozelAdResimUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800'}
-                      alt="Reklam Önizleme"
-                      fill
-                      sizes="280px"
-                      className="object-cover"
-                    />
-                    <div className="absolute top-2 left-2">
-                      <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[8px] uppercase">
-                        {ozelAdRozet}
-                      </span>
+                {selectedAdListing ? (
+                  <div className="w-full max-w-[260px] rounded-3xl overflow-hidden bg-[#161b22] border-2 border-amber-400 shadow-[0_0_40px_rgba(245,158,11,0.4)] flex flex-col text-center">
+                    <div className="relative aspect-[3/4] w-full bg-[#0d1117]">
+                      <Image
+                        src={selectedAdListing.anaFotograf?.url || selectedAdListing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800'}
+                        alt="Reklam Önizleme"
+                        fill
+                        sizes="260px"
+                        className="object-cover"
+                      />
+                      <div className="absolute top-2 left-2">
+                        <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[8px] uppercase">
+                          {ozelAdRozet}
+                        </span>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="p-3.5 flex flex-col gap-2">
-                    <h3 className="font-extrabold text-xs text-amber-300 font-heading leading-tight">
-                      {ozelAdBaslik}
-                    </h3>
-                    <p className="text-[10px] text-[#8b949e] line-clamp-2">
-                      {ozelAdSpotMetin}
-                    </p>
-                    <div className="py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 font-black text-[10px] font-heading shadow-md flex items-center justify-center gap-1">
-                      <span>Özel İlanı İncele &amp; Ulaş</span>
-                      <ChevronRight className="w-3 h-3 stroke-[3]" />
+                    <div className="p-3.5 flex flex-col gap-2">
+                      <div className="flex items-center justify-center gap-1 text-[10px] text-amber-400 font-bold">
+                        <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
+                        <span>{selectedAdListing.ilSlug?.toUpperCase()} / {selectedAdListing.ilceSlug?.toUpperCase()}</span>
+                      </div>
+                      <h3 className="font-extrabold text-xs text-white font-heading leading-tight truncate">
+                        {selectedAdListing.baslik}
+                      </h3>
+                      <div className="py-2 px-3 rounded-xl bg-[#25D366] text-slate-950 font-black text-[10px] font-heading shadow-md flex items-center justify-center gap-1">
+                        <span>WhatsApp ile Hemen Yaz</span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="p-8 text-center text-xs text-[#8b949e]">
+                    Yukarıdan veya aşağıdaki listeden bir ilan seçtiğinizde önizleme burada belirecektir.
+                  </div>
+                )}
 
               </div>
 
+            </div>
+
+            {/* Bağımsız Anında Yayına Alma Butonu */}
+            <div className="flex items-center justify-end border-t border-amber-500/20 pt-4">
+              <button
+                type="button"
+                onClick={handleSaveSpecialAdOnly}
+                disabled={savingAd}
+                className="py-3 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/30 flex items-center gap-2 active:scale-95 transition-all font-heading"
+              >
+                {savingAd ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Kaydediliyor...</span>
+                  </>
+                ) : (
+                  <>
+                    <Flame className="w-4 h-4 fill-slate-950" />
+                    <span>🚀 Popup Reklamı Anında Kaydet &amp; Yayına Al</span>
+                  </>
+                )}
+              </button>
             </div>
 
           </div>
@@ -518,15 +577,18 @@ export default function AdminHomepageConfigPage() {
             {/* İlan Seçim Kartları Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[480px] overflow-y-auto pr-1">
               {filteredListings.map((item) => {
-                const isSelected = selectedListingIds.includes(item._id.toString());
+                const isSelectedInVitrin = selectedListingIds.includes(item._id.toString());
+                const isSelectedInPopup = ozelAdIlanId === item._id.toString();
                 const isVip = item.rozet === 'vip' || item.rozet === 'ultravip';
 
                 return (
                   <div
                     key={item._id}
                     className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2.5 select-none ${
-                      isSelected
-                        ? 'bg-amber-500/15 border-amber-400 shadow-md shadow-amber-500/20'
+                      isSelectedInPopup
+                        ? 'bg-amber-500/20 border-amber-400 ring-2 ring-amber-400/40 shadow-lg'
+                        : isSelectedInVitrin
+                        ? 'bg-amber-500/10 border-amber-500/40'
                         : 'bg-[#0d1117] border-[#30363d] hover:border-[#484f58]'
                     }`}
                   >
@@ -536,7 +598,7 @@ export default function AdminHomepageConfigPage() {
                     >
                       {/* Checkbox Icon */}
                       <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-black shrink-0 transition-all ${
-                        isSelected
+                        isSelectedInVitrin
                           ? 'bg-amber-500 text-slate-950 shadow-sm'
                           : 'bg-[#161b22] border border-[#30363d] text-transparent'
                       }`}>
@@ -575,11 +637,15 @@ export default function AdminHomepageConfigPage() {
                     {/* Tek Tıkla Özel Popup Reklam Yap Butonu */}
                     <button
                       type="button"
-                      onClick={() => handleSelectForSpecialAd(item)}
-                      className="w-full py-1.5 px-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/25 text-amber-400 font-bold text-[10px] border border-amber-500/20 flex items-center justify-center gap-1 active:scale-95 transition-all font-heading"
+                      onClick={() => handleSelectForSpecialAd(item._id.toString())}
+                      className={`w-full py-1.5 px-2 rounded-xl font-bold text-[10px] border flex items-center justify-center gap-1 active:scale-95 transition-all font-heading ${
+                        isSelectedInPopup
+                          ? 'bg-emerald-500 text-slate-950 border-emerald-400'
+                          : 'bg-amber-500/10 hover:bg-amber-500/25 text-amber-400 border-amber-500/20'
+                      }`}
                     >
-                      <Flame className="w-3 h-3 text-amber-400" />
-                      <span>Bu İlanı Özel Popup Reklam Yap</span>
+                      <Flame className="w-3 h-3" />
+                      <span>{isSelectedInPopup ? '✓ Bu İlan Popup Reklamda' : 'Bu İlanı Özel Popup Reklam Yap'}</span>
                     </button>
 
                   </div>
