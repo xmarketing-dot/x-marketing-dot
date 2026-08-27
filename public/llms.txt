@@ -1,0 +1,26 @@
+# Best Eskort — Türkiye VIP İlan & Bölgesel Rehber Platformu
+
+> Best Eskort, Türkiye genelinde 81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları, VIP vitrin profilleri ve doğrudan WhatsApp iletişim hatlarını sunan güvenilir bölgesel rehber platformudur.
+
+## Temel Sayfalar ve Bölümler
+
+- [Anasayfa & Vitrin](https://besteskort.devs.surf): Günün öne çıkan VIP ilanları ve bölgesel vitrin akışı.
+- [81 İl Listesi](https://besteskort.devs.surf/sehirler): Türkiye geneli tüm il ve ilçe rehberi.
+- [VIP İlanlar](https://besteskort.devs.surf/kategori/vip): Doğrulanmış VIP kategorisindeki ilanlar.
+- [Gold İlanlar](https://besteskort.devs.surf/kategori/gold): Gold üye ve vitrin ilanları.
+- [Silver İlanlar](https://besteskort.devs.surf/kategori/silver): Güncel bağımsız ilanlar.
+- [İlan Ver](https://besteskort.devs.surf/ilan-ver): Hızlı ve güvenli ilan yayınlama paneli.
+
+## Popüler Şehir Rehberleri
+
+- [İstanbul Eskort İlanları](https://besteskort.devs.surf/istanbul): Kadıköy, Şişli, Beylikdüzü, Bakırköy ve tüm ilçeler.
+- [Ankara Eskort İlanları](https://besteskort.devs.surf/ankara): Çankaya, Kızılay, Eryaman, Etimesgut ve çevre ilçeler.
+- [İzmir Eskort İlanları](https://besteskort.devs.surf/izmir): Alsancak, Karşıyaka, Bornova, Buca, Çeşme.
+- [Bursa Eskort İlanları](https://besteskort.devs.surf/bursa): Nilüfer, Osmangazi, Yıldırım.
+- [Antalya Eskort İlanları](https://besteskort.devs.surf/antalya): Muratpaşa, Konyaaltı, Alanya.
+
+## Güvenlik ve Doğrulama Standartları
+
+- Tüm profiller görsel doğrulama ve telefon teyit sürecinden geçirilir.
+- Kullanıcılar ve ilan verenler doğrudan WhatsApp iletişim hattı üzerinden güvenli iletişim kurar.
+- KVKK ve gizlilik standartlarına tam uyum sağlanır.

@@ -5,6 +5,7 @@ import './globals.css';
 import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
 import { Analytics } from '@vercel/analytics/next';
+import React, { Suspense } from 'react';
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'] });
 
@@ -16,8 +17,10 @@ export const viewport: Viewport = {
   interactiveWidget: 'resizes-content',
 };
 
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
-  metadataBase: new URL(getSiteUrl()),
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
     template: '%s | Best Eskort',
@@ -32,6 +35,7 @@ export const metadata: Metadata = {
     'escort bayan',
     'bağımsız eskort',
     'vip eskort',
+    'vip escort',
     'türkiye eskort',
     'türkiye escort',
     'istanbul eskort',
@@ -41,6 +45,7 @@ export const metadata: Metadata = {
     'izmir eskort',
     'izmir escort',
     'antalya eskort',
+    'bursa eskort',
     'whatsapp eskort',
     'eskort numaraları',
   ],
@@ -66,7 +71,7 @@ export const metadata: Metadata = {
     description: 'Türkiye genelinde 81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları. WhatsApp ile tek tıkla iletişim.',
     images: [
       {
-        url: `${getSiteUrl()}/api/og/site`,
+        url: `${siteUrl}/api/og/site`,
         width: 1200,
         height: 630,
         alt: 'Best Eskort Logo & Vitrin',
@@ -77,10 +82,16 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
     description: 'Türkiye genelinde 81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları.',
-    images: [`${getSiteUrl()}/api/og/site`],
+    images: [`${siteUrl}/api/og/site`],
   },
   alternates: {
-    canonical: getSiteUrl(),
+    canonical: siteUrl,
+  },
+  other: {
+    'geo.region': 'TR',
+    'geo.placename': 'Turkey',
+    'geo.position': '39.9334;32.8597',
+    'ICBM': '39.9334, 32.8597',
   },
   icons: {
     icon: '/icon',
@@ -88,7 +99,31 @@ export const metadata: Metadata = {
   },
 };
 
-import React, { Suspense } from 'react';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${siteUrl}/#website`,
+      url: siteUrl,
+      name: 'Best Eskort',
+      description: 'Türkiye\'nin En Güvenilir Eskort İlan Platformu',
+      inLanguage: 'tr-TR',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${siteUrl}/ara?q={search_term_string}`,
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'Organization',
+      '@id': `${siteUrl}/#organization`,
+      name: 'Best Eskort',
+      url: siteUrl,
+      logo: `${siteUrl}/api/og/site`,
+    },
+  ],
+};
 
 export default function RootLayout({
   children,
@@ -97,6 +132,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
         <Suspense fallback={null}>
           <AnalyticsTracker />
@@ -107,4 +148,3 @@ export default function RootLayout({
     </html>
   );
 }
-
