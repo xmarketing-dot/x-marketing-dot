@@ -7,6 +7,7 @@ import { LayoutDashboard } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 import HeaderTicker from '@/components/common/HeaderTicker';
 import GlobalChatNotification from '@/components/common/GlobalChatNotification';
+import SpecialAdPopup from '@/components/common/SpecialAdPopup';
 
 interface MobileShellProps {
   children: React.ReactNode;
@@ -118,6 +119,9 @@ export default function MobileShell({ children }: MobileShellProps) {
 
       {/* Global Real-Time Chat Notifications */}
       <GlobalChatNotification />
+
+      {/* Global Sponsored VIP Ad Popup */}
+      <SpecialAdPopup />
     </div>
   );
 }

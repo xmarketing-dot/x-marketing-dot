@@ -6,6 +6,16 @@ export interface ITickerItem {
   link: string;
 }
 
+export interface IOzelIlanReklam {
+  aktif: boolean;
+  baslik: string;
+  spotMetin: string;
+  rozet: string;
+  resimUrl: string;
+  hedefUrl: string;
+  gecikmeSaniye: number;
+}
+
 export interface IHomepageConfig extends Document {
   key: string;
   hero: {
@@ -19,6 +29,7 @@ export interface IHomepageConfig extends Document {
     link?: string;
     rozet?: string;
   };
+  ozelIlanReklam: IOzelIlanReklam;
   duyurular: ITickerItem[];
   sliderIlanIds: mongoose.Types.ObjectId[];
   oneCikanKategoriler: mongoose.Types.ObjectId[];
@@ -29,6 +40,19 @@ const TickerItemSchema = new Schema<ITickerItem>(
     badge: { type: String, default: '👑 VIP VİTRİN' },
     text: { type: String, required: true },
     link: { type: String, default: '/ilan-ver' },
+  },
+  { _id: false }
+);
+
+const OzelIlanReklamSchema = new Schema<IOzelIlanReklam>(
+  {
+    aktif: { type: Boolean, default: false },
+    baslik: { type: String, default: '👑 GÜNÜN ÖZEL VIP İLANI' },
+    spotMetin: { type: String, default: 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı' },
+    rozet: { type: String, default: '🔥 SPONSORLU ÖZEL İLAN' },
+    resimUrl: { type: String, default: 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800' },
+    hedefUrl: { type: String, default: '/ilan-ver' },
+    gecikmeSaniye: { type: Number, default: 4 },
   },
   { _id: false }
 );
@@ -46,6 +70,18 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
       metin: { type: String, default: '🎉 İlan verin, WhatsApp ile müşterilere anında ulaşın!' },
       link: { type: String, default: '/ilan-ver' },
       rozet: { type: String, default: '👑 VIP DUYURU' },
+    },
+    ozelIlanReklam: {
+      type: OzelIlanReklamSchema,
+      default: () => ({
+        aktif: false,
+        baslik: '👑 GÜNÜN ÖZEL VIP İLANI',
+        spotMetin: 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı',
+        rozet: '🔥 SPONSORLU ÖZEL İLAN',
+        resimUrl: 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800',
+        hedefUrl: '/ilan-ver',
+        gecikmeSaniye: 4,
+      }),
     },
     duyurular: {
       type: [TickerItemSchema],
