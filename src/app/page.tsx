@@ -202,8 +202,8 @@ export default async function HomePage() {
           </span>
         </div>
 
-        {/* 3 SÜTUNLU SIRALI DİKEY GRID (MOBİLDE 2 / DESKTOPTA 3 SÜTUN) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {/* YAN YANA 2'Lİ DÜZENLİ LİSTE GRİDİ */}
+        <div className="grid grid-cols-2 gap-3">
           {gridListings.map((listing: any) => (
             <CompactListingCard key={listing._id} listing={listing} />
           ))}

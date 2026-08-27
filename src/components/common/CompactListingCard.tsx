@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, ShieldCheck, ChevronRight, Crown, Star, Award, Medal } from 'lucide-react';
+import { MapPin, ShieldCheck, ChevronRight, Crown, Award, Medal } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 
@@ -23,12 +23,69 @@ interface CompactListingCardProps {
 
 export default function CompactListingCard({ listing }: CompactListingCardProps) {
   const rozet = listing.rozet || 'silver';
-  const isUltraVip = rozet === 'ultravip';
-  const isVip = rozet === 'vip';
+  const isVip = rozet === 'vip' || rozet === 'ultravip';
   const isGold = rozet === 'gold';
   const isSilver = rozet === 'silver' || rozet === 'standart';
 
-  const coverUrl = listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=600';
+  // Extract all unique images
+  const allImages = React.useMemo(() => {
+    const list: string[] = [];
+    if (listing.anaFotograf?.url) list.push(listing.anaFotograf.url);
+    if (Array.isArray(listing.fotograflar)) {
+      listing.fotograflar.forEach((f) => {
+        if (f?.url && !list.includes(f.url)) list.push(f.url);
+      });
+    }
+    if (list.length === 0) {
+      list.push('https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=600');
+    }
+    return list;
+  }, [listing.anaFotograf, listing.fotograflar]);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchEndXRef = useRef<number | null>(null);
+
+  // Auto-slide images periodically if multiple images exist
+  useEffect(() => {
+    if (allImages.length <= 1) return;
+
+    // Slight staggered delay based on listing slug/id hash
+    const hash = (listing.slug || listing._id || 'a').charCodeAt(0);
+    const intervalTime = 3200 + (hash % 1000);
+
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % allImages.length);
+    }, intervalTime);
+
+    return () => clearInterval(timer);
+  }, [allImages.length, listing.slug, listing._id]);
+
+  // Touch Swipe Handlers for Mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndXRef.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartXRef.current === null || touchEndXRef.current === null) return;
+    const distance = touchStartXRef.current - touchEndXRef.current;
+    const minSwipeDistance = 40;
+
+    if (distance > minSwipeDistance) {
+      // Swiped Left -> Next Photo
+      setCurrentIndex((prev) => (prev + 1) % allImages.length);
+    } else if (distance < -minSwipeDistance) {
+      // Swiped Right -> Prev Photo
+      setCurrentIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+    }
+
+    touchStartXRef.current = null;
+    touchEndXRef.current = null;
+  };
 
   const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
   const message = encodeURIComponent(`Merhaba, "${listing.baslik}" ilanınız hakkında bilgi almak istiyorum.`);
@@ -46,29 +103,45 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
 
   return (
     <div
-      className={`group relative rounded-2xl overflow-hidden bg-[#161b22] border transition-all duration-300 flex flex-col justify-between shadow-lg hover:shadow-2xl ${
-        isUltraVip
-          ? 'border-amber-500/70 hover:border-amber-400 ring-1 ring-amber-500/30'
-          : isVip
-          ? 'border-purple-500/60 hover:border-purple-400 ring-1 ring-purple-500/20'
+      className={`group relative rounded-2xl overflow-hidden bg-[#161b22] border transition-all duration-300 flex flex-col justify-between shadow-md hover:shadow-xl ${
+        isVip
+          ? 'border-amber-500/80 hover:border-amber-400 shadow-amber-500/10'
           : isGold
-          ? 'border-amber-600/50 hover:border-amber-500'
+          ? 'border-amber-600/60 hover:border-amber-500'
           : 'border-[#30363d] hover:border-[#484f58]'
       }`}
     >
-      {/* ── 1. FOTOĞRAF ALANI ──────────────── */}
-      <Link href={`/ilan/${listing.slug}`} className="relative aspect-[3/4] w-full overflow-hidden bg-[#0d1117] block">
-        <Image
-          src={coverUrl}
-          alt={listing.baslik}
-          fill
-          sizes="(max-width: 640px) 50vw, 33vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-100"
-        />
-        {/* Üst Rozet & Teyitli Rozeti */}
-        <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between">
+      {/* ── 1. FOTOĞRAF ALANI (Otomatik Kayan & Mobilde Kaydırılabilir Slider) ──────────────── */}
+      <div 
+        className="relative aspect-[3/4] w-full overflow-hidden bg-[#0d1117] select-none"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <Link href={`/ilan/${listing.slug}`} className="relative w-full h-full block">
+          {allImages.map((imgUrl, idx) => (
+            <div
+              key={idx}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              <Image
+                src={imgUrl}
+                alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
+                fill
+                sizes="(max-width: 640px) 50vw, 300px"
+                className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-100"
+                priority={idx === 0}
+              />
+            </div>
+          ))}
+        </Link>
+
+        {/* Üst Rozetler */}
+        <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between pointer-events-none">
           <div>
-            {(isVip || isUltraVip) && (
+            {isVip && (
               <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 font-black text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
                 <Crown className="w-2.5 h-2.5 fill-slate-950" />
                 <span>VIP</span>
@@ -94,15 +167,31 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
           </span>
         </div>
 
-        {/* Alt Konum Etiketi */}
-        <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-sm text-amber-400 text-[10px] font-bold capitalize">
-          <MapPin className="w-2.5 h-2.5 text-amber-400" />
-          <span className="truncate max-w-[90px]">{listing.ilSlug} / {listing.ilceSlug}</span>
-        </div>
-      </Link>
+        {/* Fotoğraf Nokta Göstergeleri (Slide Dots) */}
+        {allImages.length > 1 && (
+          <div className="absolute bottom-7 left-0 right-0 z-20 flex items-center justify-center gap-1 pointer-events-none">
+            {allImages.map((_, dotIdx) => (
+              <span
+                key={dotIdx}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  dotIdx === currentIndex
+                    ? 'w-4 bg-amber-400 shadow-sm shadow-black'
+                    : 'w-1.5 bg-white/50 backdrop-blur-sm'
+                }`}
+              />
+            ))}
+          </div>
+        )}
 
-      {/* ── 2. BAŞLIK VE AKSİYON ALANI ──────────────── */}
-      <div className="p-2.5 flex flex-col gap-2 justify-between flex-1">
+        {/* Alt Konum Etiketi */}
+        <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-sm text-amber-400 text-[10px] font-bold capitalize border border-amber-400/20">
+          <MapPin className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+          <span className="truncate max-w-[95px]">{listing.ilSlug} / {listing.ilceSlug}</span>
+        </div>
+      </div>
+
+      {/* ── 2. BAŞLIK VE AKSİYON ALANI (Liste Tipi Çerçeveli Düzen) ──────────────── */}
+      <div className="p-2.5 bg-[#161b22] border-t border-[#30363d]/60 flex flex-col gap-2 justify-between flex-1">
         <Link href={`/ilan/${listing.slug}`} className="block">
           <h3 className="font-extrabold text-xs text-white leading-snug font-heading group-hover:text-amber-400 transition-colors line-clamp-2">
             {listing.baslik}
@@ -111,42 +200,28 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
 
         {/* Facebook Style Recommendation Count (Dynamic & Organic) */}
         {(() => {
-          const directLike = (listing as any).likeSayisi;
-          if (typeof directLike === 'number' && directLike > 0) {
-            return (
-              <div className="flex items-center justify-between text-[10px] text-[#8b949e] font-bold">
-                <span className="text-blue-400 flex items-center gap-1 font-heading">
-                  <span>👍</span>
-                  <span>{directLike} Öneri</span>
-                </span>
-                <span className="text-emerald-400 font-mono">● Doğrulandı</span>
-              </div>
-            );
-          }
-
-          // Generate organic, realistic number based on tier + slug hash (50 - 370 range)
           const hash = (listing.slug || listing._id || 'es').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-          const baseLikes = isUltraVip ? 280 + (hash % 91) : isVip ? 190 + (hash % 85) : isGold ? 110 + (hash % 75) : 52 + (hash % 47);
+          const baseLikes = isVip ? 240 + (hash % 95) : isGold ? 120 + (hash % 70) : 55 + (hash % 45);
 
           return (
-            <div className="flex items-center justify-between text-[10px] text-[#8b949e] font-bold">
+            <div className="flex items-center justify-between text-[10px] text-[#8b949e] font-bold border-b border-[#21262d] pb-1.5">
               <span className="text-blue-400 flex items-center gap-1 font-heading">
                 <span>👍</span>
                 <span>{baseLikes} Öneri</span>
               </span>
-              <span className="text-emerald-400 font-mono">● Doğrulandı</span>
+              <span className="text-emerald-400 font-mono text-[9px]">● Doğrulandı</span>
             </div>
           );
         })()}
 
         {/* WhatsApp & Detay Butonları */}
-        <div className="grid grid-cols-2 gap-1.5 pt-1 font-heading">
+        <div className="grid grid-cols-2 gap-1.5 pt-0.5 font-heading">
           <a
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleWaClick}
-            className="py-2 px-1.5 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-[10px] shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1"
+            className="py-2 px-1 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-[10px] shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1"
             title="WhatsApp"
           >
             <OfficialWhatsAppIcon className="w-3 h-3 fill-slate-950 shrink-0" />
@@ -155,7 +230,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
 
           <Link
             href={`/ilan/${listing.slug}`}
-            className="py-2 px-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white font-bold text-[10px] border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-0.5 text-center"
+            className="py-2 px-1 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white font-bold text-[10px] border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-0.5 text-center"
           >
             <span>İncele</span>
             <ChevronRight className="w-3 h-3 text-amber-400 stroke-[3] shrink-0" />
@@ -165,4 +240,3 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     </div>
   );
 }
-

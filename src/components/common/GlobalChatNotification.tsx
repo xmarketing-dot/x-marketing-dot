@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Headphones, MessageSquare, X, ArrowRight } from 'lucide-react';
+import { Headphones, MessageSquare, X, Trash2, ArrowRight } from 'lucide-react';
 
 export default function GlobalChatNotification() {
   const pathname = usePathname();
@@ -10,11 +10,14 @@ export default function GlobalChatNotification() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [latestMessage, setLatestMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [hasStartedChat, setHasStartedChat] = useState(false);
+  const [hasStartedChat, setHasStartedChat] = useState(true);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   // Floating Bubble Position (Draggable)
-  const [position, setPosition] = useState({ x: 20, y: 100 }); // bottom/right offset or absolute
+  const [position, setPosition] = useState({ x: 20, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isOverDropTarget, setIsOverDropTarget] = useState(false);
+
   const dragRef = useRef<{ startX: number; startY: number; initialX: number; initialY: number; hasMoved: boolean }>({
     startX: 0,
     startY: 0,
@@ -48,9 +51,7 @@ export default function GlobalChatNotification() {
 
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
-    } catch (e) {
-      // audio gesture fallback
-    }
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -79,6 +80,7 @@ export default function GlobalChatNotification() {
             setLatestMessage(last.mesaj);
             setUnreadCount((prev) => prev + 1);
             setShowToast(true);
+            setIsDismissed(false); // Re-open on incoming message
             playNotificationSound();
 
             let flash = false;
@@ -93,16 +95,12 @@ export default function GlobalChatNotification() {
               document.title = originalTitle;
             }, 10000);
           }
-        } catch (err) {
-          // Silent
-        }
+        } catch (err) {}
       });
 
       return () => {
         eventSource.close();
       };
-    } else {
-      setHasStartedChat(false);
     }
   }, [isChatPage, pathname]);
 
@@ -111,12 +109,20 @@ export default function GlobalChatNotification() {
     if (typeof window !== 'undefined') {
       setPosition({
         x: window.innerWidth - 76,
-        y: window.innerHeight - 120,
+        y: window.innerHeight - 150,
       });
     }
   }, []);
 
-  // Drag Handlers for Touch & Mouse
+  // Check if position is in bottom drop zone
+  const checkDropZone = (y: number) => {
+    if (typeof window !== 'undefined') {
+      return y > window.innerHeight - 130;
+    }
+    return false;
+  };
+
+  // Drag Handlers for Touch
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     dragRef.current = {
@@ -135,26 +141,34 @@ export default function GlobalChatNotification() {
     const dx = touch.clientX - dragRef.current.startX;
     const dy = touch.clientY - dragRef.current.startY;
 
-    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
       dragRef.current.hasMoved = true;
     }
 
     const maxX = window.innerWidth - 64;
     const maxY = window.innerHeight - 64;
+    const newY = Math.max(10, Math.min(maxY, dragRef.current.initialY + dy));
+    const newX = Math.max(10, Math.min(maxX, dragRef.current.initialX + dx));
 
-    setPosition({
-      x: Math.max(10, Math.min(maxX, dragRef.current.initialX + dx)),
-      y: Math.max(10, Math.min(maxY, dragRef.current.initialY + dy)),
-    });
+    setIsOverDropTarget(checkDropZone(newY));
+
+    setPosition({ x: newX, y: newY });
   };
 
   const handleTouchEnd = () => {
     setIsDragging(false);
+    if (isOverDropTarget) {
+      setIsDismissed(true);
+      setIsOverDropTarget(false);
+      return;
+    }
+
     if (!dragRef.current.hasMoved) {
       router.push('/chat');
     }
   };
 
+  // Drag Handlers for Mouse
   const handleMouseDown = (e: React.MouseEvent) => {
     dragRef.current = {
       startX: e.clientX,
@@ -169,23 +183,31 @@ export default function GlobalChatNotification() {
       const dx = moveEvent.clientX - dragRef.current.startX;
       const dy = moveEvent.clientY - dragRef.current.startY;
 
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
         dragRef.current.hasMoved = true;
       }
 
       const maxX = window.innerWidth - 64;
       const maxY = window.innerHeight - 64;
+      const newY = Math.max(10, Math.min(maxY, dragRef.current.initialY + dy));
+      const newX = Math.max(10, Math.min(maxX, dragRef.current.initialX + dx));
 
-      setPosition({
-        x: Math.max(10, Math.min(maxX, dragRef.current.initialX + dx)),
-        y: Math.max(10, Math.min(maxY, dragRef.current.initialY + dy)),
-      });
+      setIsOverDropTarget(checkDropZone(newY));
+
+      setPosition({ x: newX, y: newY });
     };
 
     const onMouseUp = () => {
       setIsDragging(false);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
+
+      if (checkDropZone(dragRef.current.initialY)) {
+        setIsDismissed(true);
+        setIsOverDropTarget(false);
+        return;
+      }
+
       if (!dragRef.current.hasMoved) {
         router.push('/chat');
       }
@@ -203,7 +225,6 @@ export default function GlobalChatNotification() {
       {showToast && latestMessage && (
         <div className="fixed top-0 left-0 right-0 w-full z-50 animate-in slide-in-from-top duration-200 shadow-[0_15px_50px_rgba(0,0,0,0.95)]">
           <div className="w-full bg-[#161b22] border-b-2 border-amber-400 px-3.5 py-3 flex items-center justify-between gap-3 backdrop-blur-3xl">
-            
             <div 
               onClick={() => {
                 setShowToast(false);
@@ -249,8 +270,24 @@ export default function GlobalChatNotification() {
         </div>
       )}
 
-      {/* ── 2. YALNIZCA CHAT BAŞLATMIŞ KULLANICILAR İÇİN SÜRÜKLENEBİLİR (DRAGGABLE) YUVARLAK CHAT BALONU ──────────────── */}
-      {hasStartedChat && (
+      {/* ── 2. AŞAĞIYA ÇEKİLDİĞİNDE AÇILAN "X KAPAT" HEDEF ALANI (Messenger Stili) ──────────────── */}
+      {isDragging && (
+        <div className="fixed bottom-6 left-0 right-0 mx-auto w-fit z-[99998] flex flex-col items-center gap-1.5 pointer-events-none animate-in fade-in zoom-in-95 duration-200">
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all duration-200 shadow-2xl ${
+            isOverDropTarget 
+              ? 'bg-red-600 border-white scale-125 shadow-red-600/80 text-white' 
+              : 'bg-black/80 border-red-500/60 text-red-400 backdrop-blur-md'
+          }`}>
+            <X className={`w-7 h-7 stroke-[3] transition-transform ${isOverDropTarget ? 'rotate-90 scale-110' : ''}`} />
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider text-white bg-black/80 px-3 py-0.5 rounded-full border border-white/10 font-heading">
+            {isOverDropTarget ? 'Bırak ve Kapat' : 'Kapatmak için aşağı çekin'}
+          </span>
+        </div>
+      )}
+
+      {/* ── 3. SÜRÜKLENEBİLİR VE TEK TIKLA X İLE KAPANABİLİR CHAT BALONU ──────────────── */}
+      {!isDismissed && (
         <div
           style={{
             position: 'fixed',
@@ -263,9 +300,9 @@ export default function GlobalChatNotification() {
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onMouseDown={handleMouseDown}
-          className="cursor-grab active:cursor-grabbing select-none"
+          className="cursor-grab active:cursor-grabbing select-none group"
         >
-          <div className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 flex items-center justify-center shadow-[0_8px_25px_rgba(245,158,11,0.5)] border-2 border-amber-200 active:scale-90 transition-transform">
+          <div className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 flex items-center justify-center shadow-[0_8px_30px_rgba(245,158,11,0.55)] border-2 border-amber-200 active:scale-95 transition-transform">
             
             {/* Ortadaki Chat İkonu */}
             <MessageSquare className="w-6 h-6 stroke-[2.5] fill-slate-950 pointer-events-none" />
@@ -282,7 +319,21 @@ export default function GlobalChatNotification() {
           </div>
         </div>
       )}
+
+      {/* ── 4. KAPATILDIĞINDA TEKRAR AÇMA DÜĞMESİ ("bi yerden açılsın tabii") ──────────────── */}
+      {isDismissed && (
+        <button
+          type="button"
+          onClick={() => setIsDismissed(false)}
+          className="fixed bottom-5 right-4 z-40 px-3.5 py-2 rounded-2xl bg-[#161b22]/95 hover:bg-[#21262d] border border-amber-500/50 text-white text-xs font-black font-heading shadow-xl backdrop-blur-md flex items-center gap-2 active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-2"
+        >
+          <div className="relative">
+            <MessageSquare className="w-4 h-4 text-amber-400 fill-amber-400" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          </div>
+          <span>Canlı Chat</span>
+        </button>
+      )}
     </>
   );
 }
-
