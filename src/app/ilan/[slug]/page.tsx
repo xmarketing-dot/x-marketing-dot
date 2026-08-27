@@ -45,7 +45,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
-  const ogImageUrl = `${siteUrl}/api/og/listing/${listing.slug}`;
+  
+  const rawPhoto =
+    listing.anaFotograf?.url ||
+    (listing.fotograflar && listing.fotograflar.length > 0 ? listing.fotograflar[0]?.url : '') ||
+    '';
+
+  const ogImageUrl =
+    rawPhoto && (rawPhoto.startsWith('http://') || rawPhoto.startsWith('https://'))
+      ? rawPhoto
+      : `${siteUrl}/api/og/listing/${listing.slug}`;
 
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');
   const ilceAdi = listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' ');
@@ -78,6 +87,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: [
         {
           url: ogImageUrl,
+          secureUrl: ogImageUrl,
+          type: 'image/jpeg',
           width: 1200,
           height: 630,
           alt: listing.baslik,
