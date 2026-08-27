@@ -29,42 +29,48 @@ import CompactListingCard from '@/components/common/CompactListingCard';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const siteUrl = getSiteUrl();
+export async function generateMetadata(): Promise<Metadata> {
+  const siteUrl = getSiteUrl();
+  const ogImageUrl = `${siteUrl}/api/og/site`;
 
-export const metadata: Metadata = {
-  title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu | 81 İl',
-  description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları. Bağımsız eskortlar, VIP bayanlar, Ultra VIP ve Gold vitrin ilanları. WhatsApp ile tek tıkla iletişim.',
-  keywords: [
-    'eskort ilanları', 'escort ilanları', 'eskort bayan', 'escort bayan',
-    'bağımsız eskort türkiye', 'vip eskort ilanları', 'vip escort',
-    'istanbul eskort', 'istanbul escort', 'ankara eskort', 'ankara escort',
-    'izmir eskort', 'antalya eskort', 'bursa eskort', 'adana eskort',
-    'whatsapp eskort', 'eskort numaraları',
-  ],
-  alternates: { canonical: siteUrl },
-  openGraph: {
-    title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
-    description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları ve WhatsApp iletişim hatları.',
-    url: siteUrl,
-    type: 'website',
-    locale: 'tr_TR',
-    siteName: 'Best Eskort',
-    images: [
-      {
-        url: `${siteUrl}/api/og/site`,
-        width: 1200,
-        height: 630,
-        alt: 'Best Eskort Vitrin',
-      },
+  return {
+    title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu | 81 İl',
+    description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları. Bağımsız eskortlar, VIP vitrin ilanları ve doğrudan WhatsApp iletişim hatları.',
+    keywords: [
+      'eskort ilanları', 'escort ilanları', 'eskort bayan', 'escort bayan',
+      'bağımsız eskort türkiye', 'vip eskort ilanları', 'vip escort',
+      'istanbul eskort', 'istanbul escort', 'ankara eskort', 'ankara escort',
+      'izmir eskort', 'antalya eskort', 'bursa eskort', 'adana eskort',
+      'whatsapp eskort', 'eskort numaraları',
     ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
-    description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları.',
-    images: [`${siteUrl}/api/og/site`],
-  },
-};
+    metadataBase: new URL(siteUrl),
+    alternates: { canonical: siteUrl },
+    openGraph: {
+      title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
+      description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları ve doğrudan WhatsApp iletişim hatları.',
+      url: siteUrl,
+      type: 'website',
+      locale: 'tr_TR',
+      siteName: 'Best Eskort',
+      images: [
+        {
+          url: ogImageUrl,
+          secureUrl: ogImageUrl,
+          type: 'image/jpeg',
+          width: 1200,
+          height: 630,
+          alt: 'Best Eskort Vitrin',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
+      description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları.',
+      images: [ogImageUrl],
+    },
+  };
+}
 
 // Tier ranking priority score
 const TIER_ORDER: Record<string, number> = {
