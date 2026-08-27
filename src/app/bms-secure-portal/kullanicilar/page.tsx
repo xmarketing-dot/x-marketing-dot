@@ -8,28 +8,21 @@ import {
   UserPlus, 
   Phone, 
   Lock, 
-  User as UserIcon, 
   CheckCircle2, 
   AlertCircle, 
   Loader2, 
   RefreshCw, 
-  AtSign,
-  Trash2,
-  KeyRound,
-  ShieldCheck,
-  ChevronDown,
-  ChevronUp,
-  Search,
-  ExternalLink,
-  Eye,
-  Crown,
-  Layers,
-  MapPin,
-  Sparkles,
-  Copy,
-  Check,
-  Filter,
-  Plus
+  AtSign, 
+  Trash2, 
+  ChevronDown, 
+  ChevronUp, 
+  Search, 
+  ExternalLink, 
+  Crown, 
+  Layers, 
+  MapPin, 
+  Copy, 
+  Check 
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 
@@ -38,7 +31,6 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
-  const [showCreateCard, setShowCreateCard] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // New user form states
@@ -83,15 +75,11 @@ export default function AdminUsersPage() {
       if (!res.ok || data.error) {
         setMessage({ type: 'error', text: data.error || 'Kullanıcı oluşturulamadı.' });
       } else {
-        setMessage({ type: 'success', text: `"${kullaniciAdi}" hesabı başarıyla açıldı!` });
+        setMessage({ type: 'success', text: `"${kullaniciAdi}" hesabı başarıyla kaydedildi!` });
         setKullaniciAdi('');
         setSifre('');
         setTelefon('');
         fetchUsers();
-        // Hide form on mobile after successful creation
-        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-          setTimeout(() => setShowCreateCard(false), 1500);
-        }
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Bir hata oluştu.' });
@@ -158,34 +146,22 @@ export default function AdminUsersPage() {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="font-black text-xl sm:text-2xl text-white font-heading">Kullanıcı &amp; İlan Yönetimi</h1>
-              <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 text-[10px] font-black uppercase font-mono">
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 text-[10px] font-black uppercase font-mono">
                 {totalUsersCount} Hesap
               </span>
             </div>
-            <p className="text-xs text-[#8b949e] mt-0.5">Tüm kullanıcı hesapları, bağlı ilanlar ve panel şifreleri tek merkezden yönetilir.</p>
+            <p className="text-xs text-[#8b949e] mt-0.5">Kullanıcı hesapları, bağlı ilan sayıları ve panel şifreleri tek merkezden yönetilir.</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 self-stretch sm:self-auto justify-end">
-          <button
-            type="button"
-            onClick={() => setShowCreateCard(!showCreateCard)}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase font-heading shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
-          >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>{showCreateCard ? 'Formu Gizle' : 'Yeni Kullanıcı Aç'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={fetchUsers}
-            className="p-2.5 sm:px-4 sm:py-2.5 rounded-2xl bg-[#0d1117] hover:bg-[#21262d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-md flex items-center justify-center gap-2 shrink-0"
-            title="Listeyi Yenile"
-          >
-            <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Yenile</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={fetchUsers}
+          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-[#0d1117] hover:bg-[#21262d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-md self-start sm:self-auto"
+        >
+          <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
+          <span>Yenile</span>
+        </button>
       </div>
 
       {/* ── TOP STATS PILLS ────────────────────────────────── */}
@@ -231,27 +207,20 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* ── MAIN CONTENT: RESPONSIVE GRID ──────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+      {/* ── MAIN CONTENT: SOLID 2-COLUMN RESPONSIVE GRID ──── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-start">
         
-        {/* CREATE USER CARD (Sticky on Desktop, Toggleable/Clean on Mobile) */}
-        <div className={`lg:col-span-4 ${showCreateCard ? 'block' : 'hidden lg:block'} transition-all`}>
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border-2 border-amber-500/40 shadow-2xl flex flex-col gap-5 sticky top-6">
+        {/* SOL: KULLANICI OLUŞTURMA FORMU */}
+        <div className="lg:col-span-1 w-full">
+          <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-5 sticky top-6">
             
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3.5">
-              <div className="flex items-center gap-2.5">
-                <UserPlus className="w-5 h-5 text-amber-400" />
-                <h2 className="font-black text-base text-white font-heading">
-                  Yeni Kullanıcı Oluştur
-                </h2>
+            <div className="flex items-center gap-2.5 border-b border-[#30363d] pb-3.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                <UserPlus className="w-4 h-4" />
               </div>
-              <button
-                type="button"
-                onClick={() => setShowCreateCard(false)}
-                className="lg:hidden p-1.5 rounded-lg bg-[#21262d] text-[#8b949e] hover:text-white"
-              >
-                ✕
-              </button>
+              <h2 className="font-black text-base text-white font-heading">
+                Yeni Kullanıcı Aç
+              </h2>
             </div>
 
             {message && (
@@ -274,7 +243,7 @@ export default function AdminUsersPage() {
                   <input
                     type="text"
                     required
-                    placeholder="Örn: sedademir"
+                    placeholder="Örn: ahmetyilmaz"
                     value={kullaniciAdi}
                     onChange={(e) => setKullaniciAdi(e.target.value.toLowerCase().replace(/\s+/g, ''))}
                     className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#0d1117] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 font-mono font-medium shadow-inner"
@@ -301,7 +270,7 @@ export default function AdminUsersPage() {
 
               {/* İsteğe Bağlı Telefon Numarası */}
               <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
-                <span>WhatsApp / Telefon Numarası</span>
+                <span>WhatsApp / Telefon</span>
                 <div className="relative">
                   <input
                     type="text"
@@ -327,7 +296,7 @@ export default function AdminUsersPage() {
                 ) : (
                   <>
                     <UserPlus className="w-4 h-4 stroke-[2.5]" />
-                    <span>Hesabı Tanımla &amp; Aç</span>
+                    <span>Hesabı Oluştur</span>
                   </>
                 )}
               </button>
@@ -336,8 +305,8 @@ export default function AdminUsersPage() {
           </div>
         </div>
 
-        {/* USERS LIST (Wide on Desktop, Full Width on Mobile) */}
-        <div className={`lg:col-span-${showCreateCard ? '8' : '12'} w-full flex flex-col gap-4 transition-all`}>
+        {/* SAĞ: KAYITLI KULLANICILAR LİSTESİ */}
+        <div className="lg:col-span-2 w-full flex flex-col gap-4">
           
           {/* Arama & Filtre Çubuğu */}
           <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
