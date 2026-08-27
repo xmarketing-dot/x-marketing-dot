@@ -45,11 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
-  
-  const coverImage =
-    listing.anaFotograf?.url ||
-    (listing.fotograflar && listing.fotograflar.length > 0 ? listing.fotograflar[0]?.url : '') ||
-    '';
+  const ogImageUrl = `${siteUrl}/api/og/listing/${listing.slug}`;
 
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');
   const ilceAdi = listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' ');
@@ -79,31 +75,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'article',
       locale: 'tr_TR',
       siteName: 'Best Eskort',
-      images: coverImage
-        ? [
-            {
-              url: coverImage,
-              secureUrl: coverImage,
-              width: 1200,
-              height: 630,
-              alt: listing.baslik,
-            },
-          ]
-        : [
-            {
-              url: `${siteUrl}/icon`,
-              secureUrl: `${siteUrl}/icon`,
-              width: 512,
-              height: 512,
-              alt: 'Best Eskort',
-            },
-          ],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: listing.baslik,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: metaTitle,
       description: metaDescription,
-      images: coverImage ? [coverImage] : [`${siteUrl}/icon`],
+      images: [ogImageUrl],
     },
   };
 }

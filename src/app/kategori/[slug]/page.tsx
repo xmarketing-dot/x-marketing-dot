@@ -92,10 +92,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: 'tr_TR',
       images: [
         {
-          url: `${siteUrl}/icon`,
-          secureUrl: `${siteUrl}/icon`,
-          width: 512,
-          height: 512,
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
           alt: tierInfo.title,
         },
       ],
@@ -104,7 +103,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title: `${tierInfo.title} | Best Eskort`,
       description: tierInfo.desc,
-      images: [`${siteUrl}/icon`],
+      images: [ogImageUrl],
     },
   };
 }
