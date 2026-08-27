@@ -15,8 +15,19 @@ import {
   X, 
   Search, 
   MapPin, 
-  ShieldCheck 
+  ShieldCheck,
+  Plus,
+  Trash2,
+  Megaphone,
+  Layers,
+  ArrowRight
 } from 'lucide-react';
+
+interface TickerItem {
+  badge: string;
+  text: string;
+  link: string;
+}
 
 export default function AdminHomepageConfigPage() {
   const [loading, setLoading] = useState(true);
@@ -28,7 +39,17 @@ export default function AdminHomepageConfigPage() {
   const [heroAltBaslik, setHeroAltBaslik] = useState('');
   const [bannerMetin, setBannerMetin] = useState('');
   const [bannerLink, setBannerLink] = useState('');
+  const [bannerRozet, setBannerRozet] = useState('👑 VIP DUYURU');
   const [bannerAktif, setBannerAktif] = useState(true);
+  
+  // Rotating Ticker Announcements
+  const [duyurular, setDuyurular] = useState<TickerItem[]>([
+    { badge: '👑 LİDER REHBER', text: '81 İl ve İlçede Türkiye\'nin En Büyük İlan Platformu', link: '/ilan-ver' },
+    { badge: '🔥 ANINDA MÜŞTERİ', text: 'İlan Verin, WhatsApp ile Müşterilere Ulaşın!', link: '/ilan-ver' },
+    { badge: '💎 VIP VİTRİN', text: 'Google Aramalarında En Üst Sırada Yer Alın', link: '/ilan-ver' },
+    { badge: '⚡ CANLI DESTEK', text: '%100 Güvenli & 7/24 Canlı Müşteri Desteği', link: '/chat' },
+  ]);
+
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
   const [allListings, setAllListings] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,11 +64,17 @@ export default function AdminHomepageConfigPage() {
       const res = await fetch('/api/admin/homepage-config');
       const data = await res.json();
       if (data.config) {
-        setHeroBaslik(data.config.hero?.baslik || 'Best Eskort — Bölgesel İlan Platformu');
-        setHeroAltBaslik(data.config.hero?.altBaslik || '81 il ve tüm ilçelerde güncel hizmet rehberi');
-        setBannerMetin(data.config.aktifBanner?.metin || '🎉 İlan verin, binlerce kullanıcıya hemen ulaşın!');
+        setHeroBaslik(data.config.hero?.baslik || 'Türkiye\'nin En Güvenilir VIP Eskort İlan Platformu');
+        setHeroAltBaslik(data.config.hero?.altBaslik || '81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları.');
+        setBannerMetin(data.config.aktifBanner?.metin || '🎉 İlan verin, WhatsApp ile müşterilere anında ulaşın!');
         setBannerLink(data.config.aktifBanner?.link || '/ilan-ver');
+        setBannerRozet(data.config.aktifBanner?.rozet || '👑 VIP DUYURU');
         setBannerAktif(data.config.aktifBanner?.aktif ?? true);
+        
+        if (Array.isArray(data.config.duyurular) && data.config.duyurular.length > 0) {
+          setDuyurular(data.config.duyurular);
+        }
+
         const rawIds = data.config.sliderIlanIds || [];
         setSelectedListingIds(rawIds.map((id: any) => (id?._id ? id._id.toString() : (id?.toString ? id.toString() : String(id)))));
       }
@@ -78,6 +105,26 @@ export default function AdminHomepageConfigPage() {
     setSelectedListingIds([]);
   };
 
+  // Duyuru Listesi İşlemleri
+  const handleAddDuyuru = () => {
+    setDuyurular((prev) => [
+      ...prev,
+      { badge: '👑 YENİ DUYURU', text: 'Duyuru metnini buraya yazın...', link: '/ilan-ver' }
+    ]);
+  };
+
+  const handleUpdateDuyuru = (index: number, field: keyof TickerItem, value: string) => {
+    setDuyurular((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleDeleteDuyuru = (index: number) => {
+    setDuyurular((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -92,14 +139,16 @@ export default function AdminHomepageConfigPage() {
           heroAltBaslik,
           bannerMetin,
           bannerLink,
+          bannerRozet,
           bannerAktif,
+          duyurular,
           sliderIlanIds: selectedListingIds,
         }),
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
-        setMessage({ type: 'success', text: `Anasayfa vitrini ve ayarları başarıyla kaydedildi! (${selectedListingIds.length} İlan vitrinde dönecek)` });
+        setMessage({ type: 'success', text: `Anasayfa vitrini ve üst duyuru bandı başarıyla kaydedildi! (${selectedListingIds.length} İlan vitrinde dönecek, ${duyurular.length} Duyuru yayında)` });
       } else {
         setMessage({ type: 'error', text: data.error || 'Ayarlar kaydedilemedi.' });
       }
@@ -129,9 +178,9 @@ export default function AdminHomepageConfigPage() {
           <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold">
             <Sliders className="w-6 h-6" />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col text-left">
             <h1 className="font-black text-2xl text-white font-heading">Anasayfa &amp; Vitrin Yönetimi</h1>
-            <p className="text-xs text-[#8b949e]">Header altındaki Ultra VIP slider vitrininde dönecek ilanları dinamik olarak seçin.</p>
+            <p className="text-xs text-[#8b949e]">Üst kayan duyuru bandı, anasayfa sloganı ve en üstte dönecek VIP vitrin ilanlarını yönetin.</p>
           </div>
         </div>
 
@@ -158,21 +207,100 @@ export default function AdminHomepageConfigPage() {
           <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
         </div>
       ) : (
-        <form onSubmit={handleSave} className="flex flex-col gap-8 max-w-5xl">
+        <form onSubmit={handleSave} className="flex flex-col gap-8 max-w-5xl text-left">
           
-          {/* ── 1. ULTRA VIP VİTRİN SLIDER İLAN SEÇİMİ ──────────────── */}
+          {/* ── 1. ÜST KAYAN DUYURU BANDI (TICKER) YÖNETİMİ ──────────────── */}
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border-2 border-amber-500/60 shadow-2xl flex flex-col gap-5">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-4 flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
+                  <Megaphone className="w-5 h-5 stroke-[2.5]" />
+                </div>
+                <div className="flex flex-col">
+                  <h2 className="font-black text-base sm:text-lg text-white font-heading">
+                    Üst Kayan Duyuru Bandı (Header Ticker)
+                  </h2>
+                  <span className="text-xs text-amber-400 font-bold">
+                    Tüm mobil sayfaların en tepesinde sırayla dönen dinamik duyuru mesajları.
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAddDuyuru}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-lg active:scale-95 transition-all"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>+ Yeni Duyuru Ekle</span>
+              </button>
+            </div>
+
+            {/* Duyuru Satırları */}
+            <div className="flex flex-col gap-3">
+              {duyurular.map((item, idx) => (
+                <div 
+                  key={idx}
+                  className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center gap-3 flex-wrap sm:flex-nowrap"
+                >
+                  <span className="w-7 h-7 rounded-xl bg-[#21262d] text-amber-400 font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-[#363b42]">
+                    #{idx + 1}
+                  </span>
+
+                  {/* Rozet */}
+                  <input
+                    type="text"
+                    value={item.badge}
+                    placeholder="👑 ROZET"
+                    onChange={(e) => handleUpdateDuyuru(idx, 'badge', e.target.value)}
+                    className="w-full sm:w-36 px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-amber-400 text-xs font-black uppercase placeholder-[#484f58] focus:border-amber-400 focus:outline-none shrink-0"
+                  />
+
+                  {/* Duyuru Metni */}
+                  <input
+                    type="text"
+                    value={item.text}
+                    placeholder="Duyuru metnini yazın..."
+                    onChange={(e) => handleUpdateDuyuru(idx, 'text', e.target.value)}
+                    className="flex-1 min-w-[200px] px-3.5 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                  />
+
+                  {/* Yönlendirme Linki */}
+                  <input
+                    type="text"
+                    value={item.link}
+                    placeholder="/ilan-ver veya /chat"
+                    onChange={(e) => handleUpdateDuyuru(idx, 'link', e.target.value)}
+                    className="w-full sm:w-32 px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-[#8b949e] text-xs font-mono placeholder-[#484f58] focus:border-amber-400 focus:outline-none shrink-0"
+                  />
+
+                  {/* Sil Butonu */}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteDuyuru(idx)}
+                    className="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 transition-colors shrink-0"
+                    title="Bu duyuruyu kaldır"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── 2. VİTRİN SLIDER İLAN SEÇİMİ ──────────────── */}
           <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border-2 border-amber-500/60 shadow-2xl flex flex-col gap-5">
             <div className="flex items-center justify-between border-b border-[#30363d] pb-4 flex-wrap gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
                   <Crown className="w-5 h-5 stroke-[2.5]" />
                 </div>
-                <div className="flex flex-col text-left">
+                <div className="flex flex-col">
                   <h2 className="font-black text-base sm:text-lg text-white font-heading">
-                    Header Altı Ultra VIP Vitrin İlanları
+                    Header Altı VIP Vitrin Slider İlanları
                   </h2>
                   <span className="text-xs text-amber-400 font-bold">
-                    Seçilen ilanların hepsi (4, 5, 8 adet vs.) anasayfa tepesinde sırayla döner.
+                    Seçtiğiniz ilanlar anasayfa tepesindeki büyük görsel kayan vitrinde sırayla döner.
                   </span>
                 </div>
               </div>
@@ -201,7 +329,7 @@ export default function AdminHomepageConfigPage() {
               <div className="relative flex-1 min-w-[240px]">
                 <input
                   type="text"
-                  placeholder="İlan başlığı, il, ilçe veya kategori ara..."
+                  placeholder="İlan başlığı, il, ilçe veya rozet ara..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
@@ -209,7 +337,7 @@ export default function AdminHomepageConfigPage() {
                 <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3" />
               </div>
 
-              <span className="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-xs border border-emerald-500/30 font-heading">
+              <span className="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-xs border border-emerald-500/30 font-heading">
                 {selectedListingIds.length} İlan Vitrinde Dönecek
               </span>
             </div>
@@ -218,7 +346,7 @@ export default function AdminHomepageConfigPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[480px] overflow-y-auto pr-1">
               {filteredListings.map((item) => {
                 const isSelected = selectedListingIds.includes(item._id.toString());
-                const isUltraVip = item.rozet === 'ultravip';
+                const isVip = item.rozet === 'vip' || item.rozet === 'ultravip';
 
                 return (
                   <div
@@ -260,7 +388,7 @@ export default function AdminHomepageConfigPage() {
                           {item.ilSlug}/{item.ilceSlug}
                         </span>
                         <span className={`px-1.5 py-0.2 rounded font-black uppercase ${
-                          isUltraVip ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-700 text-slate-300'
+                          isVip ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-700 text-slate-300'
                         }`}>
                           {item.rozet || 'silver'}
                         </span>
@@ -272,41 +400,40 @@ export default function AdminHomepageConfigPage() {
             </div>
           </div>
 
-          {/* ── 2. DUYURU BANNER & SLOGAN AYARLARI ──────────────── */}
+          {/* ── 3. HERO BAŞLIK & SEO SLOGANI ──────────────── */}
           <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
             <h2 className="font-black text-base text-white font-heading border-b border-[#30363d] pb-3">
-              Üst Kayan Duyuru Bandı (Ticker)
+              Anasayfa Başlık &amp; Slogan
             </h2>
 
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="bannerAktif"
-                checked={bannerAktif}
-                onChange={(e) => setBannerAktif(e.target.checked)}
-                className="w-4 h-4 accent-amber-500"
-              />
-              <label htmlFor="bannerAktif" className="text-xs text-[#c9d1d9] font-bold cursor-pointer">
-                Üst kayan duyuru bandını anasayfada aktif et
-              </label>
-            </div>
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#8b949e]">Anasayfa Ana Başlığı (H1)</label>
+                <input
+                  type="text"
+                  value={heroBaslik}
+                  onChange={(e) => setHeroBaslik(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-bold"
+                />
+              </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-[#8b949e] font-black uppercase font-heading">Duyuru Metni</label>
-              <input
-                type="text"
-                value={bannerMetin}
-                onChange={(e) => setBannerMetin(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
-              />
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#8b949e]">Anasayfa Alt Açıklaması</label>
+                <textarea
+                  rows={2}
+                  value={heroAltBaslik}
+                  onChange={(e) => setHeroAltBaslik(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Kaydet Butonu */}
+          {/* KAYDET BUTONU */}
           <button
             type="submit"
             disabled={saving}
-            className="py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-sm font-heading uppercase tracking-wider shadow-2xl flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-50"
+            className="py-4 px-8 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-sm uppercase tracking-wider shadow-2xl shadow-amber-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 font-heading sticky bottom-6 z-20"
           >
             {saving ? (
               <>
@@ -315,8 +442,8 @@ export default function AdminHomepageConfigPage() {
               </>
             ) : (
               <>
-                <Save className="w-5 h-5" />
-                <span>Vitrini &amp; Ayarları Kaydet</span>
+                <Save className="w-5 h-5 stroke-[2.5]" />
+                <span>Tüm Anasayfa &amp; Vitrin Değişikliklerini Kaydet</span>
               </>
             )}
           </button>
@@ -326,4 +453,3 @@ export default function AdminHomepageConfigPage() {
     </div>
   );
 }
-

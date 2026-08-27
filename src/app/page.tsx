@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { getHomepageConfig, getAllLocations, getListings } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
+import ListingModel from '@/models/Listing';
 import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
@@ -102,11 +103,23 @@ export default async function HomePage() {
   // Dynamic Selected Showcase from Admin Homepage Config
   const rawSliderIds = homepageConfig?.sliderIlanIds || homepageConfig?.selectedShowcaseIds || [];
   const selectedShowcaseIds: string[] = rawSliderIds.map((id: any) => (id?.toString ? id.toString() : String(id)));
-  const dynamicShowcaseListings = selectedShowcaseIds.length > 0
-    ? selectedShowcaseIds
-        .map((id: string) => allSortedListings.find((l: any) => l._id.toString() === id))
-        .filter(Boolean)
-    : displayVip;
+
+  let dynamicShowcaseListings: any[] = [];
+  if (selectedShowcaseIds.length > 0) {
+    const missingIds = selectedShowcaseIds.filter((id) => !allSortedListings.some((l: any) => l._id.toString() === id));
+    let extraListings: any[] = [];
+    if (missingIds.length > 0) {
+      extraListings = await ListingModel.find({ _id: { $in: missingIds }, status: 'yayinda' }).lean();
+    }
+    const pool = [...allSortedListings, ...extraListings];
+    dynamicShowcaseListings = selectedShowcaseIds
+      .map((id: string) => pool.find((l: any) => l._id.toString() === id))
+      .filter(Boolean);
+  }
+
+  if (dynamicShowcaseListings.length === 0) {
+    dynamicShowcaseListings = displayVip;
+  }
 
   // Grid listings
   const gridListings = allSortedListings.slice(0, 48);

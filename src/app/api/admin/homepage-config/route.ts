@@ -29,7 +29,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { heroBaslik, heroAltBaslik, bannerMetin, bannerLink, bannerAktif, sliderIlanIds } = await req.json();
+    const { heroBaslik, heroAltBaslik, bannerMetin, bannerLink, bannerAktif, bannerRozet, duyurular, sliderIlanIds } = await req.json();
 
     await connectToDatabase();
 
@@ -39,7 +39,12 @@ export async function POST(req: NextRequest) {
       'aktifBanner.metin': bannerMetin,
       'aktifBanner.link': bannerLink,
       'aktifBanner.aktif': bannerAktif,
+      'aktifBanner.rozet': bannerRozet || '👑 VIP DUYURU',
     };
+
+    if (Array.isArray(duyurular)) {
+      updateData.duyurular = duyurular;
+    }
 
     if (Array.isArray(sliderIlanIds)) {
       updateData.sliderIlanIds = sliderIlanIds;
