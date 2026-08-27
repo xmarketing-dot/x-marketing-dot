@@ -88,6 +88,8 @@ export const metadata: Metadata = {
   },
 };
 
+import React, { Suspense } from 'react';
+
 export default function RootLayout({
   children,
 }: {
@@ -96,7 +98,9 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
-        <AnalyticsTracker />
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+        </Suspense>
         <MobileShell>{children}</MobileShell>
         <Analytics />
       </body>

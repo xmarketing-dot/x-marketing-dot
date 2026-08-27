@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 // Declare global tracking window function
 declare global {
@@ -32,7 +32,6 @@ function getOrSetSessionId(): string {
 
 export default function AnalyticsTracker() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const lastTrackedPathRef = useRef<string>('');
   const lastTrackedTimeRef = useRef<number>(0);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -69,7 +68,8 @@ export default function AnalyticsTracker() {
     }
 
     const now = Date.now();
-    const fullPath = searchParams?.toString() ? `${pathname}?${searchParams.toString()}` : pathname;
+    const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
+    const fullPath = currentSearch ? `${pathname}${currentSearch}` : pathname;
 
     // Deduplication: Avoid double-counting the exact same URL within 15 seconds
     if (lastTrackedPathRef.current === fullPath && now - lastTrackedTimeRef.current < 15000) {
@@ -84,11 +84,12 @@ export default function AnalyticsTracker() {
     const isMobile = window.innerWidth < 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     const referer = document.referrer || 'Direct';
 
-    // Parse Search and Source Parameters
-    let searchKeyword = searchParams?.get('q') || searchParams?.get('query') || searchParams?.get('search') || searchParams?.get('utm_term') || '';
-    const utmSource = searchParams?.get('utm_source') || '';
-    const utmMedium = searchParams?.get('utm_medium') || '';
-    const utmCampaign = searchParams?.get('utm_campaign') || '';
+    // Parse Search and Source Parameters from window.location.search
+    const params = new URLSearchParams(currentSearch);
+    let searchKeyword = params.get('q') || params.get('query') || params.get('search') || params.get('utm_term') || '';
+    const utmSource = params.get('utm_source') || '';
+    const utmMedium = params.get('utm_medium') || '';
+    const utmCampaign = params.get('utm_campaign') || '';
 
     // If coming from Google referrer, try extracting query if passed
     if (!searchKeyword && referer.includes('google.')) {
@@ -162,7 +163,7 @@ export default function AnalyticsTracker() {
         clearInterval(durationIntervalRef.current);
       }
     };
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   return null;
 }
