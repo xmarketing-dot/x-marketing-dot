@@ -43,12 +43,6 @@ export default function SpecialAdPopup() {
       return;
     }
 
-    // Check if user already dismissed in this session
-    if (typeof window !== 'undefined') {
-      const isDismissed = sessionStorage.getItem('bms_special_ad_closed');
-      if (isDismissed) return;
-    }
-
     // Fetch config
     fetch('/api/config')
       .then((res) => res.json())
@@ -159,15 +153,11 @@ export default function SpecialAdPopup() {
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsOpen(false);
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('bms_special_ad_closed', 'true');
-    }
   };
 
   const handleGoToAd = () => {
     setIsOpen(false);
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('bms_special_ad_closed', 'true');
       if ((window as any).trackEvent) {
         (window as any).trackEvent('special_ad_click', {
           listingId: listing?._id,
