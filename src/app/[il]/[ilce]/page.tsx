@@ -64,6 +64,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${districtName} Eskort & ${location.il} Bölgesel İlanlar | Best Eskort`,
       description: `${districtName} bölgesindeki tüm doğrulanmış eskort ve hizmet ilanları.`,
       url: canonicalUrl,
+      type: 'website',
+      locale: 'tr_TR',
+      siteName: 'Best Eskort',
+      images: [
+        {
+          url: `${siteUrl}/api/og/site`,
+          secureUrl: `${siteUrl}/api/og/site`,
+          type: 'image/jpeg',
+          width: 1200,
+          height: 630,
+          alt: `${districtName} Eskort`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${districtName} Eskort & ${location.il} Bölgesel İlanlar | Best Eskort`,
+      description: `${districtName} bölgesindeki tüm doğrulanmış eskort ve hizmet ilanları.`,
+      images: [`${siteUrl}/api/og/site`],
     },
   };
 }
@@ -146,7 +165,7 @@ export default async function DistrictPage({ params }: Props) {
         <h1 className="font-black text-2xl text-white font-heading tracking-tight">
           {districtName} ({location.il}) Eskort İlanları & Rehberi
         </h1>
-        
+
         <p className="text-xs text-[#8b949e] leading-relaxed">
           {location.il} ili {districtName} ilçesinde hizmet veren doğrulanmış eskort bayanlar, bağımsız profiller ve doğrudan WhatsApp iletişim hatları.
         </p>
@@ -199,7 +218,7 @@ export default async function DistrictPage({ params }: Props) {
           <ShieldCheck className="w-4 h-4 text-amber-400" />
           <span>{districtName} Bölgesel Pazarlama Hakkında</span>
         </h3>
-        
+
         <p className="text-xs text-[#8b949e] leading-relaxed font-medium">
           Best Eskort platformu; {location.il} iline bağlı {districtName} ilçesinde en yüksek Google arama görünürlüğünü sağlar. {districtName} genelindeki güncel bölgesel fırsatlar, ilanlar ve temsilci iletişim hatları 7/24 kesintisiz olarak yayınlanır.
         </p>
