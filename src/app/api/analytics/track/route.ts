@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── 2. TRAFİK KAYNAĞI TESPİTİ (Google, WhatsApp, Sosyal Medya, Direct) ──
-    let source: 'google' | 'whatsapp' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other' = 'direct';
+    // ── 2. TRAFİK KAYNAĞI TESPİTİ (Google, WhatsApp, Telegram, Sosyal Medya, Direct) ──
+    let source: 'google' | 'whatsapp' | 'telegram' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other' = 'direct';
     const refLower = (referer || '').toLowerCase();
     const pathLower = (path || '').toLowerCase();
     const utmLower = (utmSource || '').toLowerCase();
@@ -78,9 +78,16 @@ export async function POST(req: NextRequest) {
       utmLower.includes('whatsapp')
     ) {
       source = 'whatsapp';
+    } else if (
+      refLower.includes('telegram') ||
+      refLower.includes('t.me') ||
+      pathLower.includes('ref=telegram') ||
+      utmLower.includes('telegram')
+    ) {
+      source = 'telegram';
     } else if (refLower.includes('instagram')) {
       source = 'instagram';
-    } else if (refLower.includes('twitter') || refLower.includes('t.co') || refLower.includes('x.com')) {
+    } else if (refLower.includes('twitter') || refLower.includes('t.co') || refLower.includes('x.com') || utmLower.includes('x')) {
       source = 'x';
     } else if (refLower.includes('facebook')) {
       source = 'facebook';

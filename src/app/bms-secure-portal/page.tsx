@@ -331,7 +331,7 @@ export default function BmsSecurePortalDashboard() {
           <span className="text-xs text-[#8b949e]">Kullanıcıların siteye geliş yolları</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3.5">
           <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-1">
             <span className="text-[11px] font-bold text-[#8b949e]">Google Arama</span>
             <span className="font-black text-xl text-blue-400 font-heading">{sources.google}</span>
@@ -340,6 +340,11 @@ export default function BmsSecurePortalDashboard() {
           <div className="p-4 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col gap-1">
             <span className="text-[11px] font-bold text-[#8b949e]">WhatsApp Paylaşım</span>
             <span className="font-black text-xl text-[#25D366] font-heading">{sources.whatsapp}</span>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-[#0d1117] border border-sky-500/30 flex flex-col gap-1">
+            <span className="text-[11px] font-bold text-[#8b949e]">Telegram Paylaşım</span>
+            <span className="font-black text-xl text-sky-400 font-heading">{sources.telegram || 0}</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-1">

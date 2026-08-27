@@ -45,9 +45,10 @@ export async function GET(req: Request) {
     const mobileCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, device: 'mobile' });
     const desktopCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, device: 'desktop' });
 
-    // ── 3. TRAFİK KAYNAKLARI (GOOGLE, WHATSAPP, DİRECT, SOSYAL MEDYA) ──
+    // ── 3. TRAFİK KAYNAKLARI (GOOGLE, WHATSAPP, TELEGRAM, DİRECT, SOSYAL MEDYA) ──
     const googleCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'google' });
     const whatsappInboundCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'whatsapp' });
+    const telegramInboundCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'telegram' });
     const directCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'direct' });
     const instagramCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'instagram' });
     const twitterCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'x' });
@@ -135,6 +136,7 @@ export async function GET(req: Request) {
         sources: {
           google: googleCount,
           whatsapp: whatsappInboundCount,
+          telegram: telegramInboundCount,
           direct: directCount,
           instagram: instagramCount,
           x: twitterCount,

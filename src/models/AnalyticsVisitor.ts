@@ -9,7 +9,7 @@ export interface IAnalyticsVisitor extends Document {
   path: string;
   pageTitle?: string;
   referer: string;
-  refererSource: 'google' | 'whatsapp' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other';
+  refererSource: 'google' | 'whatsapp' | 'telegram' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other';
   searchKeyword?: string;
   utmSource?: string;
   utmMedium?: string;
@@ -35,7 +35,7 @@ const AnalyticsVisitorSchema = new Schema<IAnalyticsVisitor>(
     referer: { type: String, default: 'Direct' },
     refererSource: { 
       type: String, 
-      enum: ['google', 'whatsapp', 'direct', 'x', 'instagram', 'facebook', 'other'], 
+      enum: ['google', 'whatsapp', 'telegram', 'direct', 'x', 'instagram', 'facebook', 'other'], 
       default: 'direct',
       index: true 
     },
