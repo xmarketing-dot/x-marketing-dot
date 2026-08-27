@@ -121,6 +121,20 @@ export default async function HomePage() {
     dynamicShowcaseListings = displayVip;
   }
 
+  const formattedShowcaseListings = dynamicShowcaseListings.map((l: any) => ({
+    _id: l._id?.toString() || l.id || '',
+    slug: l.slug || '',
+    baslik: l.baslik || '',
+    aciklama: l.aciklama || '',
+    ilSlug: l.ilSlug || 'istanbul',
+    ilceSlug: l.ilceSlug || 'beylikduzu',
+    anaFotograf: {
+      url: l.anaFotograf?.url || (l.fotograflar && l.fotograflar[0]?.url) || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=1200',
+    },
+    rozet: l.rozet === 'ultravip' ? 'vip' : (l.rozet || 'vip'),
+    whatsappNumara: l.whatsappNumara || '',
+  }));
+
   // Grid listings
   const gridListings = allSortedListings.slice(0, 48);
 
@@ -129,7 +143,7 @@ export default async function HomePage() {
       
       {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları) */}
       <section className="w-full">
-        <HeroSlider slides={dynamicShowcaseListings.length > 0 ? dynamicShowcaseListings : displayVip} />
+        <HeroSlider slides={formattedShowcaseListings} />
       </section>
 
       {/* 2. TÜM TÜRKİYE İL LİSTESİ BUTONU */}

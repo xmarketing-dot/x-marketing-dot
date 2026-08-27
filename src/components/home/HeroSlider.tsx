@@ -108,10 +108,10 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
 
       {/* ── 2. ÜST BAR: VİTRİN ROZETİ VE GÖSTERGELER ──────────────── */}
       <div className="relative z-30 px-4 pt-4 flex items-center justify-between w-full">
-        {/* Canlı Ultra VIP Rozeti */}
+        {/* Canlı VIP Rozeti */}
         <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 font-black text-xs font-heading shadow-xl shadow-amber-500/30 border border-amber-300">
           <Crown className="w-4 h-4 fill-slate-950" />
-          <span>ULTRA VIP VİTRİN</span>
+          <span>VIP VİTRİN</span>
         </div>
 
         {/* Doğrulanmış Rozeti */}

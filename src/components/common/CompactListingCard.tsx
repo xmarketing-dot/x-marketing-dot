@@ -68,15 +68,9 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
         {/* Üst Rozet & Teyitli Rozeti */}
         <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between">
           <div>
-            {isUltraVip && (
+            {(isVip || isUltraVip) && (
               <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 font-black text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
                 <Crown className="w-2.5 h-2.5 fill-slate-950" />
-                <span>ULTRA VIP</span>
-              </span>
-            )}
-            {isVip && (
-              <span className="px-2 py-0.5 rounded-lg bg-purple-600 text-white font-black text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
-                <Star className="w-2.5 h-2.5 fill-white" />
                 <span>VIP</span>
               </span>
             )}

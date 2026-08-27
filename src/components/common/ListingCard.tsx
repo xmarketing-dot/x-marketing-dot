@@ -31,10 +31,8 @@ export default function ListingCard({ listing }: ListingCardProps) {
     ? listing.fotograflar
     : [listing.anaFotograf || { url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800' }];
 
-  const badgeText = isUltraVip
-    ? '💎 Ultra VIP'
-    : isVip
-    ? '⭐ VIP'
+  const badgeText = (isUltraVip || isVip)
+    ? '👑 VIP'
     : isGold
     ? '🥇 Gold'
     : null;
@@ -42,10 +40,8 @@ export default function ListingCard({ listing }: ListingCardProps) {
   return (
     <div
       className={`relative rounded-3xl overflow-hidden bg-[#161b22] border transition-all duration-300 shadow-xl ${
-        isUltraVip
+        isUltraVip || isVip
           ? 'border-amber-500/60 ring-1 ring-amber-500/20'
-          : isVip
-          ? 'border-purple-500/50 ring-1 ring-purple-500/20'
           : isGold
           ? 'border-amber-600/40'
           : 'border-[#30363d]'
