@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { connectToDatabase } from '@/lib/mongodb';
-import AdminModel from '@/models/Admin';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
@@ -12,22 +12,15 @@ export async function GET() {
       return NextResponse.json({ authenticated: false }, { status: 401 });
     }
 
-    await connectToDatabase();
-    const admin = await AdminModel.findOne({ role: 'superadmin' });
-
-    if (!admin) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
-    }
-
-    return NextResponse.json({
-      authenticated: true,
-      admin: {
-        id: admin._id,
-        email: admin.email,
-        ad: admin.ad,
-        role: admin.role,
-      },
-    });
+    // Return strictly boolean auth status without leaking any DB data, emails or user IDs
+    return NextResponse.json(
+      { authenticated: true },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        },
+      }
+    );
   } catch (error) {
     return NextResponse.json({ authenticated: false }, { status: 500 });
   }

@@ -4,7 +4,6 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
-import AdminGlobalLiveNotification from '@/components/admin/AdminGlobalLiveNotification';
 import { Analytics } from '@vercel/analytics/next';
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'] });
@@ -99,7 +98,6 @@ export default function RootLayout({
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
         <AnalyticsTracker />
         <MobileShell>{children}</MobileShell>
-        <AdminGlobalLiveNotification />
         <Analytics />
       </body>
     </html>
