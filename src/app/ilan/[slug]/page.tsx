@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
-  const ogImageUrl = `${siteUrl}/api/listings/${listing.slug}/cover`;
+  const ogImageUrl = `${siteUrl}/api/og/listing/${listing.slug}`;
 
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');
   const ilceAdi = listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' ');
