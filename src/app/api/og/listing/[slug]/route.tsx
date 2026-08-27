@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ImageResponse } from 'next/og';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
+import sharp from 'sharp';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +20,7 @@ export async function GET(
     let listingData: any = null;
     let photoUrl = '';
 
-    // 1. Try finding in Listings
+    // 1. Find Listing
     const listing = await ListingModel.findOne({ slug }).lean();
     if (listing) {
       listingData = listing;
@@ -30,27 +30,15 @@ export async function GET(
         '';
     }
 
-    // Handle Data URL (Base64) from real listing upload
+    let inputBuffer: Buffer | null = null;
+
+    // Handle Data URL (Base64)
     if (photoUrl && photoUrl.startsWith('data:image/')) {
       const match = photoUrl.match(/^data:(image\/[a-zA-Z0-9\+\-\.]+);base64,([\s\S]+)$/);
       if (match) {
-        const mimeType = match[1] || 'image/webp';
-        const base64Data = match[2];
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        return new NextResponse(buffer, {
-          status: 200,
-          headers: {
-            'Content-Type': mimeType,
-            'Content-Length': buffer.length.toString(),
-            'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
-          },
-        });
+        inputBuffer = Buffer.from(match[2], 'base64');
       }
-    }
-
-    // Handle Remote HTTP/HTTPS URL from real listing
-    if (photoUrl && (photoUrl.startsWith('http://') || photoUrl.startsWith('https://'))) {
+    } else if (photoUrl && (photoUrl.startsWith('http://') || photoUrl.startsWith('https://'))) {
       try {
         const imageRes = await fetch(photoUrl, {
           headers: {
@@ -59,175 +47,86 @@ export async function GET(
         });
 
         if (imageRes.ok) {
-          const contentType = imageRes.headers.get('content-type') || 'image/jpeg';
           const arrayBuffer = await imageRes.arrayBuffer();
-          const buffer = Buffer.from(arrayBuffer);
-
-          return new NextResponse(buffer, {
-            status: 200,
-            headers: {
-              'Content-Type': contentType,
-              'Content-Length': buffer.length.toString(),
-              'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
-            },
-          });
+          inputBuffer = Buffer.from(arrayBuffer);
         }
       } catch (fetchErr) {
         console.error('Remote image fetch error:', fetchErr);
       }
     }
 
-    // If no custom photo exists, generate a dedicated luxury VIP OpenGraph card tailored to this listing
-    const title = listingData?.baslik || listingData?.tamAd || 'VIP Doğrulanmış Model';
-    const city = listingData?.ilSlug ? listingData.ilSlug.toUpperCase() : 'TÜRKİYE';
-    const district = listingData?.ilceSlug ? listingData.ilceSlug.toUpperCase() : 'VIP VİTRİN';
+    // Convert to 100% WhatsApp/Telegram compliant JPEG
+    if (inputBuffer) {
+      try {
+        const jpegBuffer = await sharp(inputBuffer)
+          .resize(1200, 630, { fit: 'cover', position: 'center' })
+          .jpeg({ quality: 88, mozjpeg: true })
+          .toBuffer();
 
-    return new ImageResponse(
-      (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #0d1117 0%, #161b22 50%, #1c1508 100%)',
-            padding: '40px',
-            position: 'relative',
-          }}
-        >
-          {/* Gold Luxury Border */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: '20px',
-              borderRadius: '24px',
-              border: '3px solid rgba(245, 158, 11, 0.45)',
-              display: 'flex',
-            }}
-          />
-
-          {/* Top Badge */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: 'rgba(245, 158, 11, 0.15)',
-              border: '2px solid #f59e0b',
-              borderRadius: '50px',
-              padding: '10px 24px',
-              marginBottom: '20px',
-            }}
-          >
-            <span style={{ fontSize: '24px', marginRight: '10px' }}>👑</span>
-            <span
-              style={{
-                color: '#f59e0b',
-                fontSize: '20px',
-                fontWeight: 'bold',
-                letterSpacing: '2px',
-                textTransform: 'uppercase',
-              }}
-            >
-              {district} — {city} VIP ESKORT
-            </span>
-          </div>
-
-          {/* Listing Title */}
-          <div
-            style={{
-              display: 'flex',
-              fontSize: '52px',
-              fontWeight: 900,
-              color: '#ffffff',
-              textAlign: 'center',
-              maxWidth: '950px',
-              marginBottom: '16px',
-              lineHeight: 1.2,
-            }}
-          >
-            {title}
-          </div>
-
-          {/* Subtitle */}
-          <div
-            style={{
-              display: 'flex',
-              fontSize: '24px',
-              color: '#8b949e',
-              fontWeight: 600,
-              textAlign: 'center',
-              marginBottom: '32px',
-            }}
-          >
-            %100 Teyitli Profil &bull; Doğrudan WhatsApp İletişimi &bull; Best Eskort
-          </div>
-
-          {/* Bottom Features */}
-          <div
-            style={{
-              display: 'flex',
-              gap: '20px',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#21262d',
-                padding: '10px 20px',
-                borderRadius: '14px',
-                border: '1px solid #30363d',
-                color: '#10b981',
-                fontSize: '18px',
-                fontWeight: 700,
-              }}
-            >
-              ✓ Doğrulanmış Profil
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: '#21262d',
-                padding: '10px 20px',
-                borderRadius: '14px',
-                border: '1px solid #30363d',
-                color: '#25D366',
-                fontSize: '18px',
-                fontWeight: 700,
-              }}
-            >
-              💬 WhatsApp İle İletişim
-            </div>
-
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: 'rgba(245, 158, 11, 0.2)',
-                padding: '10px 20px',
-                borderRadius: '14px',
-                border: '1px solid #f59e0b',
-                color: '#f59e0b',
-                fontSize: '18px',
-                fontWeight: 700,
-              }}
-            >
-              ⭐ VIP Vitrin
-            </div>
-          </div>
-        </div>
-      ),
-      {
-        width: 1200,
-        height: 630,
+        return new NextResponse(new Uint8Array(jpegBuffer), {
+          status: 200,
+          headers: {
+            'Content-Type': 'image/jpeg',
+            'Content-Length': jpegBuffer.length.toString(),
+            'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
+          },
+        });
+      } catch (err) {
+        // Fallback convert without resize
+        try {
+          const fallbackJpeg = await sharp(inputBuffer).jpeg({ quality: 85 }).toBuffer();
+          return new NextResponse(new Uint8Array(fallbackJpeg), {
+            status: 200,
+            headers: {
+              'Content-Type': 'image/jpeg',
+              'Content-Length': fallbackJpeg.length.toString(),
+              'Cache-Control': 'public, max-age=86400',
+            },
+          });
+        } catch (e) {}
       }
-    );
+    }
+
+    // Default Fallback VIP Card in pure JPEG
+    const title = (listingData?.baslik || 'VIP Doğrulanmış Model').slice(0, 32);
+    const city = (listingData?.ilSlug ? listingData.ilSlug.toUpperCase() : 'TÜRKİYE');
+    const district = (listingData?.ilceSlug ? listingData.ilceSlug.toUpperCase() : 'VIP');
+
+    const svgCard = `
+      <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0d1117"/>
+            <stop offset="50%" stop-color="#161b22"/>
+            <stop offset="100%" stop-color="#1c1508"/>
+          </linearGradient>
+        </defs>
+        <rect width="1200" height="630" fill="url(#bg)"/>
+        <rect x="24" y="24" width="1152" height="582" rx="28" fill="none" stroke="#f59e0b" stroke-width="4" stroke-opacity="0.6"/>
+        <rect x="360" y="100" width="480" height="54" rx="27" fill="#f59e0b" fill-opacity="0.15" stroke="#f59e0b" stroke-width="2"/>
+        <text x="600" y="136" font-size="22" font-weight="bold" fill="#f59e0b" text-anchor="middle" font-family="sans-serif" letter-spacing="2">👑 ${district} — ${city} VIP ESKORT</text>
+        <text x="600" y="290" font-size="56" font-weight="900" fill="#ffffff" text-anchor="middle" font-family="sans-serif">${title}</text>
+        <text x="600" y="370" font-size="26" font-weight="bold" fill="#8b949e" text-anchor="middle" font-family="sans-serif">%100 Teyitli Profil • Doğrudan WhatsApp İletişimi</text>
+        <rect x="250" y="440" width="320" height="60" rx="18" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+        <text x="410" y="478" font-size="20" font-weight="bold" fill="#10b981" text-anchor="middle" font-family="sans-serif">✓ Doğrulanmış Profil</text>
+        <rect x="630" y="440" width="320" height="60" rx="18" fill="#21262d" stroke="#30363d" stroke-width="2"/>
+        <text x="790" y="478" font-size="20" font-weight="bold" fill="#25D366" text-anchor="middle" font-family="sans-serif">💬 WhatsApp İletişim</text>
+      </svg>
+    `;
+
+    const svgBuffer = Buffer.from(svgCard);
+    const jpegFallback = await sharp(svgBuffer).jpeg({ quality: 90 }).toBuffer();
+
+    return new NextResponse(new Uint8Array(jpegFallback), {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/jpeg',
+        'Content-Length': jpegFallback.length.toString(),
+        'Cache-Control': 'public, max-age=3600',
+      },
+    });
   } catch (error: any) {
     console.error('OG Cover Error:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return new NextResponse('OG Error', { status: 500 });
   }
 }
