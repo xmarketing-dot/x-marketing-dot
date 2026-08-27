@@ -31,6 +31,7 @@ export default function SpecialAdPopup() {
   const [adConfig, setAdConfig] = useState<SpecialAdConfig | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+  const hasDismissedThisVisitRef = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -55,7 +56,7 @@ export default function SpecialAdPopup() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!adConfig || !adConfig.aktif) return;
+    if (!adConfig || !adConfig.aktif || hasDismissedThisVisitRef.current) return;
 
     const delayMs = Math.max(2, adConfig.gecikmeSaniye || 4) * 1000;
 
@@ -63,7 +64,7 @@ export default function SpecialAdPopup() {
     let triggered = false;
 
     const showAd = () => {
-      if (triggered) return;
+      if (triggered || hasDismissedThisVisitRef.current) return;
       triggered = true;
       setIsOpen(true);
       if (timer) clearTimeout(timer);
@@ -152,10 +153,12 @@ export default function SpecialAdPopup() {
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
+    hasDismissedThisVisitRef.current = true;
     setIsOpen(false);
   };
 
   const handleGoToAd = () => {
+    hasDismissedThisVisitRef.current = true;
     setIsOpen(false);
     if (typeof window !== 'undefined') {
       if ((window as any).trackEvent) {
@@ -266,8 +269,8 @@ export default function SpecialAdPopup() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => {
+                  hasDismissedThisVisitRef.current = true;
                   setIsOpen(false);
-                  sessionStorage.setItem('bms_special_ad_closed', 'true');
                   if ((window as any).trackEvent) {
                     (window as any).trackEvent('whatsapp_click', {
                       listingId: listing?._id,
