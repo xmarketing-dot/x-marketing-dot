@@ -223,6 +223,104 @@ export default function BmsSecurePortalDashboard() {
 
       </div>
 
+      {/* ── 3.5 ÖZEL SPONSORLU POPUP REKLAM PERFORMANSI ──────────────── */}
+      <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-b from-[#1c1813] to-[#161b22] border-2 border-amber-500/50 shadow-2xl flex flex-col gap-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-amber-500/30 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30">
+              <Flame className="w-6 h-6 fill-slate-950" />
+            </div>
+            <div className="flex flex-col">
+              <h2 className="font-black text-base sm:text-lg text-white font-heading flex items-center gap-2">
+                <span>👑 Özel Sponsorlu Popup Reklam Performansı</span>
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase font-heading">
+                  CANLI METRİKLER
+                </span>
+              </h2>
+              <p className="text-xs text-[#8b949e]">
+                Seçilen tarih aralığında popup reklamın kaç farklı kişiye gösterildiği, tıklanma sayısı ve WhatsApp dönüşüm oranı.
+              </p>
+            </div>
+          </div>
+
+          <span className="text-xs font-mono text-amber-400 font-bold self-start sm:self-auto bg-black/40 px-3 py-1.5 rounded-xl border border-amber-500/30">
+            Dönüşüm Oranı: %{data?.specialAdStats?.ctr || '0.0'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Kaç Farklı Kişiye Gösterildi */}
+          <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-1.5 shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#8b949e]">Tekil Kişilere Gösterim</span>
+              <Eye className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="font-black text-2xl text-white font-heading">
+                {(data?.specialAdStats?.uniqueVisitors || 0).toLocaleString()}
+              </span>
+              <span className="text-[11px] text-amber-400 font-bold">Farklı Kişi</span>
+            </div>
+            <span className="text-[10px] text-[#8b949e]">
+              Toplam {(data?.specialAdStats?.impressions || 0).toLocaleString()} kez popup açıldı
+            </span>
+          </div>
+
+          {/* Kaç Kere Tıklandı */}
+          <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-1.5 shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#8b949e]">İlan Detayı Tıklanması</span>
+              <ExternalLink className="w-4 h-4 text-blue-400" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="font-black text-2xl text-blue-400 font-heading">
+                {(data?.specialAdStats?.clicks || 0).toLocaleString()}
+              </span>
+              <span className="text-[11px] text-blue-300 font-bold">Tıklama</span>
+            </div>
+            <span className="text-[10px] text-[#8b949e]">
+              Popup'tan ilanın profiline gidenler
+            </span>
+          </div>
+
+          {/* Doğrudan WhatsApp Tıklaması */}
+          <div className="p-4 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col gap-1.5 shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#8b949e]">Doğrudan WhatsApp İletişimi</span>
+              <OfficialWhatsAppIcon className="w-4 h-4 fill-[#25D366]" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="font-black text-2xl text-[#25D366] font-heading">
+                {(data?.specialAdStats?.whatsappClicks || 0).toLocaleString()}
+              </span>
+              <span className="text-[11px] text-emerald-400 font-bold">WhatsApp Mesajı</span>
+            </div>
+            <span className="text-[10px] text-[#8b949e]">
+              Popup üzerinden hemen yaz butonuna basanlar
+            </span>
+          </div>
+
+          {/* Performans (CTR) */}
+          <div className="p-4 rounded-2xl bg-[#0d1117] border border-purple-500/30 flex flex-col gap-1.5 shadow-md">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#8b949e]">Reklam Performansı (CTR)</span>
+              <Zap className="w-4 h-4 text-purple-400" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="font-black text-2xl text-purple-400 font-heading">
+                %{data?.specialAdStats?.ctr || '0.0'}
+              </span>
+              <span className="text-[11px] text-purple-300 font-bold">Dönüşüm</span>
+            </div>
+            <span className="text-[10px] text-[#8b949e]">
+              Gösterim başına toplam tıklama oranı
+            </span>
+          </div>
+
+        </div>
+      </div>
+
       {/* ── 4. TRAFİK KAYNAKLARI DETAYLI DAĞILIMI ──────────────── */}
       <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-5">
         <div className="flex items-center justify-between border-b border-[#30363d] pb-4">

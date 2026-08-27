@@ -104,6 +104,13 @@ export async function GET(req: Request) {
       { $limit: 15 },
     ]);
 
+    // ── 7.5 ÖZEL SPONSORLU POPUP REKLAM PERFORMANSI ──
+    const specialAdImpressions = await AnalyticsEventModel.countDocuments({ ...dateQuery, eventType: 'special_ad_impression' });
+    const specialAdUniqueVisitors = (await AnalyticsEventModel.distinct('visitorId', { ...dateQuery, eventType: 'special_ad_impression' })).length;
+    const specialAdClicks = await AnalyticsEventModel.countDocuments({ ...dateQuery, eventType: { $in: ['special_ad_click', 'special_ad_whatsapp_click'] } });
+    const specialAdWhatsappClicks = await AnalyticsEventModel.countDocuments({ ...dateQuery, eventType: 'special_ad_whatsapp_click' });
+    const specialAdCtr = specialAdImpressions > 0 ? ((specialAdClicks / specialAdImpressions) * 100).toFixed(1) : '0.0';
+
     // ── 8. SON 100 CANLI ZİYARETÇİ GÜNLÜĞÜ ──
     const recentVisitors = await AnalyticsVisitorModel.find(dateQuery)
       .sort({ createdAt: -1 })
@@ -136,12 +143,21 @@ export async function GET(req: Request) {
         searchTerms,
         popularPages,
         topCities,
+        specialAdStats: {
+          impressions: specialAdImpressions,
+          uniqueVisitors: specialAdUniqueVisitors,
+          clicks: specialAdClicks,
+          whatsappClicks: specialAdWhatsappClicks,
+          ctr: specialAdCtr,
+        },
         eventCounts: {
           whatsappClicks: eventCounts.whatsapp_click || 0,
           shares: eventCounts.share_listing || 0,
           categoryClicks: eventCounts.category_click || 0,
           cityFilters: eventCounts.city_filter || 0,
           searches: eventCounts.search || 0,
+          specialAdImpressions,
+          specialAdClicks,
         },
         topContactedListings,
         totalListingViews,

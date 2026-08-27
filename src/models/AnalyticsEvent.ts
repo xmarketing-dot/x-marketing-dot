@@ -3,7 +3,17 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IAnalyticsEvent extends Document {
   visitorId: string;
   sessionId: string;
-  eventType: 'whatsapp_click' | 'share_listing' | 'category_click' | 'city_filter' | 'search' | 'slider_click' | 'phone_call';
+  eventType: 
+    | 'whatsapp_click' 
+    | 'share_listing' 
+    | 'category_click' 
+    | 'city_filter' 
+    | 'search' 
+    | 'slider_click' 
+    | 'phone_call'
+    | 'special_ad_impression'
+    | 'special_ad_click'
+    | 'special_ad_whatsapp_click';
   targetId?: string;
   targetTitle?: string;
   targetCity?: string;
@@ -19,7 +29,18 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
     sessionId: { type: String, required: true, index: true },
     eventType: {
       type: String,
-      enum: ['whatsapp_click', 'share_listing', 'category_click', 'city_filter', 'search', 'slider_click', 'phone_call'],
+      enum: [
+        'whatsapp_click', 
+        'share_listing', 
+        'category_click', 
+        'city_filter', 
+        'search', 
+        'slider_click', 
+        'phone_call',
+        'special_ad_impression',
+        'special_ad_click',
+        'special_ad_whatsapp_click'
+      ],
       required: true,
       index: true,
     },

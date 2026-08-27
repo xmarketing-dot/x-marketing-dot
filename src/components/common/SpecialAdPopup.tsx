@@ -67,6 +67,12 @@ export default function SpecialAdPopup() {
       if (triggered || hasDismissedThisVisitRef.current) return;
       triggered = true;
       setIsOpen(true);
+      if (typeof window !== 'undefined' && (window as any).trackEvent) {
+        (window as any).trackEvent('special_ad_impression', {
+          listingId: adConfig?.ilan?._id || adConfig?.ilanId,
+          title: adConfig?.ilan?.baslik || adConfig?.baslik,
+        });
+      }
       if (timer) clearTimeout(timer);
       window.removeEventListener('scroll', handleScroll);
     };
