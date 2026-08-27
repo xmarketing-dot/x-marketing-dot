@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
+import AnalyticsEventModel from '@/models/AnalyticsEvent';
 import ListingModel from '@/models/Listing';
 
 export const dynamic = 'force-dynamic';
@@ -24,55 +25,128 @@ export async function GET(req: Request) {
     } else if (range === 'week') {
       const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       dateQuery = { createdAt: { $gte: startOfWeek } };
+    } else if (range === 'month') {
+      const startOfMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      dateQuery = { createdAt: { $gte: startOfMonth } };
     }
 
-    // 1. Total visitors count (filtered)
-    const totalVisitors = await AnalyticsVisitorModel.countDocuments(dateQuery);
+    // ── 1. ZİYARETÇİ VE SAYFA GÖRÜNTÜLEME METRİKLERİ ──
+    const totalPageviews = await AnalyticsVisitorModel.countDocuments(dateQuery);
+    
+    // Tekil ziyaretçi sayısı (Aynı visitorId tek sayılır)
+    const distinctVisitors = await AnalyticsVisitorModel.distinct('visitorId', dateQuery);
+    const uniqueVisitors = distinctVisitors.length;
 
-    // 2. Mobile vs Desktop split (filtered)
+    // Aktif Kullanıcılar (Son 5 dakika)
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    const activeUsers = (await AnalyticsVisitorModel.distinct('visitorId', { createdAt: { $gte: fiveMinutesAgo } })).length;
+
+    // ── 2. CİHAZ VE İŞLETİM SİSTEMİ DAĞILIMI ──
     const mobileCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, device: 'mobile' });
     const desktopCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, device: 'desktop' });
 
-    // 3. Traffic sources breakdown (filtered)
-    const googleCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, referer: 'Google Search' });
-    const directCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, referer: 'Direct' });
+    // ── 3. TRAFİK KAYNAKLARI (GOOGLE, WHATSAPP, DİRECT, SOSYAL MEDYA) ──
+    const googleCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'google' });
+    const whatsappInboundCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'whatsapp' });
+    const directCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'direct' });
+    const instagramCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'instagram' });
+    const twitterCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'x' });
+    const facebookCount = await AnalyticsVisitorModel.countDocuments({ ...dateQuery, refererSource: 'facebook' });
 
-    // 4. Active online users (Last 5 minutes)
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-    const activeUsers = await AnalyticsVisitorModel.countDocuments({ createdAt: { $gte: fiveMinutesAgo } });
-
-    // 5. Most popular pages (filtered)
-    const popularPages = await AnalyticsVisitorModel.aggregate([
-      { $match: dateQuery },
-      { $group: { _id: "$path", count: { $sum: 1 } } },
+    // ── 4. GOOGLE ARAMA TERİMLERİ VE SİTE İÇİ ARAMALAR ──
+    const searchTerms = await AnalyticsVisitorModel.aggregate([
+      { $match: { ...dateQuery, searchKeyword: { $exists: true, $ne: '' } } },
+      { $group: { _id: "$searchKeyword", count: { $sum: 1 }, lastSeen: { $max: "$createdAt" } } },
       { $sort: { count: -1 } },
-      { $limit: 10 }
+      { $limit: 15 },
     ]);
 
-    // 6. Recent visitors log (last 100, filtered)
+    // ── 5. EN ÇOK GEZİLEN POPÜLER SAYFALAR ──
+    const popularPages = await AnalyticsVisitorModel.aggregate([
+      { $match: dateQuery },
+      { $group: { _id: "$path", pageTitle: { $first: "$pageTitle" }, count: { $sum: 1 }, avgDuration: { $avg: "$durationSeconds" } } },
+      { $sort: { count: -1 } },
+      { $limit: 15 },
+    ]);
+
+    // ── 6. ŞEHİR / BÖLGE DAĞILIMI ──
+    const topCities = await AnalyticsVisitorModel.aggregate([
+      { $match: { ...dateQuery, city: { $exists: true, $ne: '' } } },
+      { $group: { _id: "$city", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+    ]);
+
+    // ── 7. ETKİNLİK VE TIKLAMA ANALİZLERİ (WHATSAPP, PAYLAŞIM, BUTONLAR) ──
+    const eventStats = await AnalyticsEventModel.aggregate([
+      { $match: dateQuery },
+      { $group: { _id: "$eventType", count: { $sum: 1 } } },
+    ]);
+
+    const eventCounts: Record<string, number> = {};
+    eventStats.forEach((e) => {
+      eventCounts[e._id] = e.count;
+    });
+
+    // En Çok WhatsApp Tıklaması ve Paylaşımı Alan İlanlar
+    const topContactedListings = await AnalyticsEventModel.aggregate([
+      { $match: { ...dateQuery, eventType: { $in: ['whatsapp_click', 'share_listing'] } } },
+      { 
+        $group: { 
+          _id: "$targetTitle", 
+          targetId: { $first: "$targetId" },
+          whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "whatsapp_click"] }, 1, 0] } },
+          shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
+          totalInteractions: { $sum: 1 }
+        } 
+      },
+      { $sort: { totalInteractions: -1 } },
+      { $limit: 15 },
+    ]);
+
+    // ── 8. SON 100 CANLI ZİYARETÇİ GÜNLÜĞÜ ──
     const recentVisitors = await AnalyticsVisitorModel.find(dateQuery)
       .sort({ createdAt: -1 })
       .limit(100)
       .lean();
 
-    // 7. Total listing views & WhatsApp clicks (Global, not date-filtered since they are on Listing model)
-    const listings = await ListingModel.find({}, 'goruntulenmeSayisi whatsappTiklamaSayisi').lean();
+    // ── 9. GENEL İLAN İSTATİSTİKLERİ ──
+    const listings = await ListingModel.find({}, 'goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi').lean();
     const totalListingViews = listings.reduce((acc, l) => acc + (l.goruntulenmeSayisi || 0), 0);
     const totalWhatsappClicks = listings.reduce((acc, l) => acc + (l.whatsappTiklamaSayisi || 0), 0);
+    const totalShares = listings.reduce((acc: number, l: any) => acc + (l.paylasimSayisi || 0), 0);
 
     return NextResponse.json({
       analytics: {
-        totalVisitors,
+        totalPageviews,
+        uniqueVisitors,
+        activeUsers,
         mobileCount,
         desktopCount,
-        mobilePercentage: totalVisitors > 0 ? Math.round((mobileCount / totalVisitors) * 100) : 0,
-        desktopPercentage: totalVisitors > 0 ? Math.round((desktopCount / totalVisitors) * 100) : 0,
-        googleCount,
-        directCount,
-        activeUsers,
+        mobilePercentage: totalPageviews > 0 ? Math.round((mobileCount / totalPageviews) * 100) : 0,
+        desktopPercentage: totalPageviews > 0 ? Math.round((desktopCount / totalPageviews) * 100) : 0,
+        sources: {
+          google: googleCount,
+          whatsapp: whatsappInboundCount,
+          direct: directCount,
+          instagram: instagramCount,
+          x: twitterCount,
+          facebook: facebookCount,
+        },
+        searchTerms,
         popularPages,
+        topCities,
+        eventCounts: {
+          whatsappClicks: eventCounts.whatsapp_click || 0,
+          shares: eventCounts.share_listing || 0,
+          categoryClicks: eventCounts.category_click || 0,
+          cityFilters: eventCounts.city_filter || 0,
+          searches: eventCounts.search || 0,
+        },
+        topContactedListings,
         totalListingViews,
         totalWhatsappClicks,
+        totalShares,
         recentVisitors,
       },
     });

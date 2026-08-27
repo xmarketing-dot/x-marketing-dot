@@ -93,6 +93,14 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
 
   const handleWaClick = () => {
     if (listing._id) {
+      if (typeof window !== 'undefined' && window.trackEvent) {
+        window.trackEvent('whatsapp_click', {
+          listingId: listing._id,
+          title: listing.baslik,
+          city: `${listing.ilSlug}/${listing.ilceSlug}`,
+          phone: formattedNumber,
+        });
+      }
       fetch('/api/listings/click-whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

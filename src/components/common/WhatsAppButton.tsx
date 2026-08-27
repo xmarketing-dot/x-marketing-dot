@@ -35,6 +35,13 @@ export default function WhatsAppButton({
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 
   const handleClick = () => {
+    if (typeof window !== 'undefined' && (window as any).trackEvent) {
+      (window as any).trackEvent('whatsapp_click', {
+        listingId,
+        title: baslik,
+        phone: formattedNumber,
+      });
+    }
     if (listingId) {
       fetch('/api/listings/click-whatsapp', {
         method: 'POST',
