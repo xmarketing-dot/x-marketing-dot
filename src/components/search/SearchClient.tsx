@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Search, MapPin, Sparkles, Filter, X, ChevronRight } from 'lucide-react';
+import { Search, Sparkles, X } from 'lucide-react';
 import CompactListingCard from '@/components/common/CompactListingCard';
 
 interface SearchClientProps {

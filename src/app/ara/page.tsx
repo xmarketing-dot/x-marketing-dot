@@ -2,7 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { getSiteUrl } from '@/lib/siteUrl';
 import { getAllLocations, getListings } from '@/lib/data';
-import SearchClient from './SearchClient';
+import SearchClient from '@/components/search/SearchClient';
 
 export const revalidate = 60;
 
