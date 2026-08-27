@@ -152,37 +152,7 @@ export default async function HomePage() {
         <HeroSlider slides={formattedShowcaseListings} />
       </section>
 
-      {/* 2. DİNAMİK ANASAYFA BAŞLIK & SEO SLOGANI (Admin Panelinden Yönetilir) */}
-      <div className="px-4 flex flex-col gap-1.5">
-        <h1 className="font-black text-lg sm:text-xl text-white font-heading tracking-tight leading-snug">
-          {homepageConfig?.hero?.baslik || 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu'}
-        </h1>
-        <p className="text-xs text-[#8b949e] leading-relaxed">
-          {homepageConfig?.hero?.altBaslik || '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları ve doğrudan WhatsApp iletişim hatları.'}
-        </p>
-      </div>
-
-      {/* 3. DİNAMİK VURGU BANNERI (Admin Panelinden Aktif/Pasif Yapılabilir) */}
-      {homepageConfig?.aktifBanner?.aktif && homepageConfig?.aktifBanner?.metin && (
-        <div className="px-4">
-          <Link
-            href={homepageConfig.aktifBanner.link || '/ilan-ver'}
-            className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-[#1c180e] to-amber-500/20 border border-amber-500/60 hover:border-amber-400 flex items-center justify-between shadow-xl group transition-all"
-          >
-            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-              <span className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-black text-[10px] uppercase font-heading shrink-0 shadow-md">
-                {homepageConfig.aktifBanner.rozet || '👑 VIP DUYURU'}
-              </span>
-              <span className="text-xs font-bold text-white font-heading truncate">
-                {homepageConfig.aktifBanner.metin}
-              </span>
-            </div>
-            <ChevronRight className="w-4 h-4 text-amber-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-          </Link>
-        </div>
-      )}
-
-      {/* 4. TÜM TÜRKİYE İL LİSTESİ BUTONU */}
+      {/* 2. TÜM TÜRKİYE İL LİSTESİ BUTONU */}
       <div className="px-4">
         <Link
           href="/sehirler"
