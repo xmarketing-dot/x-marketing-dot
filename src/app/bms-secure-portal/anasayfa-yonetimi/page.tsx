@@ -23,7 +23,10 @@ import {
   ArrowRight,
   Flame,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Globe,
+  Radio,
+  Clock
 } from 'lucide-react';
 
 interface TickerItem {
@@ -31,6 +34,29 @@ interface TickerItem {
   text: string;
   link: string;
 }
+
+interface SpecialAdEntry {
+  _id?: string;
+  aktif: boolean;
+  ilanId: string | null;
+  hedefIlSlug: string;
+  gecikmeSaniye: number;
+  rozet: string;
+}
+
+const POPULAR_CITIES = [
+  { slug: 'tum_turkiye', ad: '🇹🇷 TÜRKİYE GENELİ (Tüm Şehirler)' },
+  { slug: 'istanbul', ad: '📍 İSTANBUL (Tüm İlçeler)' },
+  { slug: 'ankara', ad: '📍 ANKARA' },
+  { slug: 'izmir', ad: '📍 İZMİR' },
+  { slug: 'antalya', ad: '📍 ANTALYA' },
+  { slug: 'bursa', ad: '📍 BURSA' },
+  { slug: 'adana', ad: '📍 ADANA' },
+  { slug: 'eskisehir', ad: '📍 ESKİŞEHİR' },
+  { slug: 'gaziantep', ad: '📍 GAZİANTEP' },
+  { slug: 'kocaeli', ad: '📍 KOCAELİ' },
+  { slug: 'mugla', ad: '📍 MUĞLA (Bodrum/Marmaris/Fethiye)' },
+];
 
 export default function AdminHomepageConfigPage() {
   const [loading, setLoading] = useState(true);
@@ -54,11 +80,14 @@ export default function AdminHomepageConfigPage() {
     { badge: '⚡ CANLI DESTEK', text: '%100 Güvenli & 7/24 Canlı Müşteri Desteği', link: '/chat' },
   ]);
 
-  // Special Sponsored Ad Popup State
-  const [ozelAdAktif, setOzelAdAktif] = useState(false);
-  const [ozelAdIlanId, setOzelAdIlanId] = useState<string | null>(null);
-  const [ozelAdRozet, setOzelAdRozet] = useState('🔥 SPONSORLU ÖZEL İLAN');
-  const [ozelAdGecikmeSaniye, setOzelAdGecikmeSaniye] = useState(4);
+  // Multiple Special Ads State (Çoklu Sponsorlu Popup Reklamları)
+  const [ozelIlanReklamlar, setOzelIlanReklamlar] = useState<SpecialAdEntry[]>([]);
+
+  // New Ad Form State
+  const [newAdIlanId, setNewAdIlanId] = useState<string>('');
+  const [newAdHedefIl, setNewAdHedefIl] = useState<string>('tum_turkiye');
+  const [newAdRozet, setNewAdRozet] = useState<string>('🔥 GÜNÜN ÖZEL VIP İLANI');
+  const [newAdGecikme, setNewAdGecikme] = useState<number>(4);
 
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
   const [allListings, setAllListings] = useState<any[]>([]);
@@ -81,11 +110,21 @@ export default function AdminHomepageConfigPage() {
         setBannerRozet(data.config.aktifBanner?.rozet || '👑 VIP DUYURU');
         setBannerAktif(data.config.aktifBanner?.aktif ?? true);
         
-        if (data.config.ozelIlanReklam) {
-          setOzelAdAktif(data.config.ozelIlanReklam.aktif ?? false);
-          setOzelAdIlanId(data.config.ozelIlanReklam.ilanId ? data.config.ozelIlanReklam.ilanId.toString() : null);
-          setOzelAdRozet(data.config.ozelIlanReklam.rozet || '🔥 SPONSORLU ÖZEL İLAN');
-          setOzelAdGecikmeSaniye(data.config.ozelIlanReklam.gecikmeSaniye || 4);
+        // Multi-ad array loading
+        if (Array.isArray(data.config.ozelIlanReklamlar) && data.config.ozelIlanReklamlar.length > 0) {
+          setOzelIlanReklamlar(data.config.ozelIlanReklamlar);
+        } else if (data.config.ozelIlanReklam?.ilanId) {
+          // Migrate legacy single ad into array
+          setOzelIlanReklamlar([
+            {
+              _id: 'ad_legacy',
+              aktif: data.config.ozelIlanReklam.aktif ?? true,
+              ilanId: data.config.ozelIlanReklam.ilanId.toString(),
+              hedefIlSlug: data.config.ozelIlanReklam.hedefIlSlug || 'tum_turkiye',
+              gecikmeSaniye: data.config.ozelIlanReklam.gecikmeSaniye || 4,
+              rozet: data.config.ozelIlanReklam.rozet || '🔥 GÜNÜN ÖZEL VIP İLANI',
+            }
+          ]);
         }
 
         if (Array.isArray(data.config.duyurular) && data.config.duyurular.length > 0) {
@@ -118,79 +157,56 @@ export default function AdminHomepageConfigPage() {
     setSelectedListingIds(vipIds);
   };
 
-  const handleAddDuyuru = () => {
-    setDuyurular((prev) => [
-      ...prev,
-      { badge: '👑 YENİ DUYURU', text: 'Duyuru metnini buraya yazın...', link: '/ilan-ver' }
-    ]);
+  const handleAddAnnouncement = () => {
+    setDuyurular([...duyurular, { badge: '⭐ DUYURU', text: 'Yeni kampanya duyurusu...', link: '/ilan-ver' }]);
   };
 
-  const handleUpdateDuyuru = (index: number, field: keyof TickerItem, value: string) => {
-    setDuyurular((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
+  const handleRemoveAnnouncement = (index: number) => {
+    setDuyurular(duyurular.filter((_, i) => i !== index));
   };
 
-  const handleDeleteDuyuru = (index: number) => {
-    setDuyurular((prev) => prev.filter((_, idx) => idx !== index));
+  const handleUpdateAnnouncement = (index: number, field: keyof TickerItem, value: string) => {
+    const updated = [...duyurular];
+    updated[index] = { ...updated[index], [field]: value };
+    setDuyurular(updated);
   };
 
-  // 1-Click Select Listing for Special Ad Popup
-  const handleSelectForSpecialAd = (listingId: string) => {
-    setOzelAdIlanId(listingId);
-    setOzelAdAktif(true);
-    const item = allListings.find((l) => l._id.toString() === listingId);
-    if (item) {
-      setMessage({ type: 'success', text: `"${item.baslik}" ilanı Özel Reklam Popup olarak seçildi! Kaydet butonuna basmayı unutmayın.` });
+  // ── ÇOKLU ÖZEL REKLAM YÖNETİMİ FONKSİYONLARI ──
+  const handleAddNewSpecialAd = () => {
+    if (!newAdIlanId) {
+      alert('Lütfen popup olarak gösterilecek bir ilan seçin.');
+      return;
     }
+
+    const newAd: SpecialAdEntry = {
+      _id: 'ad_' + Date.now(),
+      aktif: true,
+      ilanId: newAdIlanId,
+      hedefIlSlug: newAdHedefIl,
+      gecikmeSaniye: newAdGecikme,
+      rozet: newAdRozet,
+    };
+
+    setOzelIlanReklamlar([newAd, ...ozelIlanReklamlar]);
+    setNewAdIlanId('');
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage(null);
-    setSaving(true);
-
-    try {
-      const res = await fetch('/api/admin/homepage-config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          heroBaslik,
-          heroAltBaslik,
-          bannerMetin,
-          bannerLink,
-          bannerRozet,
-          bannerAktif,
-          duyurular,
-          sliderIlanIds: selectedListingIds,
-          ozelIlanReklam: {
-            aktif: ozelAdAktif,
-            ilanId: ozelAdIlanId || null,
-            rozet: ozelAdRozet,
-            gecikmeSaniye: Number(ozelAdGecikmeSaniye) || 4,
-          },
-        }),
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setMessage({ type: 'success', text: `Anasayfa vitrini ve Özel Reklam Popup başarıyla kaydedildi!` });
-      } else {
-        setMessage({ type: 'error', text: data.error || 'Ayarlar kaydedilemedi.' });
-      }
-    } catch (err: any) {
-      setMessage({ type: 'error', text: 'Hata oluştu.' });
-    } finally {
-      setSaving(false);
-    }
+  const handleToggleAdActive = (index: number) => {
+    const updated = [...ozelIlanReklamlar];
+    updated[index].aktif = !updated[index].aktif;
+    setOzelIlanReklamlar(updated);
   };
 
-  const handleSaveSpecialAdOnly = async () => {
-    setMessage(null);
+  const handleRemoveSpecialAd = (index: number) => {
+    setOzelIlanReklamlar(ozelIlanReklamlar.filter((_, i) => i !== index));
+  };
+
+  const handleSaveSpecialAdsOnly = async () => {
     setSavingAd(true);
+    setMessage(null);
     try {
+      const topActive = ozelIlanReklamlar.find((a) => a.aktif) || ozelIlanReklamlar[0] || null;
+
       const res = await fetch('/api/admin/homepage-config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -199,511 +215,532 @@ export default function AdminHomepageConfigPage() {
           heroAltBaslik,
           bannerMetin,
           bannerLink,
-          bannerRozet,
           bannerAktif,
+          bannerRozet,
           duyurular,
           sliderIlanIds: selectedListingIds,
-          ozelIlanReklam: {
-            aktif: ozelAdAktif,
-            ilanId: ozelAdIlanId || null,
-            rozet: ozelAdRozet,
-            gecikmeSaniye: Number(ozelAdGecikmeSaniye) || 4,
-          },
+          ozelIlanReklamlar,
+          ozelIlanReklam: topActive ? {
+            aktif: topActive.aktif,
+            ilanId: topActive.ilanId,
+            hedefIlSlug: topActive.hedefIlSlug,
+            gecikmeSaniye: topActive.gecikmeSaniye,
+            rozet: topActive.rozet,
+          } : { aktif: false },
         }),
       });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setMessage({ type: 'success', text: `🚀 Özel İlan Popup Reklamı anında kaydedildi ve yayına alındı!` });
+      if (res.ok) {
+        setMessage({ type: 'success', text: `Tüm özel reklamlar (${ozelIlanReklamlar.length} Adet) başarıyla kaydedildi ve yayına alındı!` });
+        fetchConfig();
       } else {
-        setMessage({ type: 'error', text: data.error || 'Reklam kaydedilemedi.' });
+        setMessage({ type: 'error', text: 'Özel reklamlar kaydedilemedi.' });
       }
-    } catch (err: any) {
-      setMessage({ type: 'error', text: 'Hata oluştu.' });
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e.message || 'Bağlantı hatası' });
     } finally {
       setSavingAd(false);
     }
   };
 
-  const selectedAdListing = allListings.find((l) => l._id.toString() === ozelAdIlanId);
+  const handleSaveAll = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setMessage(null);
+
+    try {
+      const topActive = ozelIlanReklamlar.find((a) => a.aktif) || ozelIlanReklamlar[0] || null;
+
+      const res = await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          heroBaslik,
+          heroAltBaslik,
+          bannerMetin,
+          bannerLink,
+          bannerAktif,
+          bannerRozet,
+          duyurular,
+          sliderIlanIds: selectedListingIds,
+          ozelIlanReklamlar,
+          ozelIlanReklam: topActive ? {
+            aktif: topActive.aktif,
+            ilanId: topActive.ilanId,
+            hedefIlSlug: topActive.hedefIlSlug,
+            gecikmeSaniye: topActive.gecikmeSaniye,
+            rozet: topActive.rozet,
+          } : { aktif: false },
+        }),
+      });
+
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'Tüm anasayfa ve reklam ayarları başarıyla güncellendi!' });
+      } else {
+        setMessage({ type: 'error', text: 'Ayarlar güncellenirken bir hata oluştu.' });
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Bağlantı hatası.' });
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const filteredListings = allListings.filter((l) => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
-      (l.baslik || '').toLowerCase().includes(term) ||
-      (l.ilSlug || '').toLowerCase().includes(term) ||
-      (l.ilceSlug || '').toLowerCase().includes(term) ||
-      (l.rozet || '').toLowerCase().includes(term)
+      l.baslik?.toLowerCase().includes(term) ||
+      l.ilSlug?.toLowerCase().includes(term) ||
+      l.ilceSlug?.toLowerCase().includes(term)
     );
   });
 
+  const getListingById = (id: string | null) => {
+    if (!id) return null;
+    return allListings.find((l) => l._id.toString() === id.toString()) || null;
+  };
+
   return (
     <div className="flex flex-col gap-8 w-full max-w-full text-left">
+      
       {/* Header Bar */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
             <Sliders className="w-6 h-6" />
           </div>
           <div className="flex flex-col">
             <h1 className="font-black text-2xl text-white font-heading">Anasayfa &amp; Reklam Yönetimi</h1>
-            <p className="text-xs text-[#8b949e]">Özel sponsorlu popup reklam, vitrin ilanları ve duyuru bandı.</p>
+            <p className="text-xs text-[#8b949e]">Çoklu popup reklamları, konum bazlı hedefleme (İstanbul/İzmir/vb.), vitrin sliderları ve duyuruları yönetin.</p>
           </div>
         </div>
 
-        <button
-          onClick={fetchConfig}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-lg"
-        >
-          <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-          <span>Yenile</span>
-        </button>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={fetchConfig}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-lg"
+          >
+            <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
+            <span>Yenile</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSaveAll}
+            disabled={saving}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase font-heading shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            <span>{saving ? 'Kaydediliyor...' : 'Tümünü Kaydet'}</span>
+          </button>
+        </div>
       </div>
 
       {message && (
-        <div className={`p-4 rounded-2xl border flex items-center gap-3 animate-in fade-in ${
-          message.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'
+        <div className={`p-4 rounded-2xl text-xs font-bold flex items-center gap-3 ${
+          message.type === 'success'
+            ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400'
+            : 'bg-red-500/10 border border-red-500/30 text-red-400'
         }`}>
           {message.type === 'success' ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
-          <span className="text-xs font-bold font-heading">{message.text}</span>
+          <span>{message.text}</span>
         </div>
       )}
 
-      {loading ? (
-        <div className="min-h-[40vh] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
-        </div>
-      ) : (
-        <form onSubmit={handleSave} className="flex flex-col gap-8">
-
-          {/* ── 1. ÖZEL İLAN POPUP REKLAM YÖNETİMİ (SIFIR MANUEL URL, DİREKT İLAN BAĞLANTISI) ──────────────── */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-b from-[#1c1813] to-[#161b22] border-2 border-amber-500/60 shadow-2xl flex flex-col gap-6">
-            
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-amber-500/30 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30">
-                  <Flame className="w-6 h-6 fill-slate-950" />
-                </div>
-                <div className="flex flex-col">
-                  <h2 className="font-black text-lg text-white font-heading flex items-center gap-2">
-                    <span>👑 Özel Sponsorlu İlan &amp; Popup Reklam</span>
-                    <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase">
-                      OTOMATİK LİNK &amp; FOTO
-                    </span>
-                  </h2>
-                  <p className="text-xs text-[#8b949e]">
-                    Herhangi bir ilanı seçin; fotoğrafları, slug linki ve WhatsApp hattı popup'a otomatik bağlanır.
-                  </p>
-                </div>
+      <form onSubmit={handleSaveAll} className="flex flex-col gap-8">
+        
+        {/* ── 1. ÇOKLU SPONSORLU POPUP REKLAM YÖNETİMİ (KONUM & SIRALI ROTASYON) ──────────────── */}
+        <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border-2 border-amber-500/40 shadow-2xl flex flex-col gap-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black">
+                <Crown className="w-5 h-5" />
               </div>
-
-              {/* Aktif / Pasif Toggle */}
-              <div className="flex items-center gap-3 bg-[#0d1117] p-2 px-3 rounded-2xl border border-[#30363d] self-start sm:self-auto">
-                <span className="text-xs font-bold text-white">Popup Durumu:</span>
-                <button
-                  type="button"
-                  onClick={() => setOzelAdAktif(!ozelAdAktif)}
-                  className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors ${
-                    ozelAdAktif ? 'bg-emerald-500 justify-end' : 'bg-slate-700 justify-start'
-                  }`}
-                >
-                  <div className="bg-white w-4 h-4 rounded-full shadow-md"></div>
-                </button>
-                <span className={`text-xs font-black uppercase ${ozelAdAktif ? 'text-emerald-400' : 'text-slate-500'}`}>
-                  {ozelAdAktif ? 'YAYINDA' : 'KAPALI'}
-                </span>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <h2 className="font-black text-lg text-white font-heading">Çoklu Sponsorlu Popup Reklamları</h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-black text-[10px] uppercase font-mono">
+                    {ozelIlanReklamlar.filter((a) => a.aktif).length} Aktif / {ozelIlanReklamlar.length} Toplam
+                  </span>
+                </div>
+                <p className="text-xs text-[#8b949e]">
+                  İstediğiniz kadar reklam ekleyin. Konum eşleşmesine göre (İstanbul/İzmir/vb.) veya sırayla kullanıcılara gösterilir.
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              
-              {/* Sol: Ayarlar ve Seçim */}
-              <div className="flex flex-col gap-4">
-                
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-[#8b949e]">Popup'ta Gösterilecek İlanı Seçin</label>
-                  <select
-                    value={ozelAdIlanId || ''}
-                    onChange={(e) => {
-                      setOzelAdIlanId(e.target.value || null);
-                      if (e.target.value) setOzelAdAktif(true);
-                    }}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-bold"
-                  >
-                    <option value="">-- İlan Seçilmedi --</option>
-                    {allListings.map((l) => (
-                      <option key={l._id} value={l._id}>
-                        {l.baslik} ({l.ilSlug?.toUpperCase()} - {l.rozet?.toUpperCase() || 'STANDART'})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-[#8b949e]">Üst Rozet Metni</label>
-                    <input
-                      type="text"
-                      value={ozelAdRozet}
-                      onChange={(e) => setOzelAdRozet(e.target.value)}
-                      placeholder="🔥 SPONSORLU ÖZEL İLAN"
-                      className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-[#8b949e]">Gecikme Süresi (Saniye)</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={30}
-                      value={ozelAdGecikmeSaniye}
-                      onChange={(e) => setOzelAdGecikmeSaniye(Number(e.target.value))}
-                      className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-mono"
-                    />
-                  </div>
-                </div>
-
-                {selectedAdListing && (
-                  <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex items-center gap-3">
-                    <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
-                      <Image
-                        src={selectedAdListing.anaFotograf?.url || selectedAdListing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
-                        alt={selectedAdListing.baslik}
-                        fill
-                        sizes="56px"
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="font-black text-xs text-white truncate font-heading">
-                        {selectedAdListing.baslik}
-                      </span>
-                      <span className="text-[11px] text-amber-400 font-bold mt-0.5">
-                        📍 {selectedAdListing.ilSlug?.toUpperCase()} / {selectedAdListing.ilceSlug?.toUpperCase()}
-                      </span>
-                      <span className="text-[10px] text-emerald-400 font-mono">
-                        🔗 /ilan/{selectedAdListing.slug}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-              </div>
-
-              {/* Sağ: Canlı Önizleme */}
-              <div className="flex flex-col items-center justify-center p-4 rounded-3xl bg-[#0d1117] border border-[#30363d]">
-                <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading mb-3">
-                  📱 Ziyaretçiye Açılacak Popup Önizlemesi
-                </span>
-
-                {selectedAdListing ? (
-                  <div className="w-full max-w-[260px] rounded-3xl overflow-hidden bg-[#161b22] border-2 border-amber-400 shadow-[0_0_40px_rgba(245,158,11,0.4)] flex flex-col text-center">
-                    <div className="relative aspect-[3/4] w-full bg-[#0d1117]">
-                      <Image
-                        src={selectedAdListing.anaFotograf?.url || selectedAdListing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800'}
-                        alt="Reklam Önizleme"
-                        fill
-                        sizes="260px"
-                        className="object-cover"
-                      />
-                      <div className="absolute top-2 left-2">
-                        <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[8px] uppercase">
-                          {ozelAdRozet}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="p-3.5 flex flex-col gap-2">
-                      <div className="flex items-center justify-center gap-1 text-[10px] text-amber-400 font-bold">
-                        <MapPin className="w-3 h-3 text-amber-400 shrink-0" />
-                        <span>{selectedAdListing.ilSlug?.toUpperCase()} / {selectedAdListing.ilceSlug?.toUpperCase()}</span>
-                      </div>
-                      <h3 className="font-extrabold text-xs text-white font-heading leading-tight truncate">
-                        {selectedAdListing.baslik}
-                      </h3>
-                      <div className="py-2 px-3 rounded-xl bg-[#25D366] text-slate-950 font-black text-[10px] font-heading shadow-md flex items-center justify-center gap-1">
-                        <span>WhatsApp ile Hemen Yaz</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-8 text-center text-xs text-[#8b949e]">
-                    Yukarıdan veya aşağıdaki listeden bir ilan seçtiğinizde önizleme burada belirecektir.
-                  </div>
-                )}
-
-              </div>
-
-            </div>
-
-            {/* Bağımsız Anında Yayına Alma Butonu */}
-            <div className="flex items-center justify-end border-t border-amber-500/20 pt-4">
-              <button
-                type="button"
-                onClick={handleSaveSpecialAdOnly}
-                disabled={savingAd}
-                className="py-3 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/30 flex items-center gap-2 active:scale-95 transition-all font-heading"
-              >
-                {savingAd ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Kaydediliyor...</span>
-                  </>
-                ) : (
-                  <>
-                    <Flame className="w-4 h-4 fill-slate-950" />
-                    <span>🚀 Popup Reklamı Anında Kaydet &amp; Yayına Al</span>
-                  </>
-                )}
-              </button>
-            </div>
-
+            <button
+              type="button"
+              onClick={handleSaveSpecialAdsOnly}
+              disabled={savingAd}
+              className="py-2.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 flex items-center gap-2 active:scale-95 transition-all font-heading shrink-0 self-start sm:self-auto"
+            >
+              {savingAd ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              <span>{savingAd ? 'Kaydediliyor...' : 'Reklamları Anında Kaydet'}</span>
+            </button>
           </div>
 
-          {/* ── 2. DÖNEN ÜST DUYURU BANDI LİSTESİ ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-5">
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
-              <div className="flex items-center gap-2.5">
-                <Megaphone className="w-5 h-5 text-amber-400" />
-                <h2 className="font-black text-base text-white font-heading">
-                  En Üstte Kayan Duyuru Bandı (Ticker)
-                </h2>
-              </div>
-              <button
-                type="button"
-                onClick={handleAddDuyuru}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs hover:bg-amber-400 font-heading"
-              >
-                <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                <span>Yeni Duyuru Ekle</span>
-              </button>
-            </div>
+          {/* Yeni Reklam Ekleme Kartı */}
+          <div className="p-5 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-4">
+            <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              <span>Yeni Popup Reklamı Oluştur</span>
+            </span>
 
-            <div className="flex flex-col gap-3">
-              {duyurular.map((d, index) => (
-                <div key={index} className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col sm:flex-row items-center gap-3">
-                  <div className="w-full sm:w-44">
-                    <input
-                      type="text"
-                      value={d.badge}
-                      onChange={(e) => handleUpdateDuyuru(index, 'badge', e.target.value)}
-                      placeholder="Rozet (Örn: 👑 VIP)"
-                      className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-amber-400 font-bold text-xs focus:border-amber-400 focus:outline-none font-heading"
-                    />
-                  </div>
-
-                  <div className="w-full flex-1">
-                    <input
-                      type="text"
-                      value={d.text}
-                      onChange={(e) => handleUpdateDuyuru(index, 'text', e.target.value)}
-                      placeholder="Duyuru metni..."
-                      className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
-                    />
-                  </div>
-
-                  <div className="w-full sm:w-36">
-                    <input
-                      type="text"
-                      value={d.link}
-                      onChange={(e) => handleUpdateDuyuru(index, 'link', e.target.value)}
-                      placeholder="Link (/ilan-ver)"
-                      className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-[#8b949e] text-xs focus:border-amber-400 focus:outline-none font-mono"
-                    />
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteDuyuru(index)}
-                    className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors shrink-0"
-                    title="Sil"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── 3. ANASAYFA VİTRİNİNDE DÖNECEK İLANLAR ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
-              <div className="flex items-center gap-2.5">
-                <Crown className="w-5 h-5 text-amber-400" />
-                <h2 className="font-black text-base text-white font-heading">
-                  Anasayfa Hero Vitrininde Dönecek İlanlar
-                </h2>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleSelectAllVip}
-                  className="px-3 py-1.5 rounded-xl bg-[#21262d] text-amber-400 hover:bg-[#30363d] text-xs font-bold border border-amber-500/30"
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* İlan Seçimi */}
+              <div className="flex flex-col gap-1.5 lg:col-span-2">
+                <label className="text-xs font-bold text-[#8b949e]">Yayınlanacak İlan *</label>
+                <select
+                  value={newAdIlanId}
+                  onChange={(e) => setNewAdIlanId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
                 >
-                  Tüm VIP İlanları Seç
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSelectedListingIds([])}
-                  className="px-3 py-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:bg-[#30363d] text-xs font-bold"
-                >
-                  Temizle
-                </button>
+                  <option value="">-- Listeden Bir İlan Seçin --</option>
+                  {allListings.map((l) => (
+                    <option key={l._id} value={l._id}>
+                      [{l.ilSlug?.toUpperCase()}/{l.ilceSlug?.toUpperCase()}] {l.baslik} ({l.rozet?.toUpperCase() || 'STANDART'})
+                    </option>
+                  ))}
+                </select>
               </div>
-            </div>
 
-            {/* Arama ve İstatistik */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="relative w-full sm:w-72">
+              {/* Hedef Şehir / Konum */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#8b949e]">Hedef Şehir / Konum</label>
+                <select
+                  value={newAdHedefIl}
+                  onChange={(e) => setNewAdHedefIl(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-medium"
+                >
+                  {POPULAR_CITIES.map((c) => (
+                    <option key={c.slug} value={c.slug}>{c.ad}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Rozet Başlığı */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#8b949e]">Rozet Metni</label>
                 <input
                   type="text"
-                  placeholder="İlan başlığı, şehir ara..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                  value={newAdRozet}
+                  onChange={(e) => setNewAdRozet(e.target.value)}
+                  placeholder="🔥 GÜNÜN ÖZEL VIP İLANI"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
                 />
-                <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-2.5" />
               </div>
-
-              <span className="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-xs border border-emerald-500/30 font-heading">
-                {selectedListingIds.length} İlan Vitrinde Dönecek
-              </span>
             </div>
 
-            {/* İlan Seçim Kartları Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[480px] overflow-y-auto pr-1">
-              {filteredListings.map((item) => {
-                const isSelectedInVitrin = selectedListingIds.includes(item._id.toString());
-                const isSelectedInPopup = ozelAdIlanId === item._id.toString();
-                const isVip = item.rozet === 'vip' || item.rozet === 'ultravip';
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center gap-2 text-xs text-[#8b949e]">
+                <Clock className="w-4 h-4 text-amber-400" />
+                <span>Açılma Gecikmesi: </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={30}
+                  value={newAdGecikme}
+                  onChange={(e) => setNewAdGecikme(Number(e.target.value))}
+                  className="w-14 px-2 py-1 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs font-mono text-center"
+                />
+                <span>saniye</span>
+              </div>
 
-                return (
-                  <div
-                    key={item._id}
-                    className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between gap-2.5 select-none ${
-                      isSelectedInPopup
-                        ? 'bg-amber-500/20 border-amber-400 ring-2 ring-amber-400/40 shadow-lg'
-                        : isSelectedInVitrin
-                        ? 'bg-amber-500/10 border-amber-500/40'
-                        : 'bg-[#0d1117] border-[#30363d] hover:border-[#484f58]'
-                    }`}
-                  >
-                    <div 
-                      onClick={() => handleToggleListing(item._id.toString())}
-                      className="flex items-center gap-3 cursor-pointer"
-                    >
-                      {/* Checkbox Icon */}
-                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-black shrink-0 transition-all ${
-                        isSelectedInVitrin
-                          ? 'bg-amber-500 text-slate-950 shadow-sm'
-                          : 'bg-[#161b22] border border-[#30363d] text-transparent'
-                      }`}>
-                        <Check className="w-4 h-4 stroke-[3]" />
-                      </div>
+              <button
+                type="button"
+                onClick={handleAddNewSpecialAd}
+                className="py-2.5 px-5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs uppercase tracking-wider font-heading flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>Listeye Ekle</span>
+              </button>
+            </div>
+          </div>
 
-                      {/* Resim */}
-                      <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
-                        <Image
-                          src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
-                          alt={item.baslik}
-                          fill
-                          sizes="48px"
-                          className="object-cover"
-                        />
-                      </div>
+          {/* Tanımlı Reklamlar Listesi */}
+          <div className="flex flex-col gap-3">
+            <span className="text-xs font-black text-white uppercase tracking-wider font-heading flex items-center justify-between">
+              <span>Tanımlı Reklam Havuzu ({ozelIlanReklamlar.length})</span>
+              <span className="text-[11px] text-[#8b949e] font-normal">
+                Birden fazla reklam aktifse sistem otomatik sırayla döndürür.
+              </span>
+            </span>
 
-                      {/* Başlık & Detay */}
-                      <div className="flex flex-col min-w-0 flex-1 text-left">
-                        <span className="font-bold text-xs text-white truncate font-heading">
-                          {item.baslik}
-                        </span>
-                        <div className="flex items-center gap-2 mt-0.5 text-[10px]">
-                          <span className="text-amber-400 font-bold capitalize">
-                            {item.ilSlug}/{item.ilceSlug}
-                          </span>
-                          <span className={`px-1.5 py-0.2 rounded font-black uppercase ${
-                            isVip ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-700 text-slate-300'
-                          }`}>
-                            {item.rozet || 'silver'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+            {ozelIlanReklamlar.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[#8b949e] bg-[#0d1117] rounded-2xl border border-[#30363d]">
+                Henüz özel popup reklamı eklenmedi. Yukarıdaki formdan ekleyebilirsiniz.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {ozelIlanReklamlar.map((ad, idx) => {
+                  const listing = getListingById(ad.ilanId);
+                  const cityObj = POPULAR_CITIES.find((c) => c.slug === ad.hedefIlSlug);
+                  const cityName = cityObj ? cityObj.ad : (ad.hedefIlSlug?.toUpperCase() || 'TÜRKİYE GENELİ');
 
-                    {/* Tek Tıkla Özel Popup Reklam Yap Butonu */}
-                    <button
-                      type="button"
-                      onClick={() => handleSelectForSpecialAd(item._id.toString())}
-                      className={`w-full py-1.5 px-2 rounded-xl font-bold text-[10px] border flex items-center justify-center gap-1 active:scale-95 transition-all font-heading ${
-                        isSelectedInPopup
-                          ? 'bg-emerald-500 text-slate-950 border-emerald-400'
-                          : 'bg-amber-500/10 hover:bg-amber-500/25 text-amber-400 border-amber-500/20'
+                  return (
+                    <div
+                      key={ad._id || idx}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col gap-3 ${
+                        ad.aktif
+                          ? 'bg-[#0d1117] border-amber-500/50 shadow-md'
+                          : 'bg-[#0d1117]/60 border-[#30363d] opacity-60'
                       }`}
                     >
-                      <Flame className="w-3 h-3" />
-                      <span>{isSelectedInPopup ? '✓ Bu İlan Popup Reklamda' : 'Bu İlanı Özel Popup Reklam Yap'}</span>
-                    </button>
+                      {/* Üst Başlık & Aktif Switch */}
+                      <div className="flex items-center justify-between">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-black text-[10px] uppercase font-mono flex items-center gap-1">
+                          <Crown className="w-3 h-3" />
+                          <span>{ad.rozet || '🔥 ÖZEL İLAN'}</span>
+                        </span>
 
-                  </div>
-                );
-              })}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleToggleAdActive(idx)}
+                            className={`px-3 py-1 rounded-xl text-[11px] font-black uppercase font-heading transition-all ${
+                              ad.aktif
+                                ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                                : 'bg-[#21262d] text-[#8b949e] hover:text-white'
+                            }`}
+                          >
+                            {ad.aktif ? '● AKTİF (YAYINDA)' : '○ PASİF'}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSpecialAd(idx)}
+                            className="p-1.5 rounded-lg bg-red-500/15 hover:bg-red-500 text-red-400 hover:text-white transition-colors"
+                            title="Reklamı Sil"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* İlan Detay Bilgisi */}
+                      {listing ? (
+                        <div className="flex items-center gap-3">
+                          <div className="relative w-12 h-16 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                            <Image
+                              src={listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
+                              alt={listing.baslik}
+                              fill
+                              sizes="48px"
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="font-bold text-xs text-white truncate font-heading">
+                              {listing.baslik}
+                            </span>
+                            <span className="text-[11px] text-amber-400 font-bold mt-0.5 flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              <span>Hedef: {cityName}</span>
+                            </span>
+                            <span className="text-[10px] text-[#8b949e]">
+                              ⏱️ {ad.gecikmeSaniye || 4} sn gecikme
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-xs text-red-400 font-mono">
+                          ⚠️ Bağlı ilan bulunamadı veya silinmiş (ID: {ad.ilanId})
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* ── 2. HERO BAŞLIKLARI ──────────────── */}
+        <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+          <div className="flex items-center gap-2 border-b border-[#30363d] pb-3">
+            <Sparkles className="w-5 h-5 text-amber-400" />
+            <h2 className="font-black text-base text-white font-heading">Anasayfa Hero &amp; Karşılama Metinleri</h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
+              Ana Başlık (H1)
+              <input
+                type="text"
+                value={heroBaslik}
+                onChange={(e) => setHeroBaslik(e.target.value)}
+                placeholder="Örn: Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
+                className="w-full px-4 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
+              />
+            </label>
+
+            <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
+              Alt Açıklama Spotu
+              <textarea
+                rows={2}
+                value={heroAltBaslik}
+                onChange={(e) => setHeroAltBaslik(e.target.value)}
+                placeholder="Örn: 81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları."
+                className="w-full px-4 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none resize-none"
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* ── 3. VİTRİN SLIDER İLANLARI SEÇİMİ ──────────────── */}
+        <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-3">
+            <div className="flex items-center gap-2">
+              <Layers className="w-5 h-5 text-amber-400" />
+              <h2 className="font-black text-base text-white font-heading">
+                Anasayfa Üst Vitrin Slider İlanları ({selectedListingIds.length} Seçili)
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSelectAllVip}
+                className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-xs font-bold"
+              >
+                Tüm VIP'leri Seç
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedListingIds([])}
+                className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] text-xs font-bold"
+              >
+                Temizle
+              </button>
             </div>
           </div>
 
-          {/* ── 4. HERO BAŞLIK & SEO SLOGANI ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-            <h2 className="font-black text-base text-white font-heading border-b border-[#30363d] pb-3">
-              Anasayfa Başlık &amp; Slogan
-            </h2>
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="İlan başlığı veya il/ilçe ara..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+            />
+            <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-3" />
+          </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-[#8b949e]">Anasayfa Ana Başlığı (H1)</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-96 overflow-y-auto pr-1">
+            {filteredListings.map((listing) => {
+              const isSelected = selectedListingIds.includes(listing._id.toString());
+              return (
+                <div
+                  key={listing._id}
+                  onClick={() => handleToggleListing(listing._id.toString())}
+                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 select-none ${
+                    isSelected
+                      ? 'bg-amber-500/15 border-amber-500/80 shadow-md'
+                      : 'bg-[#21262d] border-[#363b42] hover:border-amber-500/40'
+                  }`}
+                >
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                    <Image
+                      src={listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
+                      alt={listing.baslik}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="font-bold text-xs text-white truncate font-heading">
+                      {listing.baslik}
+                    </span>
+                    <span className="text-[11px] text-amber-400 font-bold uppercase mt-0.5">
+                      {listing.ilSlug} / {listing.ilceSlug}
+                    </span>
+                  </div>
+
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                    isSelected ? 'bg-amber-500 text-slate-950 font-black' : 'border border-[#30363d] text-transparent'
+                  }`}>
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── 4. KAYAN DUYURU ŞERİDİ ──────────────── */}
+        <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+          <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+            <div className="flex items-center gap-2">
+              <Megaphone className="w-5 h-5 text-amber-400" />
+              <h2 className="font-black text-base text-white font-heading">Kayan Duyuru Şeridi (Ticker)</h2>
+            </div>
+            <button
+              type="button"
+              onClick={handleAddAnnouncement}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase font-heading shadow-md active:scale-95 transition-all"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>Yeni Duyuru Ekle</span>
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {duyurular.map((item, idx) => (
+              <div key={idx} className="p-4 rounded-2xl bg-[#21262d] border border-[#363b42] flex flex-col sm:flex-row items-center gap-3">
                 <input
                   type="text"
-                  value={heroBaslik}
-                  onChange={(e) => setHeroBaslik(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-bold"
+                  value={item.badge}
+                  onChange={(e) => handleUpdateAnnouncement(idx, 'badge', e.target.value)}
+                  placeholder="👑 VIP DUYURU"
+                  className="w-full sm:w-36 px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-amber-300 font-bold text-xs"
                 />
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-[#8b949e]">Anasayfa Alt Açıklaması</label>
-                <textarea
-                  rows={2}
-                  value={heroAltBaslik}
-                  onChange={(e) => setHeroAltBaslik(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                <input
+                  type="text"
+                  value={item.text}
+                  onChange={(e) => handleUpdateAnnouncement(idx, 'text', e.target.value)}
+                  placeholder="Duyuru metni..."
+                  className="w-full sm:flex-1 px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs"
                 />
+                <input
+                  type="text"
+                  value={item.link}
+                  onChange={(e) => handleUpdateAnnouncement(idx, 'link', e.target.value)}
+                  placeholder="/ilan-ver"
+                  className="w-full sm:w-32 px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-[#8b949e] text-xs font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveAnnouncement(idx)}
+                  className="p-2 rounded-xl bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white transition-colors self-end sm:self-auto"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
-            </div>
+            ))}
           </div>
+        </div>
 
-          {/* KAYDET BUTONU */}
+        {/* Alt Kaydet Butonu */}
+        <div className="flex justify-end pt-4">
           <button
             type="submit"
             disabled={saving}
-            className="py-4 px-8 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-sm uppercase tracking-wider shadow-2xl shadow-amber-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 font-heading sticky bottom-6 z-20"
+            className="py-4 px-8 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-sm uppercase tracking-wider shadow-xl shadow-amber-500/20 flex items-center gap-2 active:scale-95 transition-all font-heading"
           >
-            {saving ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Kaydediliyor...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5 stroke-[2.5]" />
-                <span>Tüm Değişiklikleri &amp; Reklamı Kaydet</span>
-              </>
-            )}
+            {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5 stroke-[2.5]" />}
+            <span>{saving ? 'Kaydediliyor...' : 'Tüm Değişiklikleri Kaydet & Yayına Al'}</span>
           </button>
+        </div>
 
-        </form>
-      )}
+      </form>
     </div>
   );
 }

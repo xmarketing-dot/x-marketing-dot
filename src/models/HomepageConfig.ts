@@ -7,8 +7,10 @@ export interface ITickerItem {
 }
 
 export interface IOzelIlanReklam {
+  _id?: string;
   aktif: boolean;
   ilanId?: mongoose.Types.ObjectId | null;
+  hedefIlSlug?: string; // 'tum_turkiye', 'istanbul', 'izmir', 'ankara', vb.
   gecikmeSaniye: number;
   baslik?: string;
   spotMetin?: string;
@@ -29,6 +31,7 @@ export interface IHomepageConfig extends Document {
     rozet?: string;
   };
   ozelIlanReklam: IOzelIlanReklam;
+  ozelIlanReklamlar: IOzelIlanReklam[];
   duyurular: ITickerItem[];
   sliderIlanIds: mongoose.Types.ObjectId[];
   oneCikanKategoriler: mongoose.Types.ObjectId[];
@@ -47,12 +50,13 @@ const OzelIlanReklamSchema = new Schema<IOzelIlanReklam>(
   {
     aktif: { type: Boolean, default: false },
     ilanId: { type: Schema.Types.ObjectId, ref: 'Listing', default: null },
+    hedefIlSlug: { type: String, default: 'tum_turkiye' },
     gecikmeSaniye: { type: Number, default: 4 },
     baslik: { type: String, default: '👑 GÜNÜN ÖZEL VIP İLANI' },
     spotMetin: { type: String, default: 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı' },
     rozet: { type: String, default: '🔥 SPONSORLU ÖZEL İLAN' },
   },
-  { _id: false }
+  { _id: true }
 );
 
 const HomepageConfigSchema = new Schema<IHomepageConfig>(
@@ -74,11 +78,16 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
       default: () => ({
         aktif: false,
         ilanId: null,
+        hedefIlSlug: 'tum_turkiye',
         gecikmeSaniye: 4,
         baslik: '👑 GÜNÜN ÖZEL VIP İLANI',
         spotMetin: 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı',
         rozet: '🔥 SPONSORLU ÖZEL İLAN',
       }),
+    },
+    ozelIlanReklamlar: {
+      type: [OzelIlanReklamSchema],
+      default: [],
     },
     duyurular: {
       type: [TickerItemSchema],

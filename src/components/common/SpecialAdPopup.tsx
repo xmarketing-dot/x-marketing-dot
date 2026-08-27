@@ -7,9 +7,11 @@ import { X, Flame, ChevronRight, Crown, MapPin, ShieldCheck } from 'lucide-react
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 
-interface SpecialAdConfig {
+interface SpecialAdItem {
+  _id?: string;
   aktif: boolean;
-  ilanId?: string;
+  ilanId?: string | null;
+  hedefIlSlug?: string;
   gecikmeSaniye?: number;
   baslik?: string;
   spotMetin?: string;
@@ -24,11 +26,13 @@ interface SpecialAdConfig {
     fotograflar?: { url: string }[];
     whatsappNumara?: string;
     rozet?: string;
+    status?: string;
   };
 }
 
 export default function SpecialAdPopup() {
-  const [adConfig, setAdConfig] = useState<SpecialAdConfig | null>(null);
+  const [activeAds, setActiveAds] = useState<SpecialAdItem[]>([]);
+  const [currentAd, setCurrentAd] = useState<SpecialAdItem | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const hasDismissedThisVisitRef = useRef(false);
@@ -37,6 +41,16 @@ export default function SpecialAdPopup() {
 
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
+
+  // Extract current location context from pathname (e.g. /istanbul, /istanbul/kadikoy)
+  const currentCitySlug = useMemo(() => {
+    if (!pathname || pathname === '/') return '';
+    const segments = pathname.split('/').filter(Boolean);
+    if (segments[0] && segments[0] !== 'kategori' && segments[0] !== 'ilan' && segments[0] !== 'ara' && segments[0] !== 'sehirler') {
+      return segments[0].toLowerCase();
+    }
+    return '';
+  }, [pathname]);
 
   useEffect(() => {
     // Strictly MOBILE-ONLY: Don't show on desktop web, admin portal or chat
@@ -51,17 +65,61 @@ export default function SpecialAdPopup() {
     fetch('/api/config')
       .then((res) => res.json())
       .then((data) => {
-        if (data?.config?.ozelIlanReklam && data.config.ozelIlanReklam.aktif) {
-          setAdConfig(data.config.ozelIlanReklam);
+        const adsList: SpecialAdItem[] = [];
+
+        // Check new multi-ad array
+        if (Array.isArray(data?.config?.ozelIlanReklamlar)) {
+          data.config.ozelIlanReklamlar.forEach((ad: SpecialAdItem) => {
+            if (ad.aktif && ad.ilan && (ad.ilan.status === 'yayinda' || !ad.ilan.status)) {
+              adsList.push(ad);
+            }
+          });
+        }
+
+        // Fallback to legacy single ad if array is empty
+        if (adsList.length === 0 && data?.config?.ozelIlanReklam?.aktif && data?.config?.ozelIlanReklam?.ilan) {
+          adsList.push(data.config.ozelIlanReklam);
+        }
+
+        if (adsList.length > 0) {
+          setActiveAds(adsList);
+
+          // ── AKILLI KONUM VE SIRALI ROTASYON ALGORİTMASI ──
+          // 1. Kullanıcının bulunduğu şehre özel reklamları önceliklendir (Geo-Targeting)
+          const cityMatched = adsList.filter((ad) => {
+            const targetCity = (ad.hedefIlSlug || '').toLowerCase();
+            const listingCity = (ad.ilan?.ilSlug || '').toLowerCase();
+            return currentCitySlug && (targetCity === currentCitySlug || listingCity === currentCitySlug);
+          });
+
+          // 2. Tüm Türkiye genel reklamları
+          const generalAds = adsList.filter((ad) => {
+            const targetCity = (ad.hedefIlSlug || '').toLowerCase();
+            return !targetCity || targetCity === 'tum_turkiye' || targetCity === 'hepsi';
+          });
+
+          const candidates = cityMatched.length > 0 ? cityMatched : (generalAds.length > 0 ? generalAds : adsList);
+
+          // 3. Sıralı Rotasyon: Session'daki index'i okuyup sıradaki reklamı seç
+          let cycleIdx = 0;
+          if (typeof window !== 'undefined') {
+            const savedIdx = parseInt(sessionStorage.getItem('bms_special_ad_cycle_idx') || '0', 10);
+            cycleIdx = (savedIdx >= 0 && savedIdx < candidates.length) ? savedIdx : 0;
+            // Next time, show next ad in rotation
+            sessionStorage.setItem('bms_special_ad_cycle_idx', String((cycleIdx + 1) % candidates.length));
+          }
+
+          const selected = candidates[cycleIdx] || candidates[0];
+          setCurrentAd(selected);
         }
       })
       .catch(() => {});
-  }, [pathname]);
+  }, [pathname, currentCitySlug]);
 
   useEffect(() => {
-    if (!adConfig || !adConfig.aktif || hasDismissedThisVisitRef.current) return;
+    if (!currentAd || !currentAd.aktif || hasDismissedThisVisitRef.current) return;
 
-    const delayMs = Math.max(2, adConfig.gecikmeSaniye || 4) * 1000;
+    const delayMs = Math.max(2, currentAd.gecikmeSaniye || 4) * 1000;
 
     let timer: NodeJS.Timeout | null = null;
     let triggered = false;
@@ -72,8 +130,9 @@ export default function SpecialAdPopup() {
       setIsOpen(true);
       if (typeof window !== 'undefined' && (window as any).trackEvent) {
         (window as any).trackEvent('special_ad_impression', {
-          listingId: adConfig?.ilan?._id || adConfig?.ilanId,
-          title: adConfig?.ilan?.baslik || adConfig?.baslik,
+          listingId: currentAd?.ilan?._id || currentAd?.ilanId,
+          title: currentAd?.ilan?.baslik || currentAd?.baslik,
+          targetCity: currentAd?.hedefIlSlug || currentAd?.ilan?.ilSlug,
         });
       }
       if (timer) clearTimeout(timer);
@@ -98,16 +157,16 @@ export default function SpecialAdPopup() {
       if (timer) clearTimeout(timer);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [adConfig]);
+  }, [currentAd]);
 
   // Extract all photos from selected listing
   const photos = useMemo(() => {
     const list: string[] = [];
-    if (adConfig?.ilan?.anaFotograf?.url) {
-      list.push(adConfig.ilan.anaFotograf.url);
+    if (currentAd?.ilan?.anaFotograf?.url) {
+      list.push(currentAd.ilan.anaFotograf.url);
     }
-    if (Array.isArray(adConfig?.ilan?.fotograflar)) {
-      adConfig.ilan.fotograflar.forEach((f) => {
+    if (Array.isArray(currentAd?.ilan?.fotograflar)) {
+      currentAd.ilan.fotograflar.forEach((f) => {
         if (f?.url && !list.includes(f.url)) list.push(f.url);
       });
     }
@@ -115,7 +174,7 @@ export default function SpecialAdPopup() {
       list.push('https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=800');
     }
     return list;
-  }, [adConfig]);
+  }, [currentAd]);
 
   // Auto-rotate photos in popup if multiple photos exist
   useEffect(() => {
@@ -147,11 +206,11 @@ export default function SpecialAdPopup() {
     touchEndXRef.current = null;
   };
 
-  if (!isOpen || !adConfig || !adConfig.aktif) return null;
+  if (!isOpen || !currentAd || !currentAd.aktif) return null;
 
-  const listing = adConfig.ilan;
+  const listing = currentAd.ilan;
   const targetSlug = listing?.slug || '';
-  const displayTitle = listing?.baslik || adConfig.baslik || 'Özel VIP İlan';
+  const displayTitle = listing?.baslik || currentAd.baslik || 'Özel VIP İlan';
   const displayLocation = listing ? `${listing.ilSlug?.toUpperCase()} / ${listing.ilceSlug?.toUpperCase()}` : 'TÜRKİYE GENELİ';
   const targetUrl = targetSlug ? `/ilan/${targetSlug}` : '/ilan-ver';
 
@@ -234,7 +293,7 @@ export default function SpecialAdPopup() {
           <div className="absolute top-3 left-3 z-20">
             <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 font-black text-[9px] uppercase font-heading tracking-wider shadow-lg flex items-center gap-1">
               <Crown className="w-3 h-3 fill-slate-950" />
-              <span>{adConfig.rozet || '🔥 GÜNÜN ÖZEL VIP İLANI'}</span>
+              <span>{currentAd.rozet || '🔥 GÜNÜN ÖZEL VIP İLANI'}</span>
             </span>
           </div>
 
@@ -281,7 +340,7 @@ export default function SpecialAdPopup() {
                   hasDismissedThisVisitRef.current = true;
                   setIsOpen(false);
                   if ((window as any).trackEvent) {
-                    (window as any).trackEvent('whatsapp_click', {
+                    (window as any).trackEvent('special_ad_whatsapp_click', {
                       listingId: listing?._id,
                       title: displayTitle,
                     });

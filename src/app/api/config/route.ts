@@ -14,13 +14,31 @@ export async function GET() {
       config = created.toObject();
     }
 
-    // Populate ozelIlan if ilanId is present
-    if (config?.ozelIlanReklam?.ilanId) {
-      const listing = await ListingModel.findById(config.ozelIlanReklam.ilanId)
-        .select('baslik slug ilSlug ilceSlug anaFotograf fotograflar whatsappNumara rozet')
+    // Collect all referenced listing IDs from single ad and array
+    const adIds: any[] = [];
+    if (config?.ozelIlanReklam?.ilanId) adIds.push(config.ozelIlanReklam.ilanId);
+    if (Array.isArray(config?.ozelIlanReklamlar)) {
+      config.ozelIlanReklamlar.forEach((ad: any) => {
+        if (ad?.ilanId) adIds.push(ad.ilanId);
+      });
+    }
+
+    if (adIds.length > 0) {
+      const listings = await ListingModel.find({ _id: { $in: adIds }, status: 'yayinda' })
+        .select('baslik slug ilSlug ilceSlug anaFotograf fotograflar whatsappNumara rozet status')
         .lean();
-      if (listing) {
-        config.ozelIlanReklam.ilan = listing;
+      
+      const listingMap = new Map(listings.map((l: any) => [l._id.toString(), l]));
+
+      if (config.ozelIlanReklam?.ilanId) {
+        config.ozelIlanReklam.ilan = listingMap.get(config.ozelIlanReklam.ilanId.toString()) || null;
+      }
+
+      if (Array.isArray(config.ozelIlanReklamlar)) {
+        config.ozelIlanReklamlar = config.ozelIlanReklamlar.map((ad: any) => ({
+          ...ad,
+          ilan: ad.ilanId ? (listingMap.get(ad.ilanId.toString()) || null) : null,
+        }));
       }
     }
 
