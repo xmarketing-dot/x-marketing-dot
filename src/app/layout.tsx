@@ -5,6 +5,7 @@ import './globals.css';
 import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
 import AdminGlobalLiveNotification from '@/components/admin/AdminGlobalLiveNotification';
+import { Analytics } from '@vercel/analytics/next';
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'] });
 
@@ -99,6 +100,7 @@ export default function RootLayout({
         <AnalyticsTracker />
         <MobileShell>{children}</MobileShell>
         <AdminGlobalLiveNotification />
+        <Analytics />
       </body>
     </html>
   );
