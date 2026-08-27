@@ -138,9 +138,9 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
                 src={imgUrl}
                 alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
                 fill
-                sizes="(max-width: 640px) 50vw, 300px"
-                className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-100"
+                unoptimized
                 loading="lazy"
+                sizes="(max-width: 640px) 50vw, 300px"
               />
             </div>
           ))}

@@ -111,6 +111,8 @@ export default function CategoryShowcase({
                 src={cat.cover}
                 alt={cat.title}
                 fill
+                unoptimized
+                loading="lazy"
                 sizes="(max-width: 640px) 33vw, 200px"
                 className="object-cover object-top group-hover:scale-110 transition-transform duration-700 brightness-[1.03] contrast-[1.05]"
               />
