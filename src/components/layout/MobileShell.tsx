@@ -67,8 +67,8 @@ export default function MobileShell({ children }: MobileShellProps) {
         {/* TOP DYNAMIC ANNOUNCEMENT TICKER */}
         <HeaderTicker />
 
-        {/* TOP BRAND HEADER BAR */}
-        <header className="px-3.5 py-3 bg-[#0d1117]/95 backdrop-blur-xl border-b border-[#30363d]/60 flex items-center justify-between w-full sticky top-0 z-30 shadow-md">
+        {/* TOP BRAND HEADER BAR (Natural Top Flow - No Sticky Jump) */}
+        <header className="px-3.5 py-3 bg-[#0d1117] border-b border-[#30363d]/60 flex items-center justify-between w-full shadow-md">
           <Link href="/" className="flex items-center gap-2 group">
             <CorporateLogo className="text-2xl shrink-0 group-hover:scale-105 transition-transform" />
             <div className="flex flex-col leading-none text-left">
@@ -109,8 +109,8 @@ export default function MobileShell({ children }: MobileShellProps) {
           </div>
         </header>
 
-        {/* MAIN PAGE CONTENT */}
-        <main className="flex-1 overflow-y-auto pb-8 no-scrollbar w-full">
+        {/* MAIN PAGE CONTENT (Smooth Native Scroll) */}
+        <main className="flex-1 pb-8 w-full">
           {children}
         </main>
 
