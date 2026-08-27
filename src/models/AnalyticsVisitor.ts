@@ -33,11 +33,11 @@ const AnalyticsVisitorSchema = new Schema<IAnalyticsVisitor>(
     path: { type: String, required: true, index: true },
     pageTitle: { type: String },
     referer: { type: String, default: 'Direct' },
-    refererSource: { 
-      type: String, 
-      enum: ['google', 'whatsapp', 'telegram', 'direct', 'x', 'instagram', 'facebook', 'other'], 
+    refererSource: {
+      type: String,
+      enum: ['google', 'whatsapp', 'telegram', 'direct', 'x', 'instagram', 'facebook', 'other'],
       default: 'direct',
-      index: true 
+      index: true
     },
     searchKeyword: { type: String, default: '' },
     utmSource: { type: String },
