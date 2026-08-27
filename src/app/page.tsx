@@ -49,16 +49,30 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'tr_TR',
     siteName: 'Best Eskort',
+    images: [
+      {
+        url: `${siteUrl}/api/og/site`,
+        width: 1200,
+        height: 630,
+        alt: 'Best Eskort Vitrin',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
+    description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları.',
+    images: [`${siteUrl}/api/og/site`],
   },
 };
 
 // Tier ranking priority score
 const TIER_ORDER: Record<string, number> = {
+  vip: 1,
   ultravip: 1,
-  vip: 2,
-  gold: 3,
-  silver: 4,
-  standart: 5,
+  gold: 2,
+  silver: 3,
+  standart: 4,
 };
 
 export default async function HomePage() {
@@ -71,22 +85,21 @@ export default async function HomePage() {
     VipModel.find({ aktif: true }).sort({ likeSayisi: -1 }).limit(4).lean(),
   ]);
 
-  // Sort all listings strictly by Tier Priority (Ultra VIP -> VIP -> Gold -> Silver) and then by Date
+  // Sort all listings strictly by Tier Priority (VIP -> Gold -> Silver) and then by Date
   const allSortedListings = [...rawListings].sort((a: any, b: any) => {
-    const orderA = TIER_ORDER[a.rozet || 'silver'] || 5;
-    const orderB = TIER_ORDER[b.rozet || 'silver'] || 5;
+    const orderA = TIER_ORDER[a.rozet || 'silver'] || 4;
+    const orderB = TIER_ORDER[b.rozet || 'silver'] || 4;
     if (orderA !== orderB) return orderA - orderB;
     return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
   });
 
   // Group listings by package tier
-  const ultraVipListings = allSortedListings.filter((l: any) => l.rozet === 'ultravip');
-  const vipListings = allSortedListings.filter((l: any) => l.rozet === 'vip');
+  const vipListings = allSortedListings.filter((l: any) => l.rozet === 'vip' || l.rozet === 'ultravip');
   const goldListings = allSortedListings.filter((l: any) => l.rozet === 'gold');
   const silverListings = allSortedListings.filter((l: any) => l.rozet === 'silver' || !l.rozet || l.rozet === 'standart');
 
   // Fallback if none in specific tier, pick top available
-  const displayUltraVip = ultraVipListings.length > 0 ? ultraVipListings : allSortedListings.slice(0, 4);
+  const displayVip = vipListings.length > 0 ? vipListings : allSortedListings.slice(0, 4);
 
   // Dynamic Selected Showcase from Admin Homepage Config
   const selectedShowcaseIds = homepageConfig?.selectedShowcaseIds || [];
@@ -94,7 +107,7 @@ export default async function HomePage() {
     ? selectedShowcaseIds
         .map((id: string) => allSortedListings.find((l: any) => l._id.toString() === id))
         .filter(Boolean)
-    : displayUltraVip;
+    : displayVip;
 
   // Grid listings
   const gridListings = allSortedListings.slice(0, 48);
@@ -104,7 +117,7 @@ export default async function HomePage() {
       
       {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları) */}
       <section className="w-full">
-        <HeroSlider slides={dynamicShowcaseListings.length > 0 ? dynamicShowcaseListings : displayUltraVip} />
+        <HeroSlider slides={dynamicShowcaseListings.length > 0 ? dynamicShowcaseListings : displayVip} />
       </section>
 
       {/* 2. TÜM TÜRKİYE İL LİSTESİ BUTONU */}
@@ -133,8 +146,6 @@ export default async function HomePage() {
       {/* 3. POPÜLER İLLER & KATEGORİ VİTRİNİ */}
       <section className="w-full">
         <CategoryShowcase
-          ultraVipCovers={ultraVipListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
-          ultraVipCount={ultraVipListings.length}
           vipCovers={vipListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
           vipCount={vipListings.length}
           goldCovers={goldListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}

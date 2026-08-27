@@ -8,7 +8,7 @@ import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
 import VipModel from '@/models/VipModel';
 import { MapPin, ChevronRight, Sparkles, ShieldCheck, Globe } from 'lucide-react';
-import { getLocationBySlug, getAllLocations, getListings, getAllCategories } from '@/lib/data';
+import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import CelebrityModelView from '@/components/model/CelebrityModelView';
 
@@ -130,10 +130,9 @@ export default async function CityOrModelPage({ params }: Props) {
   }
 
   // 2. City Page
-  const [location, listings, categories] = await Promise.all([
+  const [location, listings] = await Promise.all([
     getLocationBySlug(ilSlug),
     getListings({ ilSlug, limit: 30 }),
-    getAllCategories(),
   ]);
 
   if (!location) {

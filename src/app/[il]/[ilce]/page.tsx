@@ -3,8 +3,8 @@ import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { MapPin, ChevronRight, Sparkles, ShieldCheck, Tag, Layers, Globe } from 'lucide-react';
-import { getLocationBySlug, getAllLocations, getListings, getAllCategories } from '@/lib/data';
+import { MapPin, ChevronRight, Sparkles, ShieldCheck, Layers, Globe } from 'lucide-react';
+import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 
 interface Props {
@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${districtName} Eskort & (${location.il}) Bölgesel İlanlar | Best Eskort`,
+      title: `${districtName} Eskort & ${location.il} Bölgesel İlanlar | Best Eskort`,
       description: `${districtName} bölgesindeki tüm doğrulanmış eskort ve hizmet ilanları.`,
       url: canonicalUrl,
     },
@@ -70,10 +70,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DistrictPage({ params }: Props) {
   const { il: ilSlug, ilce: ilceSlug } = await params;
-  const [location, listings, categories] = await Promise.all([
+  const [location, listings] = await Promise.all([
     getLocationBySlug(ilSlug),
     getListings({ ilSlug, ilceSlug, limit: 30 }),
-    getAllCategories(),
   ]);
 
   if (!location) {
@@ -145,28 +144,13 @@ export default async function DistrictPage({ params }: Props) {
         </div>
 
         <h1 className="font-black text-2xl text-white font-heading tracking-tight">
-          {districtName} ({location.il}) Bölgesel İlanlar & Hizmet Rehberi
+          {districtName} ({location.il}) Eskort İlanları & Rehberi
         </h1>
         
         <p className="text-xs text-[#8b949e] leading-relaxed">
-          {location.il} ili {districtName} ilçesinde hizmet veren doğrulanmış satıcılar, bölgesel ilanlar ve tek tıkla doğrudan WhatsApp iletişim hatları.
+          {location.il} ili {districtName} ilçesinde hizmet veren doğrulanmış eskort bayanlar, bağımsız profiller ve doğrudan WhatsApp iletişim hatları.
         </p>
       </div>
-
-      {/* Category Pills */}
-      {categories.length > 0 && (
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-          {categories.map((cat: any) => (
-            <Link
-              key={cat.slug}
-              href={`/${location.ilSlug}/${ilceSlug}/${cat.slug}`}
-              className="px-3.5 py-2 rounded-xl bg-[#161b22] text-[#8b949e] hover:text-white hover:border-amber-400 font-extrabold text-xs whitespace-nowrap border border-[#30363d] transition-all font-heading"
-            >
-              {cat.ad}
-            </Link>
-          ))}
-        </div>
-      )}
 
       {/* Listings Section */}
       <div className="flex flex-col gap-4">

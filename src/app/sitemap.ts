@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { getAllLocations, getListings, getAllCategories } from '@/lib/data';
+import { getAllLocations, getListings } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
 import VipModel from '@/models/VipModel';
 import { getSiteUrl } from '@/lib/siteUrl';
@@ -12,10 +12,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   await connectToDatabase();
 
-  const [locations, listings, categories, vipModels] = await Promise.all([
+  const [locations, listings, vipModels] = await Promise.all([
     getAllLocations(),
     getListings({ limit: 5000 }),
-    getAllCategories(),
     VipModel.find({ aktif: true }).lean(),
   ]);
 
@@ -33,6 +32,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/kategori/vip`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.95,
+    },
+    {
+      url: `${siteUrl}/kategori/gold`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.85,
+    },
+    {
+      url: `${siteUrl}/kategori/silver`,
+      lastModified: now,
+      changeFrequency: 'daily',
+      priority: 0.8,
     },
     {
       url: `${siteUrl}/ilan-ver`,
@@ -69,16 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: 'daily',
         priority: 0.85,
       });
-
-      // City + District + Category triplets
-      for (const cat of categories) {
-        routes.push({
-          url: `${siteUrl}/${loc.ilSlug}/${ilce.slug}/${cat.slug}`,
-          lastModified: now,
-          changeFrequency: 'weekly',
-          priority: 0.7,
-        });
-      }
     }
   }
 

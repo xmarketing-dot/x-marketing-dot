@@ -68,6 +68,9 @@ export default function PanelimPage() {
     hizmetMekanlari: 'Kendi Evi, Lüks Otel, Rezidans, Seyahat',
     hakkindaBiyografi: '',
   });
+  const [editPhotos, setEditPhotos] = useState<string[]>([]);
+  const [editCoverIdx, setEditCoverIdx] = useState(0);
+  const [uploadingEditPhotos, setUploadingEditPhotos] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
 
   // New Listing Modal State (Inside Dashboard)
@@ -219,6 +222,45 @@ export default function PanelimPage() {
     };
   };
 
+  // Handle Edit File Upload
+  const handleEditFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingEditPhotos(true);
+    const uploadData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      uploadData.append('files', files[i]);
+    }
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData,
+      });
+      const data = await res.json();
+      if (data.urls && data.urls.length > 0) {
+        setEditPhotos((prev) => [...prev, ...data.urls]);
+      } else {
+        alert(data.error || 'Yükleme başarısız.');
+      }
+    } catch (err) {
+      alert('Resim yüklenirken hata oluştu.');
+    } finally {
+      setUploadingEditPhotos(false);
+    }
+  };
+
+  const removeEditPhoto = (index: number) => {
+    if (editPhotos.length <= 1) {
+      alert('İlanda en az 1 adet fotoğraf bulunmalıdır!');
+      return;
+    }
+    const updated = editPhotos.filter((_, idx) => idx !== index);
+    setEditPhotos(updated);
+    if (editCoverIdx >= updated.length) {
+      setEditCoverIdx(0);
+    }
+  };
+
   // Handle Edit Submit (Ensures expiration time never changes)
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,17 +268,22 @@ export default function PanelimPage() {
 
     setSavingEdit(true);
     try {
+      const coverUrl = editPhotos[editCoverIdx] || editPhotos[0] || '';
       const res = await fetch(`/api/listings/${editingListing._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify({
+          ...editForm,
+          fotograflar: editPhotos.map((url) => ({ url })),
+          anaFotografUrl: coverUrl,
+        }),
       });
 
       const data = await res.json();
       if (res.ok && data.listing) {
         setListings((prev) => prev.map((l) => (l._id === data.listing._id ? { ...l, ...data.listing } : l)));
         setEditingListing(null);
-        alert('İlan bilgileriniz başarıyla güncellendi! (Yayın süreniz aynen korunmuştur)');
+        alert('İlan bilgileriniz ve fotoğraflarınız başarıyla güncellendi! (Yayın süreniz aynen korunmuştur)');
       } else {
         alert(data.error || 'Güncelleme yapılamadı.');
       }
@@ -589,6 +636,12 @@ export default function PanelimPage() {
                     type="button"
                     onClick={() => {
                       setEditingListing(item);
+                      const photos = item.fotograflar && item.fotograflar.length > 0
+                        ? item.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url))
+                        : [item.anaFotograf?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800'];
+                      setEditPhotos(photos);
+                      const coverIdx = photos.findIndex((u: string) => u === item.anaFotograf?.url);
+                      setEditCoverIdx(coverIdx >= 0 ? coverIdx : 0);
                       setEditForm({
                         baslik: item.baslik || '',
                         aciklama: item.aciklama || '',
@@ -890,12 +943,92 @@ export default function PanelimPage() {
                 Detaylı İlan Açıklaması *
                 <textarea
                   required
-                  rows={5}
+                  rows={4}
                   value={editForm.aciklama}
                   onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
                   className="px-4 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
                 />
               </label>
+
+              {/* ── FOTOĞRAF DÜZENLEME ALANI (PANEL DÜZENLEME) ──────────────── */}
+              <div className="flex flex-col gap-3 p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-amber-400 font-heading uppercase flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4" />
+                    <span>İlan Fotoğrafları ({editPhotos.length} Adet)</span>
+                  </span>
+                  <span className="text-[11px] text-[#8b949e]">Yeni Fotoğraf Ekle</span>
+                </div>
+
+                {/* Upload Input */}
+                <label className="relative flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-dashed border-amber-500/40 hover:border-amber-400 bg-amber-500/5 hover:bg-amber-500/10 cursor-pointer transition-all text-center gap-2 group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleEditFileUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    disabled={uploadingEditPhotos}
+                  />
+                  {uploadingEditPhotos ? (
+                    <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Fotoğraflar Yükleniyor...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-white text-xs font-bold font-heading">
+                      <Upload className="w-4 h-4 text-amber-400" />
+                      <span>Galeriden Yeni Fotoğraf Seç &amp; Ekle</span>
+                    </div>
+                  )}
+                </label>
+
+                {/* Photo Previews */}
+                {editPhotos.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2.5 mt-1">
+                    {editPhotos.map((url, idx) => {
+                      const isCover = idx === editCoverIdx;
+                      return (
+                        <div
+                          key={idx}
+                          className={`relative aspect-square rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 bg-[#161b22] ${
+                            isCover ? 'border-amber-400 shadow-md shadow-amber-500/30' : 'border-[#30363d]'
+                          }`}
+                        >
+                          <img src={url} alt={`Foto ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover z-0" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-10" />
+
+                          <div className="relative z-20 flex items-center justify-between w-full">
+                            {isCover ? (
+                              <span className="px-1.5 py-0.5 rounded-md bg-amber-500 text-slate-950 font-black text-[9px] flex items-center gap-0.5 font-heading">
+                                <Star className="w-3 h-3 fill-slate-950" />
+                                Kapak
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setEditCoverIdx(idx)}
+                                className="px-1.5 py-0.5 rounded-md bg-[#161b22]/90 text-amber-400 font-bold text-[9px] hover:bg-amber-500 hover:text-slate-950 font-heading"
+                              >
+                                Kapak Yap
+                              </button>
+                            )}
+
+                            <button
+                              type="button"
+                              onClick={() => removeEditPhoto(idx)}
+                              className="p-1 rounded-md bg-red-600/90 text-white hover:bg-red-500 transition-colors"
+                              title="Sil"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               <div className="flex items-center gap-3 mt-2 font-heading">
                 <button

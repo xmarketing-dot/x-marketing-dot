@@ -66,10 +66,10 @@ export const metadata: Metadata = {
     description: 'Türkiye genelinde 81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları. WhatsApp ile tek tıkla iletişim.',
     images: [
       {
-        url: '/icon',
-        width: 512,
-        height: 512,
-        alt: 'Best Eskort Logo',
+        url: '/api/og/site',
+        width: 1200,
+        height: 630,
+        alt: 'Best Eskort Logo & Vitrin',
       },
     ],
   },
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
     description: 'Türkiye genelinde 81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları.',
-    images: ['/icon'],
+    images: ['/api/og/site'],
   },
   alternates: {
     canonical: getSiteUrl(),

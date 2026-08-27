@@ -2,15 +2,41 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
 
-function generateSlug(ilce: string, baslik: string): string {
+function generateSlug(ilce: string, baslik: string, tamAd?: string): string {
   const trMap: Record<string, string> = {
     ç: 'c', Ç: 'c', ğ: 'g', Ğ: 'g', ı: 'i', İ: 'i', ö: 'o', Ö: 'o', ş: 's', Ş: 's', ü: 'u', Ü: 'u'
   };
-  const raw = `${ilce}-${baslik}`;
-  let clean = raw.split('').map((char) => trMap[char] || char).join('');
-  clean = clean.toLowerCase().replace(/[^a-z0-9 -]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').trim();
-  const randomHex = Math.random().toString(36).substring(2, 8);
-  return `${clean || 'ilan'}-${randomHex}`;
+
+  const toClean = (str: string) =>
+    str
+      .split('')
+      .map((char) => trMap[char] || char)
+      .join('')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const cleanIlce = toClean(ilce).replace(/\s+/g, '-');
+  
+  // Prefer tamAd (e.g. "Ceren", "Merve Özdemir") or first 1-2 distinctive words from baslik
+  let coreName = '';
+  if (tamAd && tamAd.trim()) {
+    coreName = toClean(tamAd);
+  } else {
+    // Extract distinctive words from baslik, removing ilce or repetitive keywords
+    const words = toClean(baslik)
+      .split(' ')
+      .filter((w) => w && w !== cleanIlce && !['eskort', 'escort', 'bayan', 'vip', 'bayanlar'].includes(w));
+    
+    coreName = words.slice(0, 2).join(' ') || toClean(baslik).split(' ').slice(0, 2).join(' ');
+  }
+
+  const cleanCore = coreName.replace(/\s+/g, '-');
+  const randomHex = Math.random().toString(36).substring(2, 7);
+
+  const basePart = cleanCore ? `${cleanIlce}-${cleanCore}` : cleanIlce;
+  return `${basePart}-${randomHex}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -28,7 +54,8 @@ export async function POST(req: NextRequest) {
       anaFotografUrl, 
       fotograflar,
       chatThreadId,
-      kullaniciId 
+      kullaniciId,
+      tamAd,
     } = body;
 
     if (!baslik || !aciklama || !ilSlug || !ilceSlug || !whatsappNumara) {
@@ -37,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     await connectToDatabase();
 
-    const slug = generateSlug(ilceSlug, baslik);
+    const slug = generateSlug(ilceSlug, baslik, tamAd);
     const imageUrl = anaFotografUrl && anaFotografUrl.trim() !== ''
       ? anaFotografUrl
       : 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800';
@@ -61,7 +88,7 @@ export async function POST(req: NextRequest) {
       whatsappNumara,
       fiyat: fiyat ? Number(fiyat) : 0,
       paraBirimi: 'TL',
-      rozet: rozet || 'ultravip',
+      rozet: rozet || 'vip',
       yayinSuresi: yayinSuresi || 'haftalik',
       paketBitisTarihi,
       chatThreadId: chatThreadId || null,

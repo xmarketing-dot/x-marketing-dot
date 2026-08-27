@@ -40,7 +40,7 @@ export default function CreateListingPage() {
     aciklama: '',
     ilSlug: 'istanbul',
     ilceSlug: 'beylikduzu',
-    rozet: 'ultravip',
+    rozet: 'vip',
     yayinSuresi: 'haftalik',
     whatsappNumara: '',
   });
@@ -64,11 +64,11 @@ export default function CreateListingPage() {
 
   const tiers = [
     {
-      id: 'ultravip',
-      name: 'Ultra VIP Vitrin',
+      id: 'vip',
+      name: 'VIP Vitrin',
       icon: Crown,
       badge: 'EN ÇOK TERCİH EDİLEN 🔥',
-      gradient: 'from-amber-500/20 via-[#1a1508] to-[#161b22]',
+      gradient: 'from-amber-500/25 via-[#1a1508] to-[#161b22]',
       border: 'border-amber-500/80 ring-1 ring-amber-400/30',
       tagColor: 'bg-amber-500 text-slate-950',
       titleColor: 'text-amber-400',
@@ -76,26 +76,9 @@ export default function CreateListingPage() {
       features: [
         'Anasayfa en üst vitrinde sabit gösterim',
         '81 İl ve İlçe aramalarında #1 sırada yer alma',
-        'Doğrulanmış Rozet & Özel Altın Parlama Efekti',
+        'VIP Doğrulanmış Rozet & Özel Altın Parlama Efekti',
         'Tek tıkla doğrudan WhatsApp ve Çağrı yönlendirmesi',
         '7/24 Öncelikli Temsilci Desteği'
-      ]
-    },
-    {
-      id: 'vip',
-      name: 'VIP Vitrin',
-      icon: Star,
-      badge: 'YÜKSEK GÖRÜNÜRLÜK ⭐',
-      gradient: 'from-purple-600/20 via-[#120b1a] to-[#161b22]',
-      border: 'border-purple-500/60',
-      tagColor: 'bg-purple-500 text-white',
-      titleColor: 'text-purple-300',
-      desc: 'Bölgesel kategorilerde ve anasayfa VIP vitrinde üst sıralar.',
-      features: [
-        'Anasayfa VIP Vitrin alanında gösterim',
-        'İl ve İlçe kategorilerinde üst sıralar',
-        'VIP Üye Rozeti ve Hızlı İletişim Butonları',
-        'Esnek yayın süreleri'
       ]
     },
     {
@@ -103,10 +86,10 @@ export default function CreateListingPage() {
       name: 'Gold Vitrin',
       icon: Award,
       badge: 'POPÜLER 🥇',
-      gradient: 'from-amber-600/20 via-[#140e03] to-[#161b22]',
-      border: 'border-amber-600/50',
-      tagColor: 'bg-amber-600 text-white',
-      titleColor: 'text-amber-300',
+      gradient: 'from-yellow-600/20 via-[#140e03] to-[#161b22]',
+      border: 'border-yellow-600/50',
+      tagColor: 'bg-yellow-600 text-white',
+      titleColor: 'text-yellow-300',
       desc: 'Şehir ve ilçe listelemelerinde öne çıkan ilan vitrini.',
       features: [
         'Bölgesel aramalarda öne çıkma',
