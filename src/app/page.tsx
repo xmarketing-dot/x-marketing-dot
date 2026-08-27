@@ -31,7 +31,6 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getSiteUrl();
-  const ogImageUrl = `${siteUrl}/api/og/site`;
 
   return {
     title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu | 81 İl',
@@ -54,11 +53,10 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'Best Eskort',
       images: [
         {
-          url: ogImageUrl,
-          secureUrl: ogImageUrl,
-          type: 'image/jpeg',
-          width: 1200,
-          height: 630,
+          url: `${siteUrl}/icon`,
+          secureUrl: `${siteUrl}/icon`,
+          width: 512,
+          height: 512,
           alt: 'Best Eskort Vitrin',
         },
       ],
@@ -67,7 +65,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
       description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları.',
-      images: [ogImageUrl],
+      images: [`${siteUrl}/icon`],
     },
   };
 }

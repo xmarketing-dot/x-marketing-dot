@@ -55,9 +55,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: canonicalUrl,
       images: [
         {
-          url: `${siteUrl}/api/og/site`,
-          width: 1200,
-          height: 630,
+          url: `${siteUrl}/icon`,
+          secureUrl: `${siteUrl}/icon`,
+          width: 512,
+          height: 512,
           alt: `${location.il} Eskort`,
         },
       ],
@@ -66,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title: `${location.il} Eskort İlanları | Best Eskort`,
       description: `${location.il} genelinde teyitli eskort ilanları.`,
-      images: [`${siteUrl}/api/og/site`],
+      images: [`${siteUrl}/icon`],
     },
   };
 }
