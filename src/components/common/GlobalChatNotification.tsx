@@ -66,40 +66,76 @@ export default function GlobalChatNotification() {
     if (savedThreadId) {
       setHasStartedChat(true);
 
-      const eventSource = new EventSource(`/api/chat/sse?threadId=${savedThreadId}`);
+      const triggerAdminMsg = (msgText: string) => {
+        setLatestMessage(msgText);
+        setUnreadCount((prev) => prev + 1);
+        setShowToast(true);
+        setIsDismissed(false);
+        playNotificationSound();
 
-      eventSource.addEventListener('new_message', (event) => {
+        let flash = false;
+        const originalTitle = document.title;
+        const interval = setInterval(() => {
+          document.title = flash ? '💬 (1) Yeni Mesajınız Var!' : originalTitle;
+          flash = !flash;
+        }, 1000);
+
+        setTimeout(() => {
+          clearInterval(interval);
+          document.title = originalTitle;
+        }, 10000);
+      };
+
+      let lastSeenMessageId = '';
+
+      // Polling fallback every 3s (100% reliable across serverless)
+      const pollCustomerMessages = async () => {
         try {
-          const incoming = JSON.parse(event.data);
-          const adminMessages = Array.isArray(incoming) 
-            ? incoming.filter((m: any) => m.gonderenTipi === 'admin')
-            : incoming.gonderenTipi === 'admin' ? [incoming] : [];
-
-          if (adminMessages.length > 0) {
-            const last = adminMessages[adminMessages.length - 1];
-            setLatestMessage(last.mesaj);
-            setUnreadCount((prev) => prev + 1);
-            setShowToast(true);
-            setIsDismissed(false); // Re-open on incoming message
-            playNotificationSound();
-
-            let flash = false;
-            const originalTitle = document.title;
-            const interval = setInterval(() => {
-              document.title = flash ? '💬 (1) Yeni Mesajınız Var!' : originalTitle;
-              flash = !flash;
-            }, 1000);
-
-            setTimeout(() => {
-              clearInterval(interval);
-              document.title = originalTitle;
-            }, 10000);
+          const res = await fetch(`/api/chat/messages?threadId=${savedThreadId}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.messages && data.messages.length > 0) {
+            const adminMsgs = data.messages.filter((m: any) => m.gonderenTipi === 'admin');
+            if (adminMsgs.length > 0) {
+              const lastAdmin = adminMsgs[adminMsgs.length - 1];
+              if (lastAdmin._id !== lastSeenMessageId) {
+                if (lastSeenMessageId !== '') {
+                  triggerAdminMsg(lastAdmin.mesaj);
+                }
+                lastSeenMessageId = lastAdmin._id;
+              }
+            }
           }
-        } catch (err) {}
-      });
+        } catch (e) {}
+      };
+
+      const pollInterval = setInterval(pollCustomerMessages, 3000);
+      pollCustomerMessages();
+
+      let eventSource: EventSource | null = null;
+      try {
+        eventSource = new EventSource(`/api/chat/sse?threadId=${savedThreadId}`);
+        eventSource.addEventListener('new_message', (event) => {
+          try {
+            const incoming = JSON.parse(event.data);
+            const adminMessages = Array.isArray(incoming) 
+              ? incoming.filter((m: any) => m.gonderenTipi === 'admin')
+              : incoming.gonderenTipi === 'admin' ? [incoming] : [];
+
+            if (adminMessages.length > 0) {
+              const last = adminMessages[adminMessages.length - 1];
+              if (last._id !== lastSeenMessageId) {
+                lastSeenMessageId = last._id;
+                triggerAdminMsg(last.mesaj);
+              }
+            }
+          } catch (err) {}
+        });
+      } catch (e) {}
 
       return () => {
-        eventSource.close();
+        clearInterval(pollInterval);
+        if (eventSource) eventSource.close();
       };
     }
   }, [isChatPage, pathname]);

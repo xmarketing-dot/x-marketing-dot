@@ -91,19 +91,24 @@ export default function AdminChatPage() {
   useEffect(() => {
     fetchThreads();
 
-    // Real-Time Server-Sent Events (SSE) Stream for Admin Threads
-    const eventSource = new EventSource('/api/chat/sse?role=admin');
+    // 100% Reliable 3-second polling
+    const pollInterval = setInterval(fetchThreads, 3000);
 
-    eventSource.addEventListener('threads', () => {
-      fetchThreads();
-    });
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('/api/chat/sse?role=admin');
+      eventSource.addEventListener('threads', () => {
+        fetchThreads();
+      });
+    } catch (e) {}
 
     return () => {
-      eventSource.close();
+      clearInterval(pollInterval);
+      if (eventSource) eventSource.close();
     };
   }, []);
 
-  // Real-Time SSE Stream for selected thread messages
+  // Real-Time SSE + Polling Stream for selected thread messages
   useEffect(() => {
     if (!selectedThread) return;
 
@@ -114,36 +119,42 @@ export default function AdminChatPage() {
       body: JSON.stringify({ threadId: selectedThread._id }),
     }).catch(() => {});
 
-    // Initial message fetch
-    fetch(`/api/chat/messages?threadId=${selectedThread._id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.messages) {
-          setMessages(data.messages);
-        }
-      })
-      .catch(() => {});
+    const fetchCurrentMessages = () => {
+      fetch(`/api/chat/messages?threadId=${selectedThread._id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.messages) {
+            setMessages(data.messages);
+          }
+        })
+        .catch(() => {});
+    };
 
-    // SSE connection for selected thread
-    const eventSource = new EventSource(`/api/chat/sse?threadId=${selectedThread._id}`);
+    fetchCurrentMessages();
 
-    eventSource.addEventListener('new_message', (event) => {
-      try {
-        const incoming: Message[] = JSON.parse(event.data);
-        setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => m._id));
-          const uniqueNew = incoming.filter((m) => !existingIds.has(m._id));
-          return uniqueNew.length > 0 ? [...prev, ...uniqueNew] : prev;
-        });
-      } catch (err) {
-        // Silent
-      }
-    });
+    // 3-second polling for active chat
+    const msgInterval = setInterval(fetchCurrentMessages, 3000);
+
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource(`/api/chat/sse?threadId=${selectedThread._id}`);
+      eventSource.addEventListener('new_message', (event) => {
+        try {
+          const incoming: Message[] = JSON.parse(event.data);
+          setMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m._id));
+            const uniqueNew = incoming.filter((m) => !existingIds.has(m._id));
+            return uniqueNew.length > 0 ? [...prev, ...uniqueNew] : prev;
+          });
+        } catch (err) {}
+      });
+    } catch (e) {}
 
     return () => {
-      eventSource.close();
+      clearInterval(msgInterval);
+      if (eventSource) eventSource.close();
     };
-  }, [selectedThread]);
+  }, [selectedThread?._id]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

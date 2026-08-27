@@ -8,6 +8,7 @@ export default function AdminGlobalLiveNotification() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [incomingMessage, setIncomingMessage] = useState<any | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const lastProcessedTimeRef = useRef<number>(Date.now());
   const audioContextRef = useRef<AudioContext | null>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -67,45 +68,73 @@ export default function AdminGlobalLiveNotification() {
     }
   };
 
-  // 2. Connect Admin SSE Stream
+  const triggerNotification = (msg: any) => {
+    if (pathname === '/bms-secure-portal/chat') return;
+    setIncomingMessage(msg);
+    setShowToast(true);
+    playAdminAlertSound();
+
+    let flash = false;
+    const originalTitle = document.title;
+    const interval = setInterval(() => {
+      document.title = flash ? '🚨 (1) YENİ MÜŞTERİ MESAJI!' : originalTitle;
+      flash = !flash;
+    }, 800);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      document.title = originalTitle;
+    }, 15000);
+  };
+
+  // 2. Serverless 100% Reliable Polling + SSE Hybrid
   useEffect(() => {
     if (!isAdmin) return;
 
-    const eventSource = new EventSource('/api/admin/chat/sse');
-
-    eventSource.addEventListener('admin_customer_message', (event) => {
+    // Check DB for unread customer messages every 3 seconds
+    const checkUnread = async () => {
       try {
-        // Eğer admin zaten Canlı Chat ekranındaysa ses ve bildirim gösterme
-        if (pathname === '/bms-secure-portal/chat') {
-          return;
+        const res = await fetch('/api/admin/chat/threads');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.threads && data.threads.length > 0) {
+          const unreadThreads = data.threads.filter((t: any) => t.okunmadiAdminSayisi > 0);
+          if (unreadThreads.length > 0) {
+            const latestThread = unreadThreads[0];
+            const threadUpdateTime = new Date(latestThread.updatedAt || 0).getTime();
+            if (threadUpdateTime > lastProcessedTimeRef.current) {
+              lastProcessedTimeRef.current = threadUpdateTime;
+              triggerNotification({
+                threadId: latestThread._id,
+                mesaj: latestThread.sonMesajOzeti || 'Yeni müşteri canlı mesajı',
+                createdAt: latestThread.updatedAt,
+              });
+            }
+          }
         }
+      } catch (e) {}
+    };
 
-        const msg = JSON.parse(event.data);
-        if (msg) {
-          setIncomingMessage(msg);
-          setShowToast(true);
-          playAdminAlertSound();
+    const pollInterval = setInterval(checkUnread, 3000);
 
-          // Blink Tab Title
-          let flash = false;
-          const originalTitle = document.title;
-          const interval = setInterval(() => {
-            document.title = flash ? '🚨 (1) YENİ MÜŞTERİ MESAJI!' : originalTitle;
-            flash = !flash;
-          }, 800);
-
-          setTimeout(() => {
-            clearInterval(interval);
-            document.title = originalTitle;
-          }, 15000);
-        }
-      } catch (err) {
-        // Silent
-      }
-    });
+    // Also connect SSE
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('/api/admin/chat/sse');
+      eventSource.addEventListener('admin_customer_message', (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg) {
+            lastProcessedTimeRef.current = Date.now();
+            triggerNotification(msg);
+          }
+        } catch (err) {}
+      });
+    } catch (e) {}
 
     return () => {
-      eventSource.close();
+      clearInterval(pollInterval);
+      if (eventSource) eventSource.close();
     };
   }, [isAdmin, pathname]);
 
@@ -185,4 +214,3 @@ export default function AdminGlobalLiveNotification() {
     </div>
   );
 }
-
