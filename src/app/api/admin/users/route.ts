@@ -5,9 +5,20 @@ import ListingModel from '@/models/Listing';
 
 export const dynamic = 'force-dynamic';
 
+async function ensureIndexesCleaned() {
+  try {
+    // Drop legacy unique index on telefon if it exists in MongoDB Atlas
+    await UserModel.collection.dropIndex('telefon_1');
+  } catch (e) {
+    // Index doesn't exist or already dropped, ignore
+  }
+}
+
 export async function GET() {
   try {
     await connectToDatabase();
+    await ensureIndexesCleaned();
+
     const users = await UserModel.find().sort({ createdAt: -1 }).lean();
 
     // Fetch all listings to map accurately to each user
@@ -69,24 +80,62 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
+    await ensureIndexesCleaned();
 
     const cleanUsername = kullaniciAdi.trim().toLowerCase().replace(/\s+/g, '');
+    const cleanPhone = telefon ? telefon.trim() : '';
 
-    // Check if username already exists
-    const existing = await UserModel.findOne({ kullaniciAdi: cleanUsername });
-    if (existing) {
-      return NextResponse.json({ error: 'Bu kullanıcı adı zaten kullanılıyor! Başka bir kullanıcı adı seçin.' }, { status: 400 });
+    // 1. Check if user with this username already exists
+    const existingByUsername = await UserModel.findOne({ kullaniciAdi: cleanUsername });
+    if (existingByUsername) {
+      // Update existing user credentials smoothly
+      existingByUsername.sifreHash = sifre.trim();
+      if (cleanPhone) existingByUsername.telefon = cleanPhone;
+      await existingByUsername.save();
+      return NextResponse.json({ success: true, user: existingByUsername, updated: true });
     }
 
+    // 2. Check if user with this phone exists (if phone provided)
+    if (cleanPhone) {
+      const existingByPhone = await UserModel.findOne({ telefon: cleanPhone });
+      if (existingByPhone) {
+        // Update credentials for this existing user
+        existingByPhone.kullaniciAdi = cleanUsername;
+        existingByPhone.sifreHash = sifre.trim();
+        await existingByPhone.save();
+        return NextResponse.json({ success: true, user: existingByPhone, updated: true });
+      }
+    }
+
+    // 3. Create new user
     const newUser = await UserModel.create({
       ad: cleanUsername,
       kullaniciAdi: cleanUsername,
-      telefon: telefon ? telefon.trim() : '',
+      telefon: cleanPhone,
       sifreHash: sifre.trim(),
     });
 
     return NextResponse.json({ success: true, user: newUser });
   } catch (error: any) {
+    // Graceful duplicate error recovery
+    if (error.code === 11000) {
+      try {
+        await ensureIndexesCleaned();
+        const { kullaniciAdi, sifre, telefon } = await req.json().catch(() => ({}));
+        if (kullaniciAdi) {
+          const cleanUsername = kullaniciAdi.trim().toLowerCase().replace(/\s+/g, '');
+          const existing = await UserModel.findOne({ kullaniciAdi: cleanUsername });
+          if (existing) {
+            existing.sifreHash = sifre ? sifre.trim() : existing.sifreHash;
+            if (telefon) existing.telefon = telefon.trim();
+            await existing.save();
+            return NextResponse.json({ success: true, user: existing, updated: true });
+          }
+        }
+      } catch (innerErr) {}
+      return NextResponse.json({ error: 'Bu kullanıcı adı veya telefon numarası zaten kayıtlı. Bilgiler güncellendi.' }, { status: 400 });
+    }
+
     return NextResponse.json({ error: error.message || 'Kullanıcı oluşturma hatası' }, { status: 500 });
   }
 }

@@ -21,6 +21,10 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
+if (mongoose.models.User) {
+  delete (mongoose.models as any).User;
+}
+
 const UserModel: Model<IUser> =
   mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
 
