@@ -83,7 +83,7 @@ export default function ShareButtons({ title }: { url?: string; title: string })
 
         {/* WhatsApp Share Button with UTM & Tracking */}
         <a
-          href={`https://wa.me/?text=${encodedTitle}%20${encodedWaUrl}`}
+          href={`https://wa.me/?text=${encodedWaUrl}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleWhatsAppShare}
