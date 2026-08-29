@@ -91,13 +91,6 @@ export default function AdminChatPage() {
   useEffect(() => {
     fetchThreads();
 
-    const safeFetchThreads = () => {
-      if (typeof document !== 'undefined' && document.hidden) return;
-      fetchThreads();
-    };
-
-    const pollInterval = setInterval(safeFetchThreads, 3000);
-
     let eventSource: EventSource | null = null;
     try {
       eventSource = new EventSource('/api/chat/sse?role=admin');
@@ -107,7 +100,6 @@ export default function AdminChatPage() {
     } catch (e) {}
 
     return () => {
-      clearInterval(pollInterval);
       if (eventSource) eventSource.close();
     };
   }, []);
@@ -137,9 +129,6 @@ export default function AdminChatPage() {
 
     fetchCurrentMessages();
 
-    // 3-second polling for active chat
-    const msgInterval = setInterval(fetchCurrentMessages, 3000);
-
     let eventSource: EventSource | null = null;
     try {
       eventSource = new EventSource(`/api/chat/sse?threadId=${selectedThread._id}`);
@@ -156,7 +145,6 @@ export default function AdminChatPage() {
     } catch (e) {}
 
     return () => {
-      clearInterval(msgInterval);
       if (eventSource) eventSource.close();
     };
   }, [selectedThread?._id]);
