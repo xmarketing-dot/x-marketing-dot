@@ -88,6 +88,8 @@ export async function getHomepageConfig() {
   return configCache;
 }
 
+const listingsCache = new Map<string, { data: any; time: number }>();
+
 export async function getListings({
   ilSlug,
   ilceSlug,
@@ -99,15 +101,22 @@ export async function getListings({
   kategoriSlug?: string;
   limit?: number;
 }) {
+  const cacheKey = `${ilSlug || ''}_${ilceSlug || ''}_${kategoriSlug || ''}_${limit}`;
+  const cached = listingsCache.get(cacheKey);
+  const now = Date.now();
+  if (cached && now - cached.time < 30000) {
+    return cached.data;
+  }
+
   await connectToDatabase();
 
-  const now = new Date();
+  const nowDate = new Date();
   const query: any = { 
     status: 'yayinda',
     $or: [
       { paketBitisTarihi: { $exists: false } },
       { paketBitisTarihi: null },
-      { paketBitisTarihi: { $gt: now } }
+      { paketBitisTarihi: { $gt: nowDate } }
     ]
   };
 
@@ -123,14 +132,16 @@ export async function getListings({
     }
   }
 
-  // Fast lightweight query without transferring gigabytes of base64 photo arrays
+  // Cover photo only (anaFotograf) - never transfer huge base64 gallery arrays for list views
   const listings = await ListingModel.find(query)
-    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf fotograflar createdAt status')
+    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf createdAt status')
     .sort({ rozet: -1, createdAt: -1 })
     .limit(limit)
     .lean();
 
-  return JSON.parse(JSON.stringify(listings));
+  const cleanData = JSON.parse(JSON.stringify(listings));
+  listingsCache.set(cacheKey, { data: cleanData, time: now });
+  return cleanData;
 }
 
 export const getListingBySlug = cache(async (slug: string) => {

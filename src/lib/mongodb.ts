@@ -1,4 +1,10 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Fixes ECONNREFUSED on local Turkish ISP routers / Windows DNS caches
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (e) {}
 
 const primaryUri = process.env.MONGODB_URI;
 const directFallbackUri = process.env.MONGODB_FALLBACK_URI;
