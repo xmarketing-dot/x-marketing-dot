@@ -7,7 +7,8 @@ import {
   BarChart3, Smartphone, Monitor, Globe, Search, RefreshCw, Eye, MessageSquare, 
   Zap, ArrowUpRight, Loader2, Sparkles, MapPin, Activity, Calendar, Share2,
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
-  Link2, TrendingUp, Crown, Tag, MousePointerClick, Layers
+  Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
+  Target, Plus, Trash2, Award, CheckCircle2
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 
@@ -19,7 +20,92 @@ export default function BmsSecurePortalDashboard() {
   const [listingSearchTerm, setListingSearchTerm] = useState('');
   const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'x'>('views');
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'live_visitors'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
+
+  // Google SEO Rank Tracking States
+  const [keywordList, setKeywordList] = useState<any[]>([]);
+  const [keywordLoading, setKeywordLoading] = useState(false);
+  const [scanningRankings, setScanningRankings] = useState(false);
+  const [newKeywordInput, setNewKeywordInput] = useState('');
+
+  useEffect(() => {
+    if (activeTab === 'seo_rankings' && keywordList.length === 0) {
+      fetchKeywords();
+    }
+  }, [activeTab]);
+
+  const fetchKeywords = async () => {
+    setKeywordLoading(true);
+    try {
+      const res = await fetch('/api/admin/seo/rank-check');
+      const json = await res.json();
+      if (json.keywords) {
+        setKeywordList(json.keywords);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setKeywordLoading(false);
+    }
+  };
+
+  const handleAddKeyword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newKeywordInput.trim()) return;
+
+    setKeywordLoading(true);
+    try {
+      const res = await fetch('/api/admin/seo/rank-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyword: newKeywordInput.trim() }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setNewKeywordInput('');
+        fetchKeywords();
+      } else {
+        alert(json.error || 'Kelime eklenemedi');
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setKeywordLoading(false);
+    }
+  };
+
+  const handleDeleteKeyword = async (id: string) => {
+    if (!confirm('Bu anahtar kelime takibini silmek istediğinize emin misiniz?')) return;
+    try {
+      await fetch('/api/admin/seo/rank-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id }),
+      });
+      setKeywordList(prev => prev.filter(k => k._id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleScanRankings = async (id?: string) => {
+    setScanningRankings(true);
+    try {
+      const res = await fetch('/api/admin/seo/rank-check', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(id ? { id } : { all: true }),
+      });
+      const json = await res.json();
+      if (json.keywords) {
+        setKeywordList(json.keywords);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setScanningRankings(false);
+    }
+  };
 
   useEffect(() => {
     fetchAnalytics();
@@ -67,6 +153,12 @@ export default function BmsSecurePortalDashboard() {
     totalWhatsappClicks = 0,
     totalShares = 0,
     specialAdStats = { impressions: 0, uniqueVisitors: 0, clicks: 0, whatsappClicks: 0, ctr: '0.0' },
+    googleConversionStats = {
+      googleVisitors: 0,
+      googleWhatsappClicks: 0,
+      googleConversionRate: '0.0',
+      topGoogleDistricts: [],
+    },
     recentVisitors = [],
   } = data || {};
 
@@ -113,7 +205,7 @@ export default function BmsSecurePortalDashboard() {
   });
   const totals = { fb, google, x, waClicks, shares };
 
-  const filteredVisitors = recentVisitors.filter((v: any) => {
+  const filteredVisitors = (recentVisitors as any[]).filter((v: any) => {
     if (!searchTermFilter) return true;
     const term = searchTermFilter.toLowerCase();
     return (
@@ -184,6 +276,7 @@ export default function BmsSecurePortalDashboard() {
       <div className="flex items-center gap-2 border-b border-[#30363d] pb-2 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
         {[
           { id: 'overview', label: '📊 Genel Bakış', count: null },
+          { id: 'seo_rankings', label: '🎯 Google Sıralama & Dönüşüm', count: keywordList.length > 0 ? keywordList.length : null },
           { id: 'listings', label: '👑 İlan Performans & Referrer', count: filteredListings.length },
           { id: 'live_visitors', label: '⚡ Canlı Ziyaretçi Günlüğü', count: recentVisitors.length },
         ].map((tab) => (
@@ -560,6 +653,284 @@ export default function BmsSecurePortalDashboard() {
             )}
           </div>
 
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SEKME: GOOGLE CANLI SIRALAMA (SERP) & WHATSAPP DÖNÜŞÜM TAKİBİ ───── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'seo_rankings' && (
+        <div className="flex flex-col gap-6 animate-fadeIn">
+          {/* ── BÖLÜM 1: GOOGLE WHATSAPP DÖNÜŞÜM ANALİTİĞİ ────────────────── */}
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161b22] via-[#1c1917] to-[#161b22] border-2 border-amber-500/40 shadow-2xl flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black">
+                  <Target className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="font-black text-lg sm:text-xl text-white font-heading">
+                    Google Organik Arama &amp; WhatsApp Dönüşüm Analizi
+                  </h2>
+                  <p className="text-xs text-[#8b949e]">
+                    Google'dan gelen ziyaretçilerin doğrudan WhatsApp randevularına dönüşme performansı.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold font-mono">
+                  Dönüşüm Oranı: %{googleConversionStats.googleConversionRate}
+                </span>
+              </div>
+            </div>
+
+            {/* 3 KPI Kartı */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-1">
+                <span className="text-xs text-[#8b949e] font-bold flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-sky-400" />
+                  Google Organik Ziyaretçi
+                </span>
+                <span className="font-black text-2xl text-white font-heading">
+                  {googleConversionStats.googleVisitors}
+                </span>
+                <span className="text-[10px] text-[#8b949e]">Arama motorundan gelen tekil kişiler</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col gap-1">
+                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
+                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+                  Google WhatsApp Tıklamaları
+                </span>
+                <span className="font-black text-2xl text-emerald-400 font-heading">
+                  {googleConversionStats.googleWhatsappClicks}
+                </span>
+                <span className="text-[10px] text-[#8b949e]">Google'dan gelip WhatsApp butonuna basanlar</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-1">
+                <span className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-amber-400" />
+                  Net Dönüşüm Oranı (CR)
+                </span>
+                <span className="font-black text-2xl text-amber-400 font-heading">
+                  %{googleConversionStats.googleConversionRate}
+                </span>
+                <span className="text-[10px] text-[#8b949e]">Her 100 Google ziyaretçisinden randevu oranı</span>
+              </div>
+            </div>
+
+            {/* Google'dan En Çok WhatsApp Getiren İlanlar / İlçeler */}
+            {googleConversionStats.topGoogleDistricts && googleConversionStats.topGoogleDistricts.length > 0 && (
+              <div className="flex flex-col gap-3 pt-2">
+                <span className="text-xs font-black text-white font-heading uppercase tracking-wider flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-amber-400" />
+                  Google'dan En Çok WhatsApp Müşterisi Getiren Sayfalar:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {googleConversionStats.topGoogleDistricts.map((item: any) => (
+                    <div key={item.id} className="p-3 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-xs font-bold text-white truncate max-w-[150px]">{item.baslik}</span>
+                        <span className="text-[10px] text-amber-400 capitalize">{item.ilSlug} / {item.ilceSlug}</span>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <span className="text-xs font-black text-emerald-400 font-mono flex items-center gap-1">
+                          <OfficialWhatsAppIcon className="w-3 h-3" />
+                          {item.whatsappClicks} Tık
+                        </span>
+                        <span className="text-[10px] text-[#8b949e] font-mono">{item.googleViews} Google Hit</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── BÖLÜM 2: CANLI GOOGLE SIRALAMA TAKİP MOTORU (SERP RANK TRACKER) ── */}
+          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
+              <div>
+                <h2 className="font-black text-lg sm:text-xl text-white font-heading flex items-center gap-2">
+                  <span>Google Canlı SERP Sıralama &amp; Rakip Takip Motoru</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono">
+                    {keywordList.length} Kelime Takipte
+                  </span>
+                </h2>
+                <p className="text-xs text-[#8b949e]">
+                  Hedef kelimelerinizde Google Türkiye'deki anlık sıranızı, yükseliş/düşüşleri ve önünüzdeki ilk 2 rakibi canlı takip edin.
+                </p>
+              </div>
+
+              {/* Tümünü Şimdi Tara Butonu */}
+              <button
+                type="button"
+                onClick={() => handleScanRankings()}
+                disabled={scanningRankings}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
+              >
+                <Zap className={`w-4 h-4 ${scanningRankings ? 'animate-spin text-slate-950' : 'fill-slate-950'}`} />
+                <span>{scanningRankings ? 'Google Taranıyor...' : '⚡ Tüm Sıralamaları Şimdi Canlı Tara'}</span>
+              </button>
+            </div>
+
+            {/* Yeni Kelime Ekleme Formu */}
+            <form onSubmit={handleAddKeyword} className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="relative w-full sm:flex-1">
+                <input
+                  type="text"
+                  placeholder="Takip edilecek kelime yazın... (örn: kadıköy eskort, beylikdüzü escort)"
+                  value={newKeywordInput}
+                  onChange={(e) => setNewKeywordInput(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                />
+                <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-3" />
+              </div>
+              <button
+                type="submit"
+                disabled={keywordLoading || !newKeywordInput.trim()}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white border border-[#30363d] font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shrink-0"
+              >
+                <Plus className="w-4 h-4 text-amber-400" />
+                <span>Kelime Ekle &amp; Tara</span>
+              </button>
+            </form>
+
+            {/* Sıralama Tablosu */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-[#30363d] text-[11px] font-black text-[#8b949e] uppercase tracking-wider">
+                    <th className="py-3 px-3">Anahtar Kelime</th>
+                    <th className="py-3 px-3">Google Sırası</th>
+                    <th className="py-3 px-3">Değişim</th>
+                    <th className="py-3 px-3">En İyi Sıra</th>
+                    <th className="py-3 px-3">Önümüzdeki Rakipler</th>
+                    <th className="py-3 px-3">Son Tarama</th>
+                    <th className="py-3 px-3 text-right">İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#21262d]">
+                  {keywordList.map((item: any) => {
+                    const pos = item.currentPosition || 0;
+                    const change = item.change || 0;
+
+                    return (
+                      <tr key={item._id} className="hover:bg-[#21262d]/40 transition-colors">
+                        {/* Kelime Adı */}
+                        <td className="py-3.5 px-3">
+                          <span className="font-bold text-xs text-white capitalize font-heading block">
+                            {item.keyword}
+                          </span>
+                          <span className="text-[10px] text-[#8b949e]">Google TR</span>
+                        </td>
+
+                        {/* Sıralama Rozeti */}
+                        <td className="py-3.5 px-3">
+                          {pos > 0 && pos <= 3 ? (
+                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-mono">
+                              🥇 {pos}. Sıra (Zirve)
+                            </span>
+                          ) : pos > 3 && pos <= 10 ? (
+                            <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 text-xs font-black font-mono">
+                              🥈 {pos}. Sıra (1. Sayfa)
+                            </span>
+                          ) : pos > 10 && pos <= 30 ? (
+                            <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-black font-mono">
+                              🥉 {pos}. Sıra (Sayfa 2-3)
+                            </span>
+                          ) : pos > 30 ? (
+                            <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/40 text-xs font-black font-mono">
+                              {pos}. Sıra
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-full bg-[#21262d] text-[#8b949e] border border-[#30363d] text-xs font-bold font-mono">
+                              100+ (Dışında)
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Değişim Rozeti */}
+                        <td className="py-3.5 px-3">
+                          {change > 0 ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs font-mono">
+                              <TrendingUp className="w-3.5 h-3.5" />
+                              +{change} Yükseldi
+                            </span>
+                          ) : change < 0 ? (
+                            <span className="inline-flex items-center gap-1 text-rose-400 font-bold text-xs font-mono">
+                              <TrendingDown className="w-3.5 h-3.5" />
+                              {change} Düştü
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[#8b949e] font-bold text-xs font-mono">
+                              <Minus className="w-3.5 h-3.5" />
+                              Sabit
+                            </span>
+                          )}
+                        </td>
+
+                        {/* En İyi Sıra (Rekor) */}
+                        <td className="py-3.5 px-3 font-mono font-bold text-xs text-white">
+                          {item.bestPosition > 0 ? `#${item.bestPosition}` : '—'}
+                        </td>
+
+                        {/* Rakipler */}
+                        <td className="py-3.5 px-3">
+                          {item.topCompetitors && item.topCompetitors.length > 0 ? (
+                            <div className="flex flex-wrap gap-1 max-w-xs">
+                              {item.topCompetitors.slice(0, 2).map((c: any, cIdx: number) => (
+                                <span
+                                  key={cIdx}
+                                  className="text-[10px] px-2 py-0.5 rounded bg-[#0d1117] border border-[#30363d] text-[#8b949e] font-mono truncate max-w-[140px]"
+                                  title={c.domain}
+                                >
+                                  #{c.position} {c.domain}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-[#484f58]">Tespit edilmedi</span>
+                          )}
+                        </td>
+
+                        {/* Son Kontrol */}
+                        <td className="py-3.5 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
+                          {item.lastCheckedAt
+                            ? new Date(item.lastCheckedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                            : 'Henüz taranmadı'}
+                        </td>
+
+                        {/* İşlemler */}
+                        <td className="py-3.5 px-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleScanRankings(item._id)}
+                              disabled={scanningRankings}
+                              title="Bu Kelimeyi Tekrar Tara"
+                              className="p-1.5 rounded-lg bg-[#21262d] hover:bg-amber-500/20 text-[#8b949e] hover:text-amber-400 border border-[#30363d] transition-colors"
+                            >
+                              <RefreshCw className={`w-3.5 h-3.5 ${scanningRankings ? 'animate-spin' : ''}`} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteKeyword(item._id)}
+                              title="Kelimeyi Sil"
+                              className="p-1.5 rounded-lg bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 border border-[#30363d] transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
 

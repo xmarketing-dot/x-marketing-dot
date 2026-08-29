@@ -315,8 +315,39 @@ export async function GET(req: Request) {
     const totalWhatsappClicks = detailedListingReports.reduce((acc: number, item: any) => acc + item.whatsappClicks, 0);
     const totalShares = detailedListingReports.reduce((acc: number, item: any) => acc + item.shares, 0);
 
+    const googleVisitors = summary.googleCount || 0;
+    const googleWhatsappClicks = detailedListingReports.reduce((acc: number, item: any) => {
+      const gViews = item.referrers?.google || 0;
+      if (gViews > 0 && item.periodViews > 0) {
+        const ratio = gViews / item.periodViews;
+        return acc + Math.round((item.periodWhatsappClicks || 0) * ratio);
+      }
+      return acc;
+    }, 0);
+    const googleConversionRate = googleVisitors > 0 ? ((googleWhatsappClicks / googleVisitors) * 100).toFixed(1) : '0.0';
+
+    const topGoogleDistricts = detailedListingReports
+      .filter((l: any) => (l.referrers?.google || 0) > 0)
+      .sort((a: any, b: any) => (b.referrers?.google || 0) - (a.referrers?.google || 0))
+      .slice(0, 6)
+      .map((l: any) => ({
+        id: l.id,
+        baslik: l.baslik,
+        ilSlug: l.ilSlug,
+        ilceSlug: l.ilceSlug,
+        googleViews: l.referrers?.google || 0,
+        whatsappClicks: l.whatsappClicks || 0,
+        conversionRate: l.conversionRate,
+      }));
+
     return NextResponse.json({
       analytics: {
+        googleConversionStats: {
+          googleVisitors,
+          googleWhatsappClicks,
+          googleConversionRate,
+          topGoogleDistricts,
+        },
         totalPageviews,
         uniqueVisitors,
         activeUsers,
