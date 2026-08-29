@@ -28,44 +28,40 @@ async function scrapeSerpPosition(
 
   const competitors: ICompetitor[] = [];
   let foundPosition = 0;
+  const seenDomains = new Set<string>();
+  let rankCounter = 1;
 
+  // 1. PRIMARY: Yandex Search Engine (Türkiye eskort aramalarında %100 güncel ve filtresiz)
   try {
-    // 1. Google Arama Sorgusu (tr-TR, gl=tr)
-    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(keyword)}&num=50&hl=tr&gl=tr`;
-    const res = await fetch(googleUrl, {
+    const yandexUrl = `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`;
+    const res = await fetch(yandexUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept-Language': 'tr-TR,tr;q=0.9',
       },
-      next: { revalidate: 0 },
     });
 
     if (res.ok) {
       const html = await res.text();
-      // Google organik linklerini ayıkla
-      const linkRegex = /<a\s+(?:[^>]*?\s+)?href="(\/url\?q=[^"]+|https?:\/\/[^"]+)"/gi;
-      let match;
-      const seenDomains = new Set<string>();
-      let rankCounter = 1;
+      const urls = [...html.matchAll(/href="(https?:\/\/[^"]+)"/g)].map((m) => m[1]);
 
-      while ((match = linkRegex.exec(html)) !== null && rankCounter <= 50) {
-        let rawUrl = match[1];
-        if (rawUrl.startsWith('/url?q=')) {
-          rawUrl = decodeURIComponent(rawUrl.split('/url?q=')[1].split('&')[0]);
-        }
-
+      for (const rawUrl of urls) {
         try {
           const parsed = new URL(rawUrl);
           const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
-          // Google kendi servislerini ve arama sayfalarını filtrele
           if (
-            hostname.includes('google.') ||
-            hostname.includes('youtube.com') ||
-            hostname.includes('schema.org') ||
+            hostname.includes('yandex.') ||
+            hostname.includes('ya.ru') ||
             hostname.includes('w3.org') ||
+            hostname.includes('schema.org') ||
+            hostname.includes('twitter.com') ||
+            hostname.includes('x.com') ||
+            hostname.includes('instagram.com') ||
+            hostname.includes('facebook.com') ||
+            hostname.includes('t.me') ||
+            hostname.includes('google.') ||
             seenDomains.has(hostname)
           ) {
             continue;
@@ -73,7 +69,6 @@ async function scrapeSerpPosition(
 
           seenDomains.add(hostname);
 
-          // Rakipleri kaydet (İlk 3 rakip)
           if (competitors.length < 3 && !hostname.includes(cleanTargetBase)) {
             competitors.push({
               position: rankCounter,
@@ -82,23 +77,23 @@ async function scrapeSerpPosition(
             });
           }
 
-          // Kendi sitemizi bulduk mu?
           if (foundPosition === 0 && (hostname.includes(cleanTarget) || hostname.includes(cleanTargetBase))) {
             foundPosition = rankCounter;
           }
 
           rankCounter++;
+          if (rankCounter > 30) break;
         } catch (e) {}
       }
     }
   } catch (err) {
-    console.warn('Google search query throttled, falling back to secondary engine...', err);
+    console.warn('Yandex SERP scan error:', err);
   }
 
-  // 2. Yedek Tarayıcı (Google CAPTCHA/429 verirse Bing TR üzerinden tara)
-  if (foundPosition === 0 && competitors.length === 0) {
+  // 2. SECONDARY: Bing Organic Engine (u=a1 base64 formatında gerçek hedef URL'ler)
+  if (competitors.length === 0) {
     try {
-      const bingUrl = `https://www.bing.com/search?q=${encodeURIComponent(keyword)}&cc=tr&count=50`;
+      const bingUrl = `https://www.bing.com/search?q=${encodeURIComponent(keyword)}&cc=tr&count=30`;
       const bRes = await fetch(bingUrl, {
         headers: {
           'User-Agent':
@@ -109,30 +104,44 @@ async function scrapeSerpPosition(
 
       if (bRes.ok) {
         const bHtml = await bRes.text();
-        const bLinkRegex = /<li class="b_algo"[^>]*>[\s\S]*?<a\s+(?:[^>]*?\s+)?href="(https?:\/\/[^"]+)"/gi;
-        let bMatch;
-        let bRank = 1;
+        const bMatches = [...bHtml.matchAll(/u=a1([a-zA-Z0-9\+\-\_\=]+)/g)];
 
-        while ((bMatch = bLinkRegex.exec(bHtml)) !== null && bRank <= 30) {
+        for (const m of bMatches) {
           try {
-            const bHostname = new URL(bMatch[1]).hostname.toLowerCase().replace(/^www\./, '');
-            if (!bHostname.includes('bing.com') && !bHostname.includes('microsoft.com')) {
-              if (competitors.length < 3 && !bHostname.includes(cleanTargetBase)) {
-                competitors.push({
-                  position: bRank,
-                  domain: bHostname,
-                });
-              }
+            let base64Str = m[1].replace(/-/g, '+').replace(/_/g, '/');
+            while (base64Str.length % 4) base64Str += '=';
+            const decodedUrl = Buffer.from(base64Str, 'base64').toString('utf8');
+            const bHostname = new URL(decodedUrl).hostname.toLowerCase().replace(/^www\./, '');
 
-              if (foundPosition === 0 && (bHostname.includes(cleanTarget) || bHostname.includes(cleanTargetBase))) {
-                foundPosition = bRank;
-              }
-              bRank++;
+            if (
+              bHostname.includes('bing.') ||
+              bHostname.includes('microsoft.') ||
+              seenDomains.has(bHostname)
+            ) {
+              continue;
             }
+
+            seenDomains.add(bHostname);
+
+            if (competitors.length < 3 && !bHostname.includes(cleanTargetBase)) {
+              competitors.push({
+                position: rankCounter,
+                domain: bHostname,
+                title: bHostname,
+              });
+            }
+
+            if (foundPosition === 0 && (bHostname.includes(cleanTarget) || bHostname.includes(cleanTargetBase))) {
+              foundPosition = rankCounter;
+            }
+
+            rankCounter++;
           } catch (e) {}
         }
       }
-    } catch (bErr) {}
+    } catch (bErr) {
+      console.warn('Bing SERP scan error:', bErr);
+    }
   }
 
   return { position: foundPosition, competitors };
@@ -243,7 +252,29 @@ export async function PUT(req: NextRequest) {
     await connectToDatabase();
 
     const query = id ? { _id: id } : {};
-    const items = await KeywordRankModel.find(query);
+    let items = await KeywordRankModel.find(query);
+
+    if (items.length === 0 && !id) {
+      const defaults = [
+        'beylikdüzü eskort',
+        'kadıköy eskort',
+        'istanbul eskort ilanları',
+        'izmir eskort bayan',
+        'ankara vip escort',
+      ];
+      for (const kw of defaults) {
+        await KeywordRankModel.create({
+          keyword: kw,
+          targetDomain: 'besteskort.devs.surf',
+          currentPosition: 0,
+          previousPosition: 0,
+          change: 0,
+          bestPosition: 0,
+          topCompetitors: [],
+        }).catch(() => {});
+      }
+      items = await KeywordRankModel.find({});
+    }
 
     const updatedItems = [];
 

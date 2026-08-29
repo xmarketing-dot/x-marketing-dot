@@ -29,10 +29,8 @@ export default function BmsSecurePortalDashboard() {
   const [newKeywordInput, setNewKeywordInput] = useState('');
 
   useEffect(() => {
-    if (activeTab === 'seo_rankings' && keywordList.length === 0) {
-      fetchKeywords();
-    }
-  }, [activeTab]);
+    fetchKeywords();
+  }, []);
 
   const fetchKeywords = async () => {
     setKeywordLoading(true);
