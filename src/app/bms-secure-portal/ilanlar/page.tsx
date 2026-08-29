@@ -174,6 +174,21 @@ export default function AdminListingsPage() {
 
     const coverIdx = photos.findIndex((url: string) => url === item.anaFotograf?.url);
     setCoverPhotoIdx(coverIdx >= 0 ? coverIdx : 0);
+
+    // Fotoğrafları tekil olarak arka planda eksiksiz çek
+    if (item._id) {
+      fetch(`/api/admin/listings?id=${item._id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.listing?.fotograflar && data.listing.fotograflar.length > 0) {
+            const freshPhotos = data.listing.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url));
+            setPhotoUrls(freshPhotos);
+            const freshCoverIdx = freshPhotos.findIndex((url: string) => url === (data.listing.anaFotograf?.url || item.anaFotograf?.url));
+            setCoverPhotoIdx(freshCoverIdx >= 0 ? freshCoverIdx : 0);
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

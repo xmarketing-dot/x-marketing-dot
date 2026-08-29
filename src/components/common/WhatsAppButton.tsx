@@ -100,10 +100,10 @@ export default function WhatsAppButton({
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm uppercase tracking-wider shadow-2xl active:scale-98 transition-all font-heading cursor-pointer"
+        className="w-full flex items-center justify-center gap-2 py-3.5 px-5 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl active:scale-98 transition-all font-heading cursor-pointer"
       >
-        <OfficialWhatsAppIcon className="w-5 h-5 fill-slate-950 shrink-0" />
-        <span>WhatsApp ile Hemen İletişime Geç</span>
+        <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-slate-950 shrink-0" />
+        <span>WhatsApp ile İletişime Geç</span>
       </a>
     </div>
   );

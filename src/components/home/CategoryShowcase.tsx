@@ -29,20 +29,34 @@ export default function CategoryShowcase({
 
   const categories = [
     {
-      id: 'vip',
-      title: 'VIP Vitrin',
-      tagline: 'Seçkin & Özel Hizmet',
-      count: combinedVipCount,
+      id: 'ultravip',
+      title: 'Ultra VIP',
+      tagline: 'Lüks & Seçkin Hizmet',
+      count: ultraVipCount || 0,
       icon: Crown,
-      href: '/kategori/vip',
-      cover: topVipCover,
-      accentGradient: 'from-amber-500 via-amber-400 to-yellow-300',
-      borderGlow: 'border-amber-500/90 shadow-[0_0_25px_rgba(245,158,11,0.35)]',
+      href: '/kategori/ultravip',
+      cover: ultraVipCovers[0] || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=600',
+      borderGlow: 'border-amber-500/90 shadow-[0_0_20px_rgba(245,158,11,0.3)]',
       glowRing: 'ring-1 ring-amber-400/50',
       badgeBg: 'bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950',
       badgeIconColor: 'fill-slate-950 text-slate-950',
       countBg: 'bg-amber-500/20 text-amber-300 border-amber-500/50',
-      ribbonText: '👑 PREMIER',
+      ribbonText: '👑 ULTRA VIP',
+    },
+    {
+      id: 'vip',
+      title: 'VIP Vitrin',
+      tagline: 'Öne Çıkan Modeller',
+      count: vipCount || 0,
+      icon: Flame,
+      href: '/kategori/vip',
+      cover: vipCovers[0] || 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600',
+      borderGlow: 'border-purple-500/80 shadow-[0_0_20px_rgba(168,85,247,0.25)]',
+      glowRing: 'ring-1 ring-purple-400/40',
+      badgeBg: 'bg-gradient-to-r from-purple-600 to-pink-500 text-white',
+      badgeIconColor: 'fill-white text-white',
+      countBg: 'bg-purple-500/20 text-purple-300 border-purple-500/50',
+      ribbonText: '⭐ VIP VİTRİN',
     },
     {
       id: 'gold',
@@ -51,14 +65,13 @@ export default function CategoryShowcase({
       count: goldCount || 0,
       icon: Award,
       href: '/kategori/gold',
-      cover: goldCovers[0] || 'https://images.unsplash.com/photo-1542206395-9feb3edaa68d?w=400',
-      accentGradient: 'from-yellow-600 via-amber-600 to-yellow-500',
-      borderGlow: 'border-amber-600/70 shadow-[0_0_20px_rgba(217,119,6,0.25)]',
+      cover: goldCovers[0] || 'https://images.unsplash.com/photo-1542206395-9feb3edaa68d?w=600',
+      borderGlow: 'border-amber-600/70 shadow-[0_0_15px_rgba(217,119,6,0.25)]',
       glowRing: 'ring-1 ring-amber-600/40',
       badgeBg: 'bg-gradient-to-r from-amber-600 to-yellow-500 text-slate-950',
       badgeIconColor: 'fill-slate-950 text-slate-950',
       countBg: 'bg-amber-600/20 text-amber-300 border-amber-600/50',
-      ribbonText: '⭐ POPÜLER',
+      ribbonText: '🏆 GOLD VİTRİN',
     },
     {
       id: 'silver',
@@ -67,8 +80,7 @@ export default function CategoryShowcase({
       count: silverCount || 0,
       icon: Medal,
       href: '/kategori/silver',
-      cover: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-      accentGradient: 'from-slate-400 via-slate-300 to-slate-500',
+      cover: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600',
       borderGlow: 'border-slate-600/60 shadow-[0_0_15px_rgba(148,163,184,0.15)]',
       glowRing: 'ring-1 ring-slate-500/30',
       badgeBg: 'bg-gradient-to-r from-slate-300 to-slate-400 text-slate-950',
@@ -96,15 +108,15 @@ export default function CategoryShowcase({
         </span>
       </div>
 
-      {/* 3'lü Lüks Vitrin Kartları Grid */}
-      <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
+      {/* 4'lü Dengeli Vitrin Kartları Grid (Mobilde 2'şerli Geniş, Masaüstünde 4'lü) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
         {categories.map((cat) => {
           const Icon = cat.icon;
           return (
             <Link
               key={cat.id}
               href={cat.href}
-              className={`group relative rounded-3xl overflow-hidden aspect-[9/13] border-2 ${cat.borderGlow} ${cat.glowRing} bg-[#161b22] flex flex-col justify-between p-2.5 sm:p-3.5 active:scale-95 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl`}
+              className={`group relative rounded-2xl overflow-hidden aspect-[4/3] sm:aspect-[3/4] border-2 ${cat.borderGlow} ${cat.glowRing} bg-[#161b22] flex flex-col justify-between p-2.5 sm:p-3 active:scale-95 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl`}
             >
               {/* Arka Plan Vitrin Görseli */}
               <Image

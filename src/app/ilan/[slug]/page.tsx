@@ -288,6 +288,7 @@ export default async function ListingDetailPage({ params }: Props) {
             il={ilAdi}
             ilce={ilceAdi}
             customMessage={prefilledMessage}
+            compact={true}
           />
         </div>
       </div>

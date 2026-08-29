@@ -5,11 +5,35 @@ import ChatMessageModel from '@/models/ChatMessage';
 import ChatThreadModel from '@/models/ChatThread';
 import { chatEmitter } from '@/lib/chatEmitter';
 
-export async function GET() {
+export const dynamic = 'force-dynamic';
+
+let adminListingsCache: any[] | null = null;
+let adminListingsCacheTime = 0;
+
+export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
-    const listings = await ListingModel.find({}).sort({ createdAt: -1 }).lean();
-    return NextResponse.json({ listings: JSON.parse(JSON.stringify(listings)) });
+    const id = req.nextUrl.searchParams.get('id');
+    if (id) {
+      const single = await ListingModel.findById(id).lean();
+      return NextResponse.json({ listing: single });
+    }
+
+    const now = Date.now();
+    if (adminListingsCache && now - adminListingsCacheTime < 15000) {
+      return NextResponse.json({ listings: adminListingsCache });
+    }
+
+    // fotograflar dizisi devasa base64 veriler içerebildiği için liste çekerken hariç tutuyoruz
+    const listings = await ListingModel.find({})
+      .select('-fotograflar')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    adminListingsCache = JSON.parse(JSON.stringify(listings));
+    adminListingsCacheTime = now;
+
+    return NextResponse.json({ listings: adminListingsCache });
   } catch (error: any) {
     return NextResponse.json({ error: 'İlanlar listelenemedi' }, { status: 500 });
   }
@@ -181,6 +205,7 @@ Bol kazançlar ve bol müşteriler dileriz! 🚀💎`;
       }
     }
 
+    adminListingsCache = null;
     return NextResponse.json({ success: true, listing: updatedListing });
   } catch (error: any) {
     return NextResponse.json({ error: 'Güncelleme hatası' }, { status: 500 });
@@ -199,6 +224,7 @@ export async function DELETE(req: NextRequest) {
     await connectToDatabase();
     await ListingModel.findByIdAndDelete(id);
 
+    adminListingsCache = null;
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: 'Silme hatası' }, { status: 500 });
