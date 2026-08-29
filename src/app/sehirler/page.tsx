@@ -5,7 +5,7 @@ import { Globe, MapPin, Sparkles, ShieldCheck } from 'lucide-react';
 import { getAllLocations, getListings } from '@/lib/data';
 import CityExplorer from '@/components/locations/CityExplorer';
 
-export const revalidate = 60; // Refresh every minute for real-time counts
+export const dynamic = 'force-dynamic';
 
 const siteUrl = getSiteUrl();
 

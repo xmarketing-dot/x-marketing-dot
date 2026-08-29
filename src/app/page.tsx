@@ -26,7 +26,7 @@ import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
 
-export const revalidate = 15;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getSiteUrl();

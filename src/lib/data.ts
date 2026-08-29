@@ -7,32 +7,56 @@ import ListingModel from '../models/Listing';
 import HomepageConfigModel from '../models/HomepageConfig';
 
 
+let locationsCache: any = null;
+let locationsCacheTime = 0;
+
 export async function getAllLocations() {
+  const now = Date.now();
+  if (locationsCache && now - locationsCacheTime < 60000) {
+    return locationsCache;
+  }
   await connectToDatabase();
   const res = await LocationModel.find({})
     .select('il ilSlug ilceler')
     .sort({ il: 1 })
     .lean();
-  return JSON.parse(JSON.stringify(res));
+  locationsCache = JSON.parse(JSON.stringify(res));
+  locationsCacheTime = now;
+  return locationsCache;
 }
 
 export async function getLocationBySlug(ilSlug: string) {
+  const locations = await getAllLocations();
+  const found = locations.find((l: any) => l.ilSlug === ilSlug);
+  if (found) return found;
   await connectToDatabase();
   const res = await LocationModel.findOne({ ilSlug }).lean();
   if (!res) return null;
   return JSON.parse(JSON.stringify(res));
 }
 
+let categoriesCache: any = null;
+let categoriesCacheTime = 0;
+
 export async function getAllCategories() {
+  const now = Date.now();
+  if (categoriesCache && now - categoriesCacheTime < 60000) {
+    return categoriesCache;
+  }
   await connectToDatabase();
   const res = await CategoryModel.find({ aktif: true })
     .select('ad slug icon siraNo')
     .sort({ siraNo: 1 })
     .lean();
-  return JSON.parse(JSON.stringify(res));
+  categoriesCache = JSON.parse(JSON.stringify(res));
+  categoriesCacheTime = now;
+  return categoriesCache;
 }
 
 export async function getCategoryBySlug(slug: string) {
+  const categories = await getAllCategories();
+  const found = categories.find((c: any) => c.slug === slug);
+  if (found) return found;
   await connectToDatabase();
   const res = await CategoryModel.findOne({ slug, aktif: true }).lean();
   if (!res) return null;
@@ -45,14 +69,23 @@ export async function getAllPackages() {
   return JSON.parse(JSON.stringify(res));
 }
 
+let configCache: any = null;
+let configCacheTime = 0;
+
 export async function getHomepageConfig() {
+  const now = Date.now();
+  if (configCache && now - configCacheTime < 60000) {
+    return configCache;
+  }
   await connectToDatabase();
   let config = await HomepageConfigModel.findOne({ key: 'singleton' }).lean();
   if (!config) {
     const created = await HomepageConfigModel.create({ key: 'singleton' });
     config = created.toObject();
   }
-  return JSON.parse(JSON.stringify(config));
+  configCache = JSON.parse(JSON.stringify(config));
+  configCacheTime = now;
+  return configCache;
 }
 
 export async function getListings({
