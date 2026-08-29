@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       siteName: 'Best Eskort',
       images: [
         {
-          url: `${siteUrl}/api/og/site`,
+          url: `${siteUrl}/api/og/site?il=${location.ilSlug}`,
           width: 1200,
           height: 630,
           alt: `${location.il} Eskort`,
@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: 'summary_large_image',
       title: `${location.il} Eskort İlanları | Best Eskort`,
       description: `${location.il} genelinde teyitli eskort ilanları.`,
-      images: [`${siteUrl}/api/og/site`],
+      images: [`${siteUrl}/api/og/site?il=${location.ilSlug}`],
     },
   };
 }
