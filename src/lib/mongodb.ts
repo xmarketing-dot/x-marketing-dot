@@ -6,7 +6,8 @@ if (!primaryUri) {
   throw new Error('Database connection configuration missing.');
 }
 
-const directFallbackUri = process.env.MONGODB_FALLBACK_URI || primaryUri;
+const directFallbackUri = process.env.MONGODB_FALLBACK_URI || 
+  'mongodb://serkanbilsel_db_user:YbMs2qtpzjmJ8Fgi@ac-lmw0if1-shard-00-00.nj0njt0.mongodb.net:27017,ac-lmw0if1-shard-00-01.nj0njt0.mongodb.net:27017,ac-lmw0if1-shard-00-02.nj0njt0.mongodb.net:27017/marketing_pazarlama?ssl=true&authSource=admin&retryWrites=true&w=majority';
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -30,8 +31,8 @@ const connectionOptions = {
   maxPoolSize: 20,
   minPoolSize: 1,
   maxIdleTimeMS: 45000,
-  serverSelectionTimeoutMS: 30000,
-  socketTimeoutMS: 45000,
+  serverSelectionTimeoutMS: 8000,
+  socketTimeoutMS: 30000,
 };
 
 let indexesEnsured = false;
@@ -71,13 +72,15 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
 
   if (!cached.promise) {
     cached.promise = (async () => {
+      // 1. Try direct shard hosts first (bypasses slow/broken DNS SRV lookups, connects in 500ms)
       try {
-        return await mongoose.connect(primaryUri as string, connectionOptions);
-      } catch (firstErr) {
+        return await mongoose.connect(directFallbackUri, connectionOptions);
+      } catch (directErr) {
+        console.warn('Direct connection failed, trying primary SRV URI...', directErr);
         try {
-          return await mongoose.connect(directFallbackUri, connectionOptions);
-        } catch (secondErr) {
-          throw firstErr;
+          return await mongoose.connect(primaryUri as string, connectionOptions);
+        } catch (srvErr) {
+          throw directErr;
         }
       }
     })();

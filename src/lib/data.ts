@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import connectToDatabase from './mongodb';
 import LocationModel from '../models/Location';
 import CategoryModel from '../models/Category';
@@ -99,7 +100,7 @@ export async function getListings({
   return JSON.parse(JSON.stringify(listings));
 }
 
-export async function getListingBySlug(slug: string) {
+export const getListingBySlug = cache(async (slug: string) => {
   await connectToDatabase();
 
   const now = new Date();
@@ -117,4 +118,4 @@ export async function getListingBySlug(slug: string) {
 
   if (!listing) return null;
   return JSON.parse(JSON.stringify(listing));
-}
+});
