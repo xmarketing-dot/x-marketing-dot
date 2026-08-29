@@ -85,12 +85,25 @@ export async function POST(req: NextRequest) {
       utmLower.includes('telegram')
     ) {
       source = 'telegram';
-    } else if (refLower.includes('instagram')) {
-      source = 'instagram';
-    } else if (refLower.includes('twitter') || refLower.includes('t.co') || refLower.includes('x.com') || utmLower.includes('x')) {
-      source = 'x';
-    } else if (refLower.includes('facebook')) {
+    } else if (
+      refLower.includes('facebook') ||
+      refLower.includes('fb.com') ||
+      refLower.includes('fb.me') ||
+      refLower.includes('meta.com') ||
+      utmLower.includes('facebook') ||
+      utmLower.includes('fb')
+    ) {
       source = 'facebook';
+    } else if (
+      refLower.includes('twitter') ||
+      refLower.includes('t.co') ||
+      refLower.includes('x.com') ||
+      utmLower.includes('twitter') ||
+      utmLower.includes('x')
+    ) {
+      source = 'x';
+    } else if (refLower.includes('instagram') || utmLower.includes('instagram')) {
+      source = 'instagram';
     } else if (!referer || refLower === 'direct' || refLower.includes('besteskort')) {
       source = 'direct';
     } else {

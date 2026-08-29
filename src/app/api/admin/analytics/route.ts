@@ -124,6 +124,128 @@ export async function GET(req: Request) {
     const totalWhatsappClicks = listings.reduce((acc, l) => acc + (l.whatsappTiklamaSayisi || 0), 0);
     const totalShares = listings.reduce((acc: number, l: any) => acc + (l.paylasimSayisi || 0), 0);
 
+    // ── 10. DETAYLI İLAN BAZLI ANALİZ VE REFERRER DAĞILIMI ──
+    const listingVisitorsAgg = await AnalyticsVisitorModel.aggregate([
+      { 
+        $match: { 
+          ...dateQuery, 
+          path: { $regex: '^/ilan/' } 
+        } 
+      },
+      {
+        $group: {
+          _id: "$path",
+          periodViews: { $sum: 1 },
+          uniqueVisitors: { $addToSet: "$visitorId" },
+          googleReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "google"] }, 1, 0] } },
+          facebookReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "facebook"] }, 1, 0] } },
+          twitterReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "x"] }, 1, 0] } },
+          whatsappReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "whatsapp"] }, 1, 0] } },
+          instagramReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "instagram"] }, 1, 0] } },
+          directReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "direct"] }, 1, 0] } },
+          otherReferrals: { $sum: { $cond: [{ $in: ["$refererSource", ["telegram", "other"]] }, 1, 0] } },
+          rawReferrers: { $addToSet: "$referer" },
+          lastVisitedAt: { $max: "$createdAt" },
+        }
+      }
+    ]);
+
+    const listingEventsAgg = await AnalyticsEventModel.aggregate([
+      {
+        $match: {
+          ...dateQuery,
+          eventType: { $in: ['whatsapp_click', 'share_listing', 'phone_call'] },
+          path: { $regex: '^/ilan/' }
+        }
+      },
+      {
+        $group: {
+          _id: "$path",
+          whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "whatsapp_click"] }, 1, 0] } },
+          shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
+        }
+      }
+    ]);
+
+    const visitorStatsByPath: Record<string, any> = {};
+    listingVisitorsAgg.forEach((item) => {
+      const cleanPath = (item._id || '').split('?')[0].toLowerCase();
+      visitorStatsByPath[cleanPath] = {
+        periodViews: item.periodViews,
+        uniqueVisitorsCount: (item.uniqueVisitors || []).length,
+        referrers: {
+          google: item.googleReferrals,
+          facebook: item.facebookReferrals,
+          x: item.twitterReferrals,
+          whatsapp: item.whatsappReferrals,
+          instagram: item.instagramReferrals,
+          direct: item.directReferrals,
+          other: item.otherReferrals,
+        },
+        rawReferrers: (item.rawReferrers || [])
+          .filter((r: string) => r && r !== 'Direct' && !r.includes('besteskort') && !r.includes('localhost'))
+          .slice(0, 8),
+        lastVisitedAt: item.lastVisitedAt,
+      };
+    });
+
+    const eventStatsByPath: Record<string, any> = {};
+    listingEventsAgg.forEach((item) => {
+      const cleanPath = (item._id || '').split('?')[0].toLowerCase();
+      eventStatsByPath[cleanPath] = {
+        whatsappClicks: item.whatsappClicks,
+        shares: item.shares,
+      };
+    });
+
+    const rawListings = await ListingModel.find({})
+      .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf.url goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi status createdAt')
+      .sort({ goruntulenmeSayisi: -1 })
+      .lean();
+
+    const detailedListingReports = rawListings.map((l: any) => {
+      const ilanPath = `/ilan/${l.slug}`.toLowerCase();
+      const vStats = visitorStatsByPath[ilanPath] || {
+        periodViews: 0,
+        uniqueVisitorsCount: 0,
+        referrers: { google: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
+        rawReferrers: [],
+        lastVisitedAt: null,
+      };
+      const eStats = eventStatsByPath[ilanPath] || {
+        whatsappClicks: 0,
+        shares: 0,
+      };
+
+      const totalViews = Math.max(l.goruntulenmeSayisi || 0, vStats.periodViews);
+      const totalWhatsapp = Math.max(l.whatsappTiklamaSayisi || 0, eStats.whatsappClicks);
+      const totalListingShares = Math.max(l.paylasimSayisi || 0, eStats.shares);
+      const conversionRate = totalViews > 0 ? ((totalWhatsapp / totalViews) * 100).toFixed(1) : '0.0';
+
+      return {
+        id: l._id.toString(),
+        baslik: l.baslik,
+        slug: l.slug,
+        ilSlug: l.ilSlug,
+        ilceSlug: l.ilceSlug,
+        rozet: l.rozet,
+        whatsappNumara: l.whatsappNumara,
+        fotoUrl: l.anaFotograf?.url || null,
+        status: l.status,
+        createdAt: l.createdAt,
+        totalViews,
+        periodViews: vStats.periodViews,
+        uniqueVisitors: vStats.uniqueVisitorsCount,
+        whatsappClicks: totalWhatsapp,
+        periodWhatsappClicks: eStats.whatsappClicks,
+        shares: totalListingShares,
+        conversionRate,
+        referrers: vStats.referrers,
+        rawReferrers: vStats.rawReferrers,
+        lastVisitedAt: vStats.lastVisitedAt,
+      };
+    });
+
     return NextResponse.json({
       analytics: {
         totalPageviews,
@@ -162,6 +284,7 @@ export async function GET(req: Request) {
           specialAdClicks,
         },
         topContactedListings,
+        detailedListingReports,
         totalListingViews,
         totalWhatsappClicks,
         totalShares,

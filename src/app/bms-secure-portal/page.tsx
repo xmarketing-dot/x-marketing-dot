@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { 
   BarChart3, Smartphone, Monitor, Globe, Search, RefreshCw, Eye, MessageSquare, 
   Zap, ArrowUpRight, Loader2, Sparkles, MapPin, Activity, Calendar, Share2,
-  Clock, ShieldCheck, Flame, ExternalLink, Filter
+  Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
+  Link2, TrendingUp, Crown, Tag, MousePointerClick
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 
@@ -13,6 +16,9 @@ export default function BmsSecurePortalDashboard() {
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState('all'); // all, today, yesterday, week, month
   const [searchTermFilter, setSearchTermFilter] = useState('');
+  const [listingSearchTerm, setListingSearchTerm] = useState('');
+  const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'x'>('views');
+  const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAnalytics();
@@ -55,11 +61,45 @@ export default function BmsSecurePortalDashboard() {
     topCities = [],
     eventCounts = { whatsappClicks: 0, shares: 0, categoryClicks: 0, cityFilters: 0, searches: 0 },
     topContactedListings = [],
+    detailedListingReports = [],
     totalListingViews = 0,
     totalWhatsappClicks = 0,
     totalShares = 0,
     recentVisitors = [],
   } = data || {};
+
+  const filteredListings = (detailedListingReports as any[])
+    .filter((item: any) => {
+      if (!listingSearchTerm) return true;
+      const term = listingSearchTerm.toLowerCase();
+      return (
+        (item.baslik || '').toLowerCase().includes(term) ||
+        (item.ilSlug || '').toLowerCase().includes(term) ||
+        (item.ilceSlug || '').toLowerCase().includes(term) ||
+        (item.rozet || '').toLowerCase().includes(term)
+      );
+    })
+    .sort((a: any, b: any) => {
+      if (listingSortBy === 'whatsapp') {
+        return (b.whatsappClicks || 0) - (a.whatsappClicks || 0);
+      }
+      if (listingSortBy === 'ctr') {
+        return parseFloat(b.conversionRate || '0') - parseFloat(a.conversionRate || '0');
+      }
+      if (listingSortBy === 'shares') {
+        return (b.shares || 0) - (a.shares || 0);
+      }
+      if (listingSortBy === 'facebook') {
+        return (b.referrers?.facebook || 0) - (a.referrers?.facebook || 0);
+      }
+      if (listingSortBy === 'google') {
+        return (b.referrers?.google || 0) - (a.referrers?.google || 0);
+      }
+      if (listingSortBy === 'x') {
+        return (b.referrers?.x || 0) - (a.referrers?.x || 0);
+      }
+      return (b.totalViews || 0) - (a.totalViews || 0);
+    });
 
   const filteredVisitors = recentVisitors.filter((v: any) => {
     if (!searchTermFilter) return true;
@@ -501,6 +541,288 @@ export default function BmsSecurePortalDashboard() {
             );
           })}
         </div>
+      </div>
+
+      {/* ── 7.5 HER İLAN İÇİN DETAYLI ANALİZ, TIKLAMA & REFERRER (NEREDEN GELDİ) RAPORU ──────────────── */}
+      <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-amber-500/40 shadow-2xl flex flex-col gap-6">
+        
+        {/* Başlık ve İstatistik Özeti */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#30363d] pb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 shrink-0">
+              <TrendingUp className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <div className="flex flex-col">
+              <h2 className="font-black text-lg sm:text-xl text-white font-heading tracking-tight flex items-center gap-2">
+                <span>Her İlan İçin Detaylı Analiz &amp; Referrer (Trafik Kaynağı) Raporu</span>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
+                  {filteredListings.length} İlan
+                </span>
+              </h2>
+              <p className="text-xs text-[#8b949e]">
+                Hangi ilan kaç kez görüntülendi, kaç kez WhatsApp'a tıklandı, Facebook, Google, Twitter veya nereden referans aldı ve gelen gerçek linkler.
+              </p>
+            </div>
+          </div>
+
+          {/* Hızlı Arama & Filtreleme Kutusu */}
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="İlan adı veya şehir ara..."
+                value={listingSearchTerm}
+                onChange={(e) => setListingSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+              />
+              <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-2.5" />
+            </div>
+          </div>
+        </div>
+
+        {/* Sıralama Butonları */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
+          <span className="text-[#8b949e] font-bold shrink-0 flex items-center gap-1">
+            <Filter className="w-3.5 h-3.5" /> Sırala:
+          </span>
+          {[
+            { id: 'views', label: '👁️ En Çok Görüntülenen' },
+            { id: 'whatsapp', label: '💬 En Çok WhatsApp Tıklaması' },
+            { id: 'ctr', label: '🎯 En Yüksek Dönüşüm (%)' },
+            { id: 'facebook', label: '🟦 Facebook Trafiği' },
+            { id: 'x', label: '🐦 X (Twitter) Trafiği' },
+            { id: 'google', label: '🔍 Google Trafiği' },
+            { id: 'shares', label: '🔗 En Çok Paylaşılan' },
+          ].map((btn) => (
+            <button
+              key={btn.id}
+              onClick={() => setListingSortBy(btn.id as any)}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 ${
+                listingSortBy === btn.id
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                  : 'bg-[#0d1117] text-[#8b949e] hover:text-white border border-[#30363d]'
+              }`}
+            >
+              {btn.label}
+            </button>
+          ))}
+        </div>
+
+        {/* İlan Detay Tablosu */}
+        {filteredListings.length === 0 ? (
+          <div className="p-12 text-center text-xs text-[#8b949e] bg-[#0d1117] rounded-2xl border border-[#30363d]">
+            Arama kriterine uygun ilan bulunamadı.
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border border-[#30363d] bg-[#0d1117]">
+            <table className="w-full text-left text-xs border-collapse min-w-[850px]">
+              <thead>
+                <tr className="border-b border-[#30363d] bg-[#161b22] text-[#8b949e] font-heading font-black text-[11px]">
+                  <th className="py-3 px-4">İLAN BİLGİSİ</th>
+                  <th className="py-3 px-3">GÖRÜNTÜLENME</th>
+                  <th className="py-3 px-3">WHATSAPP &amp; DÖNÜŞÜM</th>
+                  <th className="py-3 px-3">PAYLAŞIM</th>
+                  <th className="py-3 px-3">TRAFİK KAYNAKLARI (REFERRER)</th>
+                  <th className="py-3 px-4 text-right">DETAY &amp; LİNK</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#21262d]">
+                {filteredListings.map((item: any) => {
+                  const isExpanded = expandedListingId === item.id;
+                  const totalReferralTraffic = 
+                    (item.referrers?.google || 0) +
+                    (item.referrers?.facebook || 0) +
+                    (item.referrers?.x || 0) +
+                    (item.referrers?.whatsapp || 0) +
+                    (item.referrers?.instagram || 0) +
+                    (item.referrers?.direct || 0);
+
+                  return (
+                    <React.Fragment key={item.id}>
+                      <tr className="hover:bg-[#21262d]/50 transition-colors">
+                        
+                        {/* İlan Bilgisi */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="relative w-12 h-16 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                              <Image
+                                src={item.fotoUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
+                                alt={item.baslik}
+                                fill
+                                sizes="48px"
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="flex flex-col min-w-0 max-w-[240px]">
+                              <span className="font-black text-xs text-white truncate font-heading hover:text-amber-400 transition-colors">
+                                {item.baslik}
+                              </span>
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="text-[10px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 font-bold">
+                                  {item.ilSlug?.toUpperCase() || 'TR'} {item.ilceSlug ? `• ${item.ilceSlug?.toUpperCase()}` : ''}
+                                </span>
+                                {item.rozet && (
+                                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-bold">
+                                    {item.rozet?.toUpperCase()}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Görüntülenme */}
+                        <td className="py-3.5 px-3">
+                          <div className="flex flex-col">
+                            <span className="font-black text-sm text-white font-heading">
+                              {(item.totalViews || 0).toLocaleString()} Kez
+                            </span>
+                            <span className="text-[10px] text-[#8b949e]">
+                              {item.uniqueVisitors > 0 ? `${item.uniqueVisitors} tekil ziyaretçi` : 'Tüm zamanlar'}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* WhatsApp Tıklama & CTR */}
+                        <td className="py-3.5 px-3">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-black text-sm text-emerald-400 font-heading flex items-center gap-1">
+                              <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
+                              {(item.whatsappClicks || 0).toLocaleString()} Tıklama
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-black text-[10px] w-fit font-mono">
+                              %{item.conversionRate} Dönüşüm
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Paylaşım */}
+                        <td className="py-3.5 px-3">
+                          <div className="flex items-center gap-1 text-slate-300 font-bold">
+                            <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>{item.shares || 0}</span>
+                          </div>
+                        </td>
+
+                        {/* Referrer Rozetleri */}
+                        <td className="py-3.5 px-3">
+                          <div className="flex flex-wrap items-center gap-1.5 max-w-[280px]">
+                            {item.referrers?.facebook > 0 && (
+                              <span className="px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold font-mono" title="Facebook'tan gelen ziyaretçiler">
+                                🟦 FB: {item.referrers.facebook}
+                              </span>
+                            )}
+                            {item.referrers?.x > 0 && (
+                              <span className="px-2 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold font-mono" title="X / Twitter'dan gelenler">
+                                🐦 X: {item.referrers.x}
+                              </span>
+                            )}
+                            {item.referrers?.google > 0 && (
+                              <span className="px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold font-mono" title="Google aramalarından gelenler">
+                                🔍 Google: {item.referrers.google}
+                              </span>
+                            )}
+                            {item.referrers?.whatsapp > 0 && (
+                              <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold font-mono" title="WhatsApp bağlantılarından gelenler">
+                                🟢 WA: {item.referrers.whatsapp}
+                              </span>
+                            )}
+                            {item.referrers?.instagram > 0 && (
+                              <span className="px-2 py-0.5 rounded-lg bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 text-[10px] font-bold font-mono" title="Instagram'dan gelenler">
+                                📸 IG: {item.referrers.instagram}
+                              </span>
+                            )}
+                            {item.referrers?.direct > 0 && (
+                              <span className="px-2 py-0.5 rounded-lg bg-[#21262d] text-[#8b949e] border border-[#30363d] text-[10px] font-bold font-mono" title="Doğrudan veya yer imlerinden girenler">
+                                🔗 Doğrudan: {item.referrers.direct}
+                              </span>
+                            )}
+                            {totalReferralTraffic === 0 && (
+                              <span className="text-[10px] text-[#484f58] italic font-mono">
+                                Henüz referans trafiği yok
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Detay & Link */}
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setExpandedListingId(isExpanded ? null : item.id)}
+                              className={`p-1.5 rounded-xl border text-xs font-bold transition-colors flex items-center gap-1 ${
+                                isExpanded
+                                  ? 'bg-amber-500 text-slate-950 border-amber-500'
+                                  : 'bg-[#21262d] text-[#8b949e] hover:text-white border-[#30363d]'
+                              }`}
+                              title="Trafik ve Referrer Linklerini Gör"
+                            >
+                              <span>Referrer</span>
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </button>
+
+                            <Link
+                              href={`/ilan/${item.slug}`}
+                              target="_blank"
+                              className="p-2 rounded-xl bg-[#21262d] hover:bg-amber-500 text-[#8b949e] hover:text-slate-950 transition-colors"
+                              title="İlanı Sitede Aç"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+                          </div>
+                        </td>
+
+                      </tr>
+
+                      {/* Akordeon Çekmece: Gelen Tam Referrer Linkleri */}
+                      {isExpanded && (
+                        <tr className="bg-[#0d1117] border-b border-[#30363d]">
+                          <td colSpan={6} className="p-4 sm:p-5">
+                            <div className="p-4 rounded-2xl bg-[#161b22] border border-amber-500/30 flex flex-col gap-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
+                                  <Link2 className="w-4 h-4" />
+                                  <span>"{item.baslik}" — Gerçek Referrer (Gelen Bağlantı) Günlüğü</span>
+                                </span>
+                                <span className="text-[11px] text-[#8b949e] font-mono">
+                                  Son Ziyaret: {item.lastVisitedAt ? new Date(item.lastVisitedAt).toLocaleString('tr-TR') : 'Kayıtlı veri yok'}
+                                </span>
+                              </div>
+
+                              {item.rawReferrers && item.rawReferrers.length > 0 ? (
+                                <div className="flex flex-col gap-2">
+                                  <span className="text-[11px] text-[#8b949e]">Bu ilana dışarıdan yönlendiren tam web adresleri (Referrer Headers):</span>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {item.rawReferrers.map((refUrl: string, refIdx: number) => (
+                                      <div key={refIdx} className="p-2 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2">
+                                        <span className="font-mono text-[11px] text-amber-300 truncate max-w-[320px]">
+                                          {refUrl}
+                                        </span>
+                                        <span className="text-[10px] text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-500/10 font-mono shrink-0">
+                                          Kaynak
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-xs text-[#8b949e] italic">
+                                  Bu ilan için henüz dış kaynaklı HTTP referer adresi kaydedilmedi (kullanıcılar doğrudan linke veya site içi aramadan girmiş).
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
       </div>
 
       {/* ── 8. CANLI VE DETAYLI ZİYARETÇİ LOGLARI (SON 100 İSTEK) ──────────────── */}
