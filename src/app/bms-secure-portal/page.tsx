@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -103,17 +103,15 @@ export default function BmsSecurePortalDashboard() {
       return (b.totalViews || 0) - (a.totalViews || 0);
     });
 
-  const totals = useMemo(() => {
-    let fb = 0, google = 0, x = 0, waClicks = 0, shares = 0;
-    (detailedListingReports as any[]).forEach((item: any) => {
-      fb += item.referrers?.facebook || 0;
-      google += item.referrers?.google || 0;
-      x += item.referrers?.x || 0;
-      waClicks += item.whatsappClicks || 0;
-      shares += item.shares || 0;
-    });
-    return { fb, google, x, waClicks, shares };
-  }, [detailedListingReports]);
+  let fb = 0, google = 0, x = 0, waClicks = 0, shares = 0;
+  (detailedListingReports as any[]).forEach((item: any) => {
+    fb += item.referrers?.facebook || 0;
+    google += item.referrers?.google || 0;
+    x += item.referrers?.x || 0;
+    waClicks += item.whatsappClicks || 0;
+    shares += item.shares || 0;
+  });
+  const totals = { fb, google, x, waClicks, shares };
 
   const filteredVisitors = recentVisitors.filter((v: any) => {
     if (!searchTermFilter) return true;
