@@ -11,7 +11,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export const revalidate = 60;
+export const revalidate = 180;
 
 const TIER_META: Record<string, { title: string; subtitle: string; desc: string; icon: any; badgeBg: string; color: string; border: string }> = {
   vip: {
@@ -42,14 +42,6 @@ const TIER_META: Record<string, { title: string; subtitle: string; desc: string;
     border: 'border-slate-600/50',
   },
 };
-
-export async function generateStaticParams() {
-  return [
-    { slug: 'vip' },
-    { slug: 'gold' },
-    { slug: 'silver' },
-  ];
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

@@ -27,7 +27,7 @@ if (!global.mongooseCache) {
 
 const connectionOptions = {
   bufferCommands: false,
-  autoIndex: true,
+  autoIndex: false,
   maxPoolSize: 20,
   minPoolSize: 1,
   maxIdleTimeMS: 45000,
@@ -37,7 +37,7 @@ const connectionOptions = {
 
 let indexesEnsured = false;
 async function ensureEssentialIndexes(m: typeof mongoose) {
-  if (indexesEnsured) return;
+  if (indexesEnsured || process.env.NEXT_PHASE === 'phase-production-build') return;
   indexesEnsured = true;
   try {
     const db = m.connection.db;
