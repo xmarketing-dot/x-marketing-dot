@@ -91,8 +91,12 @@ export default function AdminChatPage() {
   useEffect(() => {
     fetchThreads();
 
-    // 100% Reliable 3-second polling
-    const pollInterval = setInterval(fetchThreads, 3000);
+    const safeFetchThreads = () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      fetchThreads();
+    };
+
+    const pollInterval = setInterval(safeFetchThreads, 3000);
 
     let eventSource: EventSource | null = null;
     try {
@@ -120,6 +124,7 @@ export default function AdminChatPage() {
     }).catch(() => {});
 
     const fetchCurrentMessages = () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       fetch(`/api/chat/messages?threadId=${selectedThread._id}`)
         .then((res) => res.json())
         .then((data) => {

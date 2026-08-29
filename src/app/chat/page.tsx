@@ -37,12 +37,32 @@ export default function ChatPage() {
     }
     return null;
   });
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('best_eskort_chat_cached_messages');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {}
+    }
+    return [];
+  });
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const [bannedInfo, setBannedInfo] = useState<{ isBanned: boolean; banSebebi?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Sync messages to local cache for instant 0ms restoration next time
+  useEffect(() => {
+    if (typeof window !== 'undefined' && messages.length > 0) {
+      try {
+        localStorage.setItem('best_eskort_chat_cached_messages', JSON.stringify(messages.slice(-50)));
+      } catch (e) {}
+    }
+  }, [messages]);
 
   // 1. Mobile Virtual Keyboard Scroll Handler
   useEffect(() => {

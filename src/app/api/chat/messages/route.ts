@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/mongodb';
 import ChatThreadModel from '@/models/ChatThread';
 import ChatMessageModel from '@/models/ChatMessage';
@@ -15,10 +16,15 @@ export async function GET(req: NextRequest) {
     }
 
     await connectToDatabase();
-    const messages = await ChatMessageModel.find({ threadId })
+
+    const targetThreadId = mongoose.Types.ObjectId.isValid(threadId)
+      ? new mongoose.Types.ObjectId(threadId)
+      : threadId;
+
+    const messages = await ChatMessageModel.find({ threadId: targetThreadId })
       .select('_id threadId gonderenTipi mesaj okundu createdAt')
       .sort({ createdAt: 1 })
-      .limit(300)
+      .limit(150)
       .lean();
 
     return NextResponse.json(
