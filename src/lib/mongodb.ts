@@ -35,8 +35,8 @@ const connectionOptions = {
   maxPoolSize: 10,
   minPoolSize: 1,
   maxIdleTimeMS: 45000,
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 15000,
+  serverSelectionTimeoutMS: 10000,
+  socketTimeoutMS: 45000,
 };
 
 function resolveDirectAtlasUri(uri: string): string | null {
