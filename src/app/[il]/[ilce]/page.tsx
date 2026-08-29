@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteUrl } from '@/lib/siteUrl';
+import { getSiteUrl, getRequestSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const district = location.ilceler.find((d: any) => d.slug === ilceSlug);
   const districtName = district ? district.ad : ilceSlug;
 
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getRequestSiteUrl();
   const canonicalUrl = `${siteUrl}/${location.ilSlug}/${ilceSlug}`;
 
   return {
@@ -104,7 +104,7 @@ export default async function DistrictPage({ params }: Props) {
 
   const district = location.ilceler.find((d: any) => d.slug === ilceSlug);
   const districtName = district ? district.ad : ilceSlug;
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getRequestSiteUrl();
   const pageUrl = `${siteUrl}/${location.ilSlug}/${ilceSlug}`;
   const pageName = `${districtName} Eskort & Escort Bayan İlanları`;
   const pageDescription = `${location.il} ${districtName} eskort ve escort bayan profilleri, doğrulanmış VIP fotoğraflar ve doğrudan WhatsApp iletişim hatları.`;

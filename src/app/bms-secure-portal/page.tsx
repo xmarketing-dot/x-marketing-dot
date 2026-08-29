@@ -11,6 +11,7 @@ import {
   Target, Plus, Trash2, Award, CheckCircle2
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { resolveTargetFromHost } from '@/lib/domainHelper';
 
 export default function BmsSecurePortalDashboard() {
   const [data, setData] = useState<any>(null);
@@ -27,6 +28,7 @@ export default function BmsSecurePortalDashboard() {
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [scanningRankings, setScanningRankings] = useState(false);
   const [newKeywordInput, setNewKeywordInput] = useState('');
+  const [testDomainInput, setTestDomainInput] = useState('');
 
   useEffect(() => {
     fetchKeywords();
@@ -744,6 +746,138 @@ export default function BmsSecurePortalDashboard() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* ── BÖLÜM 1.5: ÇOKLU DOMAIN & SEO GATEWAY AĞI ── */}
+          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
+              <div>
+                <h2 className="font-black text-lg sm:text-xl text-white font-heading flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-amber-400" />
+                  <span>Çoklu Domain &amp; SEO Gateway Ağı</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Dinamik Yönlendirme Aktif
+                  </span>
+                </h2>
+                <p className="text-xs text-[#8b949e] mt-1">
+                  Vercel'e eklediğiniz tüm domainler otomatik olarak algılanır, WhatsApp mesajları ve vitrinler o domaine özel üretilir.
+                </p>
+              </div>
+            </div>
+
+            {/* Bağlı ve Aktif Domainler Listesi */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Ana Platform Domaini */}
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col justify-between gap-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
+                      <Crown className="w-3.5 h-3.5 text-amber-400" />
+                      Ana Platform (Genel Merkez)
+                    </span>
+                    <span className="text-sm font-black text-white font-mono mt-0.5">
+                      {typeof window !== 'undefined' ? window.location.host : 'Ana Domain'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/40 font-mono">
+                    81 İl / Tüm Türkiye
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#8b949e]">
+                  Türkiye geneli tüm illeri, interaktif haritayı ve tüm eskort kategorilerini içeren ana portal.
+                </p>
+                <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
+                  <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> SSL &amp; Gateway Aktif
+                  </span>
+                  <a
+                    href="/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1"
+                  >
+                    <span>Ziyaret Et</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Beylikdüzü Özel Domain Gateway */}
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 shadow-lg shadow-amber-500/5 flex flex-col justify-between gap-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
+                      <Target className="w-3.5 h-3.5 text-emerald-400" />
+                      Bölgesel Gateway (EMD)
+                    </span>
+                    <span className="text-sm font-black text-white font-mono mt-0.5">beylikduzuescort.devs.surf</span>
+                  </div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono">
+                    İstanbul / Beylikdüzü
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#8b949e]">
+                  Giren kullanıcı ve Google botları doğrudan Beylikdüzü modellerine yönlendirilir. WhatsApp mesajları bu domain üzerinden çıkar.
+                </p>
+                <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
+                  <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> SSL &amp; Gateway Aktif
+                  </span>
+                  <a
+                    href="https://beylikduzuescort.devs.surf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1"
+                  >
+                    <span>Ziyaret Et</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Yeni Domain Yönlendirme Simülatörü */}
+            <div className="p-4 rounded-2xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-white flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  Yeni Domain Simülatörü &amp; Eşleştirme Testi
+                </span>
+                <span className="text-[10px] text-[#8b949e]">Yeni ekleyeceğiniz domainin nereye açılacağını anında görün</span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Ekleyeceğiniz domain adını yazın... (örn: kadikoyescort.devs.surf, istanbulescort.devs.surf)"
+                  value={testDomainInput}
+                  onChange={(e) => setTestDomainInput(e.target.value)}
+                  className="w-full sm:flex-1 px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none font-mono"
+                />
+              </div>
+              {testDomainInput && (
+                <div className="p-3 rounded-xl bg-[#161b22] border border-[#30363d] flex items-center justify-between text-xs">
+                  {(() => {
+                    const resolved = resolveTargetFromHost(testDomainInput);
+                    if (resolved) {
+                      return (
+                        <div className="flex items-center gap-2 text-emerald-400 font-medium">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span>
+                            Hedef Bölge: <strong className="text-white capitalize">{resolved.ilSlug} {resolved.ilceSlug ? `/ ${resolved.ilceSlug}` : ''}</strong>. Bu domain Vercel'e eklendiği an otomatik olarak o bölgenin eskort vitrini olarak açılacaktır!
+                          </span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="flex items-center gap-2 text-amber-400 font-medium">
+                        <span>Domain isminde il/ilçe kelimesi bulunamadı. Bu domain doğrudan Türkiye Ana Platformu (Tüm İller) olarak çalışacaktır.</span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ── BÖLÜM 2: CANLI GOOGLE SIRALAMA TAKİP MOTORU (SERP RANK TRACKER) ── */}

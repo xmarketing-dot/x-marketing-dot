@@ -61,9 +61,10 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
   if (!current) return null;
 
   const formattedNumber = formatWhatsAppNumber(current?.whatsappNumara || '');
-  const sliderUrl = typeof window !== 'undefined' && window.location.origin
-    ? `${window.location.origin}/ilan/${current.slug}`
-    : `https://besteskort.devs.surf/ilan/${current.slug}`;
+  const origin = typeof window !== 'undefined' && window.location.origin
+    ? window.location.origin
+    : (process.env.NEXT_PUBLIC_SITE_URL || '');
+  const sliderUrl = `${origin}/ilan/${current.slug}`;
   const ilName = current.ilSlug ? current.ilSlug.charAt(0).toUpperCase() + current.ilSlug.slice(1) : '';
   const ilceName = current.ilceSlug ? current.ilceSlug.charAt(0).toUpperCase() + current.ilceSlug.slice(1) : '';
   const locName = ilName && ilceName && ilName.toLowerCase() !== ilceName.toLowerCase()

@@ -42,7 +42,7 @@ export default function WhatsAppButton({
 
   const origin = typeof window !== 'undefined' && window.location.origin
     ? window.location.origin
-    : 'https://besteskort.devs.surf';
+    : (process.env.NEXT_PUBLIC_SITE_URL || '');
   const fullUrl = slug ? `${origin}/ilan/${slug}` : (typeof window !== 'undefined' ? window.location.href : origin);
 
   const locTitle = il && ilce && il.toLowerCase() !== ilce.toLowerCase()

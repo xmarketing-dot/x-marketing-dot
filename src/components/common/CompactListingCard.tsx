@@ -88,9 +88,10 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   };
 
   const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
-  const cardUrl = typeof window !== 'undefined' && window.location.origin
-    ? `${window.location.origin}/ilan/${listing.slug}`
-    : `https://besteskort.devs.surf/ilan/${listing.slug}`;
+  const origin = typeof window !== 'undefined' && window.location.origin
+    ? window.location.origin
+    : (process.env.NEXT_PUBLIC_SITE_URL || '');
+  const cardUrl = `${origin}/ilan/${listing.slug}`;
   const ilName = listing.ilSlug ? listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1) : '';
   const ilceName = listing.ilceSlug ? listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1) : '';
   const locName = ilName && ilceName && ilName.toLowerCase() !== ilceName.toLowerCase()

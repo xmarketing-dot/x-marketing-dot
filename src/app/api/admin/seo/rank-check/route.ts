@@ -147,8 +147,13 @@ async function scrapeSerpPosition(
   return { position: foundPosition, competitors };
 }
 
+function getReqDomain(req: NextRequest): string {
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || process.env.NEXT_PUBLIC_SITE_URL?.replace(/^https?:\/\//, '') || '';
+  return host.split(':')[0];
+}
+
 // ── GET: Tüm Takip Edilen Kelimeleri Getir ──────────────────────
-export async function GET() {
+export async function GET(req: NextRequest) {
   if (!(await checkAdminAuth())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -161,6 +166,7 @@ export async function GET() {
 
   // İlk kurulumda varsayılan anahtar kelimeleri ekle
   if (keywords.length === 0) {
+    const defaultDomain = getReqDomain(req);
     const defaults = [
       'kadıköy eskort',
       'beylikdüzü eskort',
@@ -172,7 +178,7 @@ export async function GET() {
     for (const kw of defaults) {
       await KeywordRankModel.create({
         keyword: kw,
-        targetDomain: 'besteskort.devs.surf',
+        targetDomain: defaultDomain,
         currentPosition: 0,
         previousPosition: 0,
         change: 0,
@@ -197,7 +203,8 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { action, id, keyword, targetDomain = 'besteskort.devs.surf' } = body;
+    const defaultDomain = getReqDomain(req);
+    const { action, id, keyword, targetDomain = defaultDomain } = body;
 
     await connectToDatabase();
 
@@ -265,7 +272,7 @@ export async function PUT(req: NextRequest) {
       for (const kw of defaults) {
         await KeywordRankModel.create({
           keyword: kw,
-          targetDomain: 'besteskort.devs.surf',
+          targetDomain: getReqDomain(req),
           currentPosition: 0,
           previousPosition: 0,
           change: 0,

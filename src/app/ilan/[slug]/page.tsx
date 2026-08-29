@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteUrl } from '@/lib/siteUrl';
+import { getSiteUrl, getRequestSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'İlan Bulunamadı | Best Eskort' };
   }
 
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getRequestSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
   const ogImageUrl = `${siteUrl}/api/og/listing/${listing.slug}`;
 
@@ -103,7 +103,7 @@ export default async function ListingDetailPage({ params }: Props) {
     notFound();
   }
 
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getRequestSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
 
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');

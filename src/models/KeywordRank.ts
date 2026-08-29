@@ -31,7 +31,7 @@ const CompetitorSchema = new Schema<ICompetitor>(
 const KeywordRankSchema = new Schema<IKeywordRank>(
   {
     keyword: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    targetDomain: { type: String, default: 'besteskort.devs.surf' },
+    targetDomain: { type: String, default: '' },
     currentPosition: { type: Number, default: 0 },
     previousPosition: { type: Number, default: 0 },
     change: { type: Number, default: 0 },

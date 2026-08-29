@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteUrl } from '@/lib/siteUrl';
+import { getSiteUrl, getRequestSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { il: ilSlug } = await params;
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getRequestSiteUrl();
 
   const location = await getLocationBySlug(ilSlug);
 
@@ -90,7 +90,7 @@ export default async function CityPage({ params }: Props) {
     notFound();
   }
 
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getRequestSiteUrl();
   const pageUrl = `${siteUrl}/${location.ilSlug}`;
   const pageName = `${location.il} Eskort & Escort Bayan İlanları`;
   const pageDescription = `${location.il} genelinde teyitli eskort bayan ilanları, bağımsız VIP profiller ve WhatsApp hatları.`;

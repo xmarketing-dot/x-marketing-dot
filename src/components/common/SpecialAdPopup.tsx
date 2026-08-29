@@ -229,7 +229,7 @@ export default function SpecialAdPopup() {
 
   const popupOrigin = typeof window !== 'undefined' && window.location.origin
     ? window.location.origin
-    : 'https://besteskort.devs.surf';
+    : (process.env.NEXT_PUBLIC_SITE_URL || '');
   const popupAdUrl = targetSlug ? `${popupOrigin}/ilan/${targetSlug}` : popupOrigin;
   const ilName = listing?.ilSlug ? listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1) : '';
   const ilceName = listing?.ilceSlug ? listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1) : '';

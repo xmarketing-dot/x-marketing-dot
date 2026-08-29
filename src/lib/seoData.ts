@@ -163,7 +163,7 @@ export function generateAggregateRatingSchema({
     name,
     description,
     url,
-    image: 'https://besteskort.devs.surf/api/og/site',
+    image: `${new URL(url).origin}/api/og/site`,
     aggregateRating: {
       '@type': 'AggregateRating',
       ratingValue,
