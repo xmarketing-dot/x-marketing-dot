@@ -61,7 +61,14 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
   if (!current) return null;
 
   const formattedNumber = formatWhatsAppNumber(current?.whatsappNumara || '');
-  const message = encodeURIComponent(`Merhaba, "${current.baslik}" ilanınız için yazıyorum.`);
+  const sliderUrl = typeof window !== 'undefined' && window.location.origin
+    ? `${window.location.origin}/ilan/${current.slug}`
+    : `https://besteskort.devs.surf/ilan/${current.slug}`;
+  const locName = current.ilceSlug 
+    ? `${current.ilceSlug.charAt(0).toUpperCase() + current.ilceSlug.slice(1)} Eskort` 
+    : (current.ilSlug ? `${current.ilSlug.charAt(0).toUpperCase() + current.ilSlug.slice(1)} Eskort` : '');
+  const adLabel = locName ? `${locName} — ${current.baslik}` : current.baslik;
+  const message = encodeURIComponent(`Merhaba, ben ${sliderUrl} adresindeki "${adLabel}" VIP ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`);
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 
   const handleWaClick = () => {

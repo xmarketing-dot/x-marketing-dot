@@ -129,8 +129,9 @@ export default async function ListingDetailPage({ params }: Props) {
 
   // WhatsApp URL for Sticky Bar (Supports Turkish & International Numbers)
   const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
-  const message = encodeURIComponent(`Merhaba, "${listing.baslik}" (${ilceAdi} / ${ilAdi}) ilanınız için yazıyorum.`);
-  const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
+  const listingFullUrl = `${siteUrl}/ilan/${listing.slug}`;
+  const prefilledMessage = `Merhaba, ben ${listingFullUrl} adresindeki "${ilceAdi} Eskort — ${listing.baslik}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;
+  const waUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(prefilledMessage)}`;
 
   // Rich Schema.org JSON-LD
   const jsonLd = {
@@ -282,7 +283,11 @@ export default async function ListingDetailPage({ params }: Props) {
           <WhatsAppButton
             numara={listing.whatsappNumara}
             baslik={listing.baslik}
-            listingId={listing._id}
+            listingId={listing._id.toString()}
+            slug={listing.slug}
+            il={ilAdi}
+            ilce={ilceAdi}
+            customMessage={prefilledMessage}
           />
         </div>
       </div>

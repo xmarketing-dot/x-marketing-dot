@@ -88,7 +88,14 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   };
 
   const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
-  const message = encodeURIComponent(`Merhaba, "${listing.baslik}" ilanınız hakkında bilgi almak istiyorum.`);
+  const cardUrl = typeof window !== 'undefined' && window.location.origin
+    ? `${window.location.origin}/ilan/${listing.slug}`
+    : `https://besteskort.devs.surf/ilan/${listing.slug}`;
+  const locName = listing.ilceSlug 
+    ? `${listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1)} Eskort` 
+    : (listing.ilSlug ? `${listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1)} Eskort` : '');
+  const adLabel = locName ? `${locName} — ${listing.baslik}` : listing.baslik;
+  const message = encodeURIComponent(`Merhaba, ben ${cardUrl} adresindeki "${adLabel}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`);
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 
   const handleWaClick = () => {

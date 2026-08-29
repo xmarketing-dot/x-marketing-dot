@@ -6,6 +6,10 @@ interface ContactButtonsProps {
   numara: string;
   baslik: string;
   listingId?: string;
+  slug?: string;
+  ilce?: string;
+  il?: string;
+  customMessage?: string;
   compact?: boolean;
   className?: string;
 }
@@ -27,11 +31,31 @@ export default function WhatsAppButton({
   numara,
   baslik,
   listingId,
+  slug,
+  ilce,
+  il,
+  customMessage,
   compact = false,
   className = '',
 }: ContactButtonsProps) {
   const formattedNumber = formatWhatsAppNumber(numara);
-  const message = encodeURIComponent(`Merhaba, "${baslik}" ilanınız hakkında bilgi almak istiyorum.`);
+
+  const origin = typeof window !== 'undefined' && window.location.origin
+    ? window.location.origin
+    : 'https://besteskort.devs.surf';
+  const fullUrl = slug ? `${origin}/ilan/${slug}` : (typeof window !== 'undefined' ? window.location.href : origin);
+
+  const locTitle = ilce 
+    ? `${ilce} Eskort` 
+    : il 
+    ? `${il} Eskort` 
+    : '';
+
+  const adLabel = locTitle ? `${locTitle} — ${baslik}` : baslik;
+  const defaultMsg = `Merhaba, ben ${fullUrl} adresindeki "${adLabel}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;
+
+  const finalMessage = customMessage || defaultMsg;
+  const message = encodeURIComponent(finalMessage);
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 
   const handleClick = () => {

@@ -227,9 +227,19 @@ export default function SpecialAdPopup() {
   const displayLocation = listing ? `${listing.ilSlug?.toUpperCase()} / ${listing.ilceSlug?.toUpperCase()}` : 'TÜRKİYE GENELİ';
   const targetUrl = targetSlug ? `/ilan/${targetSlug}` : '/ilan-ver';
 
+  const popupOrigin = typeof window !== 'undefined' && window.location.origin
+    ? window.location.origin
+    : 'https://besteskort.devs.surf';
+  const popupAdUrl = targetSlug ? `${popupOrigin}/ilan/${targetSlug}` : popupOrigin;
+  const popupLoc = listing?.ilceSlug 
+    ? `${listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1)} Eskort` 
+    : (listing?.ilSlug ? `${listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1)} Eskort` : '');
+  const popupAdLabel = popupLoc ? `${popupLoc} — ${displayTitle}` : displayTitle;
+  const popupMessage = `Merhaba, ben ${popupAdUrl} adresindeki "${popupAdLabel}" özel vitrin ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;
+
   const formattedWa = listing?.whatsappNumara ? formatWhatsAppNumber(listing.whatsappNumara) : '';
   const waUrl = formattedWa
-    ? `https://wa.me/${formattedWa}?text=${encodeURIComponent(`Merhaba, "${displayTitle}" özel vitrin ilanınız hakkında bilgi almak istiyorum.`)}`
+    ? `https://wa.me/${formattedWa}?text=${encodeURIComponent(popupMessage)}`
     : null;
 
   const handleClose = (e: React.MouseEvent) => {
