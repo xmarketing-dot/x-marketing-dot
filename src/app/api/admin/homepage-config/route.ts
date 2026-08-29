@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import HomepageConfigModel from '@/models/HomepageConfig';
 import ListingModel from '@/models/Listing';
+import LocationModel from '@/models/Location';
 
 export async function GET() {
   try {
@@ -14,13 +15,20 @@ export async function GET() {
 
     // Also get all active listings for easy selection
     const allListings = await ListingModel.find({ status: 'yayinda' })
-      .select('_id baslik slug ilSlug ilceSlug rozet anaFotograf fotograflar')
+      .select('_id baslik slug ilSlug ilceSlug rozet anaFotograf.url')
       .sort({ createdAt: -1 })
+      .lean();
+
+    // Get all 81 provinces with districts for dynamic targeting
+    const allLocations = await LocationModel.find({})
+      .select('il ilSlug ilceler')
+      .sort({ il: 1 })
       .lean();
 
     return NextResponse.json({ 
       config: JSON.parse(JSON.stringify(config)),
-      allListings: JSON.parse(JSON.stringify(allListings))
+      allListings: JSON.parse(JSON.stringify(allListings)),
+      allLocations: JSON.parse(JSON.stringify(allLocations)),
     });
   } catch (error: any) {
     return NextResponse.json({ error: 'Config get error' }, { status: 500 });

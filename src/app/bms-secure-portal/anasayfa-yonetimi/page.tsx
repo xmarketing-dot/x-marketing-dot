@@ -91,7 +91,10 @@ export default function AdminHomepageConfigPage() {
 
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
   const [allListings, setAllListings] = useState<any[]>([]);
+  const [allLocations, setAllLocations] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const selectedListingForAd = allListings.find((l) => l._id === newAdIlanId);
 
   useEffect(() => {
     fetchConfig();
@@ -136,6 +139,9 @@ export default function AdminHomepageConfigPage() {
       }
       if (data.allListings) {
         setAllListings(data.allListings);
+      }
+      if (data.allLocations) {
+        setAllLocations(data.allLocations);
       }
     } catch (e) {
       // Silent
@@ -396,16 +402,36 @@ export default function AdminHomepageConfigPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* İlan Seçimi */}
               <div className="flex flex-col gap-1.5 lg:col-span-2">
-                <label className="text-xs font-bold text-[#8b949e]">Yayınlanacak İlan *</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#8b949e]">Yayınlanacak İlan *</label>
+                  {selectedListingForAd && (
+                    <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      <span>{selectedListingForAd.ilSlug?.toUpperCase()}{selectedListingForAd.ilceSlug ? ` / ${selectedListingForAd.ilceSlug?.toUpperCase()}` : ''}</span>
+                    </span>
+                  )}
+                </div>
                 <select
                   value={newAdIlanId}
-                  onChange={(e) => setNewAdIlanId(e.target.value)}
+                  onChange={(e) => {
+                    const chosenId = e.target.value;
+                    setNewAdIlanId(chosenId);
+                    if (chosenId) {
+                      const matched = allListings.find((l) => l._id === chosenId);
+                      if (matched?.ilSlug) {
+                        setNewAdHedefIl(matched.ilSlug);
+                      }
+                      if (matched?.rozet) {
+                        setNewAdRozet(`👑 ${matched.ilSlug?.toUpperCase() || ''} VIP VİTRİN İLANI`);
+                      }
+                    }
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
                 >
                   <option value="">-- Listeden Bir İlan Seçin --</option>
                   {allListings.map((l) => (
                     <option key={l._id} value={l._id}>
-                      [{l.ilSlug?.toUpperCase()}/{l.ilceSlug?.toUpperCase()}] {l.baslik} ({l.rozet?.toUpperCase() || 'STANDART'})
+                      [{l.ilSlug?.toUpperCase()}{l.ilceSlug ? ` / ${l.ilceSlug?.toUpperCase()}` : ''}] {l.baslik} ({l.rozet?.toUpperCase() || 'STANDART'})
                     </option>
                   ))}
                 </select>
@@ -413,15 +439,37 @@ export default function AdminHomepageConfigPage() {
 
               {/* Hedef Şehir / Konum */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-[#8b949e]">Hedef Şehir / Konum</label>
+                <label className="text-xs font-bold text-[#8b949e]">Hedef Gösterim Şehri</label>
                 <select
                   value={newAdHedefIl}
                   onChange={(e) => setNewAdHedefIl(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-medium"
                 >
-                  {POPULAR_CITIES.map((c) => (
-                    <option key={c.slug} value={c.slug}>{c.ad}</option>
-                  ))}
+                  <option value="tum_turkiye">🇹🇷 TÜRKİYE GENELİ (Tüm Şehirler & Anasayfa)</option>
+
+                  {selectedListingForAd && selectedListingForAd.ilSlug && (
+                    <optgroup label="── SEÇİLİ İLANIN KONUMU (ÖNERİLEN) ──">
+                      <option value={selectedListingForAd.ilSlug}>
+                        🎯 SADECE {selectedListingForAd.ilSlug.toUpperCase()} (İlanın Kendi Şehri)
+                      </option>
+                    </optgroup>
+                  )}
+
+                  {allLocations.length > 0 ? (
+                    <optgroup label="── 81 İL (DİNAMİK LİSTE) ──">
+                      {allLocations.map((loc: any) => (
+                        <option key={loc.ilSlug} value={loc.ilSlug}>
+                          📍 {loc.il.toUpperCase()} ({loc.ilceler?.length || 0} İlçe)
+                        </option>
+                      ))}
+                    </optgroup>
+                  ) : (
+                    <optgroup label="── POPÜLER ŞEHİRLER ──">
+                      {POPULAR_CITIES.map((c) => (
+                        <option key={c.slug} value={c.slug}>{c.ad}</option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
 
@@ -481,8 +529,10 @@ export default function AdminHomepageConfigPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {ozelIlanReklamlar.map((ad, idx) => {
                   const listing = getListingById(ad.ilanId);
-                  const cityObj = POPULAR_CITIES.find((c) => c.slug === ad.hedefIlSlug);
-                  const cityName = cityObj ? cityObj.ad : (ad.hedefIlSlug?.toUpperCase() || 'TÜRKİYE GENELİ');
+                  const foundLoc = allLocations.find((l) => l.ilSlug === ad.hedefIlSlug);
+                  const cityName = ad.hedefIlSlug === 'tum_turkiye'
+                    ? '🇹🇷 TÜRKİYE GENELİ'
+                    : (foundLoc ? `📍 ${foundLoc.il.toUpperCase()}` : (POPULAR_CITIES.find((c) => c.slug === ad.hedefIlSlug)?.ad || ad.hedefIlSlug?.toUpperCase() || 'TÜRKİYE GENELİ'));
 
                   return (
                     <div
@@ -540,11 +590,18 @@ export default function AdminHomepageConfigPage() {
                             <span className="font-bold text-xs text-white truncate font-heading">
                               {listing.baslik}
                             </span>
-                            <span className="text-[11px] text-amber-400 font-bold mt-0.5 flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              <span>Hedef: {cityName}</span>
-                            </span>
-                            <span className="text-[10px] text-[#8b949e]">
+                            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                              <span className="text-[11px] text-amber-400 font-bold flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                <span>Hedef: {cityName}</span>
+                              </span>
+                              {listing.ilSlug && (
+                                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-medium">
+                                  İlan: {listing.ilSlug.toUpperCase()}{listing.ilceSlug ? ` / ${listing.ilceSlug.toUpperCase()}` : ''}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-[#8b949e] mt-0.5">
                               ⏱️ {ad.gecikmeSaniye || 4} sn gecikme
                             </span>
                           </div>
