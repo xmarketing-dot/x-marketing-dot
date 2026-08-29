@@ -5,18 +5,6 @@ import PackageModel from '../models/Package';
 import ListingModel from '../models/Listing';
 import HomepageConfigModel from '../models/HomepageConfig';
 
-// Non-blocking periodic expiration check (at most once every 30 mins)
-let lastExpireCheck = 0;
-function triggerBackgroundExpireCheck() {
-  const nowTime = Date.now();
-  if (nowTime - lastExpireCheck < 1000 * 60 * 30) return;
-  lastExpireCheck = nowTime;
-  
-  ListingModel.updateMany(
-    { status: 'yayinda', paketBitisTarihi: { $exists: true, $lte: new Date() } },
-    { $set: { status: 'suresi_doldu' } }
-  ).exec().catch(() => {});
-}
 
 export async function getAllLocations() {
   await connectToDatabase();
@@ -78,7 +66,6 @@ export async function getListings({
   limit?: number;
 }) {
   await connectToDatabase();
-  triggerBackgroundExpireCheck();
 
   const now = new Date();
   const query: any = { 
@@ -114,7 +101,6 @@ export async function getListings({
 
 export async function getListingBySlug(slug: string) {
   await connectToDatabase();
-  triggerBackgroundExpireCheck();
 
   const now = new Date();
   const listing = await ListingModel.findOne({ 
