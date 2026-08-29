@@ -271,6 +271,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
           >
             <Link
               href="/bms-secure-portal"
+              prefetch={false}
               className={getNavClass('/bms-secure-portal')}
             >
               <BarChart3 className="w-4 h-4 text-amber-400" />
@@ -279,6 +280,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/ilanlar"
+              prefetch={false}
               className={getNavClass('/bms-secure-portal/ilanlar')}
             >
               <List className="w-4 h-4 text-amber-400" />
@@ -287,6 +289,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/kullanicilar"
+              prefetch={false}
               className={getNavClass('/bms-secure-portal/kullanicilar')}
             >
               <Users className="w-4 h-4 text-amber-400" />
@@ -295,6 +298,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/chat"
+              prefetch={false}
               className={`${getNavClass('/bms-secure-portal/chat')} justify-between group`}
             >
               <div className="flex items-center gap-2.5">
@@ -306,6 +310,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/anasayfa-yonetimi"
+              prefetch={false}
               className={getNavClass('/bms-secure-portal/anasayfa-yonetimi')}
             >
               <Sliders className="w-4 h-4 text-amber-400" />
@@ -314,6 +319,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <Link
               href="/bms-secure-portal/guvenlik"
+              prefetch={false}
               className={`flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-colors ${
                 pathname === '/bms-secure-portal/guvenlik'
                   ? 'bg-red-500/10 text-red-400 border border-red-500/30'

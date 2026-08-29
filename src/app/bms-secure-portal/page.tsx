@@ -14,7 +14,7 @@ import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 export default function BmsSecurePortalDashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [range, setRange] = useState('all'); // all, today, yesterday, week, month
+  const [range, setRange] = useState('today'); // today, yesterday, week, month, all
   const [searchTermFilter, setSearchTermFilter] = useState('');
   const [listingSearchTerm, setListingSearchTerm] = useState('');
   const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'x'>('views');

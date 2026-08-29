@@ -13,7 +13,7 @@ export default function AdminGlobalLiveNotification() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // 1. Check if user is authenticated Admin
+  // 1. Check if user is authenticated Admin (only once on mount)
   useEffect(() => {
     fetch('/api/admin/auth/check')
       .then((res) => res.json())
@@ -23,7 +23,7 @@ export default function AdminGlobalLiveNotification() {
         }
       })
       .catch(() => {});
-  }, [pathname]);
+  }, []);
 
   // Web Audio High-Priority Chime Sound (Çift tonlu admin alarm zili)
   const playAdminAlertSound = () => {
@@ -87,38 +87,10 @@ export default function AdminGlobalLiveNotification() {
     }, 15000);
   };
 
-  // 2. Serverless 100% Reliable Polling + SSE Hybrid
+  // 2. Real-time Live SSE Connection (Zero polling overhead)
   useEffect(() => {
     if (!isAdmin) return;
 
-    // Check DB for unread customer messages (only if tab is visible, every 5s)
-    const checkUnread = async () => {
-      if (typeof document !== 'undefined' && document.hidden) return;
-      try {
-        const res = await fetch('/api/admin/chat/threads');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.threads && data.threads.length > 0) {
-          const unreadThreads = data.threads.filter((t: any) => t.okunmadiAdminSayisi > 0);
-          if (unreadThreads.length > 0) {
-            const latestThread = unreadThreads[0];
-            const threadUpdateTime = new Date(latestThread.updatedAt || 0).getTime();
-            if (threadUpdateTime > lastProcessedTimeRef.current) {
-              lastProcessedTimeRef.current = threadUpdateTime;
-              triggerNotification({
-                threadId: latestThread._id,
-                mesaj: latestThread.sonMesajOzeti || 'Yeni müşteri canlı mesajı',
-                createdAt: latestThread.updatedAt,
-              });
-            }
-          }
-        }
-      } catch (e) {}
-    };
-
-    const pollInterval = setInterval(checkUnread, 5000);
-
-    // Also connect SSE
     let eventSource: EventSource | null = null;
     try {
       eventSource = new EventSource('/api/admin/chat/sse');
@@ -134,10 +106,9 @@ export default function AdminGlobalLiveNotification() {
     } catch (e) {}
 
     return () => {
-      clearInterval(pollInterval);
       if (eventSource) eventSource.close();
     };
-  }, [isAdmin, pathname]);
+  }, [isAdmin]);
 
   if (!isAdmin || !showToast || !incomingMessage || pathname === '/bms-secure-portal/chat') {
     return null;

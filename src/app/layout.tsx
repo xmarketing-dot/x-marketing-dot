@@ -4,7 +4,6 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
-import AdminGlobalLiveNotification from '@/components/admin/AdminGlobalLiveNotification';
 import { Analytics } from '@vercel/analytics/next';
 import React, { Suspense } from 'react';
 
@@ -144,7 +143,6 @@ export default function RootLayout({
           <AnalyticsTracker />
         </Suspense>
         <MobileShell>{children}</MobileShell>
-        <AdminGlobalLiveNotification />
         <Analytics />
       </body>
     </html>
