@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
 
     const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+    const incomingHost = (req.headers.get('x-forwarded-host') || req.headers.get('host') || '').split(':')[0].toLowerCase();
 
     const event = await AnalyticsEventModel.create({
       visitorId,
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
       targetTitle: targetTitle || '',
       targetCity: targetCity || '',
       path,
+      hostname: incomingHost,
       metadata,
       ip: clientIp.split(',')[0].trim(),
     });

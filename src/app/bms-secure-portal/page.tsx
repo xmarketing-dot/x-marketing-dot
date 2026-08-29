@@ -22,6 +22,7 @@ export default function BmsSecurePortalDashboard() {
   const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'x'>('views');
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
+  const [selectedDomain, setSelectedDomain] = useState<string>('all');
 
   // Google SEO Rank Tracking States
   const [keywordList, setKeywordList] = useState<any[]>([]);
@@ -109,12 +110,13 @@ export default function BmsSecurePortalDashboard() {
 
   useEffect(() => {
     fetchAnalytics();
-  }, [range]);
+  }, [range, selectedDomain]);
 
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/analytics?range=${range}`);
+      const domainQuery = selectedDomain !== 'all' ? `&domain=${encodeURIComponent(selectedDomain)}` : '';
+      const res = await fetch(`/api/admin/analytics?range=${range}${domainQuery}`);
       const json = await res.json();
       if (json.analytics) {
         setData(json.analytics);
@@ -160,6 +162,7 @@ export default function BmsSecurePortalDashboard() {
       topGoogleDistricts: [],
     },
     recentVisitors = [],
+    domainBreakdown = [],
   } = data || {};
 
   const filteredListings = (detailedListingReports as any[])
@@ -270,6 +273,40 @@ export default function BmsSecurePortalDashboard() {
             <span className="hidden sm:inline">Yenile</span>
           </button>
         </div>
+      </div>
+
+      {/* ── ÇOKLU DOMAİN FİLTRESİ ÇUBUĞU ──────────────── */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mt-2">
+        <span className="text-[11px] font-bold text-[#8b949e] flex items-center gap-1.5 shrink-0">
+          <Globe className="w-3.5 h-3.5 text-amber-400" />
+          Domain Filtresi:
+        </span>
+        <button
+          onClick={() => setSelectedDomain('all')}
+          className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all shrink-0 flex items-center gap-1.5 ${
+            selectedDomain === 'all'
+              ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-sm shadow-amber-500/20'
+              : 'bg-[#161b22] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#484f58]'
+          }`}
+        >
+          <span>🌐 Tüm Domainler</span>
+        </button>
+        {domainBreakdown.map((dItem: any) => (
+          <button
+            key={dItem.domain}
+            onClick={() => setSelectedDomain(dItem.domain)}
+            className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all shrink-0 flex items-center gap-1.5 font-mono ${
+              selectedDomain === dItem.domain
+                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-sm shadow-emerald-500/20'
+                : 'bg-[#161b22] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#484f58]'
+            }`}
+          >
+            <span>{dItem.domain}</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#21262d] text-white">
+              {dItem.uniqueVisitors} tekil
+            </span>
+          </button>
+        ))}
       </div>
 
       {/* ── 2. TAB NAVİGASYON ÇUBUĞU (MOBİLDE KAYDIRILABİLİR, DÜZENLİ SEKMELER) ──────────────── */}
@@ -399,6 +436,87 @@ export default function BmsSecurePortalDashboard() {
               <span className="text-[11px] text-[#8b949e] flex items-center gap-1 border-t border-[#30363d] pt-2">
                 FB: {sources.facebook || 0} • X: {sources.x || 0} • IG: {sources.instagram || 0}
               </span>
+            </div>
+          </div>
+
+          {/* ── ÇOKLU DOMAİN GATEWAY İSTİHBARAT & PERFORMANS MASASI ── */}
+          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-3">
+              <div className="flex items-center gap-2.5">
+                <Globe className="w-5 h-5 text-amber-400" />
+                <div className="flex flex-col">
+                  <h2 className="font-black text-base text-white font-heading">
+                    Çoklu Domain Gateway Ağı — Canlı Performans &amp; WhatsApp ROI
+                  </h2>
+                  <span className="text-[11px] text-[#8b949e]">
+                    Hangi domain kaç tekil müşteri getirdi, kaç kişi WhatsApp'tan yazdı ve dönüşüm oranları (CTR).
+                  </span>
+                </div>
+              </div>
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono font-bold flex items-center gap-1.5 self-start sm:self-auto">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Dinamik Domain Router Aktif
+              </span>
+            </div>
+
+            {/* Domain Kartları / Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {domainBreakdown.length === 0 ? (
+                <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] text-xs text-[#8b949e] col-span-full">
+                  İlk domain istekleri kaydedildiğinde burada canlı olarak karşılaştırılacak.
+                </div>
+              ) : (
+                domainBreakdown.map((item: any) => {
+                  const targetLoc = resolveTargetFromHost(item.domain);
+                  const isMainPortal = !targetLoc;
+
+                  return (
+                    <div 
+                      key={item.domain}
+                      className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] hover:border-amber-500/40 transition-all flex flex-col justify-between gap-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-mono font-black text-white flex items-center gap-1.5">
+                            {isMainPortal ? <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" /> : <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                            {item.domain}
+                          </span>
+                          <span className="text-[10px] text-[#8b949e] mt-0.5">
+                            {isMainPortal ? 'Türkiye Geneli Ana Merkez' : `${targetLoc.ilSlug?.toUpperCase()} / ${(targetLoc.ilceSlug || 'Tüm İlçe')?.toUpperCase()}`}
+                          </span>
+                        </div>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold border ${
+                          isMainPortal 
+                            ? 'bg-amber-500/10 text-amber-300 border-amber-500/30' 
+                            : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                        }`}>
+                          {isMainPortal ? 'GENEL MERKEZ' : 'BÖLGESEL GATEWAY'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 py-2 border-y border-[#21262d] text-center">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-[#8b949e]">Tekil Kişi</span>
+                          <span className="text-sm font-black text-white font-mono">{item.uniqueVisitors.toLocaleString()}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-[#8b949e]">Sayfa Hit</span>
+                          <span className="text-sm font-black text-slate-300 font-mono">{item.totalPageviews.toLocaleString()}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-emerald-400 font-bold">WhatsApp</span>
+                          <span className="text-sm font-black text-emerald-400 font-mono">{item.whatsappClicks} Tık</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#8b949e]">WhatsApp Dönüşüm (CTR):</span>
+                        <span className="font-bold text-amber-400 font-mono">{item.conversionRate}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -1543,15 +1661,22 @@ export default function BmsSecurePortalDashboard() {
                   </div>
 
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[11px] text-white truncate max-w-[200px]">{v.path}</span>
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase font-heading ${
-                      isGoogle ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
-                      isWa ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
-                      isFb ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40' :
-                      'bg-slate-800 text-slate-300'
-                    }`}>
-                      {v.refererSource?.toUpperCase() || 'DIRECT'}
-                    </span>
+                    <span className="font-mono text-[11px] text-white truncate max-w-[170px]">{v.path}</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {v.hostname && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 font-mono border border-amber-500/30">
+                          {v.hostname}
+                        </span>
+                      )}
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase font-heading ${
+                        isGoogle ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
+                        isWa ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
+                        isFb ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40' :
+                        'bg-slate-800 text-slate-300'
+                      }`}>
+                        {v.refererSource?.toUpperCase() || 'DIRECT'}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-1.5 border-t border-[#21262d]">
@@ -1569,6 +1694,7 @@ export default function BmsSecurePortalDashboard() {
               <thead>
                 <tr className="border-b border-[#30363d] text-[#8b949e] font-heading font-black">
                   <th className="py-2.5 px-3">IP / ŞEHİR</th>
+                  <th className="py-2.5 px-3">GİRİLEN DOMAİN</th>
                   <th className="py-2.5 px-3">GEZİLEN SAYFA</th>
                   <th className="py-2.5 px-3">TRAFİK KAYNAĞI</th>
                   <th className="py-2.5 px-3">ARAMA KELİMESİ</th>
@@ -1591,6 +1717,13 @@ export default function BmsSecurePortalDashboard() {
                           <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
                           <span className="text-[10px] text-amber-400 font-medium">{v.city || 'İstanbul'}</span>
                         </div>
+                      </td>
+
+                      {/* Girilen Domain */}
+                      <td className="py-3 px-3 font-mono text-[11px]">
+                        <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-bold">
+                          {v.hostname || 'Ana Merkez'}
+                        </span>
                       </td>
 
                       {/* Gezilen Sayfa */}

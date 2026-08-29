@@ -18,6 +18,7 @@ export interface IAnalyticsEvent extends Document {
   targetTitle?: string;
   targetCity?: string;
   path: string;
+  hostname?: string;
   metadata?: Record<string, any>;
   ip?: string;
   createdAt: Date;
@@ -48,6 +49,7 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
     targetTitle: { type: String },
     targetCity: { type: String },
     path: { type: String, required: true },
+    hostname: { type: String, default: '', index: true },
     metadata: { type: Schema.Types.Mixed, default: {} },
     ip: { type: String },
   },

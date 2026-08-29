@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       source = 'x';
     } else if (refLower.includes('instagram') || utmLower.includes('instagram')) {
       source = 'instagram';
-    } else if (!referer || refLower === 'direct' || refLower.includes('besteskort')) {
+    } else if (!referer || refLower === 'direct' || (host && refLower.includes(host.split(':')[0].toLowerCase()))) {
       source = 'direct';
     } else {
       source = 'other';
@@ -121,6 +121,7 @@ export async function POST(req: NextRequest) {
     });
 
     const isUniqueToday = !visitedToday;
+    const incomingHost = (req.headers.get('x-forwarded-host') || host || '').split(':')[0].toLowerCase();
 
     const newVisitor = await AnalyticsVisitorModel.create({
       visitorId,
@@ -129,7 +130,7 @@ export async function POST(req: NextRequest) {
       browser,
       os,
       path,
-      pageTitle: pageTitle || 'Best Eskort',
+      pageTitle: pageTitle || 'İlan Platformu',
       referer: referer || 'Direct',
       refererSource: source,
       searchKeyword: searchKeyword || '',
@@ -138,6 +139,7 @@ export async function POST(req: NextRequest) {
       utmCampaign: utmCampaign || '',
       city: decodeURIComponent(vercelCity),
       ip: cleanIp,
+      hostname: incomingHost,
       userAgent: userAgent.slice(0, 200),
       durationSeconds: 0,
       isUniqueToday,

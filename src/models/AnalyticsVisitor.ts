@@ -16,6 +16,7 @@ export interface IAnalyticsVisitor extends Document {
   utmCampaign?: string;
   city: string;
   ip: string;
+  hostname?: string;
   userAgent: string;
   durationSeconds: number;
   isUniqueToday: boolean;
@@ -45,6 +46,7 @@ const AnalyticsVisitorSchema = new Schema<IAnalyticsVisitor>(
     utmCampaign: { type: String },
     city: { type: String, default: 'İstanbul' },
     ip: { type: String, index: true },
+    hostname: { type: String, default: '', index: true },
     userAgent: { type: String },
     durationSeconds: { type: Number, default: 0 },
     isUniqueToday: { type: Boolean, default: true },

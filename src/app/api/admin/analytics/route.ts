@@ -11,6 +11,7 @@ export async function GET(req: Request) {
     await connectToDatabase();
     const url = new URL(req.url);
     const range = url.searchParams.get('range') || 'today';
+    const domainFilter = url.searchParams.get('domain');
 
     let dateQuery: any = {};
     const now = new Date();
@@ -30,6 +31,10 @@ export async function GET(req: Request) {
       dateQuery = { createdAt: { $gte: startOfMonth } };
     }
 
+    if (domainFilter && domainFilter !== 'all') {
+      dateQuery.hostname = { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') };
+    }
+
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
 
     // ── TEK BİR PROMISE.ALL İLE PARALEL ÇALIŞTIRMA (10X HIZ) ──
@@ -47,7 +52,9 @@ export async function GET(req: Request) {
       recentVisitors,
       listingVisitorsAgg,
       listingEventsAgg,
-      rawListings
+      rawListings,
+      domainVisitorsAgg,
+      domainEventsAgg
     ] = await Promise.all([
       // 1. Ziyaretçi ve Cihaz/Referrer Dağılımı (Tek gruplamada)
       AnalyticsVisitorModel.aggregate([
@@ -177,7 +184,44 @@ export async function GET(req: Request) {
       // 13. İlan Dokümanları
       ListingModel.find({})
         .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf.url goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi status createdAt')
-        .lean()
+        .lean(),
+      // 14. Domain Bazlı Ziyaretçi Dağılımı
+      AnalyticsVisitorModel.aggregate([
+        { $match: dateQuery },
+        {
+          $group: {
+            _id: { $ifNull: ["$hostname", ""] },
+            totalPageviews: { $sum: 1 },
+            uniqueVisitors: { $addToSet: "$visitorId" },
+            mobileCount: { $sum: { $cond: [{ $eq: ["$device", "mobile"] }, 1, 0] } },
+          }
+        },
+        {
+          $project: {
+            domain: { $cond: [{ $eq: ["$_id", ""] }, "Ana Domain", "$_id"] },
+            uniqueVisitors: { $size: "$uniqueVisitors" },
+            totalPageviews: 1,
+            mobileCount: 1,
+          }
+        },
+        { $sort: { uniqueVisitors: -1 } }
+      ]),
+      // 15. Domain Bazlı WhatsApp Tıklamaları
+      AnalyticsEventModel.aggregate([
+        { $match: { ...dateQuery, eventType: 'whatsapp_click' } },
+        {
+          $group: {
+            _id: { $ifNull: ["$hostname", ""] },
+            whatsappClicks: { $sum: 1 },
+          }
+        },
+        {
+          $project: {
+            domain: { $cond: [{ $eq: ["$_id", ""] }, "Ana Domain", "$_id"] },
+            whatsappClicks: 1,
+          }
+        }
+      ])
     ]);
 
     // Özet verileri çözümle
@@ -340,8 +384,47 @@ export async function GET(req: Request) {
         conversionRate: l.conversionRate,
       }));
 
+    // ── 14. Domain Bazlı İstatistik Haritası (Çoklu Domain Gateway İstihbaratı) ──
+    const domainStatsMap: Record<string, any> = {};
+    domainVisitorsAgg.forEach((item: any) => {
+      const d = item.domain || 'Ana Domain';
+      domainStatsMap[d] = {
+        domain: d,
+        uniqueVisitors: item.uniqueVisitors || 0,
+        totalPageviews: item.totalPageviews || 0,
+        mobileCount: item.mobileCount || 0,
+        whatsappClicks: 0,
+        conversionRate: '0.0%',
+      };
+    });
+
+    domainEventsAgg.forEach((item: any) => {
+      const d = item.domain || 'Ana Domain';
+      if (!domainStatsMap[d]) {
+        domainStatsMap[d] = {
+          domain: d,
+          uniqueVisitors: 0,
+          totalPageviews: 0,
+          mobileCount: 0,
+          whatsappClicks: item.whatsappClicks || 0,
+          conversionRate: '0.0%',
+        };
+      } else {
+        domainStatsMap[d].whatsappClicks = item.whatsappClicks || 0;
+      }
+    });
+
+    const domainBreakdown = Object.values(domainStatsMap).map((d: any) => {
+      const conv = d.uniqueVisitors > 0 ? ((d.whatsappClicks / d.uniqueVisitors) * 100).toFixed(1) : '0.0';
+      return {
+        ...d,
+        conversionRate: `${conv}%`,
+      };
+    }).sort((a: any, b: any) => b.uniqueVisitors - a.uniqueVisitors);
+
     return NextResponse.json({
       analytics: {
+        domainBreakdown,
         googleConversionStats: {
           googleVisitors,
           googleWhatsappClicks,
