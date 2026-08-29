@@ -43,13 +43,16 @@ export default function SpecialAdPopup() {
   const touchEndXRef = useRef<number | null>(null);
 
   // Extract current location context from pathname (e.g. /istanbul, /istanbul/kadikoy)
-  const currentCitySlug = useMemo(() => {
-    if (!pathname || pathname === '/') return '';
+  const { currentCitySlug, currentDistrictSlug } = useMemo(() => {
+    if (!pathname || pathname === '/') return { currentCitySlug: '', currentDistrictSlug: '' };
     const segments = pathname.split('/').filter(Boolean);
-    if (segments[0] && segments[0] !== 'kategori' && segments[0] !== 'ilan' && segments[0] !== 'ara' && segments[0] !== 'sehirler') {
-      return segments[0].toLowerCase();
+    if (segments[0] && !['kategori', 'ilan', 'ara', 'sehirler', 'bms-secure-portal', 'chat'].includes(segments[0])) {
+      return {
+        currentCitySlug: segments[0].toLowerCase(),
+        currentDistrictSlug: segments[1] ? segments[1].toLowerCase() : '',
+      };
     }
-    return '';
+    return { currentCitySlug: '', currentDistrictSlug: '' };
   }, [pathname]);
 
   useEffect(() => {
@@ -85,20 +88,30 @@ export default function SpecialAdPopup() {
           setActiveAds(adsList);
 
           // ── AKILLI KONUM VE SIRALI ROTASYON ALGORİTMASI ──
-          // 1. Kullanıcının bulunduğu şehre özel reklamları önceliklendir (Geo-Targeting)
-          const cityMatched = adsList.filter((ad) => {
-            const targetCity = (ad.hedefIlSlug || '').toLowerCase();
+          // 1. Kullanıcının bulunduğu il veya ilçeye özel reklamları önceliklendir (Geo-Targeting)
+          const locationMatched = adsList.filter((ad) => {
+            const target = (ad.hedefIlSlug || '').toLowerCase();
             const listingCity = (ad.ilan?.ilSlug || '').toLowerCase();
-            return currentCitySlug && (targetCity === currentCitySlug || listingCity === currentCitySlug);
+            const listingDistrict = (ad.ilan?.ilceSlug || '').toLowerCase();
+
+            // Belirli ilçe eşleşmesi (örn: istanbul/beylikduzu veya beylikduzu)
+            if (currentDistrictSlug && (target.includes(currentDistrictSlug) || listingDistrict === currentDistrictSlug)) {
+              return true;
+            }
+            // Şehir geneli eşleşmesi (örn: istanbul)
+            if (currentCitySlug && (target === currentCitySlug || listingCity === currentCitySlug)) {
+              return true;
+            }
+            return false;
           });
 
           // 2. Tüm Türkiye genel reklamları
           const generalAds = adsList.filter((ad) => {
-            const targetCity = (ad.hedefIlSlug || '').toLowerCase();
-            return !targetCity || targetCity === 'tum_turkiye' || targetCity === 'hepsi';
+            const target = (ad.hedefIlSlug || '').toLowerCase();
+            return !target || target === 'tum_turkiye' || target === 'hepsi';
           });
 
-          const candidates = cityMatched.length > 0 ? cityMatched : (generalAds.length > 0 ? generalAds : adsList);
+          const candidates = locationMatched.length > 0 ? locationMatched : (generalAds.length > 0 ? generalAds : adsList);
 
           // 3. Sıralı Rotasyon: Session'daki index'i okuyup sıradaki reklamı seç
           let cycleIdx = 0;

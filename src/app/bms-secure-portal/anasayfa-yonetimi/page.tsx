@@ -419,10 +419,13 @@ export default function AdminHomepageConfigPage() {
                     if (chosenId) {
                       const matched = allListings.find((l) => l._id === chosenId);
                       if (matched?.ilSlug) {
-                        setNewAdHedefIl(matched.ilSlug);
-                      }
-                      if (matched?.rozet) {
-                        setNewAdRozet(`👑 ${matched.ilSlug?.toUpperCase() || ''} VIP VİTRİN İLANI`);
+                        if (matched.ilceSlug) {
+                          setNewAdHedefIl(`${matched.ilSlug}/${matched.ilceSlug}`);
+                          setNewAdRozet(`👑 ${matched.ilSlug.toUpperCase()} / ${matched.ilceSlug.toUpperCase()} VIP VİTRİN`);
+                        } else {
+                          setNewAdHedefIl(matched.ilSlug);
+                          setNewAdRozet(`👑 ${matched.ilSlug.toUpperCase()} VIP VİTRİN İLANI`);
+                        }
                       }
                     }
                   }}
@@ -439,30 +442,59 @@ export default function AdminHomepageConfigPage() {
 
               {/* Hedef Şehir / Konum */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-[#8b949e]">Hedef Gösterim Şehri</label>
+                <label className="text-xs font-bold text-[#8b949e]">Hedef Gösterim Şehri &amp; İlçesi</label>
                 <select
                   value={newAdHedefIl}
                   onChange={(e) => setNewAdHedefIl(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-medium"
                 >
-                  <option value="tum_turkiye">🇹🇷 TÜRKİYE GENELİ (Tüm Şehirler & Anasayfa)</option>
+                  <option value="tum_turkiye">🇹🇷 TÜRKİYE GENELİ (Tüm Şehirler &amp; Anasayfa)</option>
 
+                  {/* 1. SEÇİLİ İLANIN KONUMU */}
                   {selectedListingForAd && selectedListingForAd.ilSlug && (
-                    <optgroup label="── SEÇİLİ İLANIN KONUMU (ÖNERİLEN) ──">
+                    <optgroup label="── SEÇİLİ İLANIN KENDİ KONUMU (ÖNERİLEN) ──">
+                      {selectedListingForAd.ilceSlug && (
+                        <option value={`${selectedListingForAd.ilSlug}/${selectedListingForAd.ilceSlug}`}>
+                          🎯 SADECE {selectedListingForAd.ilSlug.toUpperCase()} / {selectedListingForAd.ilceSlug.toUpperCase()} (İlanın Kendi İlçesi)
+                        </option>
+                      )}
                       <option value={selectedListingForAd.ilSlug}>
-                        🎯 SADECE {selectedListingForAd.ilSlug.toUpperCase()} (İlanın Kendi Şehri)
+                        📍 TÜM {selectedListingForAd.ilSlug.toUpperCase()} (İlanın Bulunduğu İl - Tüm İlçeler)
                       </option>
                     </optgroup>
                   )}
 
+                  {/* 2. POPÜLER BÜYÜKŞEHİRLER & İLÇELERİ */}
+                  <optgroup label="── POPÜLER BÜYÜKŞEHİR İLÇELERİ ──">
+                    <option value="istanbul">📍 İSTANBUL (Tüm İlçeler)</option>
+                    <option value="istanbul/beylikduzu">↳ İSTANBUL / Beylikdüzü</option>
+                    <option value="istanbul/kadikoy">↳ İSTANBUL / Kadıköy</option>
+                    <option value="istanbul/sisli">↳ İSTANBUL / Şişli</option>
+                    <option value="istanbul/besiktas">↳ İSTANBUL / Beşiktaş</option>
+                    <option value="istanbul/bakirkoy">↳ İSTANBUL / Bakırköy</option>
+                    <option value="istanbul/atasehir">↳ İSTANBUL / Ataşehir</option>
+                    <option value="ankara">📍 ANKARA (Tüm İlçeler)</option>
+                    <option value="ankara/cankaya">↳ ANKARA / Çankaya</option>
+                    <option value="izmir">📍 İZMİR (Tüm İlçeler)</option>
+                    <option value="izmir/karsiyaka">↳ İZMİR / Karşıyaka</option>
+                    <option value="izmir/cesme">↳ İZMİR / Çeşme</option>
+                    <option value="antalya">📍 ANTALYA (Tüm İlçeler)</option>
+                    <option value="antalya/muratpasa">↳ ANTALYA / Muratpaşa</option>
+                    <option value="bursa">📍 BURSA (Tüm İlçeler)</option>
+                  </optgroup>
+
+                  {/* 3. DİNAMİK 81 İL VE TÜM İLÇELERİ */}
                   {allLocations.length > 0 ? (
-                    <optgroup label="── 81 İL (DİNAMİK LİSTE) ──">
-                      {allLocations.map((loc: any) => (
-                        <option key={loc.ilSlug} value={loc.ilSlug}>
-                          📍 {loc.il.toUpperCase()} ({loc.ilceler?.length || 0} İlçe)
-                        </option>
-                      ))}
-                    </optgroup>
+                    allLocations.map((loc: any) => (
+                      <optgroup key={loc.ilSlug} label={`── ${loc.il.toUpperCase()} ──`}>
+                        <option value={loc.ilSlug}>📍 TÜM {loc.il.toUpperCase()} (İl Geneli)</option>
+                        {Array.isArray(loc.ilceler) && loc.ilceler.map((ilce: any) => (
+                          <option key={ilce.slug} value={`${loc.ilSlug}/${ilce.slug}`}>
+                            ↳ {loc.il.toUpperCase()} / {ilce.ad}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))
                   ) : (
                     <optgroup label="── POPÜLER ŞEHİRLER ──">
                       {POPULAR_CITIES.map((c) => (
@@ -529,10 +561,18 @@ export default function AdminHomepageConfigPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 {ozelIlanReklamlar.map((ad, idx) => {
                   const listing = getListingById(ad.ilanId);
-                  const foundLoc = allLocations.find((l) => l.ilSlug === ad.hedefIlSlug);
-                  const cityName = ad.hedefIlSlug === 'tum_turkiye'
-                    ? '🇹🇷 TÜRKİYE GENELİ'
-                    : (foundLoc ? `📍 ${foundLoc.il.toUpperCase()}` : (POPULAR_CITIES.find((c) => c.slug === ad.hedefIlSlug)?.ad || ad.hedefIlSlug?.toUpperCase() || 'TÜRKİYE GENELİ'));
+                  let cityName = '🇹🇷 TÜRKİYE GENELİ';
+                  if (ad.hedefIlSlug && ad.hedefIlSlug !== 'tum_turkiye') {
+                    if (ad.hedefIlSlug.includes('/')) {
+                      const [cSlug, dSlug] = ad.hedefIlSlug.split('/');
+                      const foundLoc = allLocations.find((l) => l.ilSlug === cSlug);
+                      const foundDistrict = foundLoc?.ilceler?.find((d: any) => d.slug === dSlug);
+                      cityName = `📍 ${cSlug.toUpperCase()} / ${foundDistrict?.ad?.toUpperCase() || dSlug.toUpperCase()}`;
+                    } else {
+                      const foundLoc = allLocations.find((l) => l.ilSlug === ad.hedefIlSlug);
+                      cityName = foundLoc ? `📍 ${foundLoc.il.toUpperCase()}` : (POPULAR_CITIES.find((c) => c.slug === ad.hedefIlSlug)?.ad || ad.hedefIlSlug.toUpperCase());
+                    }
+                  }
 
                   return (
                     <div
