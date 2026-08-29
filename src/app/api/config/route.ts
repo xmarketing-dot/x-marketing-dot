@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/mongodb';
 import HomepageConfigModel from '@/models/HomepageConfig';
 import ListingModel from '@/models/Listing';
@@ -15,16 +16,20 @@ export async function GET() {
     }
 
     // Collect all referenced listing IDs from single ad and array
-    const adIds: any[] = [];
-    if (config?.ozelIlanReklam?.ilanId) adIds.push(config.ozelIlanReklam.ilanId);
+    const rawAdIds: any[] = [];
+    if (config?.ozelIlanReklam?.ilanId) rawAdIds.push(config.ozelIlanReklam.ilanId);
     if (Array.isArray(config?.ozelIlanReklamlar)) {
       config.ozelIlanReklamlar.forEach((ad: any) => {
-        if (ad?.ilanId) adIds.push(ad.ilanId);
+        if (ad?.ilanId) rawAdIds.push(ad.ilanId);
       });
     }
 
-    if (adIds.length > 0) {
-      const listings = await ListingModel.find({ _id: { $in: adIds }, status: 'yayinda' })
+    const validObjectIds = rawAdIds
+      .filter((id) => id && mongoose.Types.ObjectId.isValid(id))
+      .map((id) => new mongoose.Types.ObjectId(id));
+
+    if (validObjectIds.length > 0) {
+      const listings = await ListingModel.find({ _id: { $in: validObjectIds } })
         .select('baslik slug ilSlug ilceSlug anaFotograf fotograflar whatsappNumara rozet status')
         .lean();
       

@@ -40,34 +40,27 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
   const [bannedInfo, setBannedInfo] = useState<{ isBanned: boolean; banSebebi?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // 1. Mobile Virtual Keyboard Visual Viewport Handler
+  // 1. Mobile Virtual Keyboard Scroll Handler
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const handleResize = () => {
-      if (window.visualViewport) {
-        setViewportHeight(window.visualViewport.height);
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }, 150);
-      }
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
     };
 
     if (window.visualViewport) {
-      setViewportHeight(window.visualViewport.height);
       window.visualViewport.addEventListener('resize', handleResize);
-      window.visualViewport.addEventListener('scroll', handleResize);
     }
 
     return () => {
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', handleResize);
-        window.visualViewport.removeEventListener('scroll', handleResize);
       }
     };
   }, []);
@@ -90,8 +83,14 @@ export default function ChatPage() {
           return;
         }
 
-        if (data.thread?._id && data.thread._id !== threadId) {
-          setThreadId(data.thread._id);
+        if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+          setMessages(data.messages);
+        }
+
+        if (data.thread?._id) {
+          if (data.thread._id !== threadId) {
+            setThreadId(data.thread._id);
+          }
           localStorage.setItem('best_eskort_chat_thread_id', data.thread._id);
           window.dispatchEvent(new Event('storage'));
         }
@@ -218,10 +217,7 @@ export default function ChatPage() {
   ];
 
   return (
-    <div 
-      style={{ height: viewportHeight ? `${viewportHeight}px` : '100dvh' }}
-      className="fixed inset-0 top-0 left-0 right-0 bottom-0 w-full bg-[#0d1117] flex flex-col justify-between overflow-hidden select-none max-w-lg mx-auto md:border-x md:border-[#30363d] shadow-2xl z-50 transition-[height] duration-75"
-    >
+    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#0d1117] flex flex-col justify-between overflow-hidden max-w-lg mx-auto md:border-x md:border-[#30363d] shadow-2xl relative">
       
       {/* ── 1. FIXED TOP HEADER ──────────────── */}
       <header className="shrink-0 h-16 px-4 bg-[#161b22] border-b border-[#30363d] flex items-center justify-between z-30 shadow-md">

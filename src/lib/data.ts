@@ -5,9 +5,25 @@ import PackageModel from '../models/Package';
 import ListingModel from '../models/Listing';
 import HomepageConfigModel from '../models/HomepageConfig';
 
+// Non-blocking periodic expiration check (at most once every 30 mins)
+let lastExpireCheck = 0;
+function triggerBackgroundExpireCheck() {
+  const nowTime = Date.now();
+  if (nowTime - lastExpireCheck < 1000 * 60 * 30) return;
+  lastExpireCheck = nowTime;
+  
+  ListingModel.updateMany(
+    { status: 'yayinda', paketBitisTarihi: { $exists: true, $lte: new Date() } },
+    { $set: { status: 'suresi_doldu' } }
+  ).exec().catch(() => {});
+}
+
 export async function getAllLocations() {
   await connectToDatabase();
-  const res = await LocationModel.find({}).sort({ il: 1 }).lean();
+  const res = await LocationModel.find({})
+    .select('il ilSlug ilceler')
+    .sort({ il: 1 })
+    .lean();
   return JSON.parse(JSON.stringify(res));
 }
 
@@ -20,7 +36,10 @@ export async function getLocationBySlug(ilSlug: string) {
 
 export async function getAllCategories() {
   await connectToDatabase();
-  const res = await CategoryModel.find({ aktif: true }).sort({ siraNo: 1 }).lean();
+  const res = await CategoryModel.find({ aktif: true })
+    .select('ad slug icon siraNo')
+    .sort({ siraNo: 1 })
+    .lean();
   return JSON.parse(JSON.stringify(res));
 }
 
@@ -59,28 +78,33 @@ export async function getListings({
   limit?: number;
 }) {
   await connectToDatabase();
+  triggerBackgroundExpireCheck();
 
-  // Auto-expire listings whose publication duration has ended
   const now = new Date();
-  await ListingModel.updateMany(
-    { status: 'yayinda', paketBitisTarihi: { $exists: true, $lte: now } },
-    { $set: { status: 'suresi_doldu' } }
-  );
-
-  const query: any = { status: 'yayinda' };
+  const query: any = { 
+    status: 'yayinda',
+    $or: [
+      { paketBitisTarihi: { $exists: false } },
+      { paketBitisTarihi: null },
+      { paketBitisTarihi: { $gt: now } }
+    ]
+  };
 
   if (ilSlug) query.ilSlug = ilSlug;
   if (ilceSlug) query.ilceSlug = ilceSlug;
 
   if (kategoriSlug) {
-    const category = await CategoryModel.findOne({ slug: kategoriSlug, aktif: true }).lean();
+    const category = await CategoryModel.findOne({ slug: kategoriSlug, aktif: true })
+      .select('_id')
+      .lean();
     if (category) {
       query.kategoriId = category._id;
     }
   }
 
+  // Fast lightweight query without transferring gigabytes of base64 photo arrays
   const listings = await ListingModel.find(query)
-    .populate('kategoriId')
+    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf fotograflar createdAt status')
     .sort({ rozet: -1, createdAt: -1 })
     .limit(limit)
     .lean();
@@ -90,17 +114,21 @@ export async function getListings({
 
 export async function getListingBySlug(slug: string) {
   await connectToDatabase();
+  triggerBackgroundExpireCheck();
 
-  // Auto-expire check
   const now = new Date();
-  await ListingModel.updateMany(
-    { status: 'yayinda', paketBitisTarihi: { $exists: true, $lte: now } },
-    { $set: { status: 'suresi_doldu' } }
-  );
-
-  const listing = await ListingModel.findOne({ slug, status: 'yayinda' })
+  const listing = await ListingModel.findOne({ 
+    slug, 
+    status: 'yayinda',
+    $or: [
+      { paketBitisTarihi: { $exists: false } },
+      { paketBitisTarihi: null },
+      { paketBitisTarihi: { $gt: now } }
+    ]
+  })
     .populate('kategoriId')
     .lean();
+
   if (!listing) return null;
   return JSON.parse(JSON.stringify(listing));
 }

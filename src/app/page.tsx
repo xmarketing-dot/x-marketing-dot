@@ -26,8 +26,7 @@ import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 15;
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getSiteUrl();
@@ -113,7 +112,9 @@ export default async function HomePage() {
     const missingIds = selectedShowcaseIds.filter((id) => !allSortedListings.some((l: any) => l._id.toString() === id));
     let extraListings: any[] = [];
     if (missingIds.length > 0) {
-      extraListings = await ListingModel.find({ _id: { $in: missingIds }, status: 'yayinda' }).lean();
+      extraListings = await ListingModel.find({ _id: { $in: missingIds }, status: 'yayinda' })
+        .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf createdAt status')
+        .lean();
     }
     const pool = [...allSortedListings, ...extraListings];
     dynamicShowcaseListings = selectedShowcaseIds

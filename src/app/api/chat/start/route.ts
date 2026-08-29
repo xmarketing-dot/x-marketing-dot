@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/mongodb';
 import ChatThreadModel from '@/models/ChatThread';
+import ChatMessageModel from '@/models/ChatMessage';
 import BanModel from '@/models/Ban';
 
 export async function POST(req: NextRequest) {
@@ -48,7 +49,16 @@ export async function POST(req: NextRequest) {
             { status: 403 }
           );
         }
-        return NextResponse.json({ thread: JSON.parse(JSON.stringify(existing)) });
+        const messages = await ChatMessageModel.find({ threadId: existing._id })
+          .select('_id threadId gonderenTipi mesaj okundu createdAt')
+          .sort({ createdAt: 1 })
+          .limit(100)
+          .lean();
+
+        return NextResponse.json({ 
+          thread: JSON.parse(JSON.stringify(existing)),
+          messages: JSON.parse(JSON.stringify(messages))
+        });
       }
     }
 

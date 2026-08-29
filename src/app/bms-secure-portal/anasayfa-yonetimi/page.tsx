@@ -234,7 +234,8 @@ export default function AdminHomepageConfigPage() {
         setMessage({ type: 'success', text: `Tüm özel reklamlar (${ozelIlanReklamlar.length} Adet) başarıyla kaydedildi ve yayına alındı!` });
         fetchConfig();
       } else {
-        setMessage({ type: 'error', text: 'Özel reklamlar kaydedilemedi.' });
+        const errJson = await res.json().catch(() => ({}));
+        setMessage({ type: 'error', text: errJson.error || 'Özel reklamlar kaydedilemedi.' });
       }
     } catch (e: any) {
       setMessage({ type: 'error', text: e.message || 'Bağlantı hatası' });
@@ -277,7 +278,8 @@ export default function AdminHomepageConfigPage() {
       if (res.ok) {
         setMessage({ type: 'success', text: 'Tüm anasayfa ve reklam ayarları başarıyla güncellendi!' });
       } else {
-        setMessage({ type: 'error', text: 'Ayarlar güncellenirken bir hata oluştu.' });
+        const errJson = await res.json().catch(() => ({}));
+        setMessage({ type: 'error', text: errJson.error || 'Ayarlar güncellenirken bir hata oluştu.' });
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Bağlantı hatası.' });

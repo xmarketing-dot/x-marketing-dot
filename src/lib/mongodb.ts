@@ -1,15 +1,4 @@
 import mongoose from 'mongoose';
-import dns from 'dns';
-
-dns.setDefaultResultOrder('ipv4first');
-
-function applyPublicDNS() {
-  try {
-    dns.setServers(['8.8.8.8', '1.1.1.1']);
-  } catch (e) {
-    // Silent
-  }
-}
 
 const primaryUri = process.env.MONGODB_URI;
 
@@ -35,26 +24,33 @@ if (!global.mongooseCache) {
   global.mongooseCache = cached;
 }
 
+const connectionOptions = {
+  bufferCommands: false,
+  maxPoolSize: 10,
+  minPoolSize: 1,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 20000,
+};
+
 export async function connectToDatabase(): Promise<typeof mongoose> {
+  // If mongoose is already connected and ready, reuse connection immediately (0ms)
+  if (mongoose.connection.readyState === 1) {
+    cached.conn = mongoose;
+    return mongoose;
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
 
-  applyPublicDNS();
-
   if (!cached.promise) {
     cached.promise = (async () => {
       try {
-        return await mongoose.connect(primaryUri as string, {
-          bufferCommands: false,
-          serverSelectionTimeoutMS: 5000,
-        });
+        return await mongoose.connect(primaryUri as string, connectionOptions);
       } catch (firstErr) {
         try {
-          return await mongoose.connect(directFallbackUri, {
-            bufferCommands: false,
-            serverSelectionTimeoutMS: 10000,
-          });
+          return await mongoose.connect(directFallbackUri, connectionOptions);
         } catch (secondErr) {
           throw firstErr;
         }

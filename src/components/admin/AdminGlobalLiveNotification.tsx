@@ -91,8 +91,9 @@ export default function AdminGlobalLiveNotification() {
   useEffect(() => {
     if (!isAdmin) return;
 
-    // Check DB for unread customer messages every 3 seconds
+    // Check DB for unread customer messages (only if tab is visible, every 5s)
     const checkUnread = async () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       try {
         const res = await fetch('/api/admin/chat/threads');
         if (!res.ok) return;
@@ -115,7 +116,7 @@ export default function AdminGlobalLiveNotification() {
       } catch (e) {}
     };
 
-    const pollInterval = setInterval(checkUnread, 3000);
+    const pollInterval = setInterval(checkUnread, 5000);
 
     // Also connect SSE
     let eventSource: EventSource | null = null;

@@ -48,6 +48,7 @@ const TickerItemSchema = new Schema<ITickerItem>(
 
 const OzelIlanReklamSchema = new Schema<IOzelIlanReklam>(
   {
+    _id: { type: String },
     aktif: { type: Boolean, default: false },
     ilanId: { type: Schema.Types.ObjectId, ref: 'Listing', default: null },
     hedefIlSlug: { type: String, default: 'tum_turkiye' },
@@ -56,7 +57,7 @@ const OzelIlanReklamSchema = new Schema<IOzelIlanReklam>(
     spotMetin: { type: String, default: 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı' },
     rozet: { type: String, default: '🔥 SPONSORLU ÖZEL İLAN' },
   },
-  { _id: true }
+  { _id: false }
 );
 
 const HomepageConfigSchema = new Schema<IHomepageConfig>(

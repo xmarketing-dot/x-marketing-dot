@@ -29,25 +29,65 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { heroBaslik, heroAltBaslik, bannerMetin, bannerLink, bannerAktif, bannerRozet, duyurular, sliderIlanIds, ozelIlanReklam, ozelIlanReklamlar } = await req.json();
+    const body = await req.json();
+    const { 
+      heroBaslik, 
+      heroAltBaslik, 
+      bannerMetin, 
+      bannerLink, 
+      bannerAktif, 
+      bannerRozet, 
+      duyurular, 
+      sliderIlanIds, 
+      ozelIlanReklam, 
+      ozelIlanReklamlar 
+    } = body;
 
-    await connectToDatabase();
+    const mongoose = await connectToDatabase();
 
-    const updateData: any = {
-      'hero.baslik': heroBaslik,
-      'hero.altBaslik': heroAltBaslik,
-      'aktifBanner.metin': bannerMetin,
-      'aktifBanner.link': bannerLink,
-      'aktifBanner.aktif': bannerAktif,
-      'aktifBanner.rozet': bannerRozet || '👑 VIP DUYURU',
-    };
+    const updateData: any = {};
+
+    if (heroBaslik !== undefined) updateData['hero.baslik'] = heroBaslik;
+    if (heroAltBaslik !== undefined) updateData['hero.altBaslik'] = heroAltBaslik;
+    if (bannerMetin !== undefined) updateData['aktifBanner.metin'] = bannerMetin;
+    if (bannerLink !== undefined) updateData['aktifBanner.link'] = bannerLink;
+    if (bannerAktif !== undefined) updateData['aktifBanner.aktif'] = Boolean(bannerAktif);
+    if (bannerRozet !== undefined) updateData['aktifBanner.rozet'] = bannerRozet || '👑 VIP DUYURU';
 
     if (ozelIlanReklam && typeof ozelIlanReklam === 'object') {
-      updateData.ozelIlanReklam = ozelIlanReklam;
+      const validIlanId = ozelIlanReklam.ilanId && mongoose.Types.ObjectId.isValid(ozelIlanReklam.ilanId)
+        ? new mongoose.Types.ObjectId(ozelIlanReklam.ilanId)
+        : null;
+
+      updateData.ozelIlanReklam = {
+        _id: String(ozelIlanReklam._id || 'ad_single'),
+        aktif: Boolean(ozelIlanReklam.aktif),
+        ilanId: validIlanId,
+        hedefIlSlug: ozelIlanReklam.hedefIlSlug || 'tum_turkiye',
+        gecikmeSaniye: Number(ozelIlanReklam.gecikmeSaniye) || 4,
+        baslik: ozelIlanReklam.baslik || '👑 GÜNÜN ÖZEL VIP İLANI',
+        spotMetin: ozelIlanReklam.spotMetin || 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı',
+        rozet: ozelIlanReklam.rozet || '🔥 SPONSORLU ÖZEL İLAN',
+      };
     }
 
     if (Array.isArray(ozelIlanReklamlar)) {
-      updateData.ozelIlanReklamlar = ozelIlanReklamlar;
+      updateData.ozelIlanReklamlar = ozelIlanReklamlar.map((ad: any, idx: number) => {
+        const validIlanId = ad.ilanId && mongoose.Types.ObjectId.isValid(ad.ilanId)
+          ? new mongoose.Types.ObjectId(ad.ilanId)
+          : null;
+
+        return {
+          _id: String(ad._id || `ad_${Date.now()}_${idx}`),
+          aktif: Boolean(ad.aktif),
+          ilanId: validIlanId,
+          hedefIlSlug: ad.hedefIlSlug || 'tum_turkiye',
+          gecikmeSaniye: Number(ad.gecikmeSaniye) || 4,
+          baslik: ad.baslik || '👑 GÜNÜN ÖZEL VIP İLANI',
+          spotMetin: ad.spotMetin || 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı',
+          rozet: ad.rozet || '🔥 SPONSORLU ÖZEL İLAN',
+        };
+      });
     }
 
     if (Array.isArray(duyurular)) {
@@ -55,7 +95,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (Array.isArray(sliderIlanIds)) {
-      updateData.sliderIlanIds = sliderIlanIds;
+      updateData.sliderIlanIds = sliderIlanIds
+        .filter((id: any) => id && mongoose.Types.ObjectId.isValid(id))
+        .map((id: any) => new mongoose.Types.ObjectId(id));
     }
 
     const config = await HomepageConfigModel.findOneAndUpdate(
@@ -66,6 +108,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, config });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Config update error' }, { status: 500 });
+    console.error('Config update error:', error);
+    return NextResponse.json({ error: error.message || 'Config update error' }, { status: 500 });
   }
 }

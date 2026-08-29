@@ -88,8 +88,9 @@ export default function GlobalChatNotification() {
 
       let lastSeenMessageId = '';
 
-      // Polling fallback every 3s (100% reliable across serverless)
+      // Polling fallback every 5s when tab is active (100% reliable across serverless)
       const pollCustomerMessages = async () => {
+        if (typeof document !== 'undefined' && document.hidden) return;
         try {
           const res = await fetch(`/api/chat/messages?threadId=${savedThreadId}`);
           if (!res.ok) return;
@@ -109,7 +110,7 @@ export default function GlobalChatNotification() {
         } catch (e) {}
       };
 
-      const pollInterval = setInterval(pollCustomerMessages, 3000);
+      const pollInterval = setInterval(pollCustomerMessages, 5000);
       pollCustomerMessages();
 
       let eventSource: EventSource | null = null;
