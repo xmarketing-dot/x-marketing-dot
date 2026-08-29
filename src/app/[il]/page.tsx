@@ -112,6 +112,9 @@ export default async function CityPage({ params }: Props) {
     ],
     faqItems,
     itemCount: listings.length,
+    models: listings,
+    siteUrl,
+    districtName: location.il,
   });
 
   return (

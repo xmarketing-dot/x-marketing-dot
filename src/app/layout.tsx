@@ -87,11 +87,16 @@ export const metadata: Metadata = {
   alternates: {
     canonical: siteUrl,
   },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || undefined,
+    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || undefined,
+  },
   other: {
     'geo.region': 'TR',
     'geo.placename': 'Turkey',
     'geo.position': '39.9334;32.8597',
     'ICBM': '39.9334, 32.8597',
+    'yandex': 'all',
   },
   icons: {
     icon: '/icon',

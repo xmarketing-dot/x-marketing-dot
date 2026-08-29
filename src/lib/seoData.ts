@@ -183,6 +183,36 @@ export function generateAggregateRatingSchema({
 }
 
 /**
+ * Bölgedeki Modeller Kadrosu Schema.org ItemList (Google Rich Snippets & Person Schema)
+ */
+export function generateItemListSchema(models: any[] = [], siteUrl: string = '', districtName: string = '') {
+  if (!models || models.length === 0) return null;
+
+  return {
+    '@type': 'ItemList',
+    name: `${districtName} Doğrulanmış VIP Model Kadrosu`,
+    numberOfItems: models.length,
+    itemListElement: models.slice(0, 15).map((m, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      item: {
+        '@type': 'Person',
+        name: m.baslik,
+        jobTitle: 'VIP Model & Eskort',
+        url: `${siteUrl}/ilan/${m.slug}`,
+        image: m.anaFotograf?.url ? (m.anaFotograf.url.startsWith('http') ? m.anaFotograf.url : `${siteUrl}${m.anaFotograf.url}`) : undefined,
+        telephone: m.whatsappNumara || undefined,
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: districtName,
+          addressCountry: 'TR',
+        },
+      },
+    })),
+  };
+}
+
+/**
  * Birleşik Schema.org Graph Verisi (Google Standartlarına %100 Uyumlu)
  */
 export function generateCombinedSeoGraph({
@@ -192,6 +222,9 @@ export function generateCombinedSeoGraph({
   breadcrumbs,
   faqItems,
   itemCount = 12,
+  models,
+  siteUrl,
+  districtName,
 }: {
   pageUrl: string;
   pageName: string;
@@ -199,18 +232,28 @@ export function generateCombinedSeoGraph({
   breadcrumbs: { name: string; url: string }[];
   faqItems: FaqItem[];
   itemCount?: number;
+  models?: any[];
+  siteUrl?: string;
+  districtName?: string;
 }) {
+  const graph: any[] = [
+    generateBreadcrumbSchema(breadcrumbs),
+    generateFaqSchema(faqItems),
+    generateAggregateRatingSchema({
+      name: pageName,
+      description: pageDescription,
+      url: pageUrl,
+      itemCount,
+    }),
+  ];
+
+  if (models && models.length > 0 && siteUrl && districtName) {
+    const itemList = generateItemListSchema(models, siteUrl, districtName);
+    if (itemList) graph.push(itemList);
+  }
+
   return {
     '@context': 'https://schema.org',
-    '@graph': [
-      generateBreadcrumbSchema(breadcrumbs),
-      generateFaqSchema(faqItems),
-      generateAggregateRatingSchema({
-        name: pageName,
-        description: pageDescription,
-        url: pageUrl,
-        itemCount,
-      }),
-    ],
+    '@graph': graph,
   };
 }

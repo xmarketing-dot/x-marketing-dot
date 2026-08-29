@@ -5,17 +5,41 @@ export default function robots(): MetadataRoute.Robots {
   const siteUrl = getSiteUrl();
 
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: [
-        '/api/',
-        '/bms-secure-portal/',
-        '/bms-secure-portal',
-        '/panelim',
-        '/chat',
-      ],
-    },
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/bms-secure-portal/',
+          '/bms-secure-portal',
+          '/panelim',
+          '/chat',
+        ],
+      },
+      {
+        userAgent: 'Yandex',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/bms-secure-portal/',
+          '/bms-secure-portal',
+          '/panelim',
+          '/chat',
+        ],
+      },
+      {
+        userAgent: 'YandexBot',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/bms-secure-portal/',
+          '/bms-secure-portal',
+          '/panelim',
+          '/chat',
+        ],
+      },
+    ],
     sitemap: `${siteUrl}/sitemap.xml`,
     host: siteUrl,
   };

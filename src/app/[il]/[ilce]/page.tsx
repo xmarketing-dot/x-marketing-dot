@@ -127,6 +127,9 @@ export default async function DistrictPage({ params }: Props) {
     ],
     faqItems,
     itemCount: listings.length,
+    models: listings,
+    siteUrl,
+    districtName,
   });
 
   // Neighboring districts (excluding current)

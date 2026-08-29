@@ -77,13 +77,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  // Individual listing pages
+  // Individual listing pages with Google Image Sitemap metadata
   for (const listing of listings) {
+    const images: string[] = [];
+    if (listing.anaFotograf?.url) {
+      images.push(
+        listing.anaFotograf.url.startsWith('http')
+          ? listing.anaFotograf.url
+          : `${siteUrl}${listing.anaFotograf.url}`
+      );
+    }
+    if (Array.isArray(listing.fotograflar)) {
+      listing.fotograflar.forEach((f: any) => {
+        const u = typeof f === 'string' ? f : f?.url;
+        if (u) {
+          const fullU = u.startsWith('http') ? u : `${siteUrl}${u}`;
+          if (!images.includes(fullU)) images.push(fullU);
+        }
+      });
+    }
+
     routes.push({
       url: `${siteUrl}/ilan/${listing.slug}`,
       lastModified: new Date(listing.updatedAt || listing.createdAt || now),
       changeFrequency: 'daily',
       priority: 0.8,
+      images: images.slice(0, 5),
     });
   }
 
