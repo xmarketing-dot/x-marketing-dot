@@ -18,12 +18,8 @@ const UserSchema = new Schema<IUser>(
     sifreHash: { type: String, default: '' },
     chatThreadId: { type: Schema.Types.ObjectId, ref: 'ChatThread' },
   },
-  { timestamps: true }
+  { timestamps: true, autoIndex: false }
 );
-
-if (mongoose.models.User) {
-  delete (mongoose.models as any).User;
-}
 
 const UserModel: Model<IUser> =
   mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

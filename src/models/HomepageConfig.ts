@@ -118,12 +118,8 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
     sliderIlanIds: [{ type: Schema.Types.ObjectId, ref: 'Listing' }],
     oneCikanKategoriler: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
   },
-  { timestamps: true }
+  { timestamps: true, autoIndex: false }
 );
-
-if (mongoose.models.HomepageConfig) {
-  delete (mongoose.models as any).HomepageConfig;
-}
 
 const HomepageConfigModel: Model<IHomepageConfig> =
   mongoose.models.HomepageConfig || mongoose.model<IHomepageConfig>('HomepageConfig', HomepageConfigSchema);

@@ -15,14 +15,8 @@ const ChatMessageSchema = new Schema<IChatMessage>(
     mesaj: { type: String, required: true },
     okundu: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true, autoIndex: false }
 );
-
-ChatMessageSchema.index({ threadId: 1, createdAt: 1 });
-
-if (mongoose.models.ChatMessage) {
-  delete (mongoose.models as any).ChatMessage;
-}
 
 const ChatMessageModel: Model<IChatMessage> =
   mongoose.models.ChatMessage || mongoose.model<IChatMessage>('ChatMessage', ChatMessageSchema);

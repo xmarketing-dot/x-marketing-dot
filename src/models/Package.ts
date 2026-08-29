@@ -26,13 +26,10 @@ const PackageSchema = new Schema<IPackage>(
     siraOnceligi: { type: Number, default: 0 },
     aktif: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true, autoIndex: false }
 );
 
-if (mongoose.models.Package) {
-  delete (mongoose.models as any).Package;
-}
-
-const PackageModel: Model<IPackage> = mongoose.model<IPackage>('Package', PackageSchema);
+const PackageModel: Model<IPackage> =
+  mongoose.models.Package || mongoose.model<IPackage>('Package', PackageSchema);
 
 export default PackageModel;

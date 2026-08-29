@@ -36,15 +36,8 @@ const ChatThreadSchema = new Schema<IChatThread>(
     okunmadiAdminSayisi: { type: Number, default: 0 },
     okunmadiKullaniciSayisi: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true, autoIndex: false }
 );
-
-ChatThreadSchema.index({ updatedAt: -1 });
-ChatThreadSchema.index({ isBanned: 1, ip: 1 });
-
-if (mongoose.models.ChatThread) {
-  delete (mongoose.models as any).ChatThread;
-}
 
 const ChatThreadModel: Model<IChatThread> =
   mongoose.models.ChatThread || mongoose.model<IChatThread>('ChatThread', ChatThreadSchema);

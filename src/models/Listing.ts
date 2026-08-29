@@ -129,12 +129,9 @@ const ListingSchema = new Schema<IListing>(
   },
   {
     timestamps: true,
+    autoIndex: false,
   }
 );
-
-if (mongoose.models.Listing) {
-  delete (mongoose.models as any).Listing;
-}
 
 const ListingModel: Model<IListing> =
   mongoose.models.Listing || mongoose.model<IListing>('Listing', ListingSchema);
