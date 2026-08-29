@@ -132,9 +132,9 @@ export async function getListings({
     }
   }
 
-  // Cover photo only (anaFotograf) - never transfer huge base64 gallery arrays for list views
+  // Include fotograflar so compact card auto-slider works
   const listings = await ListingModel.find(query)
-    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf createdAt status')
+    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf fotograflar createdAt status')
     .sort({ rozet: -1, createdAt: -1 })
     .limit(limit)
     .lean();

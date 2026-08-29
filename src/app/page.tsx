@@ -177,8 +177,6 @@ export default async function HomePage() {
       {/* 3. POPÜLER İLLER & KATEGORİ VİTRİNİ */}
       <section className="w-full">
         <CategoryShowcase
-          ultraVipCovers={allSortedListings.filter((l: any) => l.rozet === 'ultravip').map((l: any) => l.anaFotograf?.url).filter(Boolean)}
-          ultraVipCount={allSortedListings.filter((l: any) => l.rozet === 'ultravip').length}
           vipCovers={vipListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
           vipCount={vipListings.length}
           goldCovers={goldListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
@@ -203,8 +201,8 @@ export default async function HomePage() {
           </span>
         </div>
 
-        {/* DÜZENLİ LİSTE GRİDİ (Mobilde 2'li, Tablette 3'lü, Masaüstünde 4'lü) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* YAN YANA 2'Lİ DÜZENLİ LİSTE GRİDİ */}
+        <div className="grid grid-cols-2 gap-3">
           {gridListings.map((listing: any) => (
             <CompactListingCard key={listing._id} listing={listing} />
           ))}
