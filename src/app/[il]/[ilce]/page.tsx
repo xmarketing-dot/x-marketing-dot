@@ -3,9 +3,11 @@ import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { MapPin, ChevronRight, Sparkles, ShieldCheck, Layers, Globe } from 'lucide-react';
+import { MapPin, ChevronRight, Sparkles, ShieldCheck, Globe, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
+import FaqAccordion from '@/components/seo/FaqAccordion';
+import { generateLocationFaq, generateFaqSchema, generateBreadcrumbSchema } from '@/lib/seoData';
 
 interface Props {
   params: Promise<{ il: string; ilce: string }>;
@@ -41,28 +43,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = `${siteUrl}/${location.ilSlug}/${ilceSlug}`;
 
   return {
-    title: `${districtName} Eskort & ${location.il} Bölgesel İlanlar | Best Eskort`,
-    description: `${location.il} ili ${districtName} ilçesindeki tüm doğrulanmış güncel eskort ilanları, bağımsız bayanlar ve doğrudan WhatsApp iletişim numaraları.`,
+    title: `${districtName} Eskort & Escort Bayan İlanları (2026 Teyitli) | Best Eskort`,
+    description: `${location.il} ${districtName} eskort ve escort bayan profilleri. WhatsApp numaraları, doğrulanmış VIP fotoğraflar ve 7/24 güncel ${districtName} eskort ilanları.`,
     keywords: [
       `${districtName} eskort`,
       `${districtName} escort`,
+      `${districtName} eskort bayan`,
+      `${districtName} escort bayan`,
       `${districtName} ${location.il} eskort`,
       `${districtName} ${location.il} escort`,
       `${location.il} ${districtName} eskort`,
       `${districtName} eskort ilanları`,
-      `${districtName} escort bayan`,
-      `${districtName} eskort bayan`,
+      `${districtName} escort ilanları`,
       `${districtName} bağımsız eskort`,
       `${districtName} vip eskort`,
       `${districtName} vip escort`,
       `${districtName} whatsapp eskort`,
+      `${districtName} eve gelen eskort`,
+      `${districtName} otele gelen escort`,
+      `${districtName} eskort numaraları`,
     ],
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${districtName} Eskort & ${location.il} Bölgesel İlanlar | Best Eskort`,
-      description: `${districtName} bölgesindeki tüm doğrulanmış eskort ve hizmet ilanları.`,
+      title: `${districtName} Eskort & Escort Bayan İlanları | Best Eskort`,
+      description: `${districtName} (${location.il}) bölgesindeki tüm doğrulanmış eskort bayan ilanları ve WhatsApp iletişim numaraları.`,
       url: canonicalUrl,
       type: 'website',
       locale: 'tr_TR',
@@ -78,8 +84,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${districtName} Eskort & ${location.il} Bölgesel İlanlar | Best Eskort`,
-      description: `${districtName} bölgesindeki tüm doğrulanmış eskort ve hizmet ilanları.`,
+      title: `${districtName} Eskort & Escort İlanları | Best Eskort`,
+      description: `${districtName} bölgesindeki tüm doğrulanmış eskort bayan ilanları.`,
       images: [`${siteUrl}/api/og/site`],
     },
   };
@@ -89,7 +95,7 @@ export default async function DistrictPage({ params }: Props) {
   const { il: ilSlug, ilce: ilceSlug } = await params;
   const [location, listings] = await Promise.all([
     getLocationBySlug(ilSlug),
-    getListings({ ilSlug, ilceSlug, limit: 30 }),
+    getListings({ ilSlug, ilceSlug, limit: 60 }),
   ]);
 
   if (!location) {
@@ -100,44 +106,34 @@ export default async function DistrictPage({ params }: Props) {
   const districtName = district ? district.ad : ilceSlug;
   const siteUrl = getSiteUrl();
 
-  // Schema.org BreadcrumbList for Googlebot
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Anasayfa',
-        item: siteUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: location.il,
-        item: `${siteUrl}/${location.ilSlug}`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: districtName,
-        item: `${siteUrl}/${location.ilSlug}/${ilceSlug}`,
-      },
-    ],
-  };
+  // 1. Breadcrumb Schema
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Anasayfa', url: siteUrl },
+    { name: `${location.il} Eskort`, url: `${siteUrl}/${location.ilSlug}` },
+    { name: `${districtName} Eskort`, url: `${siteUrl}/${location.ilSlug}/${ilceSlug}` },
+  ]);
 
-  const otherDistricts = location.ilceler.filter((d: any) => d.slug !== ilceSlug).slice(0, 6);
+  // 2. FAQ Schema for Rich Snippets
+  const faqItems = generateLocationFaq(location.il, districtName);
+  const faqSchema = generateFaqSchema(faqItems);
+
+  // Neighboring districts (excluding current)
+  const otherDistricts = location.ilceler.filter((d: any) => d.slug !== ilceSlug).slice(0, 10);
 
   return (
     <div className="flex flex-col gap-6 px-4 py-4 pb-12">
-      {/* Schema.org BreadcrumbList */}
+      {/* Schema.org Structured Data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
       {/* Breadcrumb Navigation for Googlebot Internal Linking */}
-      <nav className="flex items-center gap-1.5 text-xs text-[#8b949e] font-heading">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#8b949e] font-heading">
         <Link href="/" className="hover:text-amber-400 transition-colors">Anasayfa</Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <Link href={`/${location.ilSlug}`} className="hover:text-amber-400 transition-colors capitalize font-bold">
@@ -161,11 +157,11 @@ export default async function DistrictPage({ params }: Props) {
         </div>
 
         <h1 className="font-black text-2xl text-white font-heading tracking-tight">
-          {districtName} ({location.il}) Eskort İlanları & Rehberi
+          {districtName} Eskort & Escort İlanları
         </h1>
 
-        <p className="text-xs text-[#8b949e] leading-relaxed">
-          {location.il} ili {districtName} ilçesinde hizmet veren doğrulanmış eskort bayanlar, bağımsız profiller ve doğrudan WhatsApp iletişim hatları.
+        <p className="text-xs text-[#8b949e] leading-relaxed max-w-xl font-medium">
+          {location.il} ili {districtName} ilçesindeki tüm doğrulanmış eskort ve escort bayan profilleri. Bağımsız ilanlar, VIP vitrin ve doğrudan WhatsApp iletişim hatları.
         </p>
       </div>
 
@@ -197,7 +193,7 @@ export default async function DistrictPage({ params }: Props) {
                 {districtName} ({location.il}) Bölgesinde İlan Bulunmuyor
               </h3>
               <p className="text-xs text-[#8b949e] max-w-xs">
-                {districtName} bölgesindeki binlerce müşteriye ulaşmak için ilk ilanı siz oluşturun!
+                {districtName} bölgesindeki müşterilere ulaşmak için ilk ilanı hemen oluşturun!
               </p>
             </div>
             <Link
@@ -210,21 +206,28 @@ export default async function DistrictPage({ params }: Props) {
         )}
       </div>
 
-      {/* RICH LOCAL SEO TEXT CONTENT (Prevents Google Thin Content Penalty) */}
-      <div className="mt-4 p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
+      {/* ── GOOGLE RICH SNIPPET FAQ ACCORDION ──────────────── */}
+      <FaqAccordion
+        title={`${districtName} Eskort Rehberi — Sıkça Sorulan Sorular`}
+        items={faqItems}
+      />
+
+      {/* ── RICH LOCAL SEO CONTENT & NEIGHBORING DISTRICTS ──────────────── */}
+      <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
         <h3 className="font-black text-sm text-white font-heading flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-amber-400" />
-          <span>{districtName} Bölgesel Pazarlama Hakkında</span>
+          <span>{districtName} Bölgesel Eskort Rehberi Hakkında</span>
         </h3>
 
         <p className="text-xs text-[#8b949e] leading-relaxed font-medium">
-          Best Eskort platformu; {location.il} iline bağlı {districtName} ilçesinde en yüksek Google arama görünürlüğünü sağlar. {districtName} genelindeki güncel bölgesel fırsatlar, ilanlar ve temsilci iletişim hatları 7/24 kesintisiz olarak yayınlanır.
+          Best Eskort platformu; {location.il} iline bağlı {districtName} ilçesinde en yüksek Google arama görünürlüğünü sağlar. {districtName} eskort ve escort bayan profilleri, doğrulanmış WhatsApp numaraları ve bağımsız hizmet seçenekleri 7/24 kesintisiz olarak yayınlanır.
         </p>
 
         {/* Neighboring Districts Internal Linking Matrix for Googlebot */}
         {otherDistricts.length > 0 && (
           <div className="pt-3 border-t border-[#30363d] flex flex-col gap-2">
-            <span className="text-[11px] font-extrabold text-white font-heading">
+            <span className="text-[11px] font-extrabold text-white font-heading flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-amber-400" />
               {location.il} İlinin Diğer İlgili İlçeleri:
             </span>
             <div className="flex flex-wrap gap-2 text-xs">
@@ -234,7 +237,7 @@ export default async function DistrictPage({ params }: Props) {
                   href={`/${location.ilSlug}/${d.slug}`}
                   className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-amber-400 font-bold border border-[#363b42] transition-colors"
                 >
-                  {d.ad} İlanları
+                  {d.ad} Eskort
                 </Link>
               ))}
             </div>

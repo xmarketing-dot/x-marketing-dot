@@ -3,9 +3,11 @@ import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { MapPin, Sparkles } from 'lucide-react';
+import { MapPin, Sparkles, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
+import FaqAccordion from '@/components/seo/FaqAccordion';
+import { generateLocationFaq, generateFaqSchema, generateBreadcrumbSchema } from '@/lib/seoData';
 
 interface Props {
   params: Promise<{ il: string }>;
@@ -31,28 +33,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = `${siteUrl}/${location.ilSlug}`;
 
   return {
-    title: `${location.il} Eskort İlanları & Escort Rehberi | Best Eskort`,
-    description: `${location.il} ilindeki tüm doğrulanmış güncel eskort ve escort ilanları ve doğrudan WhatsApp iletişim numaraları.`,
+    title: `${location.il} Eskort & Escort Bayan İlanları (2026 Teyitli) | Best Eskort`,
+    description: `${location.il} eskort ve escort bayan ilanları. Doğrulanmış bağımsız eskort profilleri, VIP vitrin, doğrudan WhatsApp numaraları ve güncel ${location.il} eskort rehberi.`,
     keywords: [
       `${location.il} eskort`,
       `${location.il} escort`,
-      `${location.il} eskort ilanları`,
-      `${location.il} escort ilanları`,
       `${location.il} eskort bayan`,
       `${location.il} escort bayan`,
+      `${location.il} eskort ilanları`,
+      `${location.il} escort ilanları`,
       `${location.il} bağımsız eskort`,
       `${location.il} vip eskort`,
       `${location.il} vip escort`,
       `${location.il} whatsapp eskort`,
-      `${location.il} whatsapp escort`,
+      `${location.il} eve gelen eskort`,
+      `${location.il} otele gelen escort`,
+      `${location.il} eskort numaraları`,
     ],
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${location.il} Eskort & Escort İlanları | Best Eskort`,
-      description: `${location.il} genelinde teyitli eskort ilanları ve WhatsApp hatları.`,
+      title: `${location.il} Eskort & Escort Bayan İlanları | Best Eskort`,
+      description: `${location.il} genelinde teyitli eskort ilanları ve WhatsApp iletişim hatları.`,
       url: canonicalUrl,
+      type: 'website',
+      locale: 'tr_TR',
+      siteName: 'Best Eskort',
       images: [
         {
           url: `${siteUrl}/api/og/site`,
@@ -85,33 +92,26 @@ export default async function CityPage({ params }: Props) {
 
   const siteUrl = getSiteUrl();
 
-  // Schema.org BreadcrumbList for Googlebot
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Anasayfa',
-        item: siteUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: `${location.il} Eskort İlanları`,
-        item: `${siteUrl}/${location.ilSlug}`,
-      },
-    ],
-  };
+  // 1. Breadcrumb Schema
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Anasayfa', url: siteUrl },
+    { name: `${location.il} Eskort`, url: `${siteUrl}/${location.ilSlug}` },
+  ]);
+
+  // 2. FAQ Schema for Rich Snippets
+  const faqItems = generateLocationFaq(location.il);
+  const faqSchema = generateFaqSchema(faqItems);
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full text-left">
-      
-      {/* Googlebot Schema.org Script */}
+      {/* Googlebot Schema.org Structured Data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
       {/* ── 1. HERO BAŞLIK & İSTATİSTİK ──────────────── */}
@@ -121,10 +121,10 @@ export default async function CityPage({ params }: Props) {
           <span>Bölgesel İlan Rehberi</span>
         </div>
         <h1 className="font-heading font-black text-2xl sm:text-3xl text-white">
-          {location.il} Eskort İlanları
+          {location.il} Eskort & Escort İlanları
         </h1>
         <p className="text-xs text-[#8b949e] leading-relaxed max-w-2xl font-medium">
-          {location.il} merkez ve tüm ilçelerindeki doğrulanmış eskort ve escort bayan ilanları, bağımsız profiller ve VIP vitrin seçenekleri.
+          {location.il} ili ve tüm ilçelerindeki doğrulanmış eskort ve escort bayan profilleri. VIP vitrin, bağımsız bayanlar ve doğrudan WhatsApp irtibat hatları.
         </p>
 
         {/* İlçe Hapları */}
@@ -147,9 +147,9 @@ export default async function CityPage({ params }: Props) {
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-400" />
-          <span className="font-heading font-bold text-sm text-white">
-            {location.il} İlanları ({listings.length})
-          </span>
+          <h2 className="font-heading font-bold text-sm text-white">
+            {location.il} Güncel İlanları ({listings.length})
+          </h2>
         </div>
         <span className="text-xs text-[#8b949e] font-mono">
           Aktif Yayınlar
@@ -179,16 +179,35 @@ export default async function CityPage({ params }: Props) {
         </div>
       )}
 
-      {/* ── 3. SEO FOOTER METNİ ──────────────── */}
-      <footer className="p-6 rounded-[28px] bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col gap-3 text-xs text-[#8b949e] leading-relaxed">
-        <h2 className="font-bold text-sm text-white font-heading">
-          {location.il} Eskort Hizmetleri Hakkında
-        </h2>
-        <p>
-          {location.il} genelinde hizmet veren bağımsız ve VIP eskort profillerine Best Eskort güvencesiyle ulaşabilirsiniz. İlan detaylarındaki doğrulanmış fotoğrafları inceleyebilir ve WhatsApp üzerinden güvenle randevu oluşturabilirsiniz.
-        </p>
-      </footer>
+      {/* ── 3. GOOGLE RICH SNIPPET FAQ ACCORDION ──────────────── */}
+      <FaqAccordion
+        title={`${location.il} Eskort Rehberi — Sıkça Sorulan Sorular`}
+        items={faqItems}
+      />
 
+      {/* ── 4. TÜM İLÇELER İÇ LİNK AĞI (Googlebot Internal Linking) ──────────────── */}
+      {location.ilceler && location.ilceler.length > 0 && (
+        <div className="p-6 rounded-[28px] bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col gap-3">
+          <h3 className="font-bold text-sm text-white font-heading flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-amber-400" />
+            <span>{location.il} İlçelerine Göre Eskort İlanları</span>
+          </h3>
+          <p className="text-xs text-[#8b949e] leading-relaxed">
+            Aşağıdaki bağlantılardan {location.il} iline bağlı tüm ilçelerin özel eskort ve escort bayan profillerini inceleyebilirsiniz:
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2 text-xs">
+            {location.ilceler.map((ilce: any) => (
+              <Link
+                key={ilce.slug}
+                href={`/${location.ilSlug}/${ilce.slug}`}
+                className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 font-bold border border-[#363b42] transition-colors"
+              >
+                {location.il} {ilce.ad} Eskort
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
