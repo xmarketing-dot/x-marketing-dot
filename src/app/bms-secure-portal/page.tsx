@@ -19,7 +19,7 @@ export default function BmsSecurePortalDashboard() {
   const [listingSearchTerm, setListingSearchTerm] = useState('');
   const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'x'>('views');
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'search_terms' | 'live_visitors'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'listings' | 'live_visitors'>('overview');
 
   useEffect(() => {
     fetchAnalytics();
@@ -185,7 +185,6 @@ export default function BmsSecurePortalDashboard() {
         {[
           { id: 'overview', label: '📊 Genel Bakış', count: null },
           { id: 'listings', label: '👑 İlan Performans & Referrer', count: filteredListings.length },
-          { id: 'search_terms', label: '🔍 Arama Kelimeleri & Top İlanlar', count: searchTerms.length },
           { id: 'live_visitors', label: '⚡ Canlı Ziyaretçi Günlüğü', count: recentVisitors.length },
         ].map((tab) => (
           <button
@@ -511,6 +510,54 @@ export default function BmsSecurePortalDashboard() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* En Çok WhatsApp & Etkileşim Alan İlanlar (Top İlanlar) */}
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <div className="flex items-center gap-2">
+                <Flame className="w-5 h-5 text-amber-400" />
+                <h2 className="font-black text-base text-white font-heading">
+                  En Çok WhatsApp &amp; Etkileşim Alan İlanlar
+                </h2>
+              </div>
+              <span className="text-xs text-emerald-400 font-bold">Top İlanlar</span>
+            </div>
+
+            {topContactedListings.length === 0 ? (
+              <div className="p-8 text-center text-xs text-[#8b949e]">
+                Bu tarih aralığında henüz ilan etkileşim verisi bulunmuyor.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {topContactedListings.map((item: any, idx: number) => (
+                  <div 
+                    key={idx}
+                    className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-3 hover:border-amber-500/40 transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
+                        #{idx + 1}
+                      </span>
+                      <span className="font-bold text-xs text-white truncate font-heading">
+                        {item._id || 'İsimsiz İlan'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-black font-heading flex items-center gap-1">
+                        <OfficialWhatsAppIcon className="w-3 h-3 fill-emerald-300" />
+                        {item.whatsappClicks || 0}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 text-[11px] font-black font-heading flex items-center gap-1">
+                        <Share2 className="w-3 h-3" />
+                        {item.shares || 0}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>
@@ -946,103 +993,7 @@ export default function BmsSecurePortalDashboard() {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── SEKME 3: ARAMA TERİMLERİ & POPÜLERLİK ───────────────────────────── */}
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      {activeTab === 'search_terms' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeIn">
-          
-          {/* Arama Terimleri ("Ne Aramışlar?") */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
-              <div className="flex items-center gap-2">
-                <Search className="w-5 h-5 text-amber-400" />
-                <h2 className="font-black text-base text-white font-heading">
-                  Arama Terimleri (Ne Aramışlar?)
-                </h2>
-              </div>
-              <span className="text-xs text-[#8b949e] font-mono">{searchTerms.length} Terim</span>
-            </div>
 
-            {searchTerms.length === 0 ? (
-              <div className="p-8 text-center text-xs text-[#8b949e]">
-                Bu tarih aralığında henüz özel bir arama kelimesi kaydedilmedi.
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2 max-h-[480px] overflow-y-auto pr-1">
-                {searchTerms.map((term: any, idx: number) => (
-                  <div 
-                    key={idx}
-                    className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-6 h-6 rounded-lg bg-[#21262d] text-amber-400 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
-                        #{idx + 1}
-                      </span>
-                      <span className="font-bold text-xs text-white truncate">
-                        "{term._id}"
-                      </span>
-                    </div>
-
-                    <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-400 font-black text-xs shrink-0 font-heading">
-                      {term.count} Kez
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* En Çok WhatsApp & Etkileşim Alan İlanlar */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-amber-400" />
-                <h2 className="font-black text-base text-white font-heading">
-                  En Çok WhatsApp &amp; Etkileşim Alan İlanlar
-                </h2>
-              </div>
-              <span className="text-xs text-emerald-400 font-bold">Top İlanlar</span>
-            </div>
-
-            {topContactedListings.length === 0 ? (
-              <div className="p-8 text-center text-xs text-[#8b949e]">
-                Bu tarih aralığında henüz ilan etkileşim verisi bulunmuyor.
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2.5 max-h-[480px] overflow-y-auto pr-1">
-                {topContactedListings.map((item: any, idx: number) => (
-                  <div 
-                    key={idx}
-                    className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
-                        #{idx + 1}
-                      </span>
-                      <span className="font-bold text-xs text-white truncate font-heading">
-                        {item._id || 'İsimsiz İlan'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-black font-heading flex items-center gap-1">
-                        <OfficialWhatsAppIcon className="w-3 h-3 fill-emerald-300" />
-                        {item.whatsappClicks || 0}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 text-[11px] font-black font-heading flex items-center gap-1">
-                        <Share2 className="w-3 h-3" />
-                        {item.shares || 0}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-        </div>
-      )}
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* ── SEKME 4: CANLI VE DETAYLI ZİYARETÇİ LOGLARI (SON 100 İSTEK) ─────── */}

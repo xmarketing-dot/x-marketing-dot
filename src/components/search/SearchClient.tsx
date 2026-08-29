@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Search, Sparkles, X } from 'lucide-react';
 import CompactListingCard from '@/components/common/CompactListingCard';
@@ -15,7 +15,6 @@ export default function SearchClient({ locations, initialListings, initialQuery 
   const [query, setQuery] = useState(initialQuery);
   const [selectedIl, setSelectedIl] = useState('');
   const [selectedTier, setSelectedTier] = useState('all');
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Turkish character normalization + synonym matching
   const normalize = (str: string) => {
@@ -59,39 +58,6 @@ export default function SearchClient({ locations, initialListings, initialQuery 
 
     return result;
   }, [query, selectedIl, selectedTier, initialListings]);
-
-  // Arama terimini hem URL'e yansıt hem de analitik veritabanına kaydet
-  useEffect(() => {
-    const trimmed = query.trim();
-    if (trimmed.length < 2) return;
-
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    debounceTimerRef.current = setTimeout(() => {
-      // 1. URL'i güncelle (Sayfayı yenilemeden query string ekle)
-      if (typeof window !== 'undefined') {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set('q', trimmed);
-        window.history.replaceState({}, '', newUrl.toString());
-
-        // 2. Analitik etkinliğini kaydet
-        if (window.trackEvent) {
-          window.trackEvent('search', {
-            targetTitle: trimmed,
-            path: `/ara?q=${encodeURIComponent(trimmed)}`,
-            metadata: {
-              resultCount: filteredListings.length,
-              city: selectedIl || 'all',
-              tier: selectedTier || 'all',
-            },
-          });
-        }
-      }
-    }, 800);
-
-    return () => {
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    };
-  }, [query, filteredListings.length, selectedIl, selectedTier]);
 
   return (
     <div className="flex flex-col gap-6">
