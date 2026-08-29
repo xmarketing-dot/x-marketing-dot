@@ -38,6 +38,25 @@ export async function GET(
       if (match) {
         inputBuffer = Buffer.from(match[2], 'base64');
       }
+    } else if (photoUrl && photoUrl.startsWith('/')) {
+      // Local uploaded image file
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const localPath = path.join(process.cwd(), 'public', photoUrl);
+        if (fs.existsSync(localPath)) {
+          inputBuffer = fs.readFileSync(localPath);
+        } else {
+          const { getSiteUrl } = await import('@/lib/siteUrl');
+          const fullUrl = `${getSiteUrl()}${photoUrl}`;
+          const imageRes = await fetch(fullUrl);
+          if (imageRes.ok) {
+            inputBuffer = Buffer.from(await imageRes.arrayBuffer());
+          }
+        }
+      } catch (fsErr) {
+        console.error('Error reading local photo in OG route:', fsErr);
+      }
     } else if (photoUrl && (photoUrl.startsWith('http://') || photoUrl.startsWith('https://'))) {
       try {
         const imageRes = await fetch(photoUrl, {

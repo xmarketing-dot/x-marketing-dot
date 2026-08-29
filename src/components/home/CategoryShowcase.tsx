@@ -134,22 +134,12 @@ export default function CategoryShowcase({
                 </span>
               </div>
 
-              {/* ALT: Vitrin Başlık Kartı */}
-              <div className="relative z-20 flex flex-col gap-0.5 p-2 sm:p-2.5 rounded-2xl bg-black/75 backdrop-blur-xl border border-white/15 shadow-xl group-hover:border-amber-400/50 transition-colors">
-                <span className="text-[8px] sm:text-[9px] font-extrabold text-amber-400 uppercase tracking-wider font-heading leading-tight truncate">
-                  {cat.ribbonText}
-                </span>
-
-                <span className="font-black text-[12px] sm:text-[13px] text-white font-heading tracking-tight leading-tight group-hover:text-amber-300 transition-colors truncate">
+              {/* ALT: Temiz, kartı kapatmayan sade başlık */}
+              <div className="relative z-20 flex items-center justify-between w-full">
+                <span className="font-black text-xs sm:text-sm text-white font-heading tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                   {cat.title}
                 </span>
-
-                <div className="flex items-center justify-between mt-1 pt-1 border-t border-white/10">
-                  <span className="text-[8px] sm:text-[9px] text-[#8b949e] font-semibold truncate">
-                    {cat.tagline}
-                  </span>
-                  <ChevronRight className="w-3 h-3 text-amber-400 group-hover:translate-x-1 transition-transform shrink-0" />
-                </div>
+                <ChevronRight className="w-3.5 h-3.5 text-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] group-hover:translate-x-1 transition-transform shrink-0" />
               </div>
             </Link>
           );
