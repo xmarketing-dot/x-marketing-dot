@@ -101,6 +101,18 @@ export default function BmsSecurePortalDashboard() {
       return (b.totalViews || 0) - (a.totalViews || 0);
     });
 
+  const totals = React.useMemo(() => {
+    let fb = 0, google = 0, x = 0, waClicks = 0, shares = 0;
+    (detailedListingReports as any[]).forEach((item: any) => {
+      fb += item.referrers?.facebook || 0;
+      google += item.referrers?.google || 0;
+      x += item.referrers?.x || 0;
+      waClicks += item.whatsappClicks || 0;
+      shares += item.shares || 0;
+    });
+    return { fb, google, x, waClicks, shares };
+  }, [detailedListingReports]);
+
   const filteredVisitors = recentVisitors.filter((v: any) => {
     if (!searchTermFilter) return true;
     const term = searchTermFilter.toLowerCase();
@@ -586,24 +598,31 @@ export default function BmsSecurePortalDashboard() {
             <Filter className="w-3.5 h-3.5" /> Sırala:
           </span>
           {[
-            { id: 'views', label: '👁️ En Çok Görüntülenen' },
-            { id: 'whatsapp', label: '💬 En Çok WhatsApp Tıklaması' },
-            { id: 'ctr', label: '🎯 En Yüksek Dönüşüm (%)' },
-            { id: 'facebook', label: '🟦 Facebook Trafiği' },
-            { id: 'x', label: '🐦 X (Twitter) Trafiği' },
-            { id: 'google', label: '🔍 Google Trafiği' },
-            { id: 'shares', label: '🔗 En Çok Paylaşılan' },
+            { id: 'views', label: '👁️ En Çok Görüntülenen', count: null },
+            { id: 'whatsapp', label: '💬 WhatsApp Tıklaması', count: totals.waClicks },
+            { id: 'ctr', label: '🎯 Dönüşüm Oranı (%)', count: null },
+            { id: 'facebook', label: '🟦 Facebook Trafiği', count: totals.fb },
+            { id: 'x', label: '🐦 X (Twitter) Trafiği', count: totals.x },
+            { id: 'google', label: '🔍 Google Trafiği', count: totals.google },
+            { id: 'shares', label: '🔗 Paylaşım', count: totals.shares },
           ].map((btn) => (
             <button
               key={btn.id}
               onClick={() => setListingSortBy(btn.id as any)}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 flex items-center gap-1.5 ${
                 listingSortBy === btn.id
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 scale-[1.02]'
                   : 'bg-[#0d1117] text-[#8b949e] hover:text-white border border-[#30363d]'
               }`}
             >
-              {btn.label}
+              <span>{btn.label}</span>
+              {btn.count !== null && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono font-black ${
+                  listingSortBy === btn.id ? 'bg-slate-950/30 text-slate-950' : 'bg-[#21262d] text-[#8b949e]'
+                }`}>
+                  {btn.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -619,10 +638,58 @@ export default function BmsSecurePortalDashboard() {
               <thead>
                 <tr className="border-b border-[#30363d] bg-[#161b22] text-[#8b949e] font-heading font-black text-[11px]">
                   <th className="py-3 px-4">İLAN BİLGİSİ</th>
-                  <th className="py-3 px-3">GÖRÜNTÜLENME</th>
-                  <th className="py-3 px-3">WHATSAPP &amp; DÖNÜŞÜM</th>
-                  <th className="py-3 px-3">PAYLAŞIM</th>
-                  <th className="py-3 px-3">TRAFİK KAYNAKLARI (REFERRER)</th>
+                  
+                  <th 
+                    className="py-3 px-3 cursor-pointer hover:text-white transition-colors select-none"
+                    onClick={() => setListingSortBy('views')}
+                    title="Görüntülenmeye göre sırala"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>GÖRÜNTÜLENME</span>
+                      {listingSortBy === 'views' && <span className="text-amber-400 font-black">▼</span>}
+                    </div>
+                  </th>
+
+                  <th 
+                    className="py-3 px-3 cursor-pointer hover:text-white transition-colors select-none"
+                    onClick={() => setListingSortBy(listingSortBy === 'whatsapp' ? 'ctr' : 'whatsapp')}
+                    title="WhatsApp ve Dönüşüm oranına göre sırala"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>WHATSAPP &amp; DÖNÜŞÜM</span>
+                      {listingSortBy === 'whatsapp' && <span className="text-amber-400 font-black">▼ (TIKLAMA)</span>}
+                      {listingSortBy === 'ctr' && <span className="text-amber-400 font-black">▼ (% CTR)</span>}
+                    </div>
+                  </th>
+
+                  <th 
+                    className="py-3 px-3 cursor-pointer hover:text-white transition-colors select-none"
+                    onClick={() => setListingSortBy('shares')}
+                    title="Paylaşıma göre sırala"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>PAYLAŞIM</span>
+                      {listingSortBy === 'shares' && <span className="text-amber-400 font-black">▼</span>}
+                    </div>
+                  </th>
+
+                  <th 
+                    className="py-3 px-3 cursor-pointer hover:text-white transition-colors select-none"
+                    onClick={() => {
+                      if (listingSortBy === 'facebook') setListingSortBy('google');
+                      else if (listingSortBy === 'google') setListingSortBy('x');
+                      else setListingSortBy('facebook');
+                    }}
+                    title="Trafik kaynaklarına göre sırala"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span>TRAFİK KAYNAKLARI (REFERRER)</span>
+                      {listingSortBy === 'facebook' && <span className="text-indigo-400 font-black">▼ (FB)</span>}
+                      {listingSortBy === 'google' && <span className="text-blue-400 font-black">▼ (GOOGLE)</span>}
+                      {listingSortBy === 'x' && <span className="text-cyan-400 font-black">▼ (X)</span>}
+                    </div>
+                  </th>
+
                   <th className="py-3 px-4 text-right">DETAY &amp; LİNK</th>
                 </tr>
               </thead>

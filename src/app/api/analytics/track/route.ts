@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
+import ListingModel from '@/models/Listing';
 
 export const dynamic = 'force-dynamic';
 
@@ -141,6 +142,14 @@ export async function POST(req: NextRequest) {
       durationSeconds: 0,
       isUniqueToday,
     });
+
+    // If viewing a listing, increment listing view count
+    if (path && path.startsWith('/ilan/')) {
+      const slug = path.replace('/ilan/', '').split('?')[0].split('/')[0].trim();
+      if (slug) {
+        ListingModel.updateOne({ slug }, { $inc: { goruntulenmeSayisi: 1 } }).catch(() => {});
+      }
+    }
 
     return NextResponse.json({ success: true, visitorId: newVisitor._id });
   } catch (error: any) {

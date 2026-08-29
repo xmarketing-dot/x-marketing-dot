@@ -118,13 +118,7 @@ export async function GET(req: Request) {
       .limit(100)
       .lean();
 
-    // ── 9. GENEL İLAN İSTATİSTİKLERİ ──
-    const listings = await ListingModel.find({}, 'goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi').lean();
-    const totalListingViews = listings.reduce((acc, l) => acc + (l.goruntulenmeSayisi || 0), 0);
-    const totalWhatsappClicks = listings.reduce((acc, l) => acc + (l.whatsappTiklamaSayisi || 0), 0);
-    const totalShares = listings.reduce((acc: number, l: any) => acc + (l.paylasimSayisi || 0), 0);
-
-    // ── 10. DETAYLI İLAN BAZLI ANALİZ VE REFERRER DAĞILIMI ──
+    // ── 9. DETAYLI İLAN BAZLI ANALİZ VE REFERRER DAĞILIMI ──
     const listingVisitorsAgg = await AnalyticsVisitorModel.aggregate([
       { 
         $match: { 
@@ -134,7 +128,7 @@ export async function GET(req: Request) {
       },
       {
         $group: {
-          _id: "$path",
+          _id: { $toLower: { $arrayElemAt: [{ $split: ["$path", "?"] }, 0] } },
           periodViews: { $sum: 1 },
           uniqueVisitors: { $addToSet: "$visitorId" },
           googleReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "google"] }, 1, 0] } },
@@ -160,7 +154,7 @@ export async function GET(req: Request) {
       },
       {
         $group: {
-          _id: "$path",
+          _id: { $toLower: { $arrayElemAt: [{ $split: ["$path", "?"] }, 0] } },
           whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "whatsapp_click"] }, 1, 0] } },
           shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
         }
@@ -169,38 +163,51 @@ export async function GET(req: Request) {
 
     const visitorStatsByPath: Record<string, any> = {};
     listingVisitorsAgg.forEach((item) => {
-      const cleanPath = (item._id || '').split('?')[0].toLowerCase();
-      visitorStatsByPath[cleanPath] = {
-        periodViews: item.periodViews,
-        uniqueVisitorsCount: (item.uniqueVisitors || []).length,
-        referrers: {
-          google: item.googleReferrals,
-          facebook: item.facebookReferrals,
-          x: item.twitterReferrals,
-          whatsapp: item.whatsappReferrals,
-          instagram: item.instagramReferrals,
-          direct: item.directReferrals,
-          other: item.otherReferrals,
-        },
-        rawReferrers: (item.rawReferrers || [])
-          .filter((r: string) => r && r !== 'Direct' && !r.includes('besteskort') && !r.includes('localhost'))
-          .slice(0, 8),
-        lastVisitedAt: item.lastVisitedAt,
-      };
+      const cleanPath = (item._id || '').trim().toLowerCase().replace(/\/$/, '');
+      if (!visitorStatsByPath[cleanPath]) {
+        visitorStatsByPath[cleanPath] = {
+          periodViews: 0,
+          uniqueVisitorsCount: 0,
+          referrers: { google: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
+          rawReferrers: [],
+          lastVisitedAt: null,
+        };
+      }
+      visitorStatsByPath[cleanPath].periodViews += (item.periodViews || 0);
+      visitorStatsByPath[cleanPath].uniqueVisitorsCount += (item.uniqueVisitors || []).length;
+      visitorStatsByPath[cleanPath].referrers.google += (item.googleReferrals || 0);
+      visitorStatsByPath[cleanPath].referrers.facebook += (item.facebookReferrals || 0);
+      visitorStatsByPath[cleanPath].referrers.x += (item.twitterReferrals || 0);
+      visitorStatsByPath[cleanPath].referrers.whatsapp += (item.whatsappReferrals || 0);
+      visitorStatsByPath[cleanPath].referrers.instagram += (item.instagramReferrals || 0);
+      visitorStatsByPath[cleanPath].referrers.direct += (item.directReferrals || 0);
+      visitorStatsByPath[cleanPath].referrers.other += (item.otherReferrals || 0);
+
+      const filteredRaw = (item.rawReferrers || [])
+        .filter((r: string) => {
+          if (!r || r === 'Direct' || r === 'Google Search') return false;
+          const rLow = r.toLowerCase();
+          return !rLow.includes('besteskort') && !rLow.includes('bestescort') && !rLow.includes('localhost');
+        });
+      visitorStatsByPath[cleanPath].rawReferrers.push(...filteredRaw);
+
+      if (item.lastVisitedAt && (!visitorStatsByPath[cleanPath].lastVisitedAt || item.lastVisitedAt > visitorStatsByPath[cleanPath].lastVisitedAt)) {
+        visitorStatsByPath[cleanPath].lastVisitedAt = item.lastVisitedAt;
+      }
     });
 
     const eventStatsByPath: Record<string, any> = {};
     listingEventsAgg.forEach((item) => {
-      const cleanPath = (item._id || '').split('?')[0].toLowerCase();
-      eventStatsByPath[cleanPath] = {
-        whatsappClicks: item.whatsappClicks,
-        shares: item.shares,
-      };
+      const cleanPath = (item._id || '').trim().toLowerCase().replace(/\/$/, '');
+      if (!eventStatsByPath[cleanPath]) {
+        eventStatsByPath[cleanPath] = { whatsappClicks: 0, shares: 0 };
+      }
+      eventStatsByPath[cleanPath].whatsappClicks += (item.whatsappClicks || 0);
+      eventStatsByPath[cleanPath].shares += (item.shares || 0);
     });
 
     const rawListings = await ListingModel.find({})
       .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf.url goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi status createdAt')
-      .sort({ goruntulenmeSayisi: -1 })
       .lean();
 
     const detailedListingReports = rawListings.map((l: any) => {
@@ -241,10 +248,14 @@ export async function GET(req: Request) {
         shares: totalListingShares,
         conversionRate,
         referrers: vStats.referrers,
-        rawReferrers: vStats.rawReferrers,
+        rawReferrers: Array.from(new Set(vStats.rawReferrers || [])),
         lastVisitedAt: vStats.lastVisitedAt,
       };
     });
+
+    const totalListingViews = detailedListingReports.reduce((acc: number, item: any) => acc + item.totalViews, 0);
+    const totalWhatsappClicks = detailedListingReports.reduce((acc: number, item: any) => acc + item.whatsappClicks, 0);
+    const totalShares = detailedListingReports.reduce((acc: number, item: any) => acc + item.shares, 0);
 
     return NextResponse.json({
       analytics: {
