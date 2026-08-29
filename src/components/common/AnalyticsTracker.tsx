@@ -86,7 +86,15 @@ export default function AnalyticsTracker() {
 
     // Parse Search and Source Parameters from window.location.search
     const params = new URLSearchParams(currentSearch);
-    let searchKeyword = params.get('q') || params.get('query') || params.get('search') || params.get('utm_term') || '';
+    const rawKeyword = params.get('q') || params.get('query') || params.get('search') || params.get('utm_term') || params.get('keyword') || params.get('kw') || params.get('kelime') || params.get('arama') || '';
+    let searchKeyword = '';
+    if (rawKeyword) {
+      try {
+        searchKeyword = decodeURIComponent(rawKeyword).trim();
+      } catch (e) {
+        searchKeyword = rawKeyword.trim();
+      }
+    }
     const utmSource = params.get('utm_source') || '';
     const utmMedium = params.get('utm_medium') || '';
     const utmCampaign = params.get('utm_campaign') || '';
@@ -95,7 +103,8 @@ export default function AnalyticsTracker() {
     if (!searchKeyword && referer.includes('google.')) {
       try {
         const refUrl = new URL(referer);
-        searchKeyword = refUrl.searchParams.get('q') || '';
+        const gQ = refUrl.searchParams.get('q') || '';
+        if (gQ) searchKeyword = decodeURIComponent(gQ).trim();
       } catch (e) {}
     }
 

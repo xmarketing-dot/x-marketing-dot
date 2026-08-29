@@ -20,7 +20,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function SearchPage() {
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ q?: string }>;
+}) {
+  const resolvedParams = searchParams ? await searchParams : {};
+  const initialQuery = resolvedParams?.q || '';
   const [locations, allListings] = await Promise.all([
     getAllLocations(),
     getListings({ limit: 200 }),
@@ -28,7 +34,7 @@ export default async function SearchPage() {
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-6 pb-20 flex flex-col gap-6">
-      <SearchClient locations={locations} initialListings={allListings} />
+      <SearchClient locations={locations} initialListings={allListings} initialQuery={initialQuery} />
     </div>
   );
 }

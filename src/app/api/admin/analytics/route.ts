@@ -37,7 +37,8 @@ export async function GET(req: Request) {
       summaryAggResult,
       distinctVisitors,
       activeUsersList,
-      searchTerms,
+      searchTermsVisitors,
+      searchTermsEvents,
       popularPages,
       topCities,
       eventStats,
@@ -71,12 +72,19 @@ export async function GET(req: Request) {
       AnalyticsVisitorModel.distinct('visitorId', dateQuery),
       // 3. Aktif Kullanıcılar (Son 5 dk)
       AnalyticsVisitorModel.distinct('visitorId', { createdAt: { $gte: fiveMinutesAgo } }),
-      // 4. Arama Terimleri
+      // 4. Arama Terimleri (Ziyaretçi Referrer & URL)
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, searchKeyword: { $exists: true, $ne: '' } } },
         { $group: { _id: "$searchKeyword", count: { $sum: 1 }, lastSeen: { $max: "$createdAt" } } },
         { $sort: { count: -1 } },
-        { $limit: 15 },
+        { $limit: 25 },
+      ]),
+      // 4.5. Arama Terimleri (Canlı Site İçi Arama Kutusu Eventleri)
+      AnalyticsEventModel.aggregate([
+        { $match: { ...dateQuery, eventType: 'search', targetTitle: { $exists: true, $ne: '' } } },
+        { $group: { _id: "$targetTitle", count: { $sum: 1 }, lastSeen: { $max: "$createdAt" } } },
+        { $sort: { count: -1 } },
+        { $limit: 25 },
       ]),
       // 5. Popüler Sayfalar
       AnalyticsVisitorModel.aggregate([
@@ -179,6 +187,26 @@ export async function GET(req: Request) {
     const activeUsers = activeUsersList.length;
     const mobileCount = summary.mobileCount || 0;
     const desktopCount = summary.desktopCount || 0;
+
+    // Arama Terimlerini Birleştir (Ziyaretçi Referrer/URL + Canlı Arama Kutusu Etkinlikleri)
+    const mergedSearchMap: Record<string, { count: number; lastSeen: any }> = {};
+    [...searchTermsVisitors, ...searchTermsEvents].forEach((item: any) => {
+      const term = (item._id || '').trim();
+      if (!term || term.length < 2) return;
+      const lower = term.toLowerCase();
+      if (!mergedSearchMap[lower]) {
+        mergedSearchMap[lower] = { count: 0, lastSeen: item.lastSeen };
+      }
+      mergedSearchMap[lower].count += (item.count || 1);
+      if (item.lastSeen && (!mergedSearchMap[lower].lastSeen || new Date(item.lastSeen) > new Date(mergedSearchMap[lower].lastSeen))) {
+        mergedSearchMap[lower].lastSeen = item.lastSeen;
+      }
+    });
+
+    const searchTerms = Object.entries(mergedSearchMap)
+      .map(([term, data]) => ({ _id: term, count: data.count, lastSeen: data.lastSeen }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20);
 
     const eventCounts: Record<string, number> = {};
     eventStats.forEach((e: any) => {
