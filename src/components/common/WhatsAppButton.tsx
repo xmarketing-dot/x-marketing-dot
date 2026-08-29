@@ -45,11 +45,9 @@ export default function WhatsAppButton({
     : 'https://besteskort.devs.surf';
   const fullUrl = slug ? `${origin}/ilan/${slug}` : (typeof window !== 'undefined' ? window.location.href : origin);
 
-  const locTitle = ilce 
-    ? `${ilce} Eskort` 
-    : il 
-    ? `${il} Eskort` 
-    : '';
+  const locTitle = il && ilce && il.toLowerCase() !== ilce.toLowerCase()
+    ? `${il} - ${ilce} Eskort`
+    : (ilce ? `${ilce} Eskort` : (il ? `${il} Eskort` : ''));
 
   const adLabel = locTitle ? `${locTitle} — ${baslik}` : baslik;
   const defaultMsg = `Merhaba, ben ${fullUrl} adresindeki "${adLabel}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;

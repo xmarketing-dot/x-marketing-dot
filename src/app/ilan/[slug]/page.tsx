@@ -130,7 +130,10 @@ export default async function ListingDetailPage({ params }: Props) {
   // WhatsApp URL for Sticky Bar (Supports Turkish & International Numbers)
   const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
   const listingFullUrl = `${siteUrl}/ilan/${listing.slug}`;
-  const prefilledMessage = `Merhaba, ben ${listingFullUrl} adresindeki "${ilceAdi} Eskort — ${listing.baslik}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;
+  const locationLabel = ilAdi && ilceAdi && ilAdi.toLowerCase() !== ilceAdi.toLowerCase()
+    ? `${ilAdi} - ${ilceAdi} Eskort`
+    : `${ilceAdi || ilAdi} Eskort`;
+  const prefilledMessage = `Merhaba, ben ${listingFullUrl} adresindeki "${locationLabel} — ${listing.baslik}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;
   const waUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(prefilledMessage)}`;
 
   // Rich Schema.org JSON-LD

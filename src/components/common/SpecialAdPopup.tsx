@@ -231,9 +231,11 @@ export default function SpecialAdPopup() {
     ? window.location.origin
     : 'https://besteskort.devs.surf';
   const popupAdUrl = targetSlug ? `${popupOrigin}/ilan/${targetSlug}` : popupOrigin;
-  const popupLoc = listing?.ilceSlug 
-    ? `${listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1)} Eskort` 
-    : (listing?.ilSlug ? `${listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1)} Eskort` : '');
+  const ilName = listing?.ilSlug ? listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1) : '';
+  const ilceName = listing?.ilceSlug ? listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1) : '';
+  const popupLoc = ilName && ilceName && ilName.toLowerCase() !== ilceName.toLowerCase()
+    ? `${ilName} - ${ilceName} Eskort`
+    : (ilceName ? `${ilceName} Eskort` : (ilName ? `${ilName} Eskort` : ''));
   const popupAdLabel = popupLoc ? `${popupLoc} — ${displayTitle}` : displayTitle;
   const popupMessage = `Merhaba, ben ${popupAdUrl} adresindeki "${popupAdLabel}" özel vitrin ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;
 
