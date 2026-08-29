@@ -50,7 +50,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');
   const ilceAdi = listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' ');
 
-  const metaTitle = `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort İlanı | Best Eskort`;
+  const metaTitle = `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort İlanı`;
   const metaDescription = `${ilAdi} ${ilceAdi} bölgesinde ${listing.baslik}. %100 Teyitli profil fotoğrafları, doğrudan WhatsApp ve telefon numarası ile hemen iletişime geçin.`;
 
   return {

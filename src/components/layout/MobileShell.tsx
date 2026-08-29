@@ -158,9 +158,9 @@ export default function MobileShell({ children }: MobileShellProps) {
                 </div>
               </div>
 
-              <h1 className="font-black text-3xl lg:text-5xl text-white font-heading leading-tight tracking-tight">
+              <div className="font-black text-3xl lg:text-5xl text-white font-heading leading-tight tracking-tight">
                 Bölgesel Dijital Pazarlama ve <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-amber-200">VIP İlan Çözümleri</span>
-              </h1>
+              </div>
 
               <p className="text-base text-[#8b949e] leading-relaxed max-w-2xl">
                 81 İlde Kesintisiz İletişim, Doğrulanmış Profil Vitrinleri ve Anında Müşteri Dönüşümü. Türkiye'nin en gelişmiş bölgesel pazarlama altyapısı ile hedef kitlenize anında ulaşın.
