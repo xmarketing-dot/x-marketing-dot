@@ -44,7 +44,7 @@ function resolveDirectAtlasUri(uri: string): string | null {
         'ac-lmw0if1-shard-00-01.nj0njt0.mongodb.net:27017',
         'ac-lmw0if1-shard-00-02.nj0njt0.mongodb.net:27017',
       ].join(',');
-      return `mongodb://${user}:${pass}@${shards}/${db}?ssl=true&authSource=admin&retryWrites=true&w=majority`;
+      return `mongodb://${user}:${pass}@${shards}/${db}?ssl=true&authSource=admin&replicaSet=atlas-x07qfw-shard-0&retryWrites=true&w=majority`;
     }
   } catch (e) {}
   return null;
