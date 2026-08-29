@@ -7,7 +7,7 @@ import { MapPin, Sparkles, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import FaqAccordion from '@/components/seo/FaqAccordion';
-import { generateLocationFaq, generateFaqSchema, generateBreadcrumbSchema } from '@/lib/seoData';
+import { generateLocationFaq, generateCombinedSeoGraph, generateLocationGuide } from '@/lib/seoData';
 
 interface Props {
   params: Promise<{ il: string }>;
@@ -91,27 +91,35 @@ export default async function CityPage({ params }: Props) {
   }
 
   const siteUrl = getSiteUrl();
+  const pageUrl = `${siteUrl}/${location.ilSlug}`;
+  const pageName = `${location.il} Eskort & Escort Bayan İlanları`;
+  const pageDescription = `${location.il} genelinde teyitli eskort bayan ilanları, bağımsız VIP profiller ve WhatsApp hatları.`;
 
-  // 1. Breadcrumb Schema
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Anasayfa', url: siteUrl },
-    { name: `${location.il} Eskort`, url: `${siteUrl}/${location.ilSlug}` },
-  ]);
-
-  // 2. FAQ Schema for Rich Snippets
+  // 1. Dynamic FAQ Items (Deterministic Seed-based for uniqueness)
   const faqItems = generateLocationFaq(location.il);
-  const faqSchema = generateFaqSchema(faqItems);
+
+  // 2. Rich Local SEO Article Guide (E-E-A-T & Anti-Thin-Content)
+  const guide = generateLocationGuide(location.il);
+
+  // 3. Combined Google Schema Graph (Breadcrumbs + FAQ + ⭐⭐⭐⭐⭐ AggregateRating Stars)
+  const seoGraph = generateCombinedSeoGraph({
+    pageUrl,
+    pageName,
+    pageDescription,
+    breadcrumbs: [
+      { name: 'Anasayfa', url: siteUrl },
+      { name: `${location.il} Eskort`, url: pageUrl },
+    ],
+    faqItems,
+    itemCount: listings.length,
+  });
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full text-left">
-      {/* Googlebot Schema.org Structured Data */}
+      {/* Googlebot Schema.org Structured Data Graph */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(seoGraph) }}
       />
 
       {/* ── 1. HERO BAŞLIK & İSTATİSTİK ──────────────── */}
@@ -185,7 +193,28 @@ export default async function CityPage({ params }: Props) {
         items={faqItems}
       />
 
-      {/* ── 4. TÜM İLÇELER İÇ LİNK AĞI (Googlebot Internal Linking) ──────────────── */}
+      {/* ── 4. ZENGİN YEREL REHBER METNİ (Google Thin Content Önleyici) ──────────────── */}
+      <div className="p-6 rounded-[28px] bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col gap-4">
+        <h2 className="font-black text-sm text-white font-heading">
+          {guide.title}
+        </h2>
+        <div className="flex flex-col gap-2.5 text-xs text-[#8b949e] leading-relaxed">
+          {guide.paragraphs.map((p, idx) => (
+            <p key={idx}>{p}</p>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#21262d]">
+          {guide.bulletPoints.map((bp, idx) => (
+            <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-white">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+              <span>{bp}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 5. TÜM İLÇELER İÇ LİNK AĞI (Googlebot Internal Linking) ──────────────── */}
       {location.ilceler && location.ilceler.length > 0 && (
         <div className="p-6 rounded-[28px] bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col gap-3">
           <h3 className="font-bold text-sm text-white font-heading flex items-center gap-2">

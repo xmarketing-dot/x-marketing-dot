@@ -7,7 +7,7 @@ import { MapPin, ChevronRight, Sparkles, ShieldCheck, Globe, Building2 } from 'l
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import FaqAccordion from '@/components/seo/FaqAccordion';
-import { generateLocationFaq, generateFaqSchema, generateBreadcrumbSchema } from '@/lib/seoData';
+import { generateLocationFaq, generateCombinedSeoGraph, generateLocationGuide } from '@/lib/seoData';
 
 interface Props {
   params: Promise<{ il: string; ilce: string }>;
@@ -105,31 +105,39 @@ export default async function DistrictPage({ params }: Props) {
   const district = location.ilceler.find((d: any) => d.slug === ilceSlug);
   const districtName = district ? district.ad : ilceSlug;
   const siteUrl = getSiteUrl();
+  const pageUrl = `${siteUrl}/${location.ilSlug}/${ilceSlug}`;
+  const pageName = `${districtName} Eskort & Escort Bayan İlanları`;
+  const pageDescription = `${location.il} ${districtName} eskort ve escort bayan profilleri, doğrulanmış VIP fotoğraflar ve doğrudan WhatsApp iletişim hatları.`;
 
-  // 1. Breadcrumb Schema
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Anasayfa', url: siteUrl },
-    { name: `${location.il} Eskort`, url: `${siteUrl}/${location.ilSlug}` },
-    { name: `${districtName} Eskort`, url: `${siteUrl}/${location.ilSlug}/${ilceSlug}` },
-  ]);
-
-  // 2. FAQ Schema for Rich Snippets
+  // 1. Dynamic FAQ Items (Deterministic Seed-based for uniqueness)
   const faqItems = generateLocationFaq(location.il, districtName);
-  const faqSchema = generateFaqSchema(faqItems);
+
+  // 2. Rich Local SEO Article Guide (E-E-A-T & Anti-Thin-Content)
+  const guide = generateLocationGuide(location.il, districtName);
+
+  // 3. Combined Google Schema Graph (Breadcrumbs + FAQ + ⭐⭐⭐⭐⭐ AggregateRating Stars)
+  const seoGraph = generateCombinedSeoGraph({
+    pageUrl,
+    pageName,
+    pageDescription,
+    breadcrumbs: [
+      { name: 'Anasayfa', url: siteUrl },
+      { name: `${location.il} Eskort`, url: `${siteUrl}/${location.ilSlug}` },
+      { name: `${districtName} Eskort`, url: pageUrl },
+    ],
+    faqItems,
+    itemCount: listings.length,
+  });
 
   // Neighboring districts (excluding current)
   const otherDistricts = location.ilceler.filter((d: any) => d.slug !== ilceSlug).slice(0, 10);
 
   return (
     <div className="flex flex-col gap-6 px-4 py-4 pb-12">
-      {/* Schema.org Structured Data */}
+      {/* Schema.org Structured Data Graph */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(seoGraph) }}
       />
 
       {/* Breadcrumb Navigation for Googlebot Internal Linking */}
@@ -214,14 +222,25 @@ export default async function DistrictPage({ params }: Props) {
 
       {/* ── RICH LOCAL SEO CONTENT & NEIGHBORING DISTRICTS ──────────────── */}
       <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
-        <h3 className="font-black text-sm text-white font-heading flex items-center gap-2">
+        <h2 className="font-black text-sm text-white font-heading flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-amber-400" />
-          <span>{districtName} Bölgesel Eskort Rehberi Hakkında</span>
-        </h3>
+          <span>{guide.title}</span>
+        </h2>
 
-        <p className="text-xs text-[#8b949e] leading-relaxed font-medium">
-          Best Eskort platformu; {location.il} iline bağlı {districtName} ilçesinde en yüksek Google arama görünürlüğünü sağlar. {districtName} eskort ve escort bayan profilleri, doğrulanmış WhatsApp numaraları ve bağımsız hizmet seçenekleri 7/24 kesintisiz olarak yayınlanır.
-        </p>
+        <div className="flex flex-col gap-2.5 text-xs text-[#8b949e] leading-relaxed">
+          {guide.paragraphs.map((p, idx) => (
+            <p key={idx}>{p}</p>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-[#21262d]">
+          {guide.bulletPoints.map((bp, idx) => (
+            <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-white">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+              <span>{bp}</span>
+            </div>
+          ))}
+        </div>
 
         {/* Neighboring Districts Internal Linking Matrix for Googlebot */}
         {otherDistricts.length > 0 && (
