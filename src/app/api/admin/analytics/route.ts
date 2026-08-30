@@ -3,6 +3,7 @@ import connectToDatabase from '@/lib/mongodb';
 import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
 import AnalyticsEventModel from '@/models/AnalyticsEvent';
 import ListingModel from '@/models/Listing';
+import { resolveTargetFromHost } from '@/lib/domainHelper';
 
 export const dynamic = 'force-dynamic';
 
@@ -433,17 +434,42 @@ export async function GET(req: Request) {
       }));
 
     // ── 14. Domain Bazlı İstatistik Haritası (Çoklu Domain Gateway İstihbaratı) ──
+    const defaultGatewayDomains = [
+      'besteskort.devs.surf',
+      'istanbuleskort.devs.surf',
+      'izmireskort.devs.surf',
+      'beylikduzueskort.devs.surf',
+      'beylikduzuescort.devs.surf',
+    ];
+
     const domainStatsMap: Record<string, any> = {};
-    domainVisitorsAgg.forEach((item: any) => {
-      const d = item.domain || 'Ana Domain';
+
+    defaultGatewayDomains.forEach((d) => {
       domainStatsMap[d] = {
         domain: d,
-        uniqueVisitors: item.uniqueVisitors || 0,
-        totalPageviews: item.totalPageviews || 0,
-        mobileCount: item.mobileCount || 0,
+        uniqueVisitors: 0,
+        totalPageviews: 0,
+        mobileCount: 0,
         whatsappClicks: 0,
         conversionRate: '0.0%',
       };
+    });
+
+    domainVisitorsAgg.forEach((item: any) => {
+      const d = item.domain || 'Ana Domain';
+      if (!domainStatsMap[d]) {
+        domainStatsMap[d] = {
+          domain: d,
+          uniqueVisitors: 0,
+          totalPageviews: 0,
+          mobileCount: 0,
+          whatsappClicks: 0,
+          conversionRate: '0.0%',
+        };
+      }
+      domainStatsMap[d].uniqueVisitors = item.uniqueVisitors || 0;
+      domainStatsMap[d].totalPageviews = item.totalPageviews || 0;
+      domainStatsMap[d].mobileCount = item.mobileCount || 0;
     });
 
     domainEventsAgg.forEach((item: any) => {
@@ -464,9 +490,11 @@ export async function GET(req: Request) {
 
     const domainBreakdown = Object.values(domainStatsMap).map((d: any) => {
       const conv = d.uniqueVisitors > 0 ? ((d.whatsappClicks / d.uniqueVisitors) * 100).toFixed(1) : '0.0';
+      const target = resolveTargetFromHost(d.domain);
       return {
         ...d,
         conversionRate: `${conv}%`,
+        resolvedTarget: target ? `${target.ilSlug.toUpperCase()}${target.ilceSlug ? ' / ' + target.ilceSlug.toUpperCase() : ''}` : 'TÜRKİYE / ANA VİTRİN',
       };
     }).sort((a: any, b: any) => b.uniqueVisitors - a.uniqueVisitors);
 

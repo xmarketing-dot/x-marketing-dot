@@ -309,6 +309,30 @@ export default function BmsSecurePortalDashboard() {
         ))}
       </div>
 
+      {/* ── AKTİF FİLTRE & ZAMAN DİLİMİ BİLGİLENDİRME ÇUBUĞU ──────────────── */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs">
+        <div className="flex items-center gap-2 text-amber-300">
+          <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
+          <span>
+            Şu an gösterilen veriler: <strong className="text-white uppercase">{
+              range === 'today' ? 'Bugün (Son 24 Saat)' :
+              range === 'yesterday' ? 'Dün' :
+              range === 'week' ? 'Son 7 Gün' :
+              range === 'month' ? 'Son 30 Gün' : 'Tüm Zamanlar (Genel Kümülatif)'
+            }</strong>
+            {range === 'today' && ' — İlan görüntülenmeleri ve WhatsApp tıklamaları sadece bugünün net rakamlarıdır.'}
+          </span>
+        </div>
+        {range !== 'all' && (
+          <button
+            onClick={() => setRange('all')}
+            className="text-[11px] text-amber-400 hover:text-amber-200 underline font-bold shrink-0"
+          >
+            Tüm Zamanların İstatistiklerini Gör →
+          </button>
+        )}
+      </div>
+
       {/* ── 2. TAB NAVİGASYON ÇUBUĞU (MOBİLDE KAYDIRILABİLİR, DÜZENLİ SEKMELER) ──────────────── */}
       <div className="flex items-center gap-2 border-b border-[#30363d] pb-2 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
         {[
@@ -884,75 +908,76 @@ export default function BmsSecurePortalDashboard() {
               </div>
             </div>
 
-            {/* Bağlı ve Aktif Domainler Listesi */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Ana Platform Domaini */}
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col justify-between gap-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
-                      <Crown className="w-3.5 h-3.5 text-amber-400" />
-                      Ana Platform (Genel Merkez)
-                    </span>
-                    <span className="text-sm font-black text-white font-mono mt-0.5">
-                      {typeof window !== 'undefined' ? window.location.host : 'Ana Domain'}
-                    </span>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/40 font-mono">
-                    81 İl / Tüm Türkiye
-                  </span>
-                </div>
-                <p className="text-[11px] text-[#8b949e]">
-                  Türkiye geneli tüm illeri, interaktif haritayı ve tüm eskort kategorilerini içeren ana portal.
-                </p>
-                <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
-                  <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> SSL &amp; Gateway Aktif
-                  </span>
-                  <a
-                    href="/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1"
-                  >
-                    <span>Ziyaret Et</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
+            {/* Bağlı ve Aktif Domainler Listesi (Dinamik Canlı Gateway Ağı) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {(domainBreakdown && domainBreakdown.length > 0 ? domainBreakdown : [
+                { domain: 'besteskort.devs.surf', resolvedTarget: 'TÜRKİYE / ANA VİTRİN', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
+                { domain: 'istanbuleskort.devs.surf', resolvedTarget: 'İSTANBUL / GENEL', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
+                { domain: 'izmireskort.devs.surf', resolvedTarget: 'İZMİR / GENEL', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
+                { domain: 'beylikduzueskort.devs.surf', resolvedTarget: 'İSTANBUL / BEYLİKDÜZÜ', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
+                { domain: 'beylikduzuescort.devs.surf', resolvedTarget: 'İSTANBUL / BEYLİKDÜZÜ', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
+              ]).map((d: any, idx: number) => {
+                const target = d.resolvedTarget || resolveTargetFromHost(d.domain);
+                const targetLabel = typeof target === 'string' ? target : (target ? `${target.ilSlug?.toUpperCase()} ${target.ilceSlug ? '/ ' + target.ilceSlug?.toUpperCase() : ''}` : 'TÜRKİYE / ANA VİTRİN');
+                const isMain = d.domain.includes('besteskort') || d.domain.includes('bestescort');
 
-              {/* Beylikdüzü Özel Domain Gateway */}
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 shadow-lg shadow-amber-500/5 flex flex-col justify-between gap-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
-                      <Target className="w-3.5 h-3.5 text-emerald-400" />
-                      Bölgesel Gateway (EMD)
-                    </span>
-                    <span className="text-sm font-black text-white font-mono mt-0.5">beylikduzuescort.devs.surf</span>
-                  </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono">
-                    İstanbul / Beylikdüzü
-                  </span>
-                </div>
-                <p className="text-[11px] text-[#8b949e]">
-                  Giren kullanıcı ve Google botları doğrudan Beylikdüzü modellerine yönlendirilir. WhatsApp mesajları bu domain üzerinden çıkar.
-                </p>
-                <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
-                  <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> SSL &amp; Gateway Aktif
-                  </span>
-                  <a
-                    href="https://beylikduzuescort.devs.surf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1"
+                return (
+                  <div 
+                    key={idx}
+                    className={`p-4 rounded-2xl bg-[#0d1117] border flex flex-col justify-between gap-3 transition-all hover:border-amber-500/50 ${
+                      isMain ? 'border-amber-500/40 shadow-lg shadow-amber-500/5' : 'border-[#30363d]'
+                    }`}
                   >
-                    <span>Ziyaret Et</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-col">
+                        <span className={`text-xs font-bold uppercase tracking-wider font-heading flex items-center gap-1.5 ${
+                          isMain ? 'text-amber-400' : 'text-emerald-400'
+                        }`}>
+                          {isMain ? <Crown className="w-3.5 h-3.5 text-amber-400" /> : <Target className="w-3.5 h-3.5 text-emerald-400" />}
+                          {isMain ? 'Ana Platform' : 'Bölgesel Gateway (EMD)'}
+                        </span>
+                        <span className="text-sm font-black text-white font-mono mt-0.5 break-all">
+                          {d.domain}
+                        </span>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono shrink-0">
+                        {targetLabel}
+                      </span>
+                    </div>
+
+                    {/* Metrikler */}
+                    <div className="grid grid-cols-3 gap-2 bg-[#161b22] p-2 rounded-xl border border-[#21262d] text-center text-xs">
+                      <div className="flex flex-col">
+                        <span className="text-[9px] text-[#8b949e]">Tekil</span>
+                        <span className="font-black text-white font-mono">{d.uniqueVisitors || 0}</span>
+                      </div>
+                      <div className="flex flex-col border-x border-[#21262d]">
+                        <span className="text-[9px] text-[#8b949e]">Görüntüleme</span>
+                        <span className="font-black text-white font-mono">{d.totalPageviews || 0}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[9px] text-[#8b949e]">WhatsApp</span>
+                        <span className="font-black text-emerald-400 font-mono">{d.whatsappClicks || 0}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
+                      <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" /> SSL &amp; Gateway Aktif
+                      </span>
+                      <a
+                        href={d.domain.startsWith('http') ? d.domain : `https://${d.domain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1"
+                      >
+                        <span>Ziyaret Et</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             {/* Yeni Domain Yönlendirme Simülatörü */}
