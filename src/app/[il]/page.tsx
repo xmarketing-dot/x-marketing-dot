@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = `${siteUrl}/${location.ilSlug}`;
 
   return {
-    title: `${location.il} Eskort & Escort Bayan İlanları (2026 Teyitli)`,
+    title: `${location.il} Eskort & Escort Bayan İlanları (2026 Teyitli) | ${location.il} Vip Escort`,
     description: `${location.il} eskort ve escort bayan ilanları. Doğrulanmış bağımsız eskort profilleri, VIP vitrin, doğrudan WhatsApp numaraları ve güncel ${location.il} eskort rehberi.`,
     keywords: [
       `${location.il} eskort`,
