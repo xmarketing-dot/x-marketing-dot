@@ -30,6 +30,7 @@ export default function BmsSecurePortalDashboard() {
   const [scanningRankings, setScanningRankings] = useState(false);
   const [newKeywordInput, setNewKeywordInput] = useState('');
   const [testDomainInput, setTestDomainInput] = useState('');
+  const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
 
   useEffect(() => {
     fetchKeywords();
@@ -1670,28 +1671,52 @@ export default function BmsSecurePortalDashboard() {
       {activeTab === 'live_visitors' && (
         <div className="p-5 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4 animate-fadeIn">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-4">
-            <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-amber-400" />
-              <h2 className="font-black text-base text-white font-heading">
-                Canlı Ziyaretçi Akış Günlüğü (Son 100 İstek)
-              </h2>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex items-center gap-2">
+                <Activity className="w-5 h-5 text-amber-400" />
+                <h2 className="font-black text-base text-white font-heading">
+                  Canlı Ziyaretçi Akış Günlüğü
+                </h2>
+              </div>
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                {Math.min(filteredVisitors.length, visitorDisplayLimit)} / {filteredVisitors.length} İstek
+              </span>
             </div>
 
-            <div className="relative w-full sm:w-72">
-              <input
-                type="text"
-                placeholder="IP, Şehir, Sayfa veya Referer ara..."
-                value={searchTermFilter}
-                onChange={(e) => setSearchTermFilter(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
-              />
-              <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-2.5" />
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Gösterim Sınırı Seçici */}
+              <div className="flex items-center bg-[#0d1117] border border-[#30363d] rounded-xl p-0.5 text-xs font-mono">
+                {[100, 500, 1000, 9999].map((limit) => (
+                  <button
+                    key={limit}
+                    onClick={() => setVisitorDisplayLimit(limit)}
+                    className={`px-2.5 py-1 rounded-lg transition-all font-bold ${
+                      visitorDisplayLimit === limit
+                        ? 'bg-amber-500 text-slate-950 shadow-sm'
+                        : 'text-[#8b949e] hover:text-white'
+                    }`}
+                  >
+                    {limit === 9999 ? '🔥 Hepsini Gör (Tümü)' : limit}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative w-full sm:w-56">
+                <input
+                  type="text"
+                  placeholder="IP, Şehir, Sayfa ara..."
+                  value={searchTermFilter}
+                  onChange={(e) => setSearchTermFilter(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                />
+                <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-2.5 top-2.5" />
+              </div>
             </div>
           </div>
 
           {/* MOBİL GÖRÜNÜM: Canlı Ziyaretçi Akış Kartları */}
           <div className="flex flex-col gap-2.5 md:hidden">
-            {filteredVisitors.slice(0, 40).map((v: any) => {
+            {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
               const isGoogle = v.refererSource === 'google';
               const isWa = v.refererSource === 'whatsapp';
               const isFb = v.refererSource === 'facebook';
@@ -1760,7 +1785,7 @@ export default function BmsSecurePortalDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#21262d]">
-                {filteredVisitors.slice(0, 50).map((v: any) => {
+                {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
                   const isGoogle = v.refererSource === 'google';
                   const isWa = v.refererSource === 'whatsapp';
 

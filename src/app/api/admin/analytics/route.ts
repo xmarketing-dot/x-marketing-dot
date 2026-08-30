@@ -148,8 +148,8 @@ export async function GET(req: Request) {
           }
         }
       ]),
-      // 10. Canlı Ziyaretçi Logu (Son 50)
-      AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(50).lean(),
+      // 10. Canlı Ziyaretçi Logu (Tüm kayıtlar - eksiksiz akış)
+      AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(5000).lean(),
       // 11. İlan Ziyaretçi & Referrer Dağılımı (Limit 1000'e çıkarıldı, hiçbir ilan eksik kalmaz)
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, path: { $regex: '^/ilan/' } } },
