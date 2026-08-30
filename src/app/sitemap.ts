@@ -57,22 +57,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // City pages (81 il) — high priority
+  // City pages (81 il) — high priority with Istanbul & Izmir boosted
   for (const loc of locations) {
+    const isMegaCity = ['istanbul', 'izmir', 'ankara', 'antalya', 'bursa'].includes(loc.ilSlug);
     routes.push({
       url: `${siteUrl}/${loc.ilSlug}`,
       lastModified: now,
-      changeFrequency: 'daily',
-      priority: 0.9,
+      changeFrequency: isMegaCity ? 'hourly' : 'daily',
+      priority: isMegaCity ? 1.0 : 0.9,
     });
 
-    // District pages (~970 ilçe)
+    // District pages (~970 ilçe) with priority boost for hot districts (Beylikdüzü, Kadıköy, Şişli, Konak, Alsancak, Karşıyaka vb.)
     for (const ilce of loc.ilceler) {
+      const isHotDistrict = isMegaCity || ['beylikduzu', 'kadikoy', 'sisli', 'besiktas', 'bakirkoy', 'alsancak', 'konak', 'karsiyaka', 'bornova', 'cankaya'].includes(ilce.slug);
       routes.push({
         url: `${siteUrl}/${loc.ilSlug}/${ilce.slug}`,
         lastModified: now,
-        changeFrequency: 'daily',
-        priority: 0.85,
+        changeFrequency: isHotDistrict ? 'hourly' : 'daily',
+        priority: isHotDistrict ? 0.95 : 0.85,
       });
     }
   }

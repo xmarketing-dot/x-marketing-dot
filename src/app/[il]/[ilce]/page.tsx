@@ -245,19 +245,19 @@ export default async function DistrictPage({ params }: Props) {
           ))}
         </div>
 
-        {/* Neighboring Districts Internal Linking Matrix for Googlebot */}
+        {/* Neighboring Districts Internal Linking Matrix for Googlebot & YandexBot */}
         {otherDistricts.length > 0 && (
           <div className="pt-3 border-t border-[#30363d] flex flex-col gap-2">
             <span className="text-[11px] font-extrabold text-white font-heading flex items-center gap-1.5">
               <Building2 className="w-3.5 h-3.5 text-amber-400" />
-              {location.il} İlinin Diğer İlgili İlçeleri:
+              {location.il} İlinin Popüler İlçeleri &amp; Eskort Bölgeleri:
             </span>
-            <div className="flex flex-wrap gap-2 text-xs">
-              {otherDistricts.map((d: any) => (
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              {location.ilceler.filter((d: any) => d.slug !== ilceSlug).map((d: any) => (
                 <Link
                   key={d.slug}
                   href={`/${location.ilSlug}/${d.slug}`}
-                  className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-amber-400 font-bold border border-[#363b42] transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-amber-400 font-bold border border-[#363b42] transition-all text-[11px]"
                 >
                   {d.ad} Eskort
                 </Link>
