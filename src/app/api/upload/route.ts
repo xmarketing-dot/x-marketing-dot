@@ -36,6 +36,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Yüklenecek resim dosyası bulunamadı.' }, { status: 400 });
     }
 
+    if (files.length > 10) {
+      return NextResponse.json({ error: 'Tek seferde en fazla 10 fotoğraf yükleyebilirsiniz.' }, { status: 400 });
+    }
+
     const uploadedUrls: string[] = [];
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
 
@@ -44,6 +48,10 @@ export async function POST(req: NextRequest) {
     } catch (err) {}
 
     for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) {
+        return NextResponse.json({ error: `"${file.name}" çok büyük. Maksimum dosya boyutu 10MB olmalıdır.` }, { status: 400 });
+      }
+
       const fileExt = path.extname(file.name || '').toLowerCase();
       const mime = (file.type || '').toLowerCase();
 

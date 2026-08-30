@@ -31,6 +31,7 @@ export default function BmsSecurePortalDashboard() {
   const [newKeywordInput, setNewKeywordInput] = useState('');
   const [testDomainInput, setTestDomainInput] = useState('');
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
+  const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
 
   useEffect(() => {
     fetchKeywords();
@@ -209,7 +210,105 @@ export default function BmsSecurePortalDashboard() {
   });
   const totals = { fb, google, x, waClicks, shares };
 
+  // ── ŞÜPHELİ TRAFİK, BOT VE SALDIRI TESPİT ANALİZİ ──
+  const getSuspiciousAnalysis = (v: any) => {
+    const ua = (v.userAgent || '').toLowerCase();
+    const isSearchEngine = 
+      ua.includes('google') ||
+      ua.includes('yandex') ||
+      ua.includes('bing') ||
+      ua.includes('duckduck') ||
+      ua.includes('applebot') ||
+      ua.includes('whatsapp') ||
+      ua.includes('telegrambot');
+
+    if (isSearchEngine) {
+      return { isSuspicious: false, isSearchEngine: true, badge: '✅ Arama Motoru (Google/Yandex)', reasons: [] };
+    }
+
+    const reasons: string[] = [];
+    const path = (v.path || '').toLowerCase();
+    const host = (v.hostname || '').toLowerCase();
+    const ip = v.ip || '';
+    const city = (v.city || '').toLowerCase();
+
+    // 1. Bot & Otomasyon İmzası (HeadlessChrome, Puppeteer, Scrapy, curl, python, vb.)
+    if (
+      ua.includes('headlesschrome') ||
+      ua.includes('puppeteer') ||
+      ua.includes('playwright') ||
+      ua.includes('selenium') ||
+      ua.includes('python') ||
+      ua.includes('scrapy') ||
+      ua.includes('curl') ||
+      ua.includes('wget') ||
+      ua.includes('go-http-client') ||
+      ua.includes('semrush') ||
+      ua.includes('ahrefs') ||
+      ua.includes('bytespider') ||
+      ua.includes('dotbot') ||
+      ua.includes('mj12bot') ||
+      ua.includes('petalbot') ||
+      ua === '' ||
+      ua.length < 15
+    ) {
+      reasons.push('🤖 Otomasyon / Bot Tarayıcı');
+    }
+
+    // 2. AWS / Datacenter / Frankfurt Proxy / VPN IP'leri
+    if (
+      ip.startsWith('54.183.') ||
+      ip.startsWith('13.57.') ||
+      ip.startsWith('193.108.') ||
+      city.includes('san jose') ||
+      city.includes('frankfurt') ||
+      city.includes('ashburn') ||
+      city.includes('dallas') ||
+      city.includes('boardman')
+    ) {
+      reasons.push('🌐 Veri Merkezi / VPN / Proxy IP');
+    }
+
+    // 3. Dahili Vercel URL Taraması
+    if (host.includes('.vercel.app')) {
+      reasons.push('🕵️ Dahili Vercel Link Taraması');
+    }
+
+    // 4. Şüpheli Yol veya Açık Arama
+    if (
+      path.includes('.env') ||
+      path.includes('wp-admin') ||
+      path.includes('php') ||
+      path.includes('eval') ||
+      path.includes('select') ||
+      path.includes('<script') ||
+      path.includes('/api/admin')
+    ) {
+      reasons.push('⚠️ Şüpheli Dizin / Açık Tarama');
+    }
+
+    // 5. Yasaklanmış IP
+    if (v.isBanned) {
+      reasons.push('🚫 Sistemce Yasaklanmış');
+    }
+
+    return {
+      isSuspicious: reasons.length > 0,
+      isSearchEngine: false,
+      badge: reasons.length > 0 ? '🚨 ŞÜPHELİ / BOT' : null,
+      reasons,
+    };
+  };
+
+  const suspiciousTotalCount = (recentVisitors as any[]).filter(
+    (v: any) => getSuspiciousAnalysis(v).isSuspicious
+  ).length;
+
   const filteredVisitors = (recentVisitors as any[]).filter((v: any) => {
+    if (onlySuspiciousFilter) {
+      const analysis = getSuspiciousAnalysis(v);
+      if (!analysis.isSuspicious) return false;
+    }
     if (!searchTermFilter) return true;
     const term = searchTermFilter.toLowerCase();
     return (
@@ -1714,15 +1813,63 @@ export default function BmsSecurePortalDashboard() {
             </div>
           </div>
 
+          {/* HIZLI GÜVENLİK FİLTRESİ (TÜMÜ VS ŞÜPHELİ / BOT / SALDIRI) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#0d1117] border border-[#30363d]">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setOnlySuspiciousFilter(false)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  !onlySuspiciousFilter
+                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                    : 'text-[#8b949e] hover:text-white bg-[#161b22]'
+                }`}
+              >
+                <span>🔘 Tümü</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+                  {(recentVisitors as any[]).length}
+                </span>
+              </button>
+
+              <button
+                onClick={() => setOnlySuspiciousFilter(true)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  onlySuspiciousFilter
+                    ? 'bg-red-500 text-white shadow-md shadow-red-500/30 font-black animate-pulse'
+                    : 'text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/40'
+                }`}
+              >
+                <span>🚨 Sadece Şüpheli &amp; Bot / Saldırı</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-red-900/80 font-mono font-black">
+                  {suspiciousTotalCount}
+                </span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 text-[11px] text-[#8b949e]">
+              <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
+                ✅ Google / Yandex Korumalı
+              </span>
+              <span>•</span>
+              <span className="inline-flex items-center gap-1 text-red-400 font-medium">
+                ⚠️ Otomasyon / AWS / Proxy İşaretli
+              </span>
+            </div>
+          </div>
+
           {/* MOBİL GÖRÜNÜM: Canlı Ziyaretçi Akış Kartları */}
           <div className="flex flex-col gap-2.5 md:hidden">
             {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
               const isGoogle = v.refererSource === 'google';
               const isWa = v.refererSource === 'whatsapp';
               const isFb = v.refererSource === 'facebook';
+              const analysis = getSuspiciousAnalysis(v);
 
               return (
-                <div key={v._id} className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-2">
+                <div key={v._id} className={`p-3.5 rounded-2xl bg-[#0d1117] border flex flex-col gap-2 transition-all ${
+                  analysis.isSuspicious 
+                    ? 'border-red-500/60 bg-red-950/15 shadow-sm shadow-red-900/20' 
+                    : 'border-[#30363d]'
+                }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-[11px] font-bold text-white">{v.ip || 'Anonim'}</span>
@@ -1732,6 +1879,27 @@ export default function BmsSecurePortalDashboard() {
                       {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                   </div>
+
+                  {/* Şüpheli / Arama Motoru Rozeti */}
+                  {analysis.isSuspicious && (
+                    <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                      <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500/25 text-red-300 border border-red-500/50 animate-pulse">
+                        🚨 ŞÜPHELİ / BOT
+                      </span>
+                      {analysis.reasons.map((r: string, idx: number) => (
+                        <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-[#161b22] text-amber-300 border border-[#30363d] font-mono">
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {analysis.isSearchEngine && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                        ✅ Arama Motoru (Google/Yandex)
+                      </span>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 truncate max-w-[170px]">
@@ -1775,6 +1943,7 @@ export default function BmsSecurePortalDashboard() {
               <thead>
                 <tr className="border-b border-[#30363d] text-[#8b949e] font-heading font-black">
                   <th className="py-2.5 px-3">IP / ŞEHİR</th>
+                  <th className="py-2.5 px-3">GÜVENLİK / SPAM ANALİZİ</th>
                   <th className="py-2.5 px-3">GİRİLEN DOMAİN</th>
                   <th className="py-2.5 px-3">GEZİLEN SAYFA</th>
                   <th className="py-2.5 px-3">TRAFİK KAYNAĞI</th>
@@ -1788,9 +1957,16 @@ export default function BmsSecurePortalDashboard() {
                 {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
                   const isGoogle = v.refererSource === 'google';
                   const isWa = v.refererSource === 'whatsapp';
+                  const analysis = getSuspiciousAnalysis(v);
 
                   return (
-                    <tr key={v._id} className={`transition-colors ${v.isBanned ? 'bg-red-950/20 hover:bg-red-950/30' : 'hover:bg-[#21262d]/50'}`}>
+                    <tr key={v._id} className={`transition-colors ${
+                      analysis.isSuspicious 
+                        ? 'bg-red-950/30 hover:bg-red-950/40 border-l-4 border-red-500' 
+                        : v.isBanned 
+                        ? 'bg-red-950/20 hover:bg-red-950/30' 
+                        : 'hover:bg-[#21262d]/50'
+                    }`}>
                       
                       {/* IP & Şehir */}
                       <td className="py-3 px-3">
@@ -1803,8 +1979,34 @@ export default function BmsSecurePortalDashboard() {
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-amber-400 font-medium">{v.city || 'İstanbul'}</span>
+                          <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
                         </div>
+                      </td>
+
+                      {/* GÜVENLİK / SPAM ANALİZİ */}
+                      <td className="py-3 px-3">
+                        {analysis.isSuspicious ? (
+                          <div className="flex flex-col gap-1 max-w-[200px]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-red-500/30 text-red-300 border border-red-500/50 animate-pulse w-fit">
+                              🚨 ŞÜPHELİ / BOT
+                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {analysis.reasons.map((r: string, idx: number) => (
+                                <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-red-500/30 font-mono font-medium">
+                                  {r}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : analysis.isSearchEngine ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                            ✅ Arama Motoru
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-[#8b949e] font-medium">
+                            👤 Normal Ziyaretçi
+                          </span>
+                        )}
                       </td>
 
                       {/* Girilen Domain */}
@@ -1815,7 +2017,7 @@ export default function BmsSecurePortalDashboard() {
                       </td>
 
                       {/* Gezilen Sayfa */}
-                      <td className="py-3 px-3 font-mono text-white text-[11px] max-w-[180px] truncate">
+                      <td className="py-3 px-3 font-mono text-white text-[11px] max-w-[160px] truncate">
                         {v.path}
                       </td>
 
@@ -1845,7 +2047,7 @@ export default function BmsSecurePortalDashboard() {
                       {/* Cihaz & Tarayıcı */}
                       <td className="py-3 px-3 text-[11px] text-[#8b949e]">
                         <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'}</span>
-                        <span className="text-[10px] block text-[#484f58]">{v.browser} / {v.os}</span>
+                        <span className="text-[10px] block text-[#484f58] truncate max-w-[140px]">{v.browser} / {v.os}</span>
                       </td>
 
                       {/* Sayfada Kalma Süresi */}

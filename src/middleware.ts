@@ -11,6 +11,18 @@ export function middleware(req: NextRequest) {
     requestHeaders.set('x-is-admin', 'true');
   }
 
+  // ── 0. GÜVENLİK KİLİDİ: /api/admin/* ENDPOINT'LERİNİ EDGE SEVİYESİNDE MÜHÜRLE ──
+  // Giriş endpoint'i hariç tüm /api/admin rotalarında bms_admin_auth çerezi zorunludur!
+  if (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/auth/login')) {
+    const adminAuthCookie = req.cookies.get('bms_admin_auth')?.value;
+    if (!adminAuthCookie || adminAuthCookie !== 'authenticated_superadmin_session_token') {
+      return NextResponse.json(
+        { error: 'Erişim Engellendi: Bu endpoint için yönetici yetkilendirmesi gereklidir.' },
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+  }
+
   // Statik dosyalar ve dahili Next yollarını pas geç
   if (
     pathname.startsWith('/_next') ||
