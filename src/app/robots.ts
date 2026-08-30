@@ -18,6 +18,45 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
       {
+        userAgent: [
+          'AhrefsBot',
+          'SemrushBot',
+          'DotBot',
+          'MJ12bot',
+          'PetalBot',
+          'Bytespider',
+          'MegaIndex',
+          'BLEXBot',
+          'DataForSeoBot',
+          'CCBot',
+          'GPTBot',
+          'ClaudeBot'
+        ],
+        disallow: '/',
+      },
+      {
+        userAgent: 'Googlebot',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/bms-secure-portal/',
+          '/bms-secure-portal',
+          '/panelim',
+          '/chat',
+        ],
+      },
+      {
+        userAgent: 'Bingbot',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/bms-secure-portal/',
+          '/bms-secure-portal',
+          '/panelim',
+          '/chat',
+        ],
+      },
+      {
         userAgent: 'Yandex',
         allow: '/',
         disallow: [

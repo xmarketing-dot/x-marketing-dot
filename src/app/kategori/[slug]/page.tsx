@@ -11,7 +11,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export const revalidate = 180;
+export const revalidate = 86400; // 24 saat önbellek (Vercel ISR kota patlamasını önler)
 
 const TIER_META: Record<string, { title: string; subtitle: string; desc: string; icon: any; badgeBg: string; color: string; border: string }> = {
   vip: {

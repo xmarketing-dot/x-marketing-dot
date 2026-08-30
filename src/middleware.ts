@@ -35,7 +35,64 @@ export function middleware(req: NextRequest) {
     return res;
   }
 
+  // ── SALDIRGAN BOT, SCRAPER VE KOPYALAYICI KALKANI ──
+  // Vercel Function & ISR Writes kotasını tüketen botları Edge seviyesinde anında engelle (0 CPU, 0 Maliyet)
+  const ua = (req.headers.get('user-agent') || '').toLowerCase();
+
+  // ── 1. MEŞRU ARAMA MOTORLARI & SOSYAL MEDYA BOTLARI İÇİN DOKUNULMAZLIK (VIP WHITELIST) ──
+  // Google, Yandex, Bing, DuckDuckGo, Apple ve sosyal medya botları ASLA engellenmez (SEO %100 Güvencede!)
+  const isSearchEngineOrSocial = 
+    ua.includes('google') ||       // Googlebot, Google-InspectionTool, Storebot-Google, AdsBot-Google, Lighthouse
+    ua.includes('yandex') ||       // YandexBot, YandexMobileBot, YandexDirect, YandexMetrika
+    ua.includes('bing') ||         // Bingbot, BingPreview, msnbot
+    ua.includes('duckduck') ||     // DuckDuckBot
+    ua.includes('applebot') ||     // Applebot
+    ua.includes('twitterbot') ||
+    ua.includes('facebookexternalhit') ||
+    ua.includes('whatsapp') ||
+    ua.includes('telegrambot');
+
+  if (!isSearchEngineOrSocial) {
+    const isAggressiveBot = 
+      ua.includes('headlesschrome') ||
+      ua.includes('puppeteer') ||
+      ua.includes('playwright') ||
+      ua.includes('selenium') ||
+      ua.includes('python-requests') ||
+      ua.includes('aiohttp') ||
+      ua.includes('scrapy') ||
+      ua.includes('go-http-client') ||
+      ua.includes('libwww-perl') ||
+      ua.includes('semrushbot') ||
+      ua.includes('ahrefsbot') ||
+      ua.includes('mj12bot') ||
+      ua.includes('dotbot') ||
+      ua.includes('petalbot') ||
+      ua.includes('bytespider') ||
+      ua.includes('megaindex') ||
+      ua.includes('blexbot') ||
+      ua.includes('dataforseobot') ||
+      ua.includes('claudebot') ||
+      ua.includes('gptbot') ||
+      ua.includes('ccbot') ||
+      (ua.startsWith('curl/') && !pathname.startsWith('/api/test')) ||
+      (ua.startsWith('wget/') && !pathname.startsWith('/api/test'));
+
+    if (isAggressiveBot) {
+      return new NextResponse('Access Denied: Automated scraping prohibited.', {
+        status: 403,
+        headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' },
+      });
+    }
+  }
+
   const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+
+  // Doğrudan *.vercel.app domaininden gelenleri ana domaine yönlendir (301 Kalıcı Yönlendirme)
+  if (hostname.includes('.vercel.app') && !pathname.startsWith('/api') && !pathname.startsWith('/bms-secure-portal')) {
+    return NextResponse.redirect(new URL(`https://besteskort.devs.surf${pathname}${url.search}`), 301);
+  }
+
   const targetLoc = resolveTargetFromHost(hostname);
 
   // Eğer bu domain belirli bir il veya ilçeye bağlıysa ve anasayfaya (/) geldiyse:

@@ -13,7 +13,7 @@ interface Props {
   params: Promise<{ il: string }>;
 }
 
-export const revalidate = 60;
+export const revalidate = 86400; // 24 saat önbellek (Vercel ISR kota patlamasını önler)
 
 export async function generateStaticParams() {
   const locations = await getAllLocations();

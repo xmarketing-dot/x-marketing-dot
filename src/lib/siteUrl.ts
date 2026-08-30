@@ -10,13 +10,8 @@ export function getSiteUrl(): string {
   if (process.env.SITE_URL) {
     return process.env.SITE_URL.replace(/\/+$/, '');
   }
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/+$/, '')}`;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.replace(/\/+$/, '')}`;
-  }
-  return 'http://localhost:3000';
+  // Asla gizli Vercel preview URL'lerini sitemap veya canonical meta etiketlerine sızdırma!
+  return 'https://besteskort.devs.surf';
 }
 
 /**

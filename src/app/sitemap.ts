@@ -4,7 +4,7 @@ import connectToDatabase from '@/lib/mongodb';
 import { getSiteUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 3600;
+export const revalidate = 43200; // 12 saat önbellek (Sitemap ISR tasarrufu)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
