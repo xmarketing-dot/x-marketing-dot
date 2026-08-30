@@ -145,9 +145,11 @@ export default async function RootLayout({
   try {
     const [headerList, cookieStore] = await Promise.all([headers(), cookies()]);
     const currentPath = headerList.get('x-current-path') || '';
-    const isSecurePortal = currentPath.startsWith('/bms-secure-portal');
+    const isAdmin = 
+      headerList.get('x-is-admin') === 'true' || 
+      currentPath.includes('/bms-secure-portal');
 
-    if (!isSecurePortal) {
+    if (!isAdmin) {
       const rawIp = headerList.get('x-forwarded-for') || headerList.get('x-real-ip') || '';
       const banResult = await checkIsBanned(rawIp, cookieStore);
       if (banResult.isBanned) {
@@ -170,7 +172,7 @@ export default async function RootLayout({
       </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
         {isBannedVisitor ? (
-          <BannedTrollScreen clientIp={detectedIp} />
+          <BannedTrollScreen />
         ) : (
           <>
             <Suspense fallback={null}>
