@@ -30,6 +30,29 @@ function getOrSetSessionId(): string {
   return sid;
 }
 
+function getOrSetEntryReferrer(): string {
+  if (typeof window === 'undefined') return 'Direct';
+  const currentRef = document.referrer || '';
+  const currentHost = window.location.hostname;
+  let entryRef = sessionStorage.getItem('bms_entry_ref');
+
+  // Harici bir siteden (Google, FB, X, IG vb.) geldiyse oturumun giriş referansını kaydet
+  if (currentRef && !currentRef.includes(currentHost)) {
+    sessionStorage.setItem('bms_entry_ref', currentRef);
+    return currentRef;
+  }
+
+  // Daha önce oturumda kaydedilmiş harici referans varsa onu koru
+  if (entryRef) {
+    return entryRef;
+  }
+
+  // İlk giriş direkt ise direkt olarak işaretle
+  const fallback = currentRef && !currentRef.includes(currentHost) ? currentRef : 'Direct';
+  sessionStorage.setItem('bms_entry_ref', fallback);
+  return fallback;
+}
+
 export default function AnalyticsTracker() {
   const pathname = usePathname();
   const lastTrackedPathRef = useRef<string>('');
@@ -43,6 +66,7 @@ export default function AnalyticsTracker() {
       try {
         const vid = getOrSetVisitorId();
         const sid = getOrSetSessionId();
+        const entryRef = getOrSetEntryReferrer();
 
         fetch('/api/analytics/event', {
           method: 'POST',
@@ -55,6 +79,7 @@ export default function AnalyticsTracker() {
             targetTitle: payload.title || payload.targetTitle,
             targetCity: payload.city || payload.targetCity,
             path: window.location.pathname,
+            entryReferer: entryRef,
             metadata: payload,
           }),
         }).catch(() => {});
@@ -62,17 +87,21 @@ export default function AnalyticsTracker() {
     };
   }, []);
 
+  // Track Pageview & Duration
   useEffect(() => {
-    if (!pathname || pathname.startsWith('/admin') || pathname.startsWith('/bms-secure-portal')) {
+    if (!pathname) return;
+
+    // Ignore Admin Panel Views from bloating real traffic
+    if (pathname.startsWith('/bms-secure-portal') || pathname.startsWith('/admin')) {
       return;
     }
 
-    const now = Date.now();
     const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
     const fullPath = currentSearch ? `${pathname}${currentSearch}` : pathname;
+    const now = Date.now();
 
-    // Deduplication: Avoid double-counting the exact same URL within 15 seconds
-    if (lastTrackedPathRef.current === fullPath && now - lastTrackedTimeRef.current < 15000) {
+    // Prevent duplicated rapid hits on identical URL within 10 seconds
+    if (lastTrackedPathRef.current === fullPath && now - lastTrackedTimeRef.current < 10000) {
       return;
     }
 
@@ -81,6 +110,7 @@ export default function AnalyticsTracker() {
 
     const vid = getOrSetVisitorId();
     const sid = getOrSetSessionId();
+    const entryReferer = getOrSetEntryReferrer();
     const isMobile = window.innerWidth < 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     const referer = document.referrer || 'Direct';
 
@@ -100,9 +130,9 @@ export default function AnalyticsTracker() {
     const utmCampaign = params.get('utm_campaign') || '';
 
     // If coming from Google referrer, try extracting query if passed
-    if (!searchKeyword && referer.includes('google.')) {
+    if (!searchKeyword && (referer.includes('google.') || entryReferer.includes('google.'))) {
       try {
-        const refUrl = new URL(referer);
+        const refUrl = new URL(referer.includes('google.') ? referer : entryReferer);
         const gQ = refUrl.searchParams.get('q') || '';
         if (gQ) searchKeyword = decodeURIComponent(gQ).trim();
       } catch (e) {}
@@ -130,6 +160,7 @@ export default function AnalyticsTracker() {
         path: fullPath,
         pageTitle: document.title || 'Best Eskort',
         referer,
+        entryReferer,
         searchKeyword,
         utmSource,
         utmMedium,
@@ -147,14 +178,19 @@ export default function AnalyticsTracker() {
       })
       .catch(() => {});
 
-    // Track on-page duration heartbeat (every 15s, up to 3 minutes)
-    let secondsSpent = 0;
+    // Duration ping interval
     if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+    let secondsSpent = 5;
 
     durationIntervalRef.current = setInterval(() => {
-      secondsSpent += 15;
-      if (secondsSpent <= 180 && activeRecordIdRef.current) {
-        fetch('/api/analytics/heartbeat', {
+      secondsSpent += 10;
+      if (secondsSpent > 600) {
+        if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+        return;
+      }
+
+      if (activeRecordIdRef.current) {
+        fetch('/api/analytics/ping', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -162,15 +198,11 @@ export default function AnalyticsTracker() {
             durationSeconds: secondsSpent,
           }),
         }).catch(() => {});
-      } else if (secondsSpent > 180 && durationIntervalRef.current) {
-        clearInterval(durationIntervalRef.current);
       }
-    }, 15000);
+    }, 10000);
 
     return () => {
-      if (durationIntervalRef.current) {
-        clearInterval(durationIntervalRef.current);
-      }
+      if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
     };
   }, [pathname]);
 

@@ -16,13 +16,16 @@ export async function GET(req: Request) {
     let dateQuery: any = {};
     const now = new Date();
 
+    // Türkiye Saat Dilimi (UTC+3) ile Gün Başlangıcı Hesaplama
+    const turkeyOffsetMs = 3 * 60 * 60 * 1000;
+    const nowTurkey = new Date(now.getTime() + turkeyOffsetMs);
+    const startOfTodayTurkey = new Date(Date.UTC(nowTurkey.getUTCFullYear(), nowTurkey.getUTCMonth(), nowTurkey.getUTCDate()) - turkeyOffsetMs);
+
     if (range === 'today') {
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      dateQuery = { createdAt: { $gte: startOfToday } };
+      dateQuery = { createdAt: { $gte: startOfTodayTurkey } };
     } else if (range === 'yesterday') {
-      const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-      const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      dateQuery = { createdAt: { $gte: startOfYesterday, $lt: endOfYesterday } };
+      const startOfYesterdayTurkey = new Date(startOfTodayTurkey.getTime() - 24 * 60 * 60 * 1000);
+      dateQuery = { createdAt: { $gte: startOfYesterdayTurkey, $lt: startOfTodayTurkey } };
     } else if (range === 'week') {
       const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       dateQuery = { createdAt: { $gte: startOfWeek } };
@@ -36,6 +39,10 @@ export async function GET(req: Request) {
     }
 
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    const activeUsersQuery: any = { createdAt: { $gte: fiveMinutesAgo } };
+    if (domainFilter && domainFilter !== 'all') {
+      activeUsersQuery.hostname = dateQuery.hostname;
+    }
 
     // ── TEK BİR PROMISE.ALL İLE PARALEL ÇALIŞTIRMA (10X HIZ) ──
     const [
@@ -77,8 +84,8 @@ export async function GET(req: Request) {
       ]),
       // 2. Tekil Ziyaretçiler
       AnalyticsVisitorModel.distinct('visitorId', dateQuery),
-      // 3. Aktif Kullanıcılar (Son 5 dk)
-      AnalyticsVisitorModel.distinct('visitorId', { createdAt: { $gte: fiveMinutesAgo } }),
+      // 3. Aktif Kullanıcılar (Son 5 dk, domain filtresine duyarlı)
+      AnalyticsVisitorModel.distinct('visitorId', activeUsersQuery),
       // 4. Arama Terimleri (Ziyaretçi Referrer & URL)
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, searchKeyword: { $exists: true, $ne: '' } } },
@@ -114,7 +121,7 @@ export async function GET(req: Request) {
       ]),
       // 8. En Çok İletişim Alan İlanlar
       AnalyticsEventModel.aggregate([
-        { $match: { ...dateQuery, eventType: { $in: ['whatsapp_click', 'share_listing'] } } },
+        { $match: { ...dateQuery, eventType: { $in: ['whatsapp_click', 'share_listing'] }, targetTitle: { $exists: true, $ne: '' } } },
         { 
           $group: { 
             _id: "$targetTitle", 
@@ -142,7 +149,7 @@ export async function GET(req: Request) {
       ]),
       // 10. Canlı Ziyaretçi Logu (Son 50)
       AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(50).lean(),
-      // 11. İlan Ziyaretçi & Referrer Dağılımı
+      // 11. İlan Ziyaretçi & Referrer Dağılımı (Limit 1000'e çıkarıldı, hiçbir ilan eksik kalmaz)
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, path: { $regex: '^/ilan/' } } },
         {
@@ -162,20 +169,23 @@ export async function GET(req: Request) {
           }
         },
         { $sort: { periodViews: -1 } },
-        { $limit: 100 }
+        { $limit: 1000 }
       ]),
-      // 12. İlan Etkinlik Dağılımı
+      // 12. İlan Etkinlik Dağılımı (Anasayfa, şehir ve detay sayfalarından gelen tüm tıklamaları kapsar)
       AnalyticsEventModel.aggregate([
         {
           $match: {
             ...dateQuery,
             eventType: { $in: ['whatsapp_click', 'share_listing', 'phone_call'] },
-            path: { $regex: '^/ilan/' }
           }
         },
         {
           $group: {
-            _id: { $toLower: { $arrayElemAt: [{ $split: ["$path", "?"] }, 0] } },
+            _id: {
+              targetId: "$targetId",
+              targetTitle: "$targetTitle",
+              path: { $toLower: { $arrayElemAt: [{ $split: ["$path", "?"] }, 0] } }
+            },
             whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "whatsapp_click"] }, 1, 0] } },
             shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
           }
@@ -300,20 +310,44 @@ export async function GET(req: Request) {
       }
     });
 
-    // İlan bazlı etkinlik haritası
-    const eventStatsByPath: Record<string, any> = {};
+    // İlan bazlı etkinlik haritası (ID, Yol ve Başlık bazında çoklu eşleştirme)
+    const eventStatsById: Record<string, { whatsappClicks: number; shares: number }> = {};
+    const eventStatsByPath: Record<string, { whatsappClicks: number; shares: number }> = {};
+    const eventStatsByTitle: Record<string, { whatsappClicks: number; shares: number }> = {};
+
     listingEventsAgg.forEach((item: any) => {
-      const cleanPath = (item._id || '').trim().toLowerCase().replace(/\/$/, '');
-      if (!eventStatsByPath[cleanPath]) {
-        eventStatsByPath[cleanPath] = { whatsappClicks: 0, shares: 0 };
+      const g = item._id || {};
+      const targetId = g.targetId ? g.targetId.toString() : '';
+      const path = (g.path || '').trim().toLowerCase().replace(/\/$/, '');
+      const title = (g.targetTitle || '').trim().toLowerCase();
+      const clicks = item.whatsappClicks || 0;
+      const shares = item.shares || 0;
+
+      if (targetId) {
+        if (!eventStatsById[targetId]) eventStatsById[targetId] = { whatsappClicks: 0, shares: 0 };
+        eventStatsById[targetId].whatsappClicks += clicks;
+        eventStatsById[targetId].shares += shares;
       }
-      eventStatsByPath[cleanPath].whatsappClicks += (item.whatsappClicks || 0);
-      eventStatsByPath[cleanPath].shares += (item.shares || 0);
+      if (path && path.startsWith('/ilan/')) {
+        if (!eventStatsByPath[path]) eventStatsByPath[path] = { whatsappClicks: 0, shares: 0 };
+        eventStatsByPath[path].whatsappClicks += clicks;
+        eventStatsByPath[path].shares += shares;
+      }
+      if (title) {
+        if (!eventStatsByTitle[title]) eventStatsByTitle[title] = { whatsappClicks: 0, shares: 0 };
+        eventStatsByTitle[title].whatsappClicks += clicks;
+        eventStatsByTitle[title].shares += shares;
+      }
     });
 
     // İlan rapor listesini oluştur
+    const isAllTime = range === 'all';
+
     const detailedListingReports = rawListings.map((l: any) => {
-      const ilanPath = `/ilan/${l.slug}`.toLowerCase();
+      const idStr = l._id ? l._id.toString() : '';
+      const ilanPath = `/ilan/${l.slug}`.toLowerCase().replace(/\/$/, '');
+      const titleStr = (l.baslik || '').trim().toLowerCase();
+
       const vStats = visitorStatsByPath[ilanPath] || {
         periodViews: 0,
         uniqueVisitorsCount: 0,
@@ -321,14 +355,26 @@ export async function GET(req: Request) {
         rawReferrers: [],
         lastVisitedAt: null,
       };
-      const eStats = eventStatsByPath[ilanPath] || {
-        whatsappClicks: 0,
-        shares: 0,
-      };
 
-      const totalViews = Math.max(l.goruntulenmeSayisi || 0, vStats.periodViews);
-      const totalWhatsapp = Math.max(l.whatsappTiklamaSayisi || 0, eStats.whatsappClicks);
-      const totalListingShares = Math.max(l.paylasimSayisi || 0, eStats.shares);
+      // Hem doğrudan ID'siyle hem sayfa yoluyla hem başlığıyla eşleşen tüm WhatsApp/Paylaşım verilerini topla
+      const eStats = (idStr && eventStatsById[idStr])
+        || eventStatsByPath[ilanPath]
+        || (titleStr && eventStatsByTitle[titleStr])
+        || { whatsappClicks: 0, shares: 0 };
+
+      const periodViews = vStats.periodViews || 0;
+      const periodWhatsapp = eStats.whatsappClicks || 0;
+      const periodShares = eStats.shares || 0;
+
+      const lifetimeViews = l.goruntulenmeSayisi || 0;
+      const lifetimeWhatsapp = l.whatsappTiklamaSayisi || 0;
+      const lifetimeShares = l.paylasimSayisi || 0;
+
+      // Seçilen filtreye göre net rakamlar:
+      // 'all' seçiliyse tüm zamanlar; 'today', 'yesterday', 'week', 'month' ise dönemin net analitik rakamları
+      const totalViews = isAllTime ? Math.max(lifetimeViews, periodViews) : periodViews;
+      const totalWhatsapp = isAllTime ? Math.max(lifetimeWhatsapp, periodWhatsapp) : periodWhatsapp;
+      const totalListingShares = isAllTime ? Math.max(lifetimeShares, periodShares) : periodShares;
       const conversionRate = totalViews > 0 ? ((totalWhatsapp / totalViews) * 100).toFixed(1) : '0.0';
 
       return {
@@ -343,10 +389,12 @@ export async function GET(req: Request) {
         status: l.status,
         createdAt: l.createdAt,
         totalViews,
-        periodViews: vStats.periodViews,
+        periodViews,
+        lifetimeViews,
         uniqueVisitors: vStats.uniqueVisitorsCount,
         whatsappClicks: totalWhatsapp,
-        periodWhatsappClicks: eStats.whatsappClicks,
+        periodWhatsappClicks: periodWhatsapp,
+        lifetimeWhatsapp,
         shares: totalListingShares,
         conversionRate,
         referrers: vStats.referrers,

@@ -1291,15 +1291,29 @@ export default function BmsSecurePortalDashboard() {
 
                       <div className="grid grid-cols-3 gap-2 bg-[#161b22] p-2.5 rounded-xl border border-[#21262d] text-center">
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-[#8b949e]">Görüntülenme</span>
+                          <span className="text-[10px] text-[#8b949e]">
+                            {range === 'today' ? 'Bugün Görüntülenme' : range === 'yesterday' ? 'Dün Görüntülenme' : 'Görüntülenme'}
+                          </span>
                           <span className="font-black text-xs text-white font-heading">{item.totalViews} Kez</span>
+                          {range !== 'all' && (
+                            <span className="text-[9px] text-[#8b949e]">
+                              Toplam: {item.lifetimeViews || 0}
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-col border-x border-[#21262d]">
-                          <span className="text-[10px] text-[#8b949e]">WhatsApp</span>
+                          <span className="text-[10px] text-[#8b949e]">
+                            {range === 'today' ? 'Bugün WhatsApp' : range === 'yesterday' ? 'Dün WhatsApp' : 'WhatsApp'}
+                          </span>
                           <span className="font-black text-xs text-emerald-400 font-heading flex items-center justify-center gap-1">
                             <OfficialWhatsAppIcon className="w-3 h-3 fill-emerald-400" />
                             {item.whatsappClicks}
                           </span>
+                          {range !== 'all' && (
+                            <span className="text-[9px] text-[#8b949e]">
+                              Toplam: {item.lifetimeWhatsapp || 0}
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[10px] text-[#8b949e]">Dönüşüm</span>
@@ -1465,7 +1479,9 @@ export default function BmsSecurePortalDashboard() {
                                   {(item.totalViews || 0).toLocaleString()} Kez
                                 </span>
                                 <span className="text-[10px] text-[#8b949e]">
-                                  {item.uniqueVisitors > 0 ? `${item.uniqueVisitors} tekil ziyaretçi` : 'Tüm zamanlar'}
+                                  {range !== 'all' 
+                                    ? `Dönem: ${item.totalViews} • Toplam: ${(item.lifetimeViews || 0).toLocaleString()}`
+                                    : (item.uniqueVisitors > 0 ? `${item.uniqueVisitors} tekil ziyaretçi` : 'Tüm zamanlar')}
                                 </span>
                               </div>
                             </td>
@@ -1477,9 +1493,16 @@ export default function BmsSecurePortalDashboard() {
                                   <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
                                   {(item.whatsappClicks || 0).toLocaleString()} Tıklama
                                 </span>
-                                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-black text-[10px] w-fit font-mono">
-                                  %{item.conversionRate} Dönüşüm
-                                </span>
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-black text-[10px] w-fit font-mono">
+                                    %{item.conversionRate} Dönüşüm
+                                  </span>
+                                  {range !== 'all' && (
+                                    <span className="text-[9px] text-[#8b949e]">
+                                      Toplam: {(item.lifetimeWhatsapp || 0).toLocaleString()}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </td>
 

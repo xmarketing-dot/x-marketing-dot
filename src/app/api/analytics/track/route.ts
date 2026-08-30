@@ -65,48 +65,59 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // ── 2. TRAFİK KAYNAĞI TESPİTİ (Google, WhatsApp, Telegram, Sosyal Medya, Direct) ──
-    let source: 'google' | 'whatsapp' | 'telegram' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other' = 'direct';
+    // ── 2. TRAFİK KAYNAĞI TESPİTİ (Oturum Giriş Referansı Destekli) ──
+    const entryReferer = (body.entryReferer || '').trim();
     const refLower = (referer || '').toLowerCase();
+    const entryRefLower = entryReferer.toLowerCase();
     const pathLower = (path || '').toLowerCase();
     const utmLower = (utmSource || '').toLowerCase();
+    const hostDomain = host.split(':')[0].toLowerCase();
 
-    if (refLower.includes('google.') || searchKeyword) {
+    // Site içi sayfa geçişiyse (örn: ana sayfadan ilana tıklandıysa), kullanıcının ilk geldiği harici kaynağı baz al
+    const isInternalReferer = !referer || refLower === 'direct' || (hostDomain && refLower.includes(hostDomain));
+    const isEntryExternal = entryRefLower && entryRefLower !== 'direct' && !(hostDomain && entryRefLower.includes(hostDomain));
+    
+    const targetRef = (isInternalReferer && isEntryExternal) ? entryRefLower : refLower;
+    const finalStoredReferer = (isInternalReferer && isEntryExternal) ? entryReferer : (referer || 'Direct');
+
+    let source: 'google' | 'whatsapp' | 'telegram' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other' = 'direct';
+
+    if (targetRef.includes('google.') || searchKeyword) {
       source = 'google';
     } else if (
-      refLower.includes('whatsapp') ||
-      refLower.includes('wa.me') ||
+      targetRef.includes('whatsapp') ||
+      targetRef.includes('wa.me') ||
       pathLower.includes('ref=whatsapp') ||
       utmLower.includes('whatsapp')
     ) {
       source = 'whatsapp';
     } else if (
-      refLower.includes('telegram') ||
-      refLower.includes('t.me') ||
+      targetRef.includes('telegram') ||
+      targetRef.includes('t.me') ||
       pathLower.includes('ref=telegram') ||
       utmLower.includes('telegram')
     ) {
       source = 'telegram';
     } else if (
-      refLower.includes('facebook') ||
-      refLower.includes('fb.com') ||
-      refLower.includes('fb.me') ||
-      refLower.includes('meta.com') ||
+      targetRef.includes('facebook') ||
+      targetRef.includes('fb.com') ||
+      targetRef.includes('fb.me') ||
+      targetRef.includes('meta.com') ||
       utmLower.includes('facebook') ||
       utmLower.includes('fb')
     ) {
       source = 'facebook';
     } else if (
-      refLower.includes('twitter') ||
-      refLower.includes('t.co') ||
-      refLower.includes('x.com') ||
+      targetRef.includes('twitter') ||
+      targetRef.includes('t.co') ||
+      targetRef.includes('x.com') ||
       utmLower.includes('twitter') ||
       utmLower.includes('x')
     ) {
       source = 'x';
-    } else if (refLower.includes('instagram') || utmLower.includes('instagram')) {
+    } else if (targetRef.includes('instagram') || utmLower.includes('instagram')) {
       source = 'instagram';
-    } else if (!referer || refLower === 'direct' || (host && refLower.includes(host.split(':')[0].toLowerCase()))) {
+    } else if (!targetRef || targetRef === 'direct' || (hostDomain && targetRef.includes(hostDomain))) {
       source = 'direct';
     } else {
       source = 'other';
@@ -136,7 +147,7 @@ export async function POST(req: NextRequest) {
       os,
       path,
       pageTitle: isBannedVisitor ? '🚫 Engellenen Ziyaretçi (Troll)' : (pageTitle || 'İlan Platformu'),
-      referer: referer || 'Direct',
+      referer: finalStoredReferer,
       refererSource: source,
       searchKeyword: searchKeyword || '',
       utmSource: utmSource || '',
