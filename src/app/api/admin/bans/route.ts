@@ -3,6 +3,7 @@ import connectToDatabase from '@/lib/mongodb';
 import BanModel from '@/models/Ban';
 import ChatThreadModel from '@/models/ChatThread';
 import ListingModel from '@/models/Listing';
+import { invalidateBanCache } from '@/lib/banCheck';
 
 export async function GET() {
   try {
@@ -97,6 +98,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    invalidateBanCache();
     return NextResponse.json({ success: true, ban: JSON.parse(JSON.stringify(newBan)) });
   } catch (error: any) {
     return NextResponse.json({ error: 'Ban create error' }, { status: 500 });
@@ -130,6 +132,7 @@ export async function DELETE(req: NextRequest) {
       await ChatThreadModel.updateMany({ ip }, { isBanned: false, banTuru: null, banSebebi: null });
     }
 
+    invalidateBanCache();
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: 'Unban error' }, { status: 500 });

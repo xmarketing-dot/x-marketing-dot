@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
 import ListingModel from '@/models/Listing';
+import { checkIsBanned } from '@/lib/banCheck';
 
 export const dynamic = 'force-dynamic';
 
@@ -123,6 +124,10 @@ export async function POST(req: NextRequest) {
     const isUniqueToday = !visitedToday;
     const incomingHost = (req.headers.get('x-forwarded-host') || host || '').split(':')[0].toLowerCase();
 
+    // Check if visitor is banned (via IP or permanent ban cookie)
+    const banResult = await checkIsBanned(cleanIp, req.cookies);
+    const isBannedVisitor = !!body.isBanned || banResult.isBanned;
+
     const newVisitor = await AnalyticsVisitorModel.create({
       visitorId,
       sessionId: sessionId || visitorId,
@@ -130,7 +135,7 @@ export async function POST(req: NextRequest) {
       browser,
       os,
       path,
-      pageTitle: pageTitle || 'İlan Platformu',
+      pageTitle: isBannedVisitor ? '🚫 Engellenen Ziyaretçi (Troll)' : (pageTitle || 'İlan Platformu'),
       referer: referer || 'Direct',
       refererSource: source,
       searchKeyword: searchKeyword || '',
@@ -140,8 +145,9 @@ export async function POST(req: NextRequest) {
       city: decodeURIComponent(vercelCity),
       ip: cleanIp,
       hostname: incomingHost,
-      userAgent: userAgent.slice(0, 200),
-      durationSeconds: 0,
+      userAgent,
+      isBanned: isBannedVisitor,
+      durationSeconds: 5,
       isUniqueToday,
     });
 

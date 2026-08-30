@@ -22,18 +22,27 @@ export function middleware(req: NextRequest) {
   const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
   const targetLoc = resolveTargetFromHost(hostname);
 
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-current-path', pathname);
+
   // Eğer bu domain belirli bir il veya ilçeye bağlıysa ve anasayfaya (/) geldiyse:
   if (targetLoc && pathname === '/') {
     if (targetLoc.ilceSlug) {
       // Örn: beylikduzuescort.devs.surf -> /istanbul/beylikduzu içeriğini URL değiştirmeden sun
-      return NextResponse.rewrite(new URL(`/${targetLoc.ilSlug}/${targetLoc.ilceSlug}`, req.url));
+      return NextResponse.rewrite(new URL(`/${targetLoc.ilSlug}/${targetLoc.ilceSlug}`, req.url), {
+        request: { headers: requestHeaders },
+      });
     } else if (targetLoc.ilSlug) {
       // Örn: istanbulescort.devs.surf -> /istanbul içeriğini URL değiştirmeden sun
-      return NextResponse.rewrite(new URL(`/${targetLoc.ilSlug}`, req.url));
+      return NextResponse.rewrite(new URL(`/${targetLoc.ilSlug}`, req.url), {
+        request: { headers: requestHeaders },
+      });
     }
   }
 
-  return NextResponse.next();
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
 
 export const config = {

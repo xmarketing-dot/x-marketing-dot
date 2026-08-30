@@ -1661,7 +1661,14 @@ export default function BmsSecurePortalDashboard() {
                   </div>
 
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[11px] text-white truncate max-w-[170px]">{v.path}</span>
+                    <div className="flex items-center gap-1.5 truncate max-w-[170px]">
+                      <span className="font-mono text-[11px] text-white truncate">{v.path}</span>
+                      {v.isBanned && (
+                        <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-red-500/20 text-red-400 border border-red-500/40 shrink-0 animate-pulse">
+                          🚫 ŞUTLANDI
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {v.hostname && (
                         <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 font-mono border border-amber-500/30">
@@ -1669,12 +1676,13 @@ export default function BmsSecurePortalDashboard() {
                         </span>
                       )}
                       <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase font-heading ${
+                        v.isBanned ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
                         isGoogle ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
                         isWa ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
                         isFb ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40' :
                         'bg-slate-800 text-slate-300'
                       }`}>
-                        {v.refererSource?.toUpperCase() || 'DIRECT'}
+                        {v.isBanned ? 'BANLI' : (v.refererSource?.toUpperCase() || 'DIRECT')}
                       </span>
                     </div>
                   </div>
@@ -1709,12 +1717,19 @@ export default function BmsSecurePortalDashboard() {
                   const isWa = v.refererSource === 'whatsapp';
 
                   return (
-                    <tr key={v._id} className="hover:bg-[#21262d]/50 transition-colors">
+                    <tr key={v._id} className={`transition-colors ${v.isBanned ? 'bg-red-950/20 hover:bg-red-950/30' : 'hover:bg-[#21262d]/50'}`}>
                       
                       {/* IP & Şehir */}
                       <td className="py-3 px-3">
                         <div className="flex flex-col">
-                          <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
+                            {v.isBanned && (
+                              <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
+                                🚫 ŞUTLANDI
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[10px] text-amber-400 font-medium">{v.city || 'İstanbul'}</span>
                         </div>
                       </td>
@@ -1734,11 +1749,12 @@ export default function BmsSecurePortalDashboard() {
                       {/* Trafik Kaynağı */}
                       <td className="py-3 px-3">
                         <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase font-heading ${
+                          v.isBanned ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
                           isGoogle ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
                           isWa ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
                           'bg-slate-800 text-slate-300'
                         }`}>
-                          {v.refererSource?.toUpperCase() || 'DIRECT'}
+                          {v.isBanned ? 'BANLI' : (v.refererSource?.toUpperCase() || 'DIRECT')}
                         </span>
                       </td>
 

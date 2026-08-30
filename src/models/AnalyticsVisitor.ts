@@ -18,6 +18,7 @@ export interface IAnalyticsVisitor extends Document {
   ip: string;
   hostname?: string;
   userAgent: string;
+  isBanned?: boolean;
   durationSeconds: number;
   isUniqueToday: boolean;
   createdAt: Date;
@@ -48,6 +49,7 @@ const AnalyticsVisitorSchema = new Schema<IAnalyticsVisitor>(
     ip: { type: String, index: true },
     hostname: { type: String, default: '', index: true },
     userAgent: { type: String },
+    isBanned: { type: Boolean, default: false, index: true },
     durationSeconds: { type: Number, default: 0 },
     isUniqueToday: { type: Boolean, default: true },
   },

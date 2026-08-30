@@ -130,11 +130,36 @@ const jsonLd = {
   ],
 };
 
-export default function RootLayout({
+import { headers, cookies } from 'next/headers';
+import { checkIsBanned } from '@/lib/banCheck';
+import BannedTrollScreen from '@/components/common/BannedTrollScreen';
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  let isBannedVisitor = false;
+  let detectedIp = '';
+
+  try {
+    const [headerList, cookieStore] = await Promise.all([headers(), cookies()]);
+    const currentPath = headerList.get('x-current-path') || '';
+    const isSecurePortal = currentPath.startsWith('/bms-secure-portal');
+
+    if (!isSecurePortal) {
+      const rawIp = headerList.get('x-forwarded-for') || headerList.get('x-real-ip') || '';
+      const banResult = await checkIsBanned(rawIp, cookieStore);
+      if (banResult.isBanned) {
+        isBannedVisitor = true;
+        detectedIp = banResult.cleanIp;
+      }
+    }
+  } catch (err) {
+    // Fail-open for layout reliability
+    console.error('RootLayout ban check error:', err);
+  }
+
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
       <head>
@@ -144,11 +169,17 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
-        <Suspense fallback={null}>
-          <AnalyticsTracker />
-        </Suspense>
-        <MobileShell>{children}</MobileShell>
-        <Analytics />
+        {isBannedVisitor ? (
+          <BannedTrollScreen clientIp={detectedIp} />
+        ) : (
+          <>
+            <Suspense fallback={null}>
+              <AnalyticsTracker />
+            </Suspense>
+            <MobileShell>{children}</MobileShell>
+            <Analytics />
+          </>
+        )}
       </body>
     </html>
   );
