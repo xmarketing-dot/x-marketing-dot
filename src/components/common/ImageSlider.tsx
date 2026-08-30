@@ -30,6 +30,20 @@ export default function ImageSlider({
     setMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+  }, [isFullscreen]);
+
   const safeImages = images && images.length > 0 ? images : [
     { url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=1000&auto=format&fit=crop&q=80' },
   ];
@@ -87,6 +101,16 @@ export default function ImageSlider({
           <Maximize2 className="w-4 h-4 stroke-[2.5]" />
         </button>
 
+        {/* Sahibinden-Style Diagonal Semi-Transparent Center Watermark */}
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none select-none overflow-hidden">
+          <span className="font-heading font-black text-white/[0.18] text-2xl sm:text-4xl tracking-[0.25em] uppercase -rotate-25 whitespace-nowrap drop-shadow-sm">
+            BEST ESKORT
+          </span>
+          <span className="font-sans font-bold text-amber-400/[0.22] text-xs sm:text-sm tracking-[0.2em] uppercase -rotate-25 whitespace-nowrap mt-1">
+            besteskort.devs.surf
+          </span>
+        </div>
+
         {/* Image Counter Pill */}
         {safeImages.length > 1 && (
           <div className="absolute bottom-3 right-3 z-20 px-3 py-1 rounded-full bg-slate-950/90 backdrop-blur-md border border-white/20 text-white font-black text-xs font-heading tracking-wider shadow-lg">
@@ -126,9 +150,8 @@ export default function ImageSlider({
                   e.preventDefault();
                   setCurrentIndex(idx);
                 }}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  idx === currentIndex ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/50 hover:bg-white'
-                }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/50 hover:bg-white'
+                  }`}
               />
             ))}
           </div>
@@ -146,9 +169,8 @@ export default function ImageSlider({
                 e.preventDefault();
                 setCurrentIndex(idx);
               }}
-              className={`relative w-16 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
-                idx === currentIndex ? 'border-amber-400 scale-105 shadow-lg shadow-amber-500/30 ring-1 ring-amber-400' : 'border-[#30363d] opacity-50 hover:opacity-100'
-              }`}
+              className={`relative w-16 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${idx === currentIndex ? 'border-amber-400 scale-105 shadow-lg shadow-amber-500/30 ring-1 ring-amber-400' : 'border-[#30363d] opacity-50 hover:opacity-100'
+                }`}
             >
               <Image src={img.url} alt={`Resim ${idx + 1}`} fill className="object-cover" sizes="64px" />
             </button>
@@ -159,7 +181,7 @@ export default function ImageSlider({
       {/* REACT PORTAL: 100vw x 100vh FULLSCREEN LIGHTBOX MODAL */}
       {isFullscreen && mounted && createPortal(
         <div
-          className="fixed inset-0 z-[99999] w-screen h-screen bg-black/95 backdrop-blur-3xl flex flex-col justify-between p-4 selection:bg-amber-500 selection:text-slate-950 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[9999999] w-screen h-screen bg-black/95 backdrop-blur-3xl flex flex-col justify-between p-4 selection:bg-amber-500 selection:text-slate-950 animate-in fade-in duration-200"
           onClick={() => setIsFullscreen(false)}
         >
           {/* Top Header */}
@@ -220,9 +242,8 @@ export default function ImageSlider({
                 <button
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
-                  className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
-                    idx === currentIndex ? 'border-amber-400 scale-105 shadow-lg shadow-amber-500/30' : 'border-[#30363d] opacity-60 hover:opacity-100'
-                  }`}
+                  className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${idx === currentIndex ? 'border-amber-400 scale-105 shadow-lg shadow-amber-500/30' : 'border-[#30363d] opacity-60 hover:opacity-100'
+                    }`}
                 >
                   <Image src={img.url} alt="Küçük resim" fill sizes="64px" className="object-cover" />
                 </button>

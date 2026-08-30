@@ -133,6 +133,7 @@ const jsonLd = {
 import { headers, cookies } from 'next/headers';
 import { checkIsBanned } from '@/lib/banCheck';
 import BannedTrollScreen from '@/components/common/BannedTrollScreen';
+import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
 
 export default async function RootLayout({
   children,
@@ -177,6 +178,7 @@ export default async function RootLayout({
           <>
             <Suspense fallback={null}>
               <AnalyticsTracker />
+              <RouteTransitionLoader />
             </Suspense>
             <MobileShell>{children}</MobileShell>
             <Analytics />

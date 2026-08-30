@@ -61,15 +61,40 @@ export async function POST(req: NextRequest) {
       const bytes = await file.arrayBuffer();
       const inputBuffer = Buffer.from(bytes);
 
-      // Process with Sharp to WebP
+      // Process with Sharp to WebP with Anti-Theft Permanent Watermark
       try {
-        const processedBuffer = await sharp(inputBuffer)
-          .rotate()
+        const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+        const cleanDomain = host ? host.split(':')[0].toLowerCase() : 'Doğrulanmış Profil';
+
+        const image = sharp(inputBuffer).rotate();
+        const metadata = await image.metadata();
+        const imgWidth = metadata.width || 1200;
+        const imgHeight = metadata.height || 1200;
+
+        // Sahibinden-style diagonal center watermark with subtle opacity
+        const fontSize = Math.round(imgWidth * 0.08);
+        const watermarkSvg = `
+        <svg width="${imgWidth}" height="${imgHeight}" viewBox="0 0 ${imgWidth} ${imgHeight}" xmlns="http://www.w3.org/2000/svg">
+          <g transform="rotate(-28 ${imgWidth / 2} ${imgHeight / 2})">
+            <text x="${imgWidth / 2}" y="${imgHeight / 2 - fontSize * 0.2}" font-family="sans-serif" font-size="${fontSize}" font-weight="900" fill="white" fill-opacity="0.22" text-anchor="middle" letter-spacing="6">BEST ESKORT</text>
+            <text x="${imgWidth / 2}" y="${imgHeight / 2 + fontSize * 0.85}" font-family="sans-serif" font-size="${Math.round(fontSize * 0.42)}" font-weight="700" fill="#fbbf24" fill-opacity="0.25" text-anchor="middle" letter-spacing="3">${cleanDomain}</text>
+          </g>
+        </svg>
+        `;
+
+        const processedBuffer = await image
           .resize(1600, 1600, {
             fit: 'inside',
             withoutEnlargement: true,
           })
-          .webp({ quality: 85, effort: 4 })
+          .composite([
+            {
+              input: Buffer.from(watermarkSvg),
+              gravity: 'center',
+              blend: 'over',
+            }
+          ])
+          .webp({ quality: 86, effort: 4 })
           .toBuffer();
 
         const fileName = `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.webp`;

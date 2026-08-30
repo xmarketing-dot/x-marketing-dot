@@ -114,6 +114,16 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
           />
           {/* Sadece alt metin arkasında çok hafif, ipeksi ve şeffaf geçiş */}
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#0d1117] via-[#0d1117]/80 to-transparent z-10" />
+
+          {/* Sahibinden-Style Diagonal Watermark for Vitrin */}
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none select-none overflow-hidden pb-16">
+            <span className="font-heading font-black text-white/[0.18] text-3xl sm:text-5xl tracking-[0.25em] uppercase -rotate-25 whitespace-nowrap drop-shadow-sm">
+              BEST ESKORT
+            </span>
+            <span className="font-sans font-bold text-amber-400/[0.22] text-xs sm:text-base tracking-[0.2em] uppercase -rotate-25 whitespace-nowrap mt-1">
+              besteskort.devs.surf
+            </span>
+          </div>
         </div>
       ))}
 

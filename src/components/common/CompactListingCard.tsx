@@ -201,6 +201,16 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
           </div>
         )}
 
+        {/* Sahibinden-Style Diagonal Semi-Transparent Center Watermark */}
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none select-none overflow-hidden">
+          <span className="font-heading font-black text-white/[0.18] text-base sm:text-lg tracking-[0.2em] uppercase -rotate-25 whitespace-nowrap">
+            BEST ESKORT
+          </span>
+          <span className="font-sans font-bold text-amber-400/[0.22] text-[9px] tracking-[0.15em] uppercase -rotate-25 whitespace-nowrap mt-0.5">
+            besteskort.devs.surf
+          </span>
+        </div>
+
         {/* Alt Konum Etiketi */}
         <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-sm text-amber-400 text-[10px] font-bold capitalize border border-amber-400/20">
           <MapPin className="w-2.5 h-2.5 text-amber-400 shrink-0" />

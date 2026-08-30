@@ -27,7 +27,7 @@ export default function CategoryShowcase({
   const combinedVipCount = (vipCount || 0) + (ultraVipCount || 0);
   const topVipCover = vipCovers[0] || ultraVipCovers[0] || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=600';
 
-  const categories = [
+  const allCategories = [
     {
       id: 'vip',
       title: 'VIP Vitrin',
@@ -78,8 +78,32 @@ export default function CategoryShowcase({
     },
   ];
 
+  // 1. İlan sayısı 0 olan kategorileri gizle
+  const activeCategories = allCategories.filter((cat) => (cat.count || 0) > 0);
+
+  // Hiç aktif kategori yoksa bölümü komple gizle
+  if (activeCategories.length === 0) {
+    return null;
+  }
+
+  // 2. Kalan kategori sayısına göre esnek ve responsive grid düzeni
+  const gridClass =
+    activeCategories.length === 1
+      ? 'grid grid-cols-1 w-full max-w-xl mx-auto gap-3.5'
+      : activeCategories.length === 2
+      ? 'grid grid-cols-2 gap-3 sm:gap-4 w-full'
+      : 'grid grid-cols-3 gap-2.5 sm:gap-3.5 w-full';
+
+  // Kalan karta göre kartın en boy oranını büyüterek ekrana kusursuz oturt
+  const cardAspect =
+    activeCategories.length === 1
+      ? 'aspect-[16/9] sm:aspect-[21/9]'
+      : activeCategories.length === 2
+      ? 'aspect-[4/5] sm:aspect-[16/10]'
+      : 'aspect-[9/13]';
+
   return (
-    <div className="w-full flex flex-col gap-3.5 px-4">
+    <div className="w-full flex flex-col gap-3.5 px-4 animate-in fade-in duration-200">
       {/* Vitrin Bölüm Başlığı */}
       <div className="flex items-center justify-between border-b border-[#30363d] pb-2">
         <div className="flex items-center gap-2">
@@ -96,15 +120,15 @@ export default function CategoryShowcase({
         </span>
       </div>
 
-      {/* 3'lü Lüks Vitrin Kartları Grid */}
-      <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
-        {categories.map((cat) => {
+      {/* Dinamik ve Responsive Kartlar Grid */}
+      <div className={gridClass}>
+        {activeCategories.map((cat) => {
           const Icon = cat.icon;
           return (
             <Link
               key={cat.id}
               href={cat.href}
-              className={`group relative rounded-3xl overflow-hidden aspect-[9/13] border-2 ${cat.borderGlow} ${cat.glowRing} bg-[#161b22] flex flex-col justify-between p-2.5 sm:p-3.5 active:scale-95 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl`}
+              className={`group relative rounded-3xl overflow-hidden ${cardAspect} border-2 ${cat.borderGlow} ${cat.glowRing} bg-[#161b22] flex flex-col justify-between p-3 sm:p-4 active:scale-95 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl`}
             >
               {/* Arka Plan Vitrin Görseli */}
               <Image
@@ -113,33 +137,40 @@ export default function CategoryShowcase({
                 fill
                 unoptimized
                 loading="lazy"
-                sizes="(max-width: 640px) 33vw, 200px"
-                className="object-cover object-top group-hover:scale-110 transition-transform duration-700 brightness-[1.03] contrast-[1.05]"
+                sizes="(max-width: 640px) 100vw, 400px"
+                className="object-cover object-top group-hover:scale-105 transition-transform duration-700 brightness-[1.03] contrast-[1.05]"
               />
 
-              {/* Lüks Gradyan Katmanı (Görseli karartmadan metinleri kristal netliğinde öne çıkarır) */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0d1117] via-[#0d1117]/30 to-black/60 z-0 group-hover:opacity-85 transition-opacity" />
+              {/* Lüks Gradyan Katmanı */}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d1117] via-[#0d1117]/35 to-black/60 z-0 group-hover:opacity-85 transition-opacity" />
 
               {/* Işıltı Animasyon Katmanı */}
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 z-10" />
 
               {/* ÜST: İkon Rozeti ve Canlı İlan Sayısı */}
               <div className="relative z-20 flex items-center justify-between w-full">
-                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl ${cat.badgeBg} flex items-center justify-center font-black shadow-lg shadow-black/50 group-hover:scale-110 transition-transform`}>
-                  <Icon className={`w-4 h-4 ${cat.badgeIconColor}`} />
+                <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl ${cat.badgeBg} flex items-center justify-center font-black shadow-lg shadow-black/50 group-hover:scale-110 transition-transform`}>
+                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${cat.badgeIconColor}`} />
                 </div>
 
-                <span className={`text-[9px] sm:text-[10px] font-black px-2 py-0.5 rounded-lg ${cat.countBg} backdrop-blur-md border shadow-md font-mono`}>
+                <span className={`text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-lg ${cat.countBg} backdrop-blur-md border shadow-md font-mono`}>
                   {cat.count} İlan
                 </span>
               </div>
 
-              {/* ALT: Temiz, kartı kapatmayan sade başlık */}
+              {/* ALT: Temiz, şık ve okunabilir başlık */}
               <div className="relative z-20 flex items-center justify-between w-full">
-                <span className="font-black text-xs sm:text-sm text-white font-heading tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                  {cat.title}
-                </span>
-                <ChevronRight className="w-3.5 h-3.5 text-amber-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] group-hover:translate-x-1 transition-transform shrink-0" />
+                <div className="flex flex-col">
+                  <span className="font-black text-sm sm:text-base text-white font-heading tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                    {cat.title}
+                  </span>
+                  <span className="text-[10px] text-amber-300/80 font-medium">
+                    {cat.tagline}
+                  </span>
+                </div>
+                <div className="p-1.5 rounded-full bg-black/40 border border-white/10 text-amber-400 group-hover:translate-x-1 transition-transform shrink-0 shadow-lg">
+                  <ChevronRight className="w-4 h-4" />
+                </div>
               </div>
             </Link>
           );
