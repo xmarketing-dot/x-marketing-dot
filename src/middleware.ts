@@ -48,50 +48,71 @@ export function middleware(req: NextRequest) {
   }
 
   // ── SALDIRGAN BOT, SCRAPER VE KOPYALAYICI KALKANI ──
-  // Vercel Function & ISR Writes kotasını tüketen botları Edge seviyesinde anında engelle (0 CPU, 0 Maliyet)
+  // Yalnızca açık otomasyon / saldırı sinyalleri tespit edilirse engelleme yap. Meşru arama motoru botları asla yasaklanmaz.
   const ua = (req.headers.get('user-agent') || '').toLowerCase();
 
-  // ── 1. MEŞRU ARAMA MOTORLARI & SOSYAL MEDYA BOTLARI İÇİN DOKUNULMAZLIK (VIP WHITELIST) ──
-  // Google, Yandex, Bing, DuckDuckGo, Apple ve sosyal medya botları ASLA engellenmez (SEO %100 Güvencede!)
-  const isSearchEngineOrSocial = 
-    ua.includes('google') ||       // Googlebot, Google-InspectionTool, Storebot-Google, AdsBot-Google, Lighthouse
-    ua.includes('yandex') ||       // YandexBot, YandexMobileBot, YandexDirect, YandexMetrika
-    ua.includes('bing') ||         // Bingbot, BingPreview, msnbot
-    ua.includes('duckduck') ||     // DuckDuckBot
-    ua.includes('applebot') ||     // Applebot
+  const isSearchEngineOrSocial =
+    ua.includes('google') ||
+    ua.includes('yandex') ||
+    ua.includes('bing') ||
+    ua.includes('duckduck') ||
+    ua.includes('applebot') ||
     ua.includes('twitterbot') ||
     ua.includes('facebookexternalhit') ||
     ua.includes('whatsapp') ||
-    ua.includes('telegrambot');
+    ua.includes('telegrambot') ||
+    ua.includes('slackbot');
 
   if (!isSearchEngineOrSocial) {
-    const isAggressiveBot = 
-      ua.includes('headlesschrome') ||
+    const pathLower = pathname.toLowerCase();
+    const isObviousAutomation =
+      ua.includes('headless') ||
       ua.includes('puppeteer') ||
       ua.includes('playwright') ||
       ua.includes('selenium') ||
+      ua.includes('webdriver') ||
       ua.includes('python-requests') ||
+      ua.includes('python') ||
       ua.includes('aiohttp') ||
       ua.includes('scrapy') ||
+      ua.includes('curl/') ||
+      ua.includes('wget/') ||
       ua.includes('go-http-client') ||
       ua.includes('libwww-perl') ||
-      ua.includes('semrushbot') ||
-      ua.includes('ahrefsbot') ||
+      ua.includes('okhttp') ||
+      ua.includes('semrush') ||
+      ua.includes('ahrefs') ||
       ua.includes('mj12bot') ||
       ua.includes('dotbot') ||
       ua.includes('petalbot') ||
       ua.includes('bytespider') ||
       ua.includes('megaindex') ||
       ua.includes('blexbot') ||
-      ua.includes('dataforseobot') ||
+      ua.includes('dataforseo') ||
       ua.includes('claudebot') ||
       ua.includes('gptbot') ||
       ua.includes('ccbot') ||
-      (ua.startsWith('curl/') && !pathname.startsWith('/api/test')) ||
-      (ua.startsWith('wget/') && !pathname.startsWith('/api/test'));
+      ua.includes('sqlmap') ||
+      ua.includes('nikto') ||
+      ua.includes('acunetix');
+
+    const isCredentialOrAdminProbe =
+      pathLower.includes('/.git') ||
+      pathLower.includes('/.env') ||
+      pathLower.includes('/wp-admin') ||
+      pathLower.includes('/phpmyadmin') ||
+      pathLower.includes('/api/admin') ||
+      pathLower.includes('php') ||
+      pathLower.includes('eval(') ||
+      pathLower.includes('select%20') ||
+      pathLower.includes('<script') ||
+      pathLower.includes('cmd=') ||
+      pathLower.includes('admin');
+
+    const isAggressiveBot = isObviousAutomation || (isCredentialOrAdminProbe && !pathname.startsWith('/api/analytics'));
 
     if (isAggressiveBot) {
-      return new NextResponse('Access Denied: Automated scraping prohibited.', {
+      return new NextResponse('Access Denied: Automated scraping or probing prohibited.', {
         status: 403,
         headers: { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' },
       });

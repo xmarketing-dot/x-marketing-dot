@@ -211,16 +211,18 @@ export default function BmsSecurePortalDashboard() {
   const totals = { fb, google, x, waClicks, shares };
 
   // ── ŞÜPHELİ TRAFİK, BOT VE SALDIRI TESPİT ANALİZİ ──
+  // City/IP tek başına "bot" değildir; daha yüksek riskli sinyal kombinasyonları alarm üretir.
   const getSuspiciousAnalysis = (v: any) => {
     const ua = (v.userAgent || '').toLowerCase();
-    const isSearchEngine = 
+    const isSearchEngine =
       ua.includes('google') ||
       ua.includes('yandex') ||
       ua.includes('bing') ||
       ua.includes('duckduck') ||
       ua.includes('applebot') ||
       ua.includes('whatsapp') ||
-      ua.includes('telegrambot');
+      ua.includes('telegrambot') ||
+      ua.includes('facebookexternalhit');
 
     if (isSearchEngine) {
       return { isSuspicious: false, isSearchEngine: true, badge: '✅ Arama Motoru (Google/Yandex)', reasons: [] };
@@ -232,12 +234,12 @@ export default function BmsSecurePortalDashboard() {
     const ip = v.ip || '';
     const city = (v.city || '').toLowerCase();
 
-    // 1. Bot & Otomasyon İmzası (HeadlessChrome, Puppeteer, Scrapy, curl, python, vb.)
-    if (
-      ua.includes('headlesschrome') ||
+    const isAutomationSignature =
+      ua.includes('headless') ||
       ua.includes('puppeteer') ||
       ua.includes('playwright') ||
       ua.includes('selenium') ||
+      ua.includes('webdriver') ||
       ua.includes('python') ||
       ua.includes('scrapy') ||
       ua.includes('curl') ||
@@ -250,52 +252,62 @@ export default function BmsSecurePortalDashboard() {
       ua.includes('mj12bot') ||
       ua.includes('petalbot') ||
       ua === '' ||
-      ua.length < 15
-    ) {
+      ua.length < 15;
+
+    if (isAutomationSignature) {
       reasons.push('🤖 Otomasyon / Bot Tarayıcı');
     }
 
-    // 2. AWS / Datacenter / Frankfurt Proxy / VPN IP'leri
-    if (
-      ip.startsWith('54.183.') ||
-      ip.startsWith('13.57.') ||
-      ip.startsWith('193.108.') ||
-      city.includes('san jose') ||
-      city.includes('frankfurt') ||
-      city.includes('ashburn') ||
-      city.includes('dallas') ||
-      city.includes('boardman')
-    ) {
-      reasons.push('🌐 Veri Merkezi / VPN / Proxy IP');
-    }
-
-    // 3. Dahili Vercel URL Taraması
-    if (host.includes('.vercel.app')) {
-      reasons.push('🕵️ Dahili Vercel Link Taraması');
-    }
-
-    // 4. Şüpheli Yol veya Açık Arama
-    if (
+    const isAttackPath =
       path.includes('.env') ||
       path.includes('wp-admin') ||
+      path.includes('/phpmyadmin') ||
       path.includes('php') ||
       path.includes('eval') ||
       path.includes('select') ||
       path.includes('<script') ||
-      path.includes('/api/admin')
-    ) {
-      reasons.push('⚠️ Şüpheli Dizin / Açık Tarama');
+      path.includes('/api/admin') ||
+      path.includes('/api/auth') ||
+      path.includes('cmd=');
+
+    if (isAttackPath) {
+      reasons.push('⚠️ Saldırı / Tarama Denemesi');
     }
 
-    // 5. Yasaklanmış IP
+    const isProxyOrDatacenter =
+      ip.startsWith('54.183.') ||
+      ip.startsWith('13.57.') ||
+      ip.startsWith('193.108.') ||
+      ip.startsWith('57.141.') ||
+      city.includes('san jose') ||
+      city.includes('frankfurt') ||
+      city.includes('ashburn') ||
+      city.includes('dallas') ||
+      city.includes('boardman');
+
+    if (isProxyOrDatacenter && (isAutomationSignature || isAttackPath)) {
+      reasons.push('🌐 Veri Merkezi / VPN / Proxy IP');
+    }
+
+    if (host.includes('.vercel.app')) {
+      reasons.push('🕵️ Dahili Vercel Link Taraması');
+    }
+
     if (v.isBanned) {
       reasons.push('🚫 Sistemce Yasaklanmış');
     }
 
+    const isHighRisk = reasons.some((reason) =>
+      reason.includes('Otomasyon') ||
+      reason.includes('Saldırı') ||
+      reason.includes('Yasaklanmış') ||
+      reason.includes('Tarama')
+    );
+
     return {
-      isSuspicious: reasons.length > 0,
+      isSuspicious: reasons.length > 0 && isHighRisk,
       isSearchEngine: false,
-      badge: reasons.length > 0 ? '🚨 ŞÜPHELİ / BOT' : null,
+      badge: reasons.length > 0 && isHighRisk ? '🚨 BOT / ATTACK' : null,
       reasons,
     };
   };

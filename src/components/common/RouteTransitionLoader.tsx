@@ -44,13 +44,8 @@ export default function RouteTransitionLoader() {
     return () => document.removeEventListener('click', handleLinkClick);
   }, []);
 
-  // Failsafe auto-dismiss for top laser line
-  useEffect(() => {
-    if (!isNavigating) return;
-    const timer = setTimeout(() => setIsNavigating(false), 1200);
-    return () => clearTimeout(timer);
-  }, [isNavigating]);
-
+  // Do not dismiss early. The loader should stay visible until the route pathname actually changes.
+  // A hard timer here can make the UI say "loading is done" even while the new page is still pending.
   if (!isNavigating) return null;
 
   return (
