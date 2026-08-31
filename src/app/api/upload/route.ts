@@ -112,15 +112,12 @@ export async function POST(req: NextRequest) {
           await writeFile(filePath, processedBuffer);
           uploadedUrls.push(`/uploads/${fileName}`);
         } catch (fsErr) {
-          // Fallback to inline Base64 data URL if running on read-only serverless filesystem
-          const base64Url = `data:image/webp;base64,${processedBuffer.toString('base64')}`;
-          uploadedUrls.push(base64Url);
+          console.error('Filesystem write failed for uploaded image:', fsErr);
+          throw new Error(`Resim kaydedilemedi. Sunucu dosya yazma izni sorunlu olabilir: ${String(fsErr)}`);
         }
       } catch (sharpError: any) {
         console.error('Sharp process error:', sharpError);
-        // If sharp fails on raw bytes, try direct fallback
-        const base64Url = `data:${mime || 'image/jpeg'};base64,${inputBuffer.toString('base64')}`;
-        uploadedUrls.push(base64Url);
+        throw new Error(`Resim işlenirken hata oluştu: ${sharpError.message || 'Bilinmeyen hata'}`);
       }
     }
 

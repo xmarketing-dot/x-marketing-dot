@@ -74,6 +74,7 @@ export async function GET(req: Request) {
             mobileCount: { $sum: { $cond: [{ $eq: ["$device", "mobile"] }, 1, 0] } },
             desktopCount: { $sum: { $cond: [{ $eq: ["$device", "desktop"] }, 1, 0] } },
             googleCount: { $sum: { $cond: [{ $eq: ["$refererSource", "google"] }, 1, 0] } },
+            yandexCount: { $sum: { $cond: [{ $eq: ["$refererSource", "yandex"] }, 1, 0] } },
             whatsappCount: { $sum: { $cond: [{ $eq: ["$refererSource", "whatsapp"] }, 1, 0] } },
             telegramCount: { $sum: { $cond: [{ $eq: ["$refererSource", "telegram"] }, 1, 0] } },
             directCount: { $sum: { $cond: [{ $eq: ["$refererSource", "direct"] }, 1, 0] } },
@@ -516,6 +517,7 @@ export async function GET(req: Request) {
         desktopPercentage: totalPageviews > 0 ? Math.round((desktopCount / totalPageviews) * 100) : 0,
         sources: {
           google: summary.googleCount || 0,
+          yandex: summary.yandexCount || 0,
           whatsapp: summary.whatsappCount || 0,
           telegram: summary.telegramCount || 0,
           direct: summary.directCount || 0,

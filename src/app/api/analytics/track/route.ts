@@ -80,10 +80,12 @@ export async function POST(req: NextRequest) {
     const targetRef = (isInternalReferer && isEntryExternal) ? entryRefLower : refLower;
     const finalStoredReferer = (isInternalReferer && isEntryExternal) ? entryReferer : (referer || 'Direct');
 
-    let source: 'google' | 'whatsapp' | 'telegram' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other' = 'direct';
+    let source: 'google' | 'yandex' | 'whatsapp' | 'telegram' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other' = 'direct';
 
     if (targetRef.includes('google.') || searchKeyword) {
       source = 'google';
+    } else if (targetRef.includes('yandex')) {
+      source = 'yandex';
     } else if (
       targetRef.includes('whatsapp') ||
       targetRef.includes('wa.me') ||

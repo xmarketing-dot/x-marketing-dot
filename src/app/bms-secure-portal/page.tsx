@@ -146,7 +146,7 @@ export default function BmsSecurePortalDashboard() {
     desktopCount = 0,
     mobilePercentage = 80,
     desktopPercentage = 20,
-    sources = { google: 0, whatsapp: 0, direct: 0, instagram: 0, x: 0, facebook: 0, telegram: 0 },
+    sources = { google: 0, yandex: 0, whatsapp: 0, direct: 0, instagram: 0, x: 0, facebook: 0, telegram: 0 },
     searchTerms = [],
     popularPages = [],
     topCities = [],
@@ -491,7 +491,7 @@ export default function BmsSecurePortalDashboard() {
           </div>
 
           {/* 4 Ana Metrik Kartı */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
             {/* Tekil Ziyaretçi */}
             <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-amber-500/50 transition-colors">
               <div className="flex items-center justify-between">
@@ -529,7 +529,7 @@ export default function BmsSecurePortalDashboard() {
             {/* Google Organik Arama Trafiği */}
             <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-blue-500/50 transition-colors">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Google Organik Arama</span>
+                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Google Arama</span>
                 <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
                   <Search className="w-5 h-5" />
                 </div>
@@ -543,10 +543,27 @@ export default function BmsSecurePortalDashboard() {
               </span>
             </div>
 
+            {/* Yandex Arama Trafiği (YENİ) */}
+            <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-red-500/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Yandex Arama</span>
+                <div className="w-9 h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center">
+                  <TrendingUp className="w-5 h-5" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-black text-3xl text-red-400 font-heading">{sources.yandex.toLocaleString()}</span>
+                <span className="text-xs text-red-300 font-bold">Yandex Girişi</span>
+              </div>
+              <span className="text-[11px] text-[#8b949e] flex items-center gap-1 border-t border-[#30363d] pt-2">
+                Yandex Search Engine trafiği 🇷🇺
+              </span>
+            </div>
+
             {/* Sosyal & Facebook Trafiği */}
             <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-indigo-500/50 transition-colors">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Facebook &amp; Sosyal Ağlar</span>
+                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Facebook &amp; Sosyal</span>
                 <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
                   <Share2 className="w-5 h-5" />
                 </div>

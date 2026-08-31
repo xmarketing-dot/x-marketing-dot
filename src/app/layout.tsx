@@ -170,6 +170,31 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        
+        {/* Yandex Metrika Counter - Search Analytics & Heatmap Tracking */}
+        <script
+          type="text/javascript"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+              m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+              (window, document, "script", "https://mc.yandex.ru/metrica/tag.js", "ym");
+
+              ym(112120217, "init", {
+                  clickmap:true,
+                  trackLinks:true,
+                  accurateTrackBounce:true,
+                  webvisor:true,
+                  ecommerce: "dataLayer"
+              });
+            `
+          }}
+        />
+        <noscript>
+          <div>
+            <img src="https://mc.yandex.ru/watch/112120217" style={{position: 'absolute', left: '-9999px'}} alt="" />
+          </div>
+        </noscript>
       </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
         {isBannedVisitor ? (
