@@ -27,14 +27,20 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   const isGold = rozet === 'gold';
   const isSilver = rozet === 'silver' || rozet === 'standart';
 
-  // Extract all unique images
+  // Extract all unique images with robust string/object format support
   const allImages = React.useMemo(() => {
     const list: string[] = [];
-    if (listing.anaFotograf?.url) list.push(listing.anaFotograf.url);
+    const pushImg = (val: any) => {
+      if (!val) return;
+      const url = typeof val === 'string' ? val : val?.url;
+      if (typeof url === 'string' && url.trim() && !list.includes(url.trim())) {
+        list.push(url.trim());
+      }
+    };
+
+    pushImg(listing.anaFotograf);
     if (Array.isArray(listing.fotograflar)) {
-      listing.fotograflar.forEach((f) => {
-        if (f?.url && !list.includes(f.url)) list.push(f.url);
-      });
+      listing.fotograflar.forEach(pushImg);
     }
     if (list.length === 0) {
       list.push('https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=600');
@@ -48,11 +54,11 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
 
   // Auto-slide images periodically if multiple images exist
   useEffect(() => {
-    if (allImages.length <= 1) return;
+    if (!allImages || allImages.length <= 1) return;
 
-    // Slight staggered delay based on listing slug/id hash
+    // Staggered interval between 2.2s and 3.0s
     const hash = (listing.slug || listing._id || 'a').charCodeAt(0);
-    const intervalTime = 3200 + (hash % 1000);
+    const intervalTime = 2200 + (hash % 800);
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % allImages.length);

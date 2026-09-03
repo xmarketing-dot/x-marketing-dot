@@ -165,51 +165,75 @@ export default async function CategoryDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6 px-4 py-4 pb-16 w-full max-w-4xl mx-auto">
+    <div className="flex flex-col gap-4 px-4 py-2 pb-16 w-full max-w-4xl mx-auto">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-1.5 text-xs text-[#8b949e] pt-2 font-heading" aria-label="Sayfa yolu">
-        <Link href="/" className="hover:text-amber-400 transition-colors">Anasayfa</Link>
-        <ChevronRight className="w-3.5 h-3.5 text-[#484f58]" />
-        <span className="text-white font-bold">{tierInfo.title}</span>
-      </nav>
+      {/* Hero Header Banner (Entegre, Dengeli & Lüks Kartvizit Başlık) */}
+      <div className={`relative p-3 sm:p-4 rounded-2xl ${
+        slug === 'vip'
+          ? 'bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#b45309] text-slate-950 shadow-xl shadow-amber-500/30 border border-amber-300'
+          : slug === 'gold'
+          ? 'bg-gradient-to-r from-[#2b210a] via-[#1a1406] to-[#0f0b02] text-amber-200 shadow-lg shadow-black/80 border border-amber-500/60'
+          : 'bg-gradient-to-r from-[#222a36] via-[#161c24] to-[#0d1218] text-slate-100 shadow-lg shadow-black/80 border border-slate-400/50'
+      } overflow-hidden`}>
+        {/* İÇ ÇİFT ÇERÇEVE */}
+        <div className={`rounded-xl border-2 ${
+          slug === 'vip'
+            ? 'border-slate-950/60'
+            : slug === 'gold'
+            ? 'border-amber-400/50'
+            : 'border-slate-300/40'
+        } p-3 sm:p-4 flex flex-col gap-2 relative overflow-hidden text-left`}>
+          
+          {/* ÜST SATIR: İkon + Başlık + Sağda İlan Sayacı (Mobilde de masaüstünde de tek satırda hizalı) */}
+          <div className="flex items-center justify-between gap-2 w-full">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                slug === 'vip'
+                  ? 'bg-slate-950 text-amber-400 border-slate-950 shadow-md'
+                  : slug === 'gold'
+                  ? 'bg-black/60 text-amber-400 border-amber-400/40 shadow-md'
+                  : 'bg-black/60 text-slate-200 border-slate-400/40 shadow-md'
+              }`}>
+                <span className="text-base sm:text-lg">{slug === 'vip' ? '👑' : slug === 'gold' ? '⭐' : '⚡'}</span>
+              </div>
 
-      {/* Hero Header Banner */}
-      <div className={`p-6 sm:p-8 rounded-[32px] bg-[#161b22] border ${tierInfo.border} shadow-2xl flex flex-col gap-4 relative overflow-hidden`}>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-[8px] sm:text-[9px] font-heading font-black tracking-[0.16em] uppercase truncate ${
+                    slug === 'vip' ? 'text-slate-950' : slug === 'gold' ? 'text-amber-400' : 'text-slate-300'
+                  }`}>
+                    {slug === 'vip' ? 'VIP İLAN' : slug === 'gold' ? 'GOLD İLAN' : 'SILVER İLAN'}
+                  </span>
+                  <span className="text-[9px] opacity-60">✦</span>
+                </div>
+                <h1 className={`font-heading font-black text-base sm:text-xl tracking-tight leading-none truncate ${
+                  slug === 'vip' ? 'text-slate-950' : slug === 'gold' ? 'text-amber-200' : 'text-white'
+                }`}>
+                  {tierInfo.title}
+                </h1>
+              </div>
+            </div>
 
-        <div className="flex items-center justify-between relative z-10 flex-wrap gap-2">
-          <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider font-heading">
-            <span className={`p-2 rounded-2xl ${tierInfo.badgeBg} flex items-center justify-center shadow-lg`}>
-              <Icon className="w-5 h-5 fill-current" />
+            {/* İlan Sayısı Kapsülü: Üst sağ köşede jilet gibi sabit */}
+            <span className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-xs font-mono font-black shrink-0 shadow-md ${
+              slug === 'vip'
+                ? 'bg-slate-950 text-amber-300 border-2 border-slate-950'
+                : slug === 'gold'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
+                : 'bg-white/10 text-slate-200 border border-white/10'
+            }`}>
+              {categoryListings.length} AKTİF İLAN
             </span>
-            <span className={tierInfo.color}>{tierInfo.subtitle}</span>
           </div>
 
-          <span className="px-3 py-1 rounded-full bg-[#21262d] text-white text-xs font-black border border-white/10 font-heading">
-            {categoryListings.length} Aktif İlan
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2 relative z-10">
-          <h1 className="font-heading font-black text-2xl sm:text-4xl text-white tracking-tight">
-            {tierInfo.title}
-          </h1>
-          <p className="text-xs sm:text-sm text-[#8b949e] leading-relaxed max-w-2xl font-medium">
+          {/* ALT SATIR: Açıklama Metni */}
+          <p className={`text-xs leading-relaxed font-medium line-clamp-2 pt-1 border-t border-current/10 ${
+            slug === 'vip' ? 'text-slate-950/85' : slug === 'gold' ? 'text-amber-300/80' : 'text-[#8b949e]'
+          }`}>
             {tierInfo.desc}
           </p>
-        </div>
 
-        <div className="pt-2 border-t border-white/10 flex items-center gap-4 text-[11px] text-[#8b949e] font-semibold flex-wrap">
-          <span className="flex items-center gap-1 text-emerald-400">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            %100 Teyitli Fotoğraflar
-          </span>
-          <span className="flex items-center gap-1 text-amber-400">
-            <Sparkles className="w-3.5 h-3.5" />
-            Doğrudan WhatsApp İletişimi
-          </span>
         </div>
       </div>
 
@@ -242,28 +266,6 @@ export default async function CategoryDetailPage({ params }: Props) {
             </Link>
           </div>
         )}
-      </div>
-
-      {/* SEO Regional Internal Linking Footer */}
-      <div className="p-6 rounded-[28px] bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-lg text-xs text-[#8b949e]">
-        <h3 className="font-bold text-sm text-white font-heading flex items-center gap-2">
-          <Globe className="w-4 h-4 text-amber-400" />
-          <span>Şehirlere Göre {tierInfo.title}</span>
-        </h3>
-        <p className="leading-relaxed">
-          Türkiye geneli tüm büyükşehirler ve ilçelerdeki güncel {tierInfo.title.toLowerCase()} ve escort bayan listeleri.
-        </p>
-        <div className="flex flex-wrap gap-1.5 pt-2 border-t border-white/10">
-          {locations.slice(0, 18).map((loc: any) => (
-            <Link
-              key={loc.ilSlug}
-              href={`/${loc.ilSlug}`}
-              className="px-2.5 py-1 rounded-lg bg-[#21262d] text-[#8b949e] hover:text-amber-400 hover:bg-[#30363d] font-bold text-[11px] border border-[#30363d] transition-colors"
-            >
-              {loc.il} Eskort
-            </Link>
-          ))}
-        </div>
       </div>
     </div>
   );

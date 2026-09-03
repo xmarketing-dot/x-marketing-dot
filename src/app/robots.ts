@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        allow: ['/', '/api/img/'],
         disallow: [
           '/api/',
           '/bms-secure-portal/',
@@ -36,7 +36,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: 'Googlebot',
-        allow: '/',
+        allow: ['/', '/api/img/'],
         disallow: [
           '/api/',
           '/bms-secure-portal/',
@@ -47,7 +47,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: 'Bingbot',
-        allow: '/',
+        allow: ['/', '/api/img/'],
         disallow: [
           '/api/',
           '/bms-secure-portal/',
@@ -58,7 +58,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: 'Yandex',
-        allow: '/',
+        allow: ['/', '/api/img/'],
         disallow: [
           '/api/',
           '/bms-secure-portal/',
@@ -69,7 +69,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: 'YandexBot',
-        allow: '/',
+        allow: ['/', '/api/img/'],
         disallow: [
           '/api/',
           '/bms-secure-portal/',

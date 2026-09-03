@@ -103,8 +103,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const addImage = (u: string | undefined | null) => {
       if (!u) return;
-      // Base64 data URL'leri ve /api/img GridFS URL'lerini sitemap'e ekleme — Google kabul etmez
-      if (u.startsWith('data:') || u.includes(';base64,') || u.startsWith('/api/img/')) return;
+      // Base64 data URL'leri sitemap'e eklenmez
+      if (u.startsWith('data:') || u.includes(';base64,')) return;
       const fullU = u.startsWith('http') ? u : `${siteUrl}${u}`;
       if (!images.includes(fullU)) images.push(fullU);
     };

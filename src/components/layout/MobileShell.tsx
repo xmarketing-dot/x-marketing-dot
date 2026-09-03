@@ -70,6 +70,20 @@ export default function MobileShell({ children }: MobileShellProps) {
     );
   }
 
+  // Reklam Ver & İlan Ver gibi özel form sayfaları desktopta ajans ana sayfası yerine kendi form içeriklerini gösterir
+  const isDedicatedFormPage = pathname === '/reklam-ver' || pathname === '/ilan-ver' || pathname?.startsWith('/ilan-duzenle');
+  if (isDedicatedFormPage) {
+    return (
+      <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans overflow-x-hidden flex flex-col">
+        <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8">
+          {children}
+        </main>
+        <SeoBacklinkFooter />
+        <GlobalChatNotification />
+      </div>
+    );
+  }
+
   // Panelim route renders dedicated clean dashboard without public website header/ticker
   if (isPanelimPage) {
     return (

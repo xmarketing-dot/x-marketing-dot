@@ -89,6 +89,30 @@ export async function POST(req: NextRequest) {
       const bytes = await file.arrayBuffer();
       const inputBuffer = Buffer.from(bytes);
 
+      // Check if file is animated GIF
+      const isGif = mime === 'image/gif' || fileExt === '.gif';
+
+      if (isGif) {
+        // GIF dosyalarında animasyonun (karelerin) bozulmaması için Sharp static WebP dönüşümü yapılmaz, orijinal GIF GridFS'e aktarılır
+        const fileName = `gif_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.gif`;
+        await connectToDatabase();
+        const db = mongoose.connection.db!;
+        const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'uploads' });
+
+        const fileId = await new Promise<string>((resolve, reject) => {
+          const readable = Readable.from(inputBuffer);
+          const uploadStream = bucket.openUploadStream(fileName, {
+            metadata: { contentType: 'image/gif', uploadedAt: new Date() },
+          });
+          readable.pipe(uploadStream);
+          uploadStream.on('finish', () => resolve(uploadStream.id.toString()));
+          uploadStream.on('error', reject);
+        });
+
+        uploadedUrls.push(`/api/img/${fileId}`);
+        continue;
+      }
+
       // Process with Sharp → WebP + Anti-Theft Watermark
       const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
       const cleanDomain = host ? host.split(':')[0].toLowerCase() : 'besteskort.com';

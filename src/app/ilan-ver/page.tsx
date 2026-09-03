@@ -28,7 +28,8 @@ import {
   Zap,
   KeyRound,
   LayoutDashboard,
-  Info
+  Info,
+  ChevronLeft
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 
@@ -65,14 +66,36 @@ export default function CreateListingPage() {
 
   const tiers = [
     {
+      id: 'gold',
+      name: 'Gold Vitrin',
+      icon: '⭐',
+      badge: 'GOLD İLAN',
+      title: 'GOLD',
+      theme: 'gold',
+      cardBg: 'bg-gradient-to-b from-[#2b210a] via-[#1a1406] to-[#0f0b02] text-amber-200 border border-amber-500/50 shadow-xl',
+      innerBorder: 'border-amber-400/50',
+      titleColor: 'text-amber-300',
+      ornamentColor: 'text-amber-400',
+      subColor: 'text-amber-400/80',
+      desc: 'Şehir ve ilçe listelemelerinde öne çıkan popüler ilan vitrini.',
+      features: [
+        'Bölgesel aramalarda öne çıkma',
+        'Gold İlan rozeti ve iletişim bağlantısı',
+        'Mobil uyumlu tam sayfa detay vitrini'
+      ]
+    },
+    {
       id: 'vip',
       name: 'VIP Vitrin',
-      icon: Crown,
-      badge: 'EN ÇOK TERCİH EDİLEN 🔥',
-      gradient: 'from-amber-500/25 via-[#1a1508] to-[#161b22]',
-      border: 'border-amber-500/80 ring-1 ring-amber-400/30',
-      tagColor: 'bg-amber-500 text-slate-950',
-      titleColor: 'text-amber-400',
+      icon: '👑',
+      badge: 'VIP İLAN',
+      title: 'VIP',
+      theme: 'vip',
+      cardBg: 'bg-gradient-to-b from-[#ffd700] via-[#f59e0b] to-[#b45309] text-slate-950 border-2 border-amber-300 shadow-2xl shadow-amber-500/30',
+      innerBorder: 'border-slate-950/60',
+      titleColor: 'text-slate-950',
+      ornamentColor: 'text-slate-950',
+      subColor: 'text-slate-950/90',
       desc: 'Anasayfada ve tüm aramalarda en üst sırada sabit kalma garantisi.',
       features: [
         'Anasayfa en üst vitrinde sabit gösterim',
@@ -83,30 +106,17 @@ export default function CreateListingPage() {
       ]
     },
     {
-      id: 'gold',
-      name: 'Gold Vitrin',
-      icon: Award,
-      badge: 'POPÜLER 🥇',
-      gradient: 'from-yellow-600/20 via-[#140e03] to-[#161b22]',
-      border: 'border-yellow-600/50',
-      tagColor: 'bg-yellow-600 text-white',
-      titleColor: 'text-yellow-300',
-      desc: 'Şehir ve ilçe listelemelerinde öne çıkan ilan vitrini.',
-      features: [
-        'Bölgesel aramalarda öne çıkma',
-        'Gold İlan rozeti ve iletişim bağlantısı',
-        'Mobil uyumlu tam sayfa detay vitrini'
-      ]
-    },
-    {
       id: 'silver',
       name: 'Silver Standart',
-      icon: Medal,
-      badge: 'STANDART 🥈',
-      gradient: 'from-slate-700/20 via-[#161b22] to-[#161b22]',
-      border: 'border-[#30363d]',
-      tagColor: 'bg-slate-700 text-white',
-      titleColor: 'text-slate-300',
+      icon: '⚡',
+      badge: 'SILVER İLAN',
+      title: 'SILVER',
+      theme: 'silver',
+      cardBg: 'bg-gradient-to-b from-[#222a36] via-[#161c24] to-[#0d1218] text-slate-100 border border-slate-400/40 shadow-xl',
+      innerBorder: 'border-slate-300/40',
+      titleColor: 'text-slate-100',
+      ornamentColor: 'text-slate-300',
+      subColor: 'text-slate-400',
       desc: 'Standart liste gösterimi ve doğrudan müşteri iletişimi.',
       features: [
         'İlgili şehir ve ilçe listesinde standart yayın',
@@ -207,9 +217,9 @@ export default function CreateListingPage() {
           const chatRes = await fetch('/api/chat/start', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
               threadId: savedThreadId,
-              kullaniciAdi: `İlan Sahibi: ${formData.baslik}` 
+              kullaniciAdi: `İlan Sahibi: ${formData.baslik}`
             }),
           });
           const chatData = await chatRes.json();
@@ -317,61 +327,57 @@ export default function CreateListingPage() {
   const currentTierObj = tiers.find(t => t.id === formData.rozet) || tiers[0];
 
   return (
-    <div className="p-4 sm:p-6 flex flex-col gap-6 max-w-xl mx-auto pb-12">
+    <div className="p-4 sm:p-6 flex flex-col gap-6 max-w-2xl mx-auto w-full pb-16 text-left">
 
-      {/* ── ÜST CANLI DESTEK BANNERI ──────────────── */}
-      <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-amber-500/25 via-[#1a1508] to-[#0d1117] border-2 border-amber-400 p-6 flex flex-col gap-4 shadow-[0_0_50px_rgba(245,158,11,0.25)]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30">
-                <Headphones className="w-6 h-6 stroke-[2.5]" />
-              </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-[#161b22] animate-pulse" />
-            </div>
+      {/* ── ÜST BAR: GERİ DÖNÜŞ VE İLAN DÜZENLEME ──────────────── */}
+      <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+        <Link
+          href="/"
+          className="flex items-center gap-1.5 text-xs text-[#8b949e] hover:text-white transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span>Anasayfa</span>
+        </Link>
 
-            <div className="flex flex-col">
-              <span className="font-black text-base text-white font-heading tracking-tight flex items-center gap-1.5">
-                <span>Canlı Destek &amp; Temsilci</span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-500/30">
-                  Online
-                </span>
-              </span>
-              <span className="text-[11px] text-amber-300/80 font-bold">
-                ⚡ Sorularınız için 7/24 temsilcimiz hazır
-              </span>
-            </div>
-          </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/ilan-duzenle"
+            className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-black text-xs border border-amber-500/30 active:scale-95 transition-all flex items-center gap-1.5 font-heading"
+          >
+            <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+            <span>İlan Düzenle</span>
+          </Link>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/ilan-duzenle"
-              className="px-3.5 py-2.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-black text-xs border border-amber-500/30 active:scale-95 transition-all flex items-center gap-1.5 font-heading"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-              <span>İlan Düzenle</span>
-            </Link>
+          <button
+            onClick={() => router.push('/chat')}
+            className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 font-heading uppercase tracking-wider"
+          >
+            <Headphones className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Canlı Destek</span>
+          </button>
+        </div>
+      </div>
 
-            <button
-              onClick={() => router.push('/chat')}
-              className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 font-heading uppercase tracking-wider"
-            >
-              <MessageSquare className="w-3.5 h-3.5 fill-slate-950" />
-              <span>Bağlan</span>
-            </button>
-          </div>
+      {/* ── SAYFA BAŞLIĞI VE ADIM GÖSTERGESİ ──────────────── */}
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-heading font-black">
+            {step === 1 ? '1. ADIM / 2' : '2. ADIM / 2'}
+          </span>
+          <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            7/24 Anında Onay
+          </span>
         </div>
 
-        <div>
-          <h1 className="font-black text-xl text-white font-heading">
-            {step === 1 ? 'Adım 1: Vitrin Paketinizi Seçin' : 'Adım 2: İlan Bilgilerini Doldurun'}
-          </h1>
-          <p className="text-xs text-[#c9d1d9] mt-1 leading-relaxed">
-            {step === 1
-              ? 'İlanınızın görünürlüğünü belirleyecek vitrin paketini seçip devam edin.'
-              : 'Seçtiğiniz paket için ilan detaylarını ve fotoğrafları ekleyin.'}
-          </p>
-        </div>
+        <h1 className="font-heading font-black text-2xl sm:text-3xl text-white tracking-tight">
+          {step === 1 ? 'Vitrin Paketinizi Seçin' : 'İlan Bilgilerini Doldurun'}
+        </h1>
+        <p className="text-xs text-[#8b949e] leading-relaxed">
+          {step === 1
+            ? 'İlanınızın anasayfa ve şehir aramalarındaki görünürlüğünü belirleyecek paketi seçip devam edin.'
+            : 'Seçtiğiniz paket için fotoğrafları ve iletişim detaylarını ekleyin.'}
+        </p>
 
         {/* Step Indicator Bar */}
         <div className="flex items-center gap-2 pt-1">
@@ -393,53 +399,101 @@ export default function CreateListingPage() {
             <span className="text-[10px] text-amber-400 font-bold">Paketi Seç &amp; Devam Et</span>
           </div>
 
-          <div className="grid grid-cols-1 gap-3.5">
+          {/* 3'LÜ YAN YANA LÜKS VİTRİN KARTLARI SEÇİMİ */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-3 w-full items-stretch">
             {tiers.map((tier) => {
-              const Icon = tier.icon;
               const isSelected = formData.rozet === tier.id;
+              const isVip = tier.theme === 'vip';
+
               return (
                 <div
                   key={tier.id}
                   onClick={() => setFormData({ ...formData, rozet: tier.id })}
-                  className={`relative rounded-3xl bg-gradient-to-br ${tier.gradient} p-5 border cursor-pointer transition-all duration-200 shadow-xl ${isSelected ? `${tier.border} scale-[1.01]` : 'border-[#30363d] opacity-80 hover:opacity-100'
+                  className={`group relative rounded-2xl sm:rounded-3xl p-1.5 sm:p-2.5 transition-all duration-300 hover:-translate-y-1.5 cursor-pointer shadow-xl select-none flex flex-col justify-between ${tier.cardBg} ${isSelected
+                      ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-[#0d1117] scale-[1.02] z-20'
+                      : 'opacity-70 hover:opacity-100'
                     }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${isSelected ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20' : 'bg-[#21262d] text-white'}`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className={`font-black text-base font-heading ${tier.titleColor}`}>
-                          {tier.name}
-                        </span>
-                        <span className="text-[10px] text-[#8b949e] font-bold">
-                          {tier.badge}
-                        </span>
+                  {/* VIP Parlama Efekti */}
+                  {isVip && (
+                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-yellow-300 rounded-3xl blur-md opacity-30 group-hover:opacity-60 transition duration-500 pointer-events-none -z-10 animate-pulse" />
+                  )}
+
+                  {/* İÇ ALTIN ÇERÇEVE */}
+                  <div className={`relative w-full h-full rounded-xl sm:rounded-2xl border-2 ${tier.innerBorder} p-2 sm:p-3 flex flex-col items-center justify-between text-center overflow-hidden min-h-[160px] sm:min-h-[190px]`}>
+
+                    {/* 1. ÜST: ROZET */}
+                    <div className="flex flex-col items-center gap-0.5 w-full">
+                      <span className={`text-[8px] sm:text-[10px] font-heading font-black tracking-[0.16em] uppercase truncate max-w-full ${tier.subColor}`}>
+                        {tier.badge}
+                      </span>
+
+                      <div className={`flex items-center justify-center gap-1.5 w-full my-0.5 opacity-90 ${tier.ornamentColor}`}>
+                        <span className="h-[1.5px] w-3 sm:w-6 bg-current opacity-60"></span>
+                        <span className="text-[9px] sm:text-xs">✦</span>
+                        <span className="h-[1.5px] w-3 sm:w-6 bg-current opacity-60"></span>
                       </div>
                     </div>
 
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-[#484f58]'
-                      }`}>
-                      {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-slate-950" />}
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-[#8b949e] mt-3 font-medium">
-                    {tier.desc}
-                  </p>
-
-                  <div className="mt-3 pt-3 border-t border-white/10 flex flex-col gap-1.5">
-                    {tier.features.map((feat, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-xs text-[#c9d1d9]">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                        <span>{feat}</span>
+                    {/* 2. ORTA: BÜYÜK BAŞLIK & İKON */}
+                    <div className="flex flex-col items-center justify-center my-auto py-0.5">
+                      <div className={`text-base sm:text-2xl mb-0.5 group-hover:scale-125 transition-transform ${isVip ? 'drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]' : 'drop-shadow-sm'}`}>
+                        {tier.icon}
                       </div>
-                    ))}
+
+                      <span className={`font-heading font-black text-2xl sm:text-4xl tracking-wider leading-none ${tier.titleColor} ${isVip ? 'drop-shadow-md' : 'drop-shadow-sm'}`}>
+                        {tier.title}
+                      </span>
+
+                      <span className={`font-heading font-black text-[10px] sm:text-xs tracking-[0.2em] uppercase mt-1 ${tier.subColor}`}>
+                        VİTRİN
+                      </span>
+                    </div>
+
+                    {/* 3. ALT: SEÇİM DURUMU */}
+                    <div className="flex flex-col items-center w-full pt-1">
+                      <div className={`flex items-center justify-center gap-1.5 w-full mb-1 opacity-80 ${tier.ornamentColor}`}>
+                        <span className="h-[1px] flex-1 bg-current opacity-40"></span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                        <span className="h-[1px] flex-1 bg-current opacity-40"></span>
+                      </div>
+
+                      <span className={`text-[9px] sm:text-[10px] font-heading font-black px-2 py-0.5 rounded-full shadow-md tracking-wider ${isSelected
+                          ? isVip ? 'bg-slate-950 text-amber-300 border-2 border-slate-950' : 'bg-amber-400 text-slate-950 font-black'
+                          : 'bg-black/30 text-current border border-current/20'
+                        }`}>
+                        {isSelected ? '✓ SEÇİLDİ' : 'SEÇ'}
+                      </span>
+                    </div>
+
                   </div>
                 </div>
               );
             })}
+          </div>
+
+          {/* SEÇİLEN PAKETİN DETAYLI ÖZELLİKLERİ KUTUSU */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col gap-2.5">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <span className="font-heading font-black text-xs uppercase tracking-wider text-white flex items-center gap-2">
+                <span className="text-base">{currentTierObj.icon}</span>
+                <span>{currentTierObj.name} Ayrıcalıkları</span>
+              </span>
+              <span className="text-[11px] text-amber-400 font-bold font-mono">Dahil Olan Özellikler</span>
+            </div>
+
+            <p className="text-xs text-[#8b949e] font-medium leading-relaxed">
+              {currentTierObj.desc}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              {currentTierObj.features.map((feat: string, idx: number) => (
+                <div key={idx} className="flex items-center gap-2 text-xs text-[#c9d1d9]">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>{feat}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* İLERLE BUTONU */}
@@ -534,11 +588,10 @@ export default function CreateListingPage() {
                 <ImageIcon className="w-4 h-4" />
                 <span>Fotoğraf Yükleme (En Az 3, En Fazla 7 Resim) *</span>
               </h2>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                photoUrls.length >= 3 
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${photoUrls.length >= 3
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-              }`}>
+                }`}>
                 {photoUrls.length} / 7 Fotoğraf
               </span>
             </div>

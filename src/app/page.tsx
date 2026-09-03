@@ -3,16 +3,16 @@ import { getSiteUrl } from '@/lib/siteUrl';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
-import { 
-  MapPin, 
-  Sparkles, 
-  ShieldCheck, 
-  Crown, 
-  Award, 
-  Star, 
-  Medal, 
-  ChevronRight, 
-  Flame, 
+import {
+  MapPin,
+  Sparkles,
+  ShieldCheck,
+  Crown,
+  Award,
+  Star,
+  Medal,
+  ChevronRight,
+  Flame,
   Globe,
   BadgeCheck,
   Heart,
@@ -145,42 +145,53 @@ export default async function HomePage() {
   const gridListings = allSortedListings.slice(0, 48);
 
   return (
-    <div className="flex flex-col gap-6 pb-16 w-full max-w-full text-left">
-      
+    <div className="flex flex-col gap-3 pb-8 w-full max-w-full text-left">
+
       {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları) */}
       <section className="w-full">
         <HeroSlider slides={formattedShowcaseListings} />
       </section>
 
-      {/* 2. TÜM TÜRKİYE İL LİSTESİ BUTONU */}
-      <div className="px-4">
-        <Link
-          href="/sehirler"
-          className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#1c180e] via-[#161b22] to-[#1c180e] border border-amber-500/40 hover:border-amber-400 flex items-center justify-between shadow-xl group transition-all"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-              <Globe className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="font-black text-sm text-white font-heading group-hover:text-amber-400 transition-colors">
-                Türkiye Geneli 81 İl Eskort Listesi
-              </span>
-              <span className="text-xs text-[#8b949e]">
-                Bulunduğunuz ili ve ilçeyi seçerek en yakın ilanları listeleyin
-              </span>
-            </div>
-          </div>
-          <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </div>
-
-      {/* 2.5 SPONSOR BANNER REKLAM ALANI (Full-Width Responsive) */}
-      <div className="w-full px-2 sm:px-4">
+      {/* 2. SPONSOR BANNER REKLAM ALANI (Hero Slider gibi kenarlara sıfır, tam yapışık) */}
+      <div className="w-full px-0">
         <SponsorBannerArea konum="anasayfa" />
       </div>
 
-      {/* 3. POPÜLER İLLER & KATEGORİ VİTRİNİ */}
+      {/* 2.5 TÜRKİYE 81 İL LİSTESİ - ULTRA MODERN VE ŞIK ETKİLEŞİMLİ KART */}
+      <div className="px-4">
+        <Link
+          href="/sehirler"
+          className="relative w-full p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#1c160c] via-[#161b22] to-[#12161c] border border-amber-500/40 hover:border-amber-400/80 flex items-center justify-between shadow-lg shadow-black/40 group transition-all duration-300 hover:scale-[1.01] overflow-hidden"
+        >
+          {/* Arka Plan Hafif Amber Parıltısı */}
+          <div className="absolute -left-8 -top-8 w-28 h-28 bg-amber-500/15 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-500/25 transition-all duration-500" />
+
+          <div className="relative z-10 flex items-center gap-3 text-left">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/30 group-hover:rotate-6 transition-all shrink-0">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="font-heading font-black text-sm text-white group-hover:text-amber-400 transition-colors">
+                  Türkiye Geneli 81 İl Rehberi
+                </span>
+                <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-heading font-black">
+                  81 ŞEHİR
+                </span>
+              </div>
+              <span className="text-[11px] text-[#8b949e] mt-0.5 line-clamp-1">
+                Bulunduğunuz şehri seçerek en yakın doğrulanmış ilanları listeleyin
+              </span>
+            </div>
+          </div>
+
+          <div className="relative z-10 w-7 h-7 rounded-lg bg-black/50 border border-white/10 flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:translate-x-0.5 transition-all shrink-0 shadow-md">
+            <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
+          </div>
+        </Link>
+      </div>
+
+      {/* 3. ÖZEL İLAN VİTRİN KARTLARI (Başlıksız, Doğrudan Kartlar) */}
       <section className="w-full">
         <CategoryShowcase
           vipCovers={vipListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
@@ -192,7 +203,7 @@ export default async function HomePage() {
       </section>
 
       {/* 4. TÜM İLANLAR GRID LİSTESİ */}
-      <section className="px-4 flex flex-col gap-4">
+      <section className="px-4 flex flex-col gap-3 pt-1">
         <div className="flex items-center justify-between pb-1 border-b border-[#30363d]">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center font-black shadow-md">

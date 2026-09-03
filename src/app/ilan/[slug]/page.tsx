@@ -197,8 +197,8 @@ export default async function ListingDetailPage({ params }: Props) {
           />
         </div>
 
-        {/* ── 4. KURAL: FOTONUN ALTINDA, AÇIKLAMANIN ÜSTÜNDE KOMPAKT BANNER ──────────────── */}
-        <div className="w-full px-2 sm:px-0">
+        {/* ── SPONSORLU VIP BANNER (Tam Genişlikte, Kenarlara Sıfır Yapışık) ──────────────── */}
+        <div className="w-full px-0 -mx-0 sm:mx-0">
           <SponsorBannerArea konum="ilan_detay" />
         </div>
 

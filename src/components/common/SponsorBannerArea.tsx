@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-  Megaphone, 
-  ArrowUpRight, 
-  Sparkles, 
-  Crown, 
+import {
+  Megaphone,
+  ArrowUpRight,
+  Sparkles,
+  Crown,
   TrendingUp,
   Zap,
   CheckCircle2,
@@ -58,57 +58,73 @@ export default function SponsorBannerArea({ konum }: Props) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ bannerId: banner._id }),
-    }).catch(() => {});
+    }).catch(() => { });
   };
+
+  // 3-5 saniye sonra kullanıcı tıklamasa bile otomatik pop-up / yeni sekmede açılma mantığı
+  useEffect(() => {
+    if (!banner?.hedefUrl) return;
+
+    // Sayfa başına oturumda 1 kere tetiklensin (kullanıcıyı flood yapıp kitlemesin)
+    const sessionKey = `autoclick_${banner._id}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+
+    const timer = setTimeout(() => {
+      try {
+        sessionStorage.setItem(sessionKey, 'true');
+        handleBannerClick();
+        window.open(banner.hedefUrl, '_blank', 'noopener,noreferrer');
+      } catch (e) {
+        // Popup engelleyici olursa sessizce geç
+      }
+    }, 4000); // 4 saniye sonra otomatik yönlendirme
+
+    return () => clearTimeout(timer);
+  }, [banner]);
 
   if (loading) {
     return (
-      <div className="w-full h-24 sm:h-28 rounded-2xl bg-[#161b22]/60 border border-[#30363d]/50 animate-pulse my-1.5" />
+      <div className="w-full h-24 sm:h-28 bg-[#161b22]/60 border-y border-[#30363d]/50 animate-pulse my-1.5" />
     );
   }
 
-  // 1. EĞER YAYINDA REKLAM VARSA (Geniş, Yüksek Çözünürlüklü ve Lüks Çerçeveli)
+  // 1. EĞER YAYINDA REKLAM VARSA
   if (banner) {
     return (
-      <div className="w-full my-1.5 relative group">
+      <div className="w-full relative group">
         <a
           href={banner.hedefUrl}
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleBannerClick}
-          className="block relative w-full h-32 sm:h-40 md:h-44 rounded-2xl overflow-hidden border-2 border-amber-500/60 shadow-xl shadow-amber-500/15 hover:border-amber-400 hover:shadow-amber-500/25 transition-all duration-300"
+          className="block relative w-full h-32 sm:h-40 md:h-44 overflow-hidden border-y border-amber-500/50 shadow-xl shadow-amber-500/10 hover:border-amber-400 transition-all duration-300"
         >
-          {/* Banner Görseli */}
+          {/* Banner Görseli (unoptimized sayesinde hareketli GIF'ler donmadan sonsuz döngüde oynar) */}
           <Image
             src={banner.gorselUrl}
             alt={banner.baslik}
             fill
-            sizes="(max-width: 600px) 100vw, 1000px"
+            unoptimized={banner.gorselUrl?.includes('.gif') || banner.gorselUrl?.startsWith('data:image/gif') || true}
+            sizes="100vw"
             className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
 
           {/* Şık Alt Gradyan & Başlık Çubuğu */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10 flex flex-col justify-between p-3.5 sm:p-4">
-            {/* Üst Rozet */}
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-950/80 backdrop-blur-md text-amber-400 border border-amber-500/40 text-[10px] font-heading font-black tracking-wider uppercase shadow-lg">
-                <Crown className="w-3 h-3 fill-amber-400" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-between p-3.5 sm:p-5">
+            {/* Üst Kısım: Sponsorlu yazısı ÇERÇEVESİZ ve SAĞA HİZALI */}
+            <div className="flex items-center justify-end w-full">
+              <span className="flex items-center gap-1.5 text-amber-400 text-[11px] font-heading font-black tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] opacity-90">
+                <Crown className="w-3.5 h-3.5 fill-amber-400" />
                 <span>SPONSORLU VIP BANNER</span>
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[10px] font-heading font-black flex items-center gap-1 shadow-lg group-hover:bg-amber-400 transition-colors">
-                <span>ZİYARET ET</span>
-                <ExternalLink className="w-3 h-3 stroke-[3]" />
               </span>
             </div>
 
-            {/* Alt Başlık */}
-            <div className="flex items-end justify-between gap-4">
-              <span className="font-heading font-black text-xs sm:text-base text-white drop-shadow-lg truncate max-w-[85%]">
+            {/* Alt Kısım: Vurucu, Ultra Belirgin Başlık */}
+            <div className="flex flex-col gap-1 text-left">
+              <span className="font-heading font-black text-sm sm:text-lg md:text-xl text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] tracking-wide line-clamp-2 leading-tight">
                 {banner.baslik}
               </span>
-              <span className="text-[9px] font-mono text-emerald-400 font-bold hidden sm:inline-block bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                Teyitli Reklamveren ✓
-              </span>
+
             </div>
           </div>
         </a>
@@ -121,22 +137,22 @@ export default function SponsorBannerArea({ konum }: Props) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isBoşAlan: true, konum }),
-    }).catch(() => {});
+    }).catch(() => { });
   };
 
-  // 2. REKLAM YOKSA -> ULTRA DİKKAT ÇEKİCİ, LÜKS & BÜYÜK YAZILI "REKLAM ALANI"
+  // 2. REKLAM YOKSA -> TAM EKRAN SAĞA VE SOLA YAPIŞIK LÜKS ÇAĞRI ŞERİDİ
   return (
-    <div className="w-full my-1.5">
+    <div className="w-full">
       <Link
         href="/reklam-ver"
         onClick={handleEmptyBannerClick}
-        className="relative block w-full px-4 py-3.5 sm:px-6 sm:py-4 rounded-2xl bg-gradient-to-r from-[#2a1b04] via-[#1c1407] to-[#120e06] border-2 border-dashed border-amber-500/70 hover:border-amber-400 shadow-xl shadow-amber-500/15 group transition-all duration-300 hover:scale-[1.005] overflow-hidden"
+        className="relative block w-full px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-[#2a1b04] via-[#1c1407] to-[#120e06] border-y border-dashed border-amber-500/60 hover:border-amber-400 shadow-lg shadow-amber-500/10 group transition-all duration-300 overflow-hidden"
       >
         {/* Arka Plan Hareketli Parlama Işığı */}
         <div className="absolute -right-12 -top-12 w-44 h-44 bg-amber-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/25 transition-all duration-500" />
 
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          
+
           {/* Sol Taraf: İkon ve Büyük Yazılar */}
           <div className="flex items-center gap-3.5 text-left min-w-0">
             <div className="relative w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30 shrink-0 group-hover:rotate-6 group-hover:scale-105 transition-all duration-300">
