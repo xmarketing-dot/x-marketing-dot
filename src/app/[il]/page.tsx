@@ -6,8 +6,10 @@ import { notFound } from 'next/navigation';
 import { MapPin, Sparkles, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
+import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import FaqAccordion from '@/components/seo/FaqAccordion';
 import { generateLocationFaq, generateCombinedSeoGraph, generateLocationGuide } from '@/lib/seoData';
+import { getActiveBanner } from '@/lib/data';
 
 interface Props {
   params: Promise<{ il: string }>;
@@ -85,9 +87,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CityPage({ params }: Props) {
   const { il: ilSlug } = await params;
 
-  const [location, listings] = await Promise.all([
+  const [location, listings, activeBanner] = await Promise.all([
     getLocationBySlug(ilSlug),
-    getListings({ ilSlug, limit: 60 }),
+    getListings({ ilSlug, limit: 120 }),
+    getActiveBanner('ilan_detay'),
   ]);
 
   if (!location) {
@@ -156,6 +159,11 @@ export default async function CityPage({ params }: Props) {
             ))}
           </div>
         )}
+      </div>
+
+      {/* ── 1.5 SPONSORLU VIP BANNER REKLAM ALANI ──────────────── */}
+      <div className="w-full px-0">
+        <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
       </div>
 
       {/* ── 2. İLAN LİSTESİ (3 SÜTUNLU COMPACT GRID) ──────────────── */}

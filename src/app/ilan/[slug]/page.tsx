@@ -21,7 +21,7 @@ import {
   BadgeCheck,
   Check
 } from 'lucide-react';
-import { getListingBySlug, getListings } from '@/lib/data';
+import { getListingBySlug, getListings, getActiveBanner } from '@/lib/data';
 import WhatsAppButton, { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 import CompactListingCard from '@/components/common/CompactListingCard';
@@ -98,7 +98,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ListingDetailPage({ params }: Props) {
   const { slug } = await params;
-  const listing = await getListingBySlug(slug);
+  const [listing, activeBanner] = await Promise.all([
+    getListingBySlug(slug),
+    getActiveBanner('ilan_detay'),
+  ]);
 
   if (!listing) {
     notFound();
@@ -199,7 +202,7 @@ export default async function ListingDetailPage({ params }: Props) {
 
         {/* ── SPONSORLU VIP BANNER (Tam Genişlikte, Kenarlara Sıfır Yapışık) ──────────────── */}
         <div className="w-full px-0 -mx-0 sm:mx-0">
-          <SponsorBannerArea konum="ilan_detay" />
+          <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
         </div>
 
         {/* ── BİRLEŞİK İLAN AÇIKLAMASI VE BAŞLIK KARTI ──────────────── */}

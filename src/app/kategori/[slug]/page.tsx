@@ -4,8 +4,9 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { Crown, Award, Medal, Sparkles, ChevronRight, ShieldCheck, MapPin, Globe } from 'lucide-react';
-import { getListings, getAllLocations } from '@/lib/data';
+import { getListings, getAllLocations, getActiveBanner } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
+import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -141,9 +142,10 @@ export default async function CategoryDetailPage({ params }: Props) {
     notFound();
   }
 
-  const [allListings, locations] = await Promise.all([
+  const [allListings, locations, activeBanner] = await Promise.all([
     getListings({ limit: 120 }),
     getAllLocations(),
+    getActiveBanner('ilan_detay'),
   ]);
 
   // Filter listings by this specific tier (combining ultravip into vip)
@@ -165,7 +167,7 @@ export default async function CategoryDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-2 pb-16 w-full max-w-4xl mx-auto">
+    <div className="flex flex-col gap-4 px-4 py-2 pb-16 w-full max-w-4xl mx-auto text-left">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero Header Banner (Entegre, Dengeli & Lüks Kartvizit Başlık) */}
@@ -185,7 +187,7 @@ export default async function CategoryDetailPage({ params }: Props) {
             : 'border-slate-300/40'
         } p-3 sm:p-4 flex flex-col gap-2 relative overflow-hidden text-left`}>
           
-          {/* ÜST SATIR: İkon + Başlık + Sağda İlan Sayacı (Mobilde de masaüstünde de tek satırda hizalı) */}
+          {/* ÜST SATIR: İkon + Başlık + Sağda İlan Sayacı */}
           <div className="flex items-center justify-between gap-2 w-full">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shrink-0 ${
@@ -215,7 +217,7 @@ export default async function CategoryDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* İlan Sayısı Kapsülü: Üst sağ köşede jilet gibi sabit */}
+            {/* İlan Sayısı Kapsülü */}
             <span className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-xs font-mono font-black shrink-0 shadow-md ${
               slug === 'vip'
                 ? 'bg-slate-950 text-amber-300 border-2 border-slate-950'
@@ -233,8 +235,12 @@ export default async function CategoryDetailPage({ params }: Props) {
           }`}>
             {tierInfo.desc}
           </p>
-
         </div>
+      </div>
+
+      {/* ── SPONSORLU VIP BANNER REKLAM ALANI ──────────────── */}
+      <div className="w-full -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full">
+        <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
       </div>
 
       {/* Listings Grid */}

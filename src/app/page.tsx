@@ -19,7 +19,7 @@ import {
   ArrowRight,
   Sparkle
 } from 'lucide-react';
-import { getHomepageConfig, getAllLocations, getListings } from '@/lib/data';
+import { getHomepageConfig, getAllLocations, getListings, getActiveBanner } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
 import HeroSlider from '@/components/home/HeroSlider';
@@ -82,10 +82,11 @@ const TIER_ORDER: Record<string, number> = {
 export default async function HomePage() {
   await connectToDatabase();
 
-  const [locations, rawListings, homepageConfig] = await Promise.all([
+  const [locations, rawListings, homepageConfig, activeBanner] = await Promise.all([
     getAllLocations(),
     getListings({ limit: 60 }),
     getHomepageConfig(),
+    getActiveBanner('anasayfa'),
   ]);
 
   // Sort all listings strictly by Tier Priority (VIP -> Gold -> Silver) and then by Date
@@ -154,7 +155,7 @@ export default async function HomePage() {
 
       {/* 2. SPONSOR BANNER REKLAM ALANI (Hero Slider gibi kenarlara sıfır, tam yapışık) */}
       <div className="w-full px-0">
-        <SponsorBannerArea konum="anasayfa" />
+        <SponsorBannerArea konum="anasayfa" initialBanner={activeBanner} />
       </div>
 
       {/* 2.5 TÜRKİYE 81 İL LİSTESİ - ULTRA MODERN VE ŞIK ETKİLEŞİMLİ KART */}

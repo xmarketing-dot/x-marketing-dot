@@ -15,7 +15,7 @@ import {
   Flame
 } from 'lucide-react';
 
-interface BannerAdData {
+export interface BannerAdData {
   _id: string;
   baslik: string;
   gorselUrl: string;
@@ -24,14 +24,21 @@ interface BannerAdData {
 }
 
 interface Props {
-  konum: 'anasayfa' | 'ilan_detay';
+  konum?: 'anasayfa' | 'ilan_detay' | string;
+  initialBanner?: BannerAdData | null;
 }
 
-export default function SponsorBannerArea({ konum }: Props) {
-  const [banner, setBanner] = useState<BannerAdData | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }: Props) {
+  const [banner, setBanner] = useState<BannerAdData | null>(initialBanner || null);
+  const [loading, setLoading] = useState<boolean>(initialBanner === undefined);
 
   useEffect(() => {
+    if (initialBanner !== undefined) {
+      setBanner(initialBanner);
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
     fetch(`/api/banners?konum=${konum}`)
       .then((res) => res.json())
@@ -50,7 +57,7 @@ export default function SponsorBannerArea({ konum }: Props) {
     return () => {
       isMounted = false;
     };
-  }, [konum]);
+  }, [konum, initialBanner]);
 
   const handleBannerClick = () => {
     if (!banner?._id) return;

@@ -163,3 +163,30 @@ export const getListingBySlug = cache(async (slug: string) => {
   if (!listing) return null;
   return JSON.parse(JSON.stringify(listing));
 });
+
+import BannerAdModel from '../models/BannerAd';
+
+export const getActiveBanner = cache(async (konum: 'anasayfa' | 'ilan_detay' | string = 'anasayfa') => {
+  try {
+    await connectToDatabase();
+    const now = new Date();
+    const targetKonum = konum === 'ilan_detay' ? 'ilan_detay' : 'anasayfa';
+
+    const banner = await BannerAdModel.findOne({
+      durum: 'yayinda',
+      konum: { $in: [targetKonum, 'her_ikisi'] },
+      $or: [
+        { bitisTarihi: { $exists: false } },
+        { bitisTarihi: null },
+        { bitisTarihi: { $gte: now } },
+      ],
+    })
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    if (!banner) return null;
+    return JSON.parse(JSON.stringify(banner));
+  } catch (e) {
+    return null;
+  }
+});

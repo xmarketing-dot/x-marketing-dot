@@ -6,8 +6,10 @@ import { notFound } from 'next/navigation';
 import { MapPin, ChevronRight, Sparkles, ShieldCheck, Globe, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
+import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import FaqAccordion from '@/components/seo/FaqAccordion';
 import { generateLocationFaq, generateCombinedSeoGraph, generateLocationGuide } from '@/lib/seoData';
+import { getActiveBanner } from '@/lib/data';
 
 interface Props {
   params: Promise<{ il: string; ilce: string }>;
@@ -97,9 +99,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DistrictPage({ params }: Props) {
   const { il: ilSlug, ilce: ilceSlug } = await params;
-  const [location, listings] = await Promise.all([
+  const [location, listings, activeBanner] = await Promise.all([
     getLocationBySlug(ilSlug),
-    getListings({ ilSlug, ilceSlug, limit: 60 }),
+    getListings({ ilSlug, ilceSlug, limit: 120 }),
+    getActiveBanner('ilan_detay'),
   ]);
 
   if (!location) {
@@ -140,7 +143,7 @@ export default async function DistrictPage({ params }: Props) {
   const otherDistricts = location.ilceler.filter((d: any) => d.slug !== ilceSlug).slice(0, 10);
 
   return (
-    <div className="flex flex-col gap-6 px-4 py-4 pb-12">
+    <div className="flex flex-col gap-5 px-4 py-4 pb-12 text-left">
       {/* Schema.org Structured Data Graph */}
       <script
         type="application/ld+json"
@@ -172,12 +175,17 @@ export default async function DistrictPage({ params }: Props) {
         </div>
 
         <h1 className="font-black text-2xl text-white font-heading tracking-tight">
-          {districtName} Eskort & Escort İlanları
+          {districtName} Eskort &amp; Escort İlanları
         </h1>
 
         <p className="text-xs text-[#8b949e] leading-relaxed max-w-xl font-medium">
           {location.il} ili {districtName} ilçesindeki tüm doğrulanmış eskort ve escort bayan profilleri. Bağımsız ilanlar, VIP vitrin ve doğrudan WhatsApp iletişim hatları.
         </p>
+      </div>
+
+      {/* ── SPONSORLU VIP BANNER REKLAM ALANI ──────────────── */}
+      <div className="w-full -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full">
+        <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
       </div>
 
       {/* Listings Section */}
