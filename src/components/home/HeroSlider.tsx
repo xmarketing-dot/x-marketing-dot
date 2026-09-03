@@ -121,7 +121,7 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
               BEST ESKORT
             </span>
             <span className="font-sans font-bold text-amber-400/[0.22] text-xs sm:text-base tracking-[0.2em] uppercase -rotate-25 whitespace-nowrap mt-1">
-              besteskort.devs.surf
+              {typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '') : 'Doğrulanmış Vitrin'}
             </span>
           </div>
         </div>

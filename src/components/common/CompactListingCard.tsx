@@ -207,7 +207,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
             BEST ESKORT
           </span>
           <span className="font-sans font-bold text-amber-400/[0.22] text-[9px] tracking-[0.15em] uppercase -rotate-25 whitespace-nowrap mt-0.5">
-            besteskort.devs.surf
+            {typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '') : 'Doğrulanmış Profil'}
           </span>
         </div>
 
