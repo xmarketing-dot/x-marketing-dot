@@ -8,7 +8,7 @@ import {
   Zap, ArrowUpRight, Loader2, Sparkles, MapPin, Activity, Calendar, Share2,
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
   Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
-  Target, Plus, Trash2, Award, CheckCircle2
+  Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
@@ -24,6 +24,14 @@ export default function BmsSecurePortalDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
 
+  // Admin Direct Listing Edit States
+  const [editingListing, setEditingListing] = useState<any | null>(null);
+  const [savingListingEdit, setSavingListingEdit] = useState(false);
+
+  // Banner Ads States
+  const [bannerList, setBannerList] = useState<any[]>([]);
+  const [bannerLoading, setBannerLoading] = useState(false);
+
   // Google SEO Rank Tracking States
   const [keywordList, setKeywordList] = useState<any[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
@@ -33,9 +41,80 @@ export default function BmsSecurePortalDashboard() {
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
 
+  const handleAdminListingSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingListing) return;
+
+    setSavingListingEdit(true);
+    try {
+      const res = await fetch('/api/admin/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingListing.id || editingListing._id,
+          baslik: editingListing.baslik,
+          aciklama: editingListing.aciklama,
+          whatsappNumara: editingListing.whatsappNumara,
+          ilSlug: editingListing.ilSlug,
+          ilceSlug: editingListing.ilceSlug,
+          rozet: editingListing.rozet,
+          status: editingListing.status,
+          panelSifresi: editingListing.panelSifresi,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success || res.ok) {
+        alert('İlan başarıyla güncellendi!');
+        setEditingListing(null);
+        fetchAnalytics();
+      } else {
+        alert(data.error || 'Güncelleme başarısız.');
+      }
+    } catch (err: any) {
+      alert('Hata: ' + err.message);
+    } finally {
+      setSavingListingEdit(false);
+    }
+  };
+
   useEffect(() => {
     fetchKeywords();
+    fetchBanners();
   }, []);
+
+  const fetchBanners = async () => {
+    setBannerLoading(true);
+    try {
+      const res = await fetch('/api/admin/banners');
+      const json = await res.json();
+      if (json.success && json.banners) {
+        setBannerList(json.banners);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setBannerLoading(false);
+    }
+  };
+
+  const handleBannerAction = async (id: string, action: string, redNedeni?: string) => {
+    try {
+      const res = await fetch('/api/admin/banners', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action, redNedeni }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchBanners();
+      } else {
+        alert(data.error || 'İşlem başarısız');
+      }
+    } catch (e: any) {
+      alert('Hata: ' + e.message);
+    }
+  };
 
   const fetchKeywords = async () => {
     setKeywordLoading(true);
@@ -1726,6 +1805,16 @@ export default function BmsSecurePortalDashboard() {
                                   {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                 </button>
 
+                                 <button
+                                  type="button"
+                                  onClick={() => setEditingListing(item)}
+                                  className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs transition-colors flex items-center gap-1 shadow-md"
+                                  title="İlanı Yönetici Olarak Düzenle"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                  <span>Düzenle</span>
+                                </button>
+
                                 <Link
                                   href={`/ilan/${item.slug}`}
                                   target="_blank"
@@ -1790,8 +1879,6 @@ export default function BmsSecurePortalDashboard() {
 
         </div>
       )}
-
-
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* ── SEKME 4: CANLI VE DETAYLI ZİYARETÇİ LOGLARI (SON 100 İSTEK) ─────── */}
@@ -2094,6 +2181,129 @@ export default function BmsSecurePortalDashboard() {
                 })}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── YÖNETİCİ İLAN DÜZENLEME MODALI ──────────────── */}
+      {editingListing && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-xl bg-[#161b22] border border-amber-500/50 rounded-3xl p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left animate-fadeIn my-auto">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
+                  <Edit3 className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="font-heading font-black text-base text-white">
+                    İlanı Düzenle (Admin Yetkisi)
+                  </h3>
+                  <span className="text-xs text-[#8b949e] font-mono">
+                    ID: {editingListing.id || editingListing._id}
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingListing(null)}
+                className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAdminListingSave} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-heading font-black text-white">İlan Başlığı</label>
+                <input
+                  type="text"
+                  value={editingListing.baslik || ''}
+                  onChange={(e) => setEditingListing({ ...editingListing, baslik: e.target.value })}
+                  required
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-heading font-black text-white">WhatsApp Numarası</label>
+                <input
+                  type="text"
+                  value={editingListing.whatsappNumara || ''}
+                  onChange={(e) => setEditingListing({ ...editingListing, whatsappNumara: e.target.value })}
+                  required
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-heading font-black text-white">Vitrin Rozeti</label>
+                  <select
+                    value={editingListing.rozet || 'vip'}
+                    onChange={(e) => setEditingListing({ ...editingListing, rozet: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none"
+                  >
+                    <option value="ultravip">Ultra VIP 👑</option>
+                    <option value="vip">VIP 💎</option>
+                    <option value="gold">Gold 🥇</option>
+                    <option value="silver">Silver 🥈</option>
+                    <option value="standart">Standart</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-heading font-black text-white">Yayın Durumu</label>
+                  <select
+                    value={editingListing.status || 'yayinda'}
+                    onChange={(e) => setEditingListing({ ...editingListing, status: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none"
+                  >
+                    <option value="yayinda">Yayında ✓</option>
+                    <option value="onay_bekliyor">Onay Bekliyor ⏳</option>
+                    <option value="reddedildi">Reddedildi ✕</option>
+                    <option value="suresi_doldu">Süresi Doldu</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-heading font-black text-white">İlan Düzenleme Şifresi (Kullanıcı İçin)</label>
+                <input
+                  type="text"
+                  value={editingListing.panelSifresi || ''}
+                  onChange={(e) => setEditingListing({ ...editingListing, panelSifresi: e.target.value })}
+                  placeholder="Örn: 849201"
+                  className="w-full px-4 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-amber-300 font-mono text-xs outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-heading font-black text-white">İlan Açıklaması</label>
+                <textarea
+                  rows={4}
+                  value={editingListing.aciklama || ''}
+                  onChange={(e) => setEditingListing({ ...editingListing, aciklama: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-amber-500 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#30363d]">
+                <button
+                  type="button"
+                  onClick={() => setEditingListing(null)}
+                  className="px-4 py-2.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white text-xs font-bold"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingListingEdit}
+                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20"
+                >
+                  {savingListingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Değişiklikleri Kaydet</span>}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

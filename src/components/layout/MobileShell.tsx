@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 import HeaderTicker from '@/components/common/HeaderTicker';
+import SeoBacklinkFooter from '@/components/common/SeoBacklinkFooter';
 import GlobalChatNotification from '@/components/common/GlobalChatNotification';
 import SpecialAdPopup from '@/components/common/SpecialAdPopup';
 
@@ -310,6 +311,9 @@ export default function MobileShell({ children }: MobileShellProps) {
           </section>
         </main>
 
+        {/* SEO DOFOLLOW & NOFOLLOW BACKLINK NETWORK ALANI */}
+        <SeoBacklinkFooter />
+
         {/* Full-Width Corporate Desktop Footer */}
         <footer className="px-8 lg:px-16 py-10 bg-[#090d13] border-t border-[#30363d] text-xs text-[#8b949e]">
           <div className="w-full flex flex-col md:flex-row items-center justify-between gap-6">
@@ -376,6 +380,8 @@ export default function MobileShell({ children }: MobileShellProps) {
         {/* MAIN PAGE CONTENT */}
         <main className="flex-1 overflow-y-auto pb-8 no-scrollbar w-full">
           {children}
+          {/* Mobil Backlink Footer */}
+          <SeoBacklinkFooter />
         </main>
 
         {/* Mobile-Only Sponsored VIP Ad Popup */}

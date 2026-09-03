@@ -28,6 +28,7 @@ import CompactListingCard from '@/components/common/CompactListingCard';
 import ImageSlider from '@/components/common/ImageSlider';
 import LikeButton from '@/components/common/LikeButton';
 import ShareButtons from '@/components/common/ShareButtons';
+import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -184,7 +185,7 @@ export default async function ListingDetailPage({ params }: Props) {
       />
 
       {/* ── 1. MERKEZİ PROFİL DÜZENİ (NATIVE APP GİBİ) ──────────────── */}
-      <div className="flex flex-col gap-6 w-full max-w-2xl mx-auto px-0 sm:px-4 lg:px-6 pt-0 lg:pt-6">
+      <div className="flex flex-col gap-3.5 sm:gap-4 w-full max-w-2xl mx-auto px-0 sm:px-4 lg:px-6 pt-0 lg:pt-4">
 
         {/* ── FOTOĞRAF GALERİSİ ──────────────── */}
         <div className="w-full overflow-hidden bg-[#0d1117] relative rounded-none sm:rounded-[32px] border-0 sm:border-2 sm:border-[#30363d] shadow-none sm:shadow-2xl">
@@ -196,8 +197,13 @@ export default async function ListingDetailPage({ params }: Props) {
           />
         </div>
 
+        {/* ── 4. KURAL: FOTONUN ALTINDA, AÇIKLAMANIN ÜSTÜNDE KOMPAKT BANNER ──────────────── */}
+        <div className="w-full px-2 sm:px-0">
+          <SponsorBannerArea konum="ilan_detay" />
+        </div>
+
         {/* ── BİRLEŞİK İLAN AÇIKLAMASI VE BAŞLIK KARTI ──────────────── */}
-        <div className="mx-3.5 sm:mx-0 p-6 sm:p-8 rounded-[32px] bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col items-center text-center gap-6">
+        <div className="mx-3.5 sm:mx-0 p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col items-center text-center gap-5">
 
           {/* Rozetler: Teyitli & Bölge */}
           <div className="flex items-center justify-center flex-wrap gap-2">

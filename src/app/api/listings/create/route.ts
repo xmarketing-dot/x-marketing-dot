@@ -77,6 +77,9 @@ export async function POST(req: NextRequest) {
     const durationDays = yayinSuresi === 'gunluk' ? 1 : yayinSuresi === 'aylik' ? 30 : 7;
     const paketBitisTarihi = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
 
+    // 6 Haneli Kolay Düzenleme Şifresi Üret
+    const generatedPassword = Math.floor(100000 + Math.random() * 900000).toString();
+
     const newListing = await ListingModel.create({
       slug,
       baslik,
@@ -93,6 +96,7 @@ export async function POST(req: NextRequest) {
       paketBitisTarihi,
       chatThreadId: chatThreadId || null,
       kullaniciId: kullaniciId || null,
+      panelSifresi: generatedPassword,
       status: 'onay_bekliyor',
     });
 
@@ -107,9 +111,31 @@ export async function POST(req: NextRequest) {
       }).catch(() => {});
     }
 
+    // 🔔 TELEGRAM BİLDİRİMİ: Yeni İlan Talebi
+    try {
+      const { sendTelegramNotification } = await import('@/lib/telegramNotify');
+      const ilceText = ilceSlug.charAt(0).toUpperCase() + ilceSlug.slice(1);
+      const ilText = ilSlug.charAt(0).toUpperCase() + ilSlug.slice(1);
+      const notif = [
+        `👑 <b>YENİ İLAN BAŞVURUSU!</b>`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `🏷️ <b>Başlık:</b> ${baslik}`,
+        `📍 <b>Bölge:</b> ${ilText} / ${ilceText}`,
+        `💎 <b>Paket:</b> ${rozet?.toUpperCase() || 'VIP'} (${yayinSuresi?.toUpperCase() || 'HAFTALIK'})`,
+        `📱 <b>WhatsApp:</b> <code>${whatsappNumara}</code>`,
+        `🔑 <b>İlan Düzenleme Şifresi:</b> <code>${generatedPassword}</code>`,
+        `━━━━━━━━━━━━━━━━━━`,
+        `👉 <a href="https://besteskort.devs.surf/bms-secure-portal">Yönetici Panelinden İncele & Onayla</a>`,
+      ].join('\n');
+      sendTelegramNotification(notif).catch(() => {});
+    } catch (e) {
+      // Silent
+    }
+
     return NextResponse.json({ 
       success: true, 
-      listing: newListing 
+      listing: newListing,
+      panelSifresi: generatedPassword
     });
   } catch (error: any) {
     return NextResponse.json({ error: 'İlan oluşturulurken hata meydana geldi.' }, { status: 500 });

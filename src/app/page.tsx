@@ -25,6 +25,7 @@ import ListingModel from '@/models/Listing';
 import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
+import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 
 export const dynamic = 'force-dynamic';
 
@@ -172,6 +173,11 @@ export default async function HomePage() {
           </div>
           <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
         </Link>
+      </div>
+
+      {/* 2.5 SPONSOR BANNER REKLAM ALANI (Full-Width Responsive) */}
+      <div className="w-full px-2 sm:px-4">
+        <SponsorBannerArea konum="anasayfa" />
       </div>
 
       {/* 3. POPÜLER İLLER & KATEGORİ VİTRİNİ */}

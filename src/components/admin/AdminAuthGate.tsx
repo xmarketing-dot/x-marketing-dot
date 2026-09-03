@@ -24,7 +24,9 @@ import {
   ShieldAlert,
   Crown,
   Menu,
-  X
+  X,
+  Megaphone,
+  Link2
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 
@@ -315,6 +317,24 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             >
               <Sliders className="w-4 h-4 text-amber-400" />
               <span>Anasayfa &amp; Banner</span>
+            </Link>
+
+            <Link
+              href="/bms-secure-portal/banners"
+              prefetch={false}
+              className={getNavClass('/bms-secure-portal/banners')}
+            >
+              <Megaphone className="w-4 h-4 text-amber-400" />
+              <span>Banner &amp; Reklam Masası</span>
+            </Link>
+
+            <Link
+              href="/bms-secure-portal/backlinks"
+              prefetch={false}
+              className={getNavClass('/bms-secure-portal/backlinks')}
+            >
+              <Link2 className="w-4 h-4 text-blue-400" />
+              <span>SEO Backlink Ağı</span>
             </Link>
 
             <Link

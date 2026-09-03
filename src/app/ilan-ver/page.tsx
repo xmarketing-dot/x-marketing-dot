@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import HeaderTicker from '@/components/common/HeaderTicker';
 import CryptoPaymentCard from '@/components/common/CryptoPaymentCard';
 import {
@@ -275,18 +276,18 @@ export default function CreateListingPage() {
           <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
             <div className="flex items-center gap-2 text-amber-400 font-heading font-black text-sm">
               <KeyRound className="w-4 h-4" />
-              <span>Kullanıcı İlan Paneli Girişi:</span>
+              <span>İlan Düzenleme Şifreniz:</span>
             </div>
-            <span className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-400 font-black text-xs font-heading border border-emerald-500/30">
-              Admin Onaylı
+            <span className="px-3 py-1 rounded-xl bg-amber-500 text-slate-950 font-mono font-black text-sm border border-amber-400 shadow-md">
+              {generatedPassword || '849201'}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-[#f0f6fc] leading-relaxed font-medium">
-            🛡️ Ödemeniz teyit edildikten sonra yöneticimiz size özel <strong className="text-amber-300 font-bold">Kullanıcı Adı ve Şifrenizi</strong> iletecektir. Panelinize girerek ilanlarınızı düzenleyebilir, kalan sürenizi görebilir ve yeni ilanlar ekleyebilirsiniz.
+            🔑 Bu 6 haneli şifre ile istediğiniz zaman <strong className="text-amber-300">İlan Düzenle</strong> sayfasına girip fotoğraf, açıklama ve telefon bilgilerinizi anında güncelleyebilirsiniz.
           </p>
         </div>
 
-        {/* CANLI DESTEK & PANEL BUTONLARI */}
+        {/* CANLI DESTEK & DÜZENLEME BUTONLARI */}
         <div className="flex flex-col gap-3 w-full font-heading mt-1">
           <button
             onClick={() => router.push('/chat')}
@@ -296,13 +297,13 @@ export default function CreateListingPage() {
             <span>Yönetici ile Canlı Görüş &amp; Öde ➔</span>
           </button>
 
-          <button
-            onClick={() => router.push('/panelim')}
-            className="w-full py-4 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white font-bold text-xs border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-2"
+          <Link
+            href="/ilan-duzenle"
+            className="w-full py-3.5 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-bold text-xs border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-2"
           >
-            <LayoutDashboard className="w-4 h-4 text-amber-400" />
-            <span>İlan Yönetim Panelime Git</span>
-          </button>
+            <KeyRound className="w-4 h-4 text-amber-400" />
+            <span>İlanımı Düzenle / Güncelle</span>
+          </Link>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-[#8b949e]">
@@ -342,13 +343,23 @@ export default function CreateListingPage() {
             </div>
           </div>
 
-          <button
-            onClick={() => router.push('/chat')}
-            className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 font-heading uppercase tracking-wider"
-          >
-            <MessageSquare className="w-3.5 h-3.5 fill-slate-950" />
-            <span>Bağlan</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/ilan-duzenle"
+              className="px-3.5 py-2.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-black text-xs border border-amber-500/30 active:scale-95 transition-all flex items-center gap-1.5 font-heading"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+              <span>İlan Düzenle</span>
+            </Link>
+
+            <button
+              onClick={() => router.push('/chat')}
+              className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center gap-1.5 font-heading uppercase tracking-wider"
+            >
+              <MessageSquare className="w-3.5 h-3.5 fill-slate-950" />
+              <span>Bağlan</span>
+            </button>
+          </div>
         </div>
 
         <div>

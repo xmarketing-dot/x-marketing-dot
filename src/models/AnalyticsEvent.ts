@@ -13,7 +13,8 @@ export interface IAnalyticsEvent extends Document {
     | 'phone_call'
     | 'special_ad_impression'
     | 'special_ad_click'
-    | 'special_ad_whatsapp_click';
+    | 'special_ad_whatsapp_click'
+    | 'bos_banner_reklam_tiklama';
   targetId?: string;
   targetTitle?: string;
   targetCity?: string;
@@ -40,7 +41,8 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
         'phone_call',
         'special_ad_impression',
         'special_ad_click',
-        'special_ad_whatsapp_click'
+        'special_ad_whatsapp_click',
+        'bos_banner_reklam_tiklama'
       ],
       required: true,
       index: true,

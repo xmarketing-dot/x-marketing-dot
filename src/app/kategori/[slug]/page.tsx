@@ -41,6 +41,33 @@ const TIER_META: Record<string, { title: string; subtitle: string; desc: string;
     color: 'text-slate-300',
     border: 'border-slate-600/50',
   },
+  turbanli: {
+    title: 'Türbanlı Eskort Bayan İlanları',
+    subtitle: 'Doğrulanmış ve Teyitli Türbanlı Modeller',
+    desc: 'Türkiye genelinde 81 ilde hizmet veren bağımsız ve doğrulanmış türbanlı eskort bayan ilanları. WhatsApp ve doğrudan iletişim numaraları.',
+    icon: Sparkles,
+    badgeBg: 'bg-rose-600 text-white',
+    color: 'text-rose-400',
+    border: 'border-rose-500/50',
+  },
+  amator: {
+    title: 'Amatör & Bağımsız Eskort İlanları',
+    subtitle: 'Bireysel ve Ajanssız Gerçek İlanlar',
+    desc: 'Kendi evinde, otelde ve rezidansta hizmet veren bağımsız amatör Türk eskort bayan profilleri. Güvenilir ve aracısız iletişim.',
+    icon: ShieldCheck,
+    badgeBg: 'bg-emerald-600 text-white',
+    color: 'text-emerald-400',
+    border: 'border-emerald-500/50',
+  },
+  tango: {
+    title: 'Tango & Canlı Yayın Eskort İlanları',
+    subtitle: 'Tango Yayıncıları & Özel Eşlik Modelleri',
+    desc: 'Tango canlı yayın modelleri ve özel davet eşlik bayanları. WhatsApp ile doğrudan randevu ve görüşme detayları.',
+    icon: Globe,
+    badgeBg: 'bg-purple-600 text-white',
+    color: 'text-purple-400',
+    border: 'border-purple-500/50',
+  },
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
