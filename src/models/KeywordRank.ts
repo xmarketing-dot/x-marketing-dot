@@ -9,11 +9,16 @@ export interface ICompetitor {
 export interface IKeywordRank extends Document {
   keyword: string;
   targetDomain: string;
-  currentPosition: number; // 0 = 100+ veya bulunamadı, 1-100 = sıralama
+  currentPosition: number; // 0 = 100+ veya bulunamadı, 1-100 = Google sıralama
   previousPosition: number;
-  change: number; // Pozitif = yükseldi (örn: +3), Negatif = düştü (örn: -2)
+  change: number; // Google değişim
   bestPosition: number;
   topCompetitors: ICompetitor[];
+  // Yandex Canlı Sıralamaları
+  yandexPosition?: number;
+  previousYandexPosition?: number;
+  yandexChange?: number;
+  yandexCompetitors?: ICompetitor[];
   lastCheckedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -37,6 +42,10 @@ const KeywordRankSchema = new Schema<IKeywordRank>(
     change: { type: Number, default: 0 },
     bestPosition: { type: Number, default: 0 },
     topCompetitors: [CompetitorSchema],
+    yandexPosition: { type: Number, default: 0 },
+    previousYandexPosition: { type: Number, default: 0 },
+    yandexChange: { type: Number, default: 0 },
+    yandexCompetitors: [CompetitorSchema],
     lastCheckedAt: { type: Date },
   },
   {

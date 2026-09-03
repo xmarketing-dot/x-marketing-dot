@@ -160,6 +160,7 @@ export async function GET(req: Request) {
             periodViews: { $sum: 1 },
             uniqueVisitors: { $addToSet: "$visitorId" },
             googleReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "google"] }, 1, 0] } },
+            yandexReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "yandex"] }, 1, 0] } },
             facebookReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "facebook"] }, 1, 0] } },
             twitterReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "x"] }, 1, 0] } },
             whatsappReferrals: { $sum: { $cond: [{ $eq: ["$refererSource", "whatsapp"] }, 1, 0] } },
@@ -284,7 +285,7 @@ export async function GET(req: Request) {
         visitorStatsByPath[cleanPath] = {
           periodViews: 0,
           uniqueVisitorsCount: 0,
-          referrers: { google: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
+          referrers: { google: 0, yandex: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
           rawReferrers: [],
           lastVisitedAt: null,
         };
@@ -292,6 +293,7 @@ export async function GET(req: Request) {
       visitorStatsByPath[cleanPath].periodViews += (item.periodViews || 0);
       visitorStatsByPath[cleanPath].uniqueVisitorsCount += (item.uniqueVisitors || []).length;
       visitorStatsByPath[cleanPath].referrers.google += (item.googleReferrals || 0);
+      visitorStatsByPath[cleanPath].referrers.yandex += (item.yandexReferrals || 0);
       visitorStatsByPath[cleanPath].referrers.facebook += (item.facebookReferrals || 0);
       visitorStatsByPath[cleanPath].referrers.x += (item.twitterReferrals || 0);
       visitorStatsByPath[cleanPath].referrers.whatsapp += (item.whatsappReferrals || 0);
@@ -353,7 +355,7 @@ export async function GET(req: Request) {
       const vStats = visitorStatsByPath[ilanPath] || {
         periodViews: 0,
         uniqueVisitorsCount: 0,
-        referrers: { google: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
+        referrers: { google: 0, yandex: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
         rawReferrers: [],
         lastVisitedAt: null,
       };

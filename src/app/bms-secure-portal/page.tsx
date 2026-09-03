@@ -19,7 +19,7 @@ export default function BmsSecurePortalDashboard() {
   const [range, setRange] = useState('today'); // today, yesterday, week, month, all
   const [searchTermFilter, setSearchTermFilter] = useState('');
   const [listingSearchTerm, setListingSearchTerm] = useState('');
-  const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'x'>('views');
+  const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'yandex' | 'x'>('views');
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
@@ -32,12 +32,13 @@ export default function BmsSecurePortalDashboard() {
   const [bannerList, setBannerList] = useState<any[]>([]);
   const [bannerLoading, setBannerLoading] = useState(false);
 
-  // Google SEO Rank Tracking States
+  // Google & Yandex SEO Rank Tracking States
   const [keywordList, setKeywordList] = useState<any[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [scanningRankings, setScanningRankings] = useState(false);
   const [newKeywordInput, setNewKeywordInput] = useState('');
   const [testDomainInput, setTestDomainInput] = useState('');
+  const [seoEngineTab, setSeoEngineTab] = useState<'both' | 'google' | 'yandex'>('both');
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
 
@@ -273,21 +274,25 @@ export default function BmsSecurePortalDashboard() {
       if (listingSortBy === 'google') {
         return (b.referrers?.google || 0) - (a.referrers?.google || 0);
       }
+      if (listingSortBy === 'yandex') {
+        return (b.referrers?.yandex || 0) - (a.referrers?.yandex || 0);
+      }
       if (listingSortBy === 'x') {
         return (b.referrers?.x || 0) - (a.referrers?.x || 0);
       }
       return (b.totalViews || 0) - (a.totalViews || 0);
     });
 
-  let fb = 0, google = 0, x = 0, waClicks = 0, shares = 0;
+  let fb = 0, google = 0, yandex = 0, x = 0, waClicks = 0, shares = 0;
   (detailedListingReports as any[]).forEach((item: any) => {
     fb += item.referrers?.facebook || 0;
     google += item.referrers?.google || 0;
+    yandex += item.referrers?.yandex || 0;
     x += item.referrers?.x || 0;
     waClicks += item.whatsappClicks || 0;
     shares += item.shares || 0;
   });
-  const totals = { fb, google, x, waClicks, shares };
+  const totals = { fb, google, yandex, x, waClicks, shares };
 
   // ── ŞÜPHELİ TRAFİK, BOT VE SALDIRI TESPİT ANALİZİ ──
   // City/IP tek başına "bot" değildir; daha yüksek riskli sinyal kombinasyonları alarm üretir.
@@ -1011,7 +1016,7 @@ export default function BmsSecurePortalDashboard() {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'seo_rankings' && (
         <div className="flex flex-col gap-6 animate-fadeIn">
-          {/* ── BÖLÜM 1: GOOGLE WHATSAPP DÖNÜŞÜM ANALİTİĞİ ────────────────── */}
+          {/* ── BÖLÜM 1: GOOGLE & YANDEX WHATSAPP DÖNÜŞÜM ANALİTİĞİ ────────────────── */}
           <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161b22] via-[#1c1917] to-[#161b22] border-2 border-amber-500/40 shadow-2xl flex flex-col gap-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
               <div className="flex items-center gap-3">
@@ -1020,10 +1025,10 @@ export default function BmsSecurePortalDashboard() {
                 </div>
                 <div>
                   <h2 className="font-black text-lg sm:text-xl text-white font-heading">
-                    Google Organik Arama &amp; WhatsApp Dönüşüm Analizi
+                    Google &amp; Yandex Organik Arama &amp; WhatsApp Dönüşüm Analizi
                   </h2>
                   <p className="text-xs text-[#8b949e]">
-                    Google'dan gelen ziyaretçilerin doğrudan WhatsApp randevularına dönüşme performansı.
+                    Arama motorlarından (Google &amp; Yandex) gelen ziyaretçilerin doğrudan WhatsApp randevularına dönüşme performansı.
                   </p>
                 </div>
               </div>
@@ -1034,28 +1039,39 @@ export default function BmsSecurePortalDashboard() {
               </div>
             </div>
 
-            {/* 3 KPI Kartı */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-1">
-                <span className="text-xs text-[#8b949e] font-bold flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-sky-400" />
+            {/* 4 KPI Kartı (Google + Yandex Organik Trafik) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-1">
+                <span className="text-xs text-blue-400 font-bold flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-blue-400" />
                   Google Organik Ziyaretçi
                 </span>
                 <span className="font-black text-2xl text-white font-heading">
-                  {googleConversionStats.googleVisitors}
+                  {sources.google || googleConversionStats.googleVisitors || 0}
                 </span>
-                <span className="text-[10px] text-[#8b949e]">Arama motorundan gelen tekil kişiler</span>
+                <span className="text-[10px] text-[#8b949e]">Google TR'den gelen tekil kişiler</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-1">
+                <span className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
+                  <Globe className="w-4 h-4 text-amber-400" />
+                  Yandex Organik Ziyaretçi
+                </span>
+                <span className="font-black text-2xl text-white font-heading">
+                  {sources.yandex || 0}
+                </span>
+                <span className="text-[10px] text-[#8b949e]">Yandex TR'den gelen tekil kişiler</span>
               </div>
 
               <div className="p-4 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col gap-1">
                 <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
                   <MessageSquare className="w-4 h-4 text-emerald-400" />
-                  Google WhatsApp Tıklamaları
+                  Arama WhatsApp Tıklamaları
                 </span>
                 <span className="font-black text-2xl text-emerald-400 font-heading">
                   {googleConversionStats.googleWhatsappClicks}
                 </span>
-                <span className="text-[10px] text-[#8b949e]">Google'dan gelip WhatsApp butonuna basanlar</span>
+                <span className="text-[10px] text-[#8b949e]">Aramadan gelip WhatsApp'a basanlar</span>
               </div>
 
               <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-1">
@@ -1066,16 +1082,16 @@ export default function BmsSecurePortalDashboard() {
                 <span className="font-black text-2xl text-amber-400 font-heading">
                   %{googleConversionStats.googleConversionRate}
                 </span>
-                <span className="text-[10px] text-[#8b949e]">Her 100 Google ziyaretçisinden randevu oranı</span>
+                <span className="text-[10px] text-[#8b949e]">Her 100 organik kişiden randevu oranı</span>
               </div>
             </div>
 
-            {/* Google'dan En Çok WhatsApp Getiren İlanlar / İlçeler */}
+            {/* Arama Motorlarından En Çok WhatsApp Getiren İlanlar / İlçeler */}
             {googleConversionStats.topGoogleDistricts && googleConversionStats.topGoogleDistricts.length > 0 && (
               <div className="flex flex-col gap-3 pt-2">
                 <span className="text-xs font-black text-white font-heading uppercase tracking-wider flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-amber-400" />
-                  Google'dan En Çok WhatsApp Müşterisi Getiren Sayfalar:
+                  Organik Aramalardan En Çok WhatsApp Müşterisi Getiren Sayfalar:
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {googleConversionStats.topGoogleDistricts.map((item: any) => (
@@ -1089,7 +1105,7 @@ export default function BmsSecurePortalDashboard() {
                           <OfficialWhatsAppIcon className="w-3 h-3" />
                           {item.whatsappClicks} Tık
                         </span>
-                        <span className="text-[10px] text-[#8b949e] font-mono">{item.googleViews} Google Hit</span>
+                        <span className="text-[10px] text-[#8b949e] font-mono">{item.googleViews} Organik Hit</span>
                       </div>
                     </div>
                   ))}
@@ -1231,31 +1247,65 @@ export default function BmsSecurePortalDashboard() {
             </div>
           </div>
 
-          {/* ── BÖLÜM 2: CANLI GOOGLE SIRALAMA TAKİP MOTORU (SERP RANK TRACKER) ── */}
+          {/* ── BÖLÜM 2: CANLI GOOGLE & YANDEX SIRALAMA TAKİP MOTORU (DUAL SERP TRACKER) ── */}
           <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-6">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
               <div>
-                <h2 className="font-black text-lg sm:text-xl text-white font-heading flex items-center gap-2">
-                  <span>Google Canlı SERP Sıralama &amp; Rakip Takip Motoru</span>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="font-black text-lg sm:text-xl text-white font-heading flex items-center gap-2">
+                    <span>Google &amp; Yandex Canlı SERP Sıralama &amp; Rakip Takip Motoru</span>
+                  </h2>
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono">
                     {keywordList.length} Kelime Takipte
                   </span>
-                </h2>
-                <p className="text-xs text-[#8b949e]">
-                  Hedef kelimelerinizde Google Türkiye'deki anlık sıranızı, yükseliş/düşüşleri ve önünüzdeki ilk 2 rakibi canlı takip edin.
+                </div>
+                <p className="text-xs text-[#8b949e] mt-1">
+                  Hedef kelimelerinizde <strong>Google Türkiye</strong> ve <strong>Yandex Türkiye</strong>'deki anlık sıranızı, değişimleri ve rakipleri canlı izleyin.
                 </p>
               </div>
 
-              {/* Tümünü Şimdi Tara Butonu */}
-              <button
-                type="button"
-                onClick={() => handleScanRankings()}
-                disabled={scanningRankings}
-                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
-              >
-                <Zap className={`w-4 h-4 ${scanningRankings ? 'animate-spin text-slate-950' : 'fill-slate-950'}`} />
-                <span>{scanningRankings ? 'Google Taranıyor...' : '⚡ Tüm Sıralamaları Şimdi Canlı Tara'}</span>
-              </button>
+              {/* Arama Motoru Filtresi & Canlı Tara Butonu */}
+              <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex items-center bg-[#0d1117] border border-[#30363d] rounded-xl p-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSeoEngineTab('both')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                      seoEngineTab === 'both' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
+                    }`}
+                  >
+                    Tüm Motorlar (Çift Görünüm)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSeoEngineTab('google')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                      seoEngineTab === 'google' ? 'bg-blue-600 text-white font-black' : 'text-[#8b949e] hover:text-white'
+                    }`}
+                  >
+                    Google TR 🔴
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSeoEngineTab('yandex')}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                      seoEngineTab === 'yandex' ? 'bg-red-600 text-white font-black' : 'text-[#8b949e] hover:text-white'
+                    }`}
+                  >
+                    Yandex TR 🟡
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleScanRankings()}
+                  disabled={scanningRankings}
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                >
+                  <Zap className={`w-4 h-4 ${scanningRankings ? 'animate-spin text-slate-950' : 'fill-slate-950'}`} />
+                  <span>{scanningRankings ? 'Google & Yandex Taranıyor...' : '⚡ Tüm Sıralamaları Canlı Tara'}</span>
+                </button>
+              </div>
             </div>
 
             {/* Yeni Kelime Ekleme Formu */}
@@ -1286,9 +1336,18 @@ export default function BmsSecurePortalDashboard() {
                 <thead>
                   <tr className="border-b border-[#30363d] text-[11px] font-black text-[#8b949e] uppercase tracking-wider">
                     <th className="py-3 px-3">Anahtar Kelime</th>
-                    <th className="py-3 px-3">Google Sırası</th>
-                    <th className="py-3 px-3">Değişim</th>
-                    <th className="py-3 px-3">En İyi Sıra</th>
+                    {(seoEngineTab === 'both' || seoEngineTab === 'google') && (
+                      <>
+                        <th className="py-3 px-3 text-blue-400">Google TR Sırası</th>
+                        <th className="py-3 px-3 text-blue-400">Google Değişim</th>
+                      </>
+                    )}
+                    {(seoEngineTab === 'both' || seoEngineTab === 'yandex') && (
+                      <>
+                        <th className="py-3 px-3 text-amber-400">Yandex TR Sırası</th>
+                        <th className="py-3 px-3 text-amber-400">Yandex Değişim</th>
+                      </>
+                    )}
                     <th className="py-3 px-3">Önümüzdeki Rakipler</th>
                     <th className="py-3 px-3">Son Tarama</th>
                     <th className="py-3 px-3 text-right">İşlemler</th>
@@ -1296,8 +1355,92 @@ export default function BmsSecurePortalDashboard() {
                 </thead>
                 <tbody className="divide-y divide-[#21262d]">
                   {keywordList.map((item: any) => {
-                    const pos = item.currentPosition || 0;
-                    const change = item.change || 0;
+                    const posG = item.currentPosition || 0;
+                    const changeG = item.change || 0;
+                    const posY = item.yandexPosition || 0;
+                    const changeY = item.yandexChange || 0;
+
+                    const renderPosBadge = (pos: number, engine: 'google' | 'yandex', keyword: string) => {
+                      const searchUrl = engine === 'google'
+                        ? `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}`
+                        : `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`;
+
+                      let badgeContent = null;
+                      if (pos > 0 && pos <= 3) {
+                        badgeContent = (
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                            🥇 #{pos} (Zirve) ↗
+                          </span>
+                        );
+                      } else if (pos > 3 && pos <= 10) {
+                        badgeContent = (
+                          <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                            🥈 #{pos} (1. Sayfa) ↗
+                          </span>
+                        );
+                      } else if (pos > 10 && pos <= 30) {
+                        badgeContent = (
+                          <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                            🥉 #{pos} (Sayfa 2-3) ↗
+                          </span>
+                        );
+                      } else if (pos > 30) {
+                        badgeContent = (
+                          <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                            #{pos} ↗
+                          </span>
+                        );
+                      } else {
+                        badgeContent = (
+                          <span className="px-2 py-0.5 rounded-full bg-[#21262d] text-[#8b949e] border border-[#30363d] text-xs font-bold font-mono inline-flex items-center gap-1 group-hover:text-white transition-colors">
+                            100+ (Dışında) ↗
+                          </span>
+                        );
+                      }
+
+                      return (
+                        <a
+                          href={searchUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="group inline-block"
+                          title={`${engine === 'google' ? 'Google TR' : 'Yandex TR'} üzerinde canlı sonuçları yeni sekmede gör`}
+                        >
+                          {badgeContent}
+                        </a>
+                      );
+                    };
+
+                    const renderChangeBadge = (change: number, pos: number) => {
+                      if (change > 0) {
+                        return (
+                          <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs font-mono">
+                            <TrendingUp className="w-3.5 h-3.5" />
+                            +{change}
+                          </span>
+                        );
+                      } else if (change < 0) {
+                        return (
+                          <span className="inline-flex items-center gap-1 text-rose-400 font-bold text-xs font-mono">
+                            <TrendingDown className="w-3.5 h-3.5" />
+                            {change}
+                          </span>
+                        );
+                      }
+                      if (pos === 0) {
+                        return (
+                          <span className="inline-flex items-center gap-1 text-[#484f58] font-mono text-xs">
+                            —
+                          </span>
+                        );
+                      }
+                      return (
+                        <span className="inline-flex items-center gap-1 text-[#8b949e] font-bold text-xs font-mono">
+                          <Minus className="w-3.5 h-3.5" />
+                          Sabit
+                        </span>
+                      );
+                    };
 
                     return (
                       <tr key={item._id} className="hover:bg-[#21262d]/40 transition-colors">
@@ -1306,58 +1449,32 @@ export default function BmsSecurePortalDashboard() {
                           <span className="font-bold text-xs text-white capitalize font-heading block">
                             {item.keyword}
                           </span>
-                          <span className="text-[10px] text-[#8b949e]">Google TR</span>
+                          <span className="text-[10px] text-[#8b949e]">Türkiye Arama Ağı</span>
                         </td>
 
-                        {/* Sıralama Rozeti */}
-                        <td className="py-3.5 px-3">
-                          {pos > 0 && pos <= 3 ? (
-                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-mono">
-                              🥇 {pos}. Sıra (Zirve)
-                            </span>
-                          ) : pos > 3 && pos <= 10 ? (
-                            <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 text-xs font-black font-mono">
-                              🥈 {pos}. Sıra (1. Sayfa)
-                            </span>
-                          ) : pos > 10 && pos <= 30 ? (
-                            <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-black font-mono">
-                              🥉 {pos}. Sıra (Sayfa 2-3)
-                            </span>
-                          ) : pos > 30 ? (
-                            <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/40 text-xs font-black font-mono">
-                              {pos}. Sıra
-                            </span>
-                          ) : (
-                            <span className="px-2.5 py-1 rounded-full bg-[#21262d] text-[#8b949e] border border-[#30363d] text-xs font-bold font-mono">
-                              100+ (Dışında)
-                            </span>
-                          )}
-                        </td>
+                        {/* Google Sırası ve Değişimi */}
+                        {(seoEngineTab === 'both' || seoEngineTab === 'google') && (
+                          <>
+                            <td className="py-3.5 px-3">
+                              {renderPosBadge(posG, 'google', item.keyword)}
+                            </td>
+                            <td className="py-3.5 px-3">
+                              {renderChangeBadge(changeG, posG)}
+                            </td>
+                          </>
+                        )}
 
-                        {/* Değişim Rozeti */}
-                        <td className="py-3.5 px-3">
-                          {change > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-xs font-mono">
-                              <TrendingUp className="w-3.5 h-3.5" />
-                              +{change} Yükseldi
-                            </span>
-                          ) : change < 0 ? (
-                            <span className="inline-flex items-center gap-1 text-rose-400 font-bold text-xs font-mono">
-                              <TrendingDown className="w-3.5 h-3.5" />
-                              {change} Düştü
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-[#8b949e] font-bold text-xs font-mono">
-                              <Minus className="w-3.5 h-3.5" />
-                              Sabit
-                            </span>
-                          )}
-                        </td>
-
-                        {/* En İyi Sıra (Rekor) */}
-                        <td className="py-3.5 px-3 font-mono font-bold text-xs text-white">
-                          {item.bestPosition > 0 ? `#${item.bestPosition}` : '—'}
-                        </td>
+                        {/* Yandex Sırası ve Değişimi */}
+                        {(seoEngineTab === 'both' || seoEngineTab === 'yandex') && (
+                          <>
+                            <td className="py-3.5 px-3">
+                              {renderPosBadge(posY, 'yandex', item.keyword)}
+                            </td>
+                            <td className="py-3.5 px-3">
+                              {renderChangeBadge(changeY, posY)}
+                            </td>
+                          </>
+                        )}
 
                         {/* Rakipler */}
                         <td className="py-3.5 px-3">
@@ -1392,7 +1509,7 @@ export default function BmsSecurePortalDashboard() {
                               type="button"
                               onClick={() => handleScanRankings(item._id)}
                               disabled={scanningRankings}
-                              title="Bu Kelimeyi Tekrar Tara"
+                              title="Bu Kelimeyi Tekrar Tara (Google + Yandex)"
                               className="p-1.5 rounded-lg bg-[#21262d] hover:bg-amber-500/20 text-[#8b949e] hover:text-amber-400 border border-[#30363d] transition-colors"
                             >
                               <RefreshCw className={`w-3.5 h-3.5 ${scanningRankings ? 'animate-spin' : ''}`} />
@@ -1453,41 +1570,6 @@ export default function BmsSecurePortalDashboard() {
               />
               <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-3" />
             </div>
-          </div>
-
-          {/* Sıralama Butonları */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs">
-            <span className="text-[#8b949e] font-bold shrink-0 flex items-center gap-1">
-              <Filter className="w-3.5 h-3.5" /> Sırala:
-            </span>
-            {[
-              { id: 'views', label: '👁️ En Çok Görüntülenen', count: null },
-              { id: 'whatsapp', label: '💬 WhatsApp Tıklaması', count: totals.waClicks },
-              { id: 'ctr', label: '🎯 Dönüşüm Oranı (%)', count: null },
-              { id: 'facebook', label: '🟦 Facebook Trafiği', count: totals.fb },
-              { id: 'x', label: '🐦 X (Twitter) Trafiği', count: totals.x },
-              { id: 'google', label: '🔍 Google Trafiği', count: totals.google },
-              { id: 'shares', label: '🔗 Paylaşım', count: totals.shares },
-            ].map((btn) => (
-              <button
-                key={btn.id}
-                onClick={() => setListingSortBy(btn.id as any)}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 flex items-center gap-1.5 ${
-                  listingSortBy === btn.id
-                    ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 scale-[1.02]'
-                    : 'bg-[#0d1117] text-[#8b949e] hover:text-white border border-[#30363d]'
-                }`}
-              >
-                <span>{btn.label}</span>
-                {btn.count !== null && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-mono font-black ${
-                    listingSortBy === btn.id ? 'bg-slate-950/30 text-slate-950' : 'bg-[#21262d] text-[#8b949e]'
-                  }`}>
-                    {btn.count}
-                  </span>
-                )}
-              </button>
-            ))}
           </div>
 
           {/* İlan Detay Tablosu (Masaüstü) & Kartlar (Mobil) */}
@@ -1556,12 +1638,13 @@ export default function BmsSecurePortalDashboard() {
 
                       {/* Referans Rozetleri */}
                       <div className="flex flex-wrap items-center gap-1.5">
-                        {item.referrers?.facebook > 0 && <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-bold">🟦 FB: {item.referrers.facebook}</span>}
-                        {item.referrers?.x > 0 && <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] font-bold">🐦 X: {item.referrers.x}</span>}
-                        {item.referrers?.google > 0 && <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold">🔍 Google: {item.referrers.google}</span>}
-                        {item.referrers?.whatsapp > 0 && <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">🟢 WA: {item.referrers.whatsapp}</span>}
-                        {item.referrers?.instagram > 0 && <span className="px-2 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 text-[10px] font-bold">📸 IG: {item.referrers.instagram}</span>}
-                        {item.referrers?.direct > 0 && <span className="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] text-[10px] font-bold">🔗 Direkt: {item.referrers.direct}</span>}
+                        {item.referrers?.google > 0 && <span className="px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[10px] font-bold font-mono">🔍 Google: {item.referrers.google}</span>}
+                        {item.referrers?.yandex > 0 && <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold font-mono">🟡 Yandex: {item.referrers.yandex}</span>}
+                        {item.referrers?.facebook > 0 && <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-bold font-mono">🟦 FB: {item.referrers.facebook}</span>}
+                        {item.referrers?.x > 0 && <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] font-bold font-mono">🐦 X: {item.referrers.x}</span>}
+                        {item.referrers?.whatsapp > 0 && <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold font-mono">🟢 WA: {item.referrers.whatsapp}</span>}
+                        {item.referrers?.instagram > 0 && <span className="px-2 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 text-[10px] font-bold font-mono">📸 IG: {item.referrers.instagram}</span>}
+                        {item.referrers?.direct > 0 && <span className="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] text-[10px] font-bold font-mono">🔗 Direkt: {item.referrers.direct}</span>}
                       </div>
 
                       <div className="flex items-center justify-between pt-1 border-t border-[#21262d]">
@@ -1643,16 +1726,18 @@ export default function BmsSecurePortalDashboard() {
                       <th 
                         className="py-3 px-3 cursor-pointer hover:text-white transition-colors select-none"
                         onClick={() => {
-                          if (listingSortBy === 'facebook') setListingSortBy('google');
-                          else if (listingSortBy === 'google') setListingSortBy('x');
-                          else setListingSortBy('facebook');
+                          if (listingSortBy === 'google') setListingSortBy('yandex');
+                          else if (listingSortBy === 'yandex') setListingSortBy('facebook');
+                          else if (listingSortBy === 'facebook') setListingSortBy('x');
+                          else setListingSortBy('google');
                         }}
                         title="Trafik kaynaklarına göre sırala"
                       >
                         <div className="flex items-center gap-1">
                           <span>TRAFİK KAYNAKLARI (REFERRER)</span>
-                          {listingSortBy === 'facebook' && <span className="text-indigo-400 font-black">▼ (FB)</span>}
                           {listingSortBy === 'google' && <span className="text-blue-400 font-black">▼ (GOOGLE)</span>}
+                          {listingSortBy === 'yandex' && <span className="text-amber-400 font-black">▼ (YANDEX)</span>}
+                          {listingSortBy === 'facebook' && <span className="text-indigo-400 font-black">▼ (FB)</span>}
                           {listingSortBy === 'x' && <span className="text-cyan-400 font-black">▼ (X)</span>}
                         </div>
                       </th>
@@ -1665,6 +1750,7 @@ export default function BmsSecurePortalDashboard() {
                       const isExpanded = expandedListingId === item.id;
                       const totalReferralTraffic = 
                         (item.referrers?.google || 0) +
+                        (item.referrers?.yandex || 0) +
                         (item.referrers?.facebook || 0) +
                         (item.referrers?.x || 0) +
                         (item.referrers?.whatsapp || 0) +
@@ -1750,6 +1836,16 @@ export default function BmsSecurePortalDashboard() {
                             {/* Referrer Rozetleri */}
                             <td className="py-3.5 px-3">
                               <div className="flex flex-wrap items-center gap-1.5 max-w-[280px]">
+                                {item.referrers?.google > 0 && (
+                                  <span className="px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold font-mono" title="Google aramalarından gelenler">
+                                    🔍 Google: {item.referrers.google}
+                                  </span>
+                                )}
+                                {item.referrers?.yandex > 0 && (
+                                  <span className="px-2 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold font-mono" title="Yandex aramalarından gelenler">
+                                    🟡 Yandex: {item.referrers.yandex}
+                                  </span>
+                                )}
                                 {item.referrers?.facebook > 0 && (
                                   <span className="px-2 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold font-mono" title="Facebook'tan gelen ziyaretçiler">
                                     🟦 FB: {item.referrers.facebook}
@@ -1758,11 +1854,6 @@ export default function BmsSecurePortalDashboard() {
                                 {item.referrers?.x > 0 && (
                                   <span className="px-2 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold font-mono" title="X / Twitter'dan gelenler">
                                     🐦 X: {item.referrers.x}
-                                  </span>
-                                )}
-                                {item.referrers?.google > 0 && (
-                                  <span className="px-2 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/30 text-[10px] font-bold font-mono" title="Google aramalarından gelenler">
-                                    🔍 Google: {item.referrers.google}
                                   </span>
                                 )}
                                 {item.referrers?.whatsapp > 0 && (

@@ -94,14 +94,14 @@ export function generateLocationGuide(ilAd: string, ilceAd?: string): LocationGu
   return {
     title: `${target} Eskort & Escort Bayan Rehberi (2026 Güncel)`,
     paragraphs: [
-      `Best Eskort platformu; ${target} genelinde en kaliteli, güvenilir ve elit bağımsız eskort bayan profillerini tek bir çatı altında toplamaktadır. ${shortTarget} bölgesinde amatör bayanlar, türbanlı partnerler, tango yayıncıları, sosyal etkinlikler ve özel buluşmalar için aradığınız zarafeti ve samimiyeti sunan seçkin modeller 7/24 hizmet vermektedir.`,
+      `Best Eskort platformu; ${target} genelinde en kaliteli, güvenilir ve elit bağımsız eskort bayan profillerini tek bir çatı altında toplamaktadır. ${shortTarget} bölgesinde amatör modeller, türbanlı partnerler, tango ve canlı yayıncılar, türk ifşa ve yetişkin içerik üreticileri, sosyal etkinlikler ve özel buluşmalar için aradığınız zarafeti ve samimiyeti sunan seçkin modeller 7/24 hizmet vermektedir.`,
       `${target} eskort ilanlarında saatlik, gecelik veya haftasonu eşlik seçenekleri mevcuttur. Lüks rezidanslarda, nezih otellerde veya kendi konforlu mekanınızda gerçekleşecek randevularınız için doğrudan WhatsApp ve Telegram üzerinden ilan sahiplerine ulaşabilir, beklentilerinize uygun görüşme detaylarını aracı olmadan konuşabilirsiniz.`,
       `Platformumuz güvenliğe ve dürüstlüğe azami önem verir. ${shortTarget} eskort randevularınızda internet üzerinden kapora veya taksi parası talep eden şüpheli hesaplara asla itibar etmeyiniz; teyitli profillerle güvenle randevulaşarak %100 memnuniyet ve tam gizlilikle keyifli vakit geçirebilirsiniz.`,
     ],
     bulletPoints: [
-      `%100 Doğrulanmış ve Teyitli ${shortTarget} Fotoğrafları`,
+      `%100 Doğrulanmış ve Teyitli ${shortTarget} Fotoğrafları & Amatör İlanlar`,
       `Doğrudan ve Aracısız WhatsApp & Telegram İletişim Hatları`,
-      `Lüks Otel, Rezidans ve Eve Özel Hizmet Seçenekleri`,
+      `Lüks Otel, Rezidans ve Eve Özel VIP Hizmet Seçenekleri`,
       `Ön Ödemesiz, Güvenilir ve Gizlilik Garantili Randevular`,
     ],
   };

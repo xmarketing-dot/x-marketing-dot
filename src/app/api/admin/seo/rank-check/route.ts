@@ -16,64 +16,154 @@ async function checkAdminAuth(): Promise<boolean> {
 }
 
 /**
- * Canlı SERP & Organik Trafik Doğrulama Motoru:
- * 1. Google Referrer & Analytics Verisi (Ground Truth: Sitemize Google'dan gelen gerçek tıklamaları doğrular)
- * 2. Yandex SERP (Tüm Türkiye eskort aramaları)
- * 3. DuckDuckGo / Bing SERP
+ * Domain'in ağımıza veya sitemize ait olup olmadığını doğrular
  */
-async function scrapeSerpPosition(
+function isOurSiteDomain(hostname: string, targetDomain: string): boolean {
+  const host = hostname.toLowerCase().replace(/^www\./, '');
+  const cleanTarget = targetDomain.replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
+  const cleanTargetBase = cleanTarget.split('.')[0];
+
+  if (cleanTarget && host.includes(cleanTarget)) return true;
+  if (cleanTargetBase && cleanTargetBase.length > 3 && host.includes(cleanTargetBase)) return true;
+
+  // Tüm ağ domainlerimiz
+  if (
+    host.includes('devs.surf') ||
+    host.includes('besteskort') ||
+    host.includes('bestmarketing') ||
+    host.includes('localhost')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * GOOGLE SERP MOTORU (CANLI VE %100 GERÇEK GOOGLE.COM.TR TARAMASI)
+ * Asla tahmin, olasılık veya hit sayısı KULLANMAZ.
+ * Doğrudan Google Türkiye HTML sonucunu tarar, kaçıncı sıradaysa o sırayı yazar.
+ */
+async function scrapeGoogleSerp(
   keyword: string,
   targetDomain: string
-): Promise<{ position: number; competitors: ICompetitor[]; verifiedByTraffic?: boolean }> {
-  const cleanTarget = targetDomain.replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
-  const cleanTargetBase = cleanTarget.split('.')[0]; // örn: "besteskort"
-
+): Promise<{ position: number; competitors: ICompetitor[] }> {
   const competitors: ICompetitor[] = [];
   let foundPosition = 0;
   const seenDomains = new Set<string>();
   let rankCounter = 1;
 
-  // ── 0. KONTROL: Canlı Google Trafik Doğrulaması ──
-  // Sitemize son 7 günde Google'dan bu kelimeyle veya bu il/ilçe sayfasıyla tıklama geldiyse
   try {
-    const AnalyticsVisitorModel = (await import('@/models/AnalyticsVisitor')).default;
-    const cleanKw = keyword.toLowerCase().replace(/eskort|escort|bayan|vip|ilanları/g, '').trim();
-    
-    const count = await AnalyticsVisitorModel.countDocuments({
-      refererSource: 'google',
-      $or: [
-        { searchKeyword: { $regex: cleanKw, $options: 'i' } },
-        { path: { $regex: cleanKw, $options: 'i' } },
-      ],
-      createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+    const googleUrl = `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}&num=30&hl=tr&gl=tr`;
+    const res = await fetch(googleUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+        'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Sec-Ch-Ua': '"Chromium";v="128", "Not;A=Brand";v="24", "Google Chrome";v="128"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"Windows"',
+      },
     });
 
-    if (count > 0) {
-      // Google'dan aktif tıklama alıyor (Örn: Adıyaman aramalarında Sayfa 2 / Sıra 11-16)
-      foundPosition = count > 15 ? 12 : count > 5 ? 14 : 18;
+    if (res.ok) {
+      const html = await res.text();
+      // Google organik arama sonuç linklerini ayıkla (href="/url?q=..." veya doğrudan href="https://...")
+      const linkRegex = /<a[^>]+href="([^"]+)"[^>]*>/g;
+      let m;
+
+      while ((m = linkRegex.exec(html)) !== null) {
+        let rawHref = m[1];
+        if (!rawHref) continue;
+
+        // Google url yönlendirmesini çöz (/url?q=https://example.com/...)
+        if (rawHref.startsWith('/url?q=')) {
+          const extracted = rawHref.split('/url?q=')[1]?.split('&')[0];
+          if (extracted) rawHref = decodeURIComponent(extracted);
+        }
+
+        if (!rawHref.startsWith('http')) continue;
+
+        try {
+          const parsed = new URL(rawHref);
+          const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+
+          if (
+            hostname.includes('google.') ||
+            hostname.includes('gstatic.') ||
+            hostname.includes('youtube.') ||
+            hostname.includes('w3.org') ||
+            hostname.includes('schema.org') ||
+            seenDomains.has(hostname)
+          ) {
+            continue;
+          }
+
+          seenDomains.add(hostname);
+
+          const isOurSite = isOurSiteDomain(hostname, targetDomain);
+
+          if (isOurSite) {
+            if (foundPosition === 0) {
+              foundPosition = rankCounter;
+            }
+          } else {
+            if (competitors.length < 3) {
+              competitors.push({
+                position: rankCounter,
+                domain: hostname,
+                title: hostname,
+              });
+            }
+          }
+
+          rankCounter++;
+          if (rankCounter > 30) break;
+        } catch (e) {}
+      }
     }
-  } catch (trafficErr) {
-    // Silent
+  } catch (err) {
+    console.warn('Google SERP scan error:', err);
   }
 
-  // 1. PRIMARY: Yandex Search Engine
+  return { position: foundPosition, competitors };
+}
+
+/**
+ * YANDEX SERP MOTORU (CANLI VE %100 GERÇEK TARAMA)
+ */
+async function scrapeYandexSerp(
+  keyword: string,
+  targetDomain: string
+): Promise<{ position: number; competitors: ICompetitor[] }> {
+  const competitors: ICompetitor[] = [];
+  let foundPosition = 0;
+  const seenDomains = new Set<string>();
+  let rankCounter = 1;
+
   try {
     const yandexUrl = `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`;
     const res = await fetch(yandexUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        'Accept-Language': 'tr-TR,tr;q=0.9',
+        'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
       },
     });
 
     if (res.ok) {
       const html = await res.text();
-      const urls = [...html.matchAll(/href="(https?:\/\/[^"]+)"/g)].map((m) => m[1]);
+      const linkRegex = /<a[^>]+href="([^"]+)"[^>]*>/g;
+      let m;
 
-      for (const rawUrl of urls) {
+      while ((m = linkRegex.exec(html)) !== null) {
+        const rawHref = m[1];
+        if (!rawHref.startsWith('http')) continue;
+
         try {
-          const parsed = new URL(rawUrl);
+          const parsed = new URL(rawHref);
           const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
           if (
@@ -81,11 +171,6 @@ async function scrapeSerpPosition(
             hostname.includes('ya.ru') ||
             hostname.includes('w3.org') ||
             hostname.includes('schema.org') ||
-            hostname.includes('twitter.com') ||
-            hostname.includes('x.com') ||
-            hostname.includes('instagram.com') ||
-            hostname.includes('facebook.com') ||
-            hostname.includes('t.me') ||
             hostname.includes('google.') ||
             seenDomains.has(hostname)
           ) {
@@ -94,16 +179,20 @@ async function scrapeSerpPosition(
 
           seenDomains.add(hostname);
 
-          if (competitors.length < 3 && !hostname.includes(cleanTargetBase)) {
-            competitors.push({
-              position: rankCounter,
-              domain: hostname,
-              title: hostname,
-            });
-          }
+          const isOurSite = isOurSiteDomain(hostname, targetDomain);
 
-          if (foundPosition === 0 && (hostname.includes(cleanTarget) || hostname.includes(cleanTargetBase))) {
-            foundPosition = rankCounter;
+          if (isOurSite) {
+            if (foundPosition === 0) {
+              foundPosition = rankCounter;
+            }
+          } else {
+            if (competitors.length < 3) {
+              competitors.push({
+                position: rankCounter,
+                domain: hostname,
+                title: hostname,
+              });
+            }
           }
 
           rankCounter++;
@@ -113,51 +202,6 @@ async function scrapeSerpPosition(
     }
   } catch (err) {
     console.warn('Yandex SERP scan error:', err);
-  }
-
-  // 2. SECONDARY: DuckDuckGo Organic Engine
-  if (competitors.length === 0) {
-    try {
-      const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(keyword)}`;
-      const dRes = await fetch(ddgUrl, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        },
-      });
-
-      if (dRes.ok) {
-        const dHtml = await dRes.text();
-        const dMatches = [...dHtml.matchAll(/class="result__url"[^>]*href="([^"]+)"/g)].map(m => m[1]);
-
-        for (const m of dMatches) {
-          try {
-            const raw = m.includes('uddg=') ? decodeURIComponent(m.split('uddg=')[1].split('&')[0]) : m;
-            const dHostname = new URL(raw).hostname.toLowerCase().replace(/^www\./, '');
-
-            if (dHostname.includes('duckduckgo') || seenDomains.has(dHostname)) continue;
-            seenDomains.add(dHostname);
-
-            if (competitors.length < 3 && !dHostname.includes(cleanTargetBase)) {
-              competitors.push({
-                position: rankCounter,
-                domain: dHostname,
-                title: dHostname,
-              });
-            }
-
-            if (foundPosition === 0 && (dHostname.includes(cleanTarget) || dHostname.includes(cleanTargetBase))) {
-              foundPosition = rankCounter;
-            }
-
-            rankCounter++;
-            if (rankCounter > 30) break;
-          } catch (e) {}
-        }
-      }
-    } catch (dErr) {
-      console.warn('DDG scan error:', dErr);
-    }
   }
 
   return { position: foundPosition, competitors };
@@ -176,19 +220,51 @@ export async function GET(req: NextRequest) {
 
   await connectToDatabase();
 
-  let keywords = await KeywordRankModel.find({})
-    .sort({ currentPosition: 1, updatedAt: -1 })
-    .lean();
+  let rawKeywords = await KeywordRankModel.find({}).lean();
 
-  // İlk kurulumda varsayılan anahtar kelimeleri ekle
-  if (keywords.length === 0) {
+  // Sıralama Mantığı: En iyi sıralamaya sahip olanlar (Zirvedekiler #1, #2, #5...) en üstte çıksın!
+  const sortKeywords = (list: any[]) => {
+    return list.sort((a: any, b: any) => {
+      const posAY = typeof a.yandexPosition === 'number' ? a.yandexPosition : 0;
+      const posAG = typeof a.currentPosition === 'number' ? a.currentPosition : 0;
+      const posBY = typeof b.yandexPosition === 'number' ? b.yandexPosition : 0;
+      const posBG = typeof b.currentPosition === 'number' ? b.currentPosition : 0;
+
+      const rankA = (posAY > 0 && posAG > 0)
+        ? Math.min(posAY, posAG)
+        : posAY > 0 ? posAY : posAG > 0 ? posAG : 999;
+      
+      const rankB = (posBY > 0 && posBG > 0)
+        ? Math.min(posBY, posBG)
+        : posBY > 0 ? posBY : posBG > 0 ? posBG : 999;
+
+      return rankA - rankB;
+    });
+  };
+
+  if (rawKeywords.length === 0) {
     const defaultDomain = getReqDomain(req);
     const defaults = [
-      'kadıköy eskort',
+      'adıyaman eskort',
+      'adıyaman escort',
       'beylikdüzü eskort',
+      'kadıköy eskort',
       'istanbul eskort ilanları',
       'izmir eskort bayan',
       'ankara vip escort',
+      'türbanlı eskort',
+      'antalya eskort',
+      'bursa eskort',
+      'türk ifşa',
+      'türk porno',
+      'türkçe porno',
+      'amatör türk porno',
+      'konulu porno',
+      'türbanlı porno',
+      'hd porno izle',
+      'türkçe altyazılı porno',
+      'rus porno',
+      'vip eskort',
     ];
 
     for (const kw of defaults) {
@@ -200,14 +276,17 @@ export async function GET(req: NextRequest) {
         change: 0,
         bestPosition: 0,
         topCompetitors: [],
+        yandexPosition: 0,
+        previousYandexPosition: 0,
+        yandexChange: 0,
+        yandexCompetitors: [],
       }).catch(() => {});
     }
 
-    keywords = await KeywordRankModel.find({})
-      .sort({ currentPosition: 1, updatedAt: -1 })
-      .lean();
+    rawKeywords = await KeywordRankModel.find({}).lean();
   }
 
+  const keywords = sortKeywords(rawKeywords);
   return NextResponse.json({ success: true, keywords });
 }
 
@@ -242,17 +321,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Bu anahtar kelime zaten takip ediliyor' }, { status: 400 });
     }
 
-    // İlk taramayı canlı yap
-    const { position, competitors } = await scrapeSerpPosition(cleanKw, targetDomain);
+    // İlk taramayı Google ve Yandex için eşzamanlı yap
+    const [googleResult, yandexResult] = await Promise.all([
+      scrapeGoogleSerp(cleanKw, targetDomain),
+      scrapeYandexSerp(cleanKw, targetDomain),
+    ]);
 
     const doc = await KeywordRankModel.create({
       keyword: cleanKw,
       targetDomain,
-      currentPosition: position,
-      previousPosition: position,
+      currentPosition: googleResult.position,
+      previousPosition: googleResult.position,
       change: 0,
-      bestPosition: position,
-      topCompetitors: competitors,
+      bestPosition: googleResult.position,
+      topCompetitors: yandexResult.competitors.length > 0 ? yandexResult.competitors : googleResult.competitors,
+      yandexPosition: yandexResult.position,
+      previousYandexPosition: yandexResult.position,
+      yandexChange: 0,
+      yandexCompetitors: yandexResult.competitors,
       lastCheckedAt: new Date(),
     });
 
@@ -277,64 +363,69 @@ export async function PUT(req: NextRequest) {
     const query = id ? { _id: id } : {};
     let items = await KeywordRankModel.find(query);
 
-    if (items.length === 0 && !id) {
-      const defaults = [
-        'beylikdüzü eskort',
-        'kadıköy eskort',
-        'istanbul eskort ilanları',
-        'izmir eskort bayan',
-        'ankara vip escort',
-      ];
-      for (const kw of defaults) {
-        await KeywordRankModel.create({
-          keyword: kw,
-          targetDomain: getReqDomain(req),
-          currentPosition: 0,
-          previousPosition: 0,
-          change: 0,
-          bestPosition: 0,
-          topCompetitors: [],
-        }).catch(() => {});
-      }
-      items = await KeywordRankModel.find({});
-    }
-
     const updatedItems = [];
 
     for (const item of items) {
-      const { position, competitors } = await scrapeSerpPosition(item.keyword, item.targetDomain);
+      const [googleResult, yandexResult] = await Promise.all([
+        scrapeGoogleSerp(item.keyword, item.targetDomain),
+        scrapeYandexSerp(item.keyword, item.targetDomain),
+      ]);
 
-      const prev = item.currentPosition;
-      const curr = position;
-      
-      // Değişim hesabı: Eski sıra 8, yeni sıra 5 ise +3 sıra yükselmiştir.
-      let change = 0;
-      if (prev > 0 && curr > 0) {
-        change = prev - curr; // 8 - 5 = +3 (Yeşil)
-      } else if (prev === 0 && curr > 0) {
-        change = curr; // İlk kez sıralamaya girdi
-      } else if (prev > 0 && curr === 0) {
-        change = -prev; // Sıralamadan düştü
-      }
+      // Google değişim hesabı
+      const prevG = item.currentPosition || 0;
+      const currG = googleResult.position || 0;
+      let changeG = 0;
+      if (prevG > 0 && currG > 0) changeG = prevG - currG;
+      else if (prevG === 0 && currG > 0) changeG = currG;
+      else if (prevG > 0 && currG === 0) changeG = -prevG;
 
-      const best = item.bestPosition === 0 || (curr > 0 && curr < item.bestPosition)
-        ? curr
+      // Yandex değişim hesabı
+      const prevY = item.yandexPosition || 0;
+      const currY = yandexResult.position || 0;
+      let changeY = 0;
+      if (prevY > 0 && currY > 0) changeY = prevY - currY;
+      else if (prevY === 0 && currY > 0) changeY = currY;
+      else if (prevY > 0 && currY === 0) changeY = -prevY;
+
+      const bestG = item.bestPosition === 0 || (currG > 0 && currG < item.bestPosition)
+        ? currG
         : item.bestPosition;
 
-      item.previousPosition = prev;
-      item.currentPosition = curr;
-      item.change = change;
-      item.bestPosition = best;
-      item.topCompetitors = competitors;
+      item.previousPosition = prevG;
+      item.currentPosition = currG;
+      item.change = changeG;
+      item.bestPosition = bestG;
+      item.topCompetitors = yandexResult.competitors.length > 0 ? yandexResult.competitors : googleResult.competitors;
+
+      item.previousYandexPosition = prevY;
+      item.yandexPosition = currY;
+      item.yandexChange = changeY;
+      item.yandexCompetitors = yandexResult.competitors;
+
       item.lastCheckedAt = new Date();
 
       await item.save();
       updatedItems.push(item);
     }
 
-    const allKeywords = await KeywordRankModel.find({})
-      .sort({ currentPosition: 1, updatedAt: -1 })
-      .lean();
+    const rawKeywords = await KeywordRankModel.find({}).lean();
+    
+    const allKeywords = rawKeywords.sort((a: any, b: any) => {
+      const posAY = typeof a.yandexPosition === 'number' ? a.yandexPosition : 0;
+      const posAG = typeof a.currentPosition === 'number' ? a.currentPosition : 0;
+      const posBY = typeof b.yandexPosition === 'number' ? b.yandexPosition : 0;
+      const posBG = typeof b.currentPosition === 'number' ? b.currentPosition : 0;
+
+      const rankA = (posAY > 0 && posAG > 0)
+        ? Math.min(posAY, posAG)
+        : posAY > 0 ? posAY : posAG > 0 ? posAG : 999;
+      
+      const rankB = (posBY > 0 && posBG > 0)
+        ? Math.min(posBY, posBG)
+        : posBY > 0 ? posBY : posBG > 0 ? posBG : 999;
+
+      return rankA - rankB;
+    });
 
     return NextResponse.json({ success: true, keywords: allKeywords, updatedCount: updatedItems.length });
   } catch (error: any) {
