@@ -27,37 +27,12 @@ export default function BannedTrollScreen() {
     { name: 'Mehmet Y.', time: '1 dk önce', text: 'Patatesler çıtır olsun abi' },
   ];
 
-  // Permanent Device Stamping (Modem Reset Hunter)
+  // Clean up any stale ban cookies
   useEffect(() => {
     try {
       if (typeof window !== 'undefined') {
-        // If somehow loaded on admin portal, do not set ban cookie!
-        if (window.location.pathname.includes('/bms-secure-portal')) {
-          document.cookie = 'bms_banned=; max-age=0; path=/';
-          localStorage.removeItem('bms_banned');
-          return;
-        }
-
-        document.cookie = 'bms_banned=1; max-age=31536000; path=/; SameSite=Lax';
-        localStorage.setItem('bms_banned', '1');
-
-        const vid = localStorage.getItem('bms_vid');
-        const sid = sessionStorage.getItem('bms_sid');
-        if (vid) {
-          fetch('/api/analytics/track', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              visitorId: vid,
-              sessionId: sid || 'troll_sess',
-              path: window.location.pathname || '/',
-              pageTitle: '🤡 Kozmik Bekleme Odası (Troll)',
-              referer: document.referrer || '',
-              device: window.innerWidth < 768 ? 'mobile' : 'desktop',
-              isBanned: true,
-            }),
-          }).catch(() => {});
-        }
+        document.cookie = 'bms_banned=; max-age=0; path=/';
+        localStorage.removeItem('bms_banned');
       }
     } catch (e) {}
   }, []);

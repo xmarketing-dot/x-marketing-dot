@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
+import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
 import { Analytics } from '@vercel/analytics/next';
 import React, { Suspense } from 'react';
 
@@ -134,39 +135,11 @@ const jsonLd = {
   ],
 };
 
-import { headers, cookies } from 'next/headers';
-import { checkIsBanned } from '@/lib/banCheck';
-import BannedTrollScreen from '@/components/common/BannedTrollScreen';
-import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  let isBannedVisitor = false;
-  let detectedIp = '';
-
-  try {
-    const [headerList, cookieStore] = await Promise.all([headers(), cookies()]);
-    const currentPath = headerList.get('x-current-path') || '';
-    const isAdmin = 
-      headerList.get('x-is-admin') === 'true' || 
-      currentPath.includes('/bms-secure-portal');
-
-    if (!isAdmin) {
-      const rawIp = headerList.get('x-forwarded-for') || headerList.get('x-real-ip') || '';
-      const banResult = await checkIsBanned(rawIp, cookieStore);
-      if (banResult.isBanned) {
-        isBannedVisitor = true;
-        detectedIp = banResult.cleanIp;
-      }
-    }
-  } catch (err) {
-    // Fail-open for layout reliability
-    console.error('RootLayout ban check error:', err);
-  }
-
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
       <head>
@@ -205,18 +178,12 @@ export default async function RootLayout({
         </noscript>
       </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
-        {isBannedVisitor ? (
-          <BannedTrollScreen />
-        ) : (
-          <>
-            <Suspense fallback={null}>
-              <AnalyticsTracker />
-              <RouteTransitionLoader />
-            </Suspense>
-            <MobileShell>{children}</MobileShell>
-            <Analytics />
-          </>
-        )}
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+          <RouteTransitionLoader />
+        </Suspense>
+        <MobileShell>{children}</MobileShell>
+        <Analytics />
       </body>
     </html>
   );

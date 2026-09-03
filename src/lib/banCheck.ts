@@ -61,33 +61,9 @@ export async function checkIsBanned(
 
   await refreshBanCacheIfNeeded();
 
-  // 1. Check IP direct match
+  // Yalnızca panelden yöneticinin bizzat IP olarak eklediği aktif banları kontrol et
   if (banCache.bannedIps.has(cleanIp)) {
     return { isBanned: true, cleanIp, reason: 'IP Tam Ban' };
-  }
-
-  // 2. Check permanent device cookie (Modem Reset Hunter)
-  const bannedCookie = cookies?.get?.('bms_banned')?.value;
-  if (bannedCookie === '1') {
-    // This visitor previously got banned on another IP (e.g. reset their modem)
-    // Automatically capture their new IP and add to database
-    try {
-      await connectToDatabase();
-      const exists = await BanModel.findOne({ ip: cleanIp, aktif: true }).lean();
-      if (!exists) {
-        await BanModel.create({
-          ip: cleanIp,
-          sebep: 'Banlı cihazın yeni IP adresi (Otomatik Tespit)',
-          engellemeTuru: 'tam_ban',
-          aktif: true,
-        });
-        banCache.bannedIps.add(cleanIp);
-      }
-    } catch (e) {
-      console.error('Auto ban new modem IP error:', e);
-    }
-
-    return { isBanned: true, cleanIp, reason: 'Kalıcı Cihaz Banı (Modem Avcısı)' };
   }
 
   return { isBanned: false, cleanIp };
