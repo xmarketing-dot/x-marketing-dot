@@ -99,7 +99,11 @@ export const metadata: Metadata = {
     'yandex': 'all',
   },
   icons: {
-    icon: '/icon',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon', type: 'image/png', sizes: '32x32' },
+    ],
+    shortcut: '/favicon.ico',
     apple: '/apple-icon',
   },
 };
@@ -166,6 +170,10 @@ export default async function RootLayout({
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
       <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-icon" />
+        
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

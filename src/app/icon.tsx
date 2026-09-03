@@ -15,16 +15,17 @@ export default function Icon() {
     (
       <div
         style={{
-          fontSize: 24,
-          background: 'transparent',
           width: '100%',
           height: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          background: '#0d1117',
+          borderRadius: '25%',
+          border: '1.5px solid #f59e0b',
         }}
       >
-        💋
+        <span style={{ fontSize: 20 }}>💋</span>
       </div>
     ),
     {
