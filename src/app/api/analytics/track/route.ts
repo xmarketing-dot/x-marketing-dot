@@ -137,10 +137,6 @@ export async function POST(req: NextRequest) {
     const isUniqueToday = !visitedToday;
     const incomingHost = (req.headers.get('x-forwarded-host') || host || '').split(':')[0].toLowerCase();
 
-    // Check if visitor is banned (via IP or permanent ban cookie)
-    const banResult = await checkIsBanned(cleanIp, req.cookies);
-    const isBannedVisitor = !!body.isBanned || banResult.isBanned;
-
     const newVisitor = await AnalyticsVisitorModel.create({
       visitorId,
       sessionId: sessionId || visitorId,
@@ -148,7 +144,7 @@ export async function POST(req: NextRequest) {
       browser,
       os,
       path,
-      pageTitle: isBannedVisitor ? '🚫 Engellenen Ziyaretçi (Troll)' : (pageTitle || 'İlan Platformu'),
+      pageTitle: pageTitle || 'İlan Platformu',
       referer: finalStoredReferer,
       refererSource: source,
       searchKeyword: searchKeyword || '',
@@ -159,7 +155,7 @@ export async function POST(req: NextRequest) {
       ip: cleanIp,
       hostname: incomingHost,
       userAgent,
-      isBanned: isBannedVisitor,
+      isBanned: false,
       durationSeconds: 5,
       isUniqueToday,
     });

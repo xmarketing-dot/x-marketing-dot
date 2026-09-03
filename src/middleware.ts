@@ -91,25 +91,19 @@ export function middleware(req: NextRequest) {
       ua.includes('dataforseo') ||
       ua.includes('claudebot') ||
       ua.includes('gptbot') ||
-      ua.includes('ccbot') ||
-      ua.includes('sqlmap') ||
-      ua.includes('nikto') ||
-      ua.includes('acunetix');
+      ua.includes('ccbot');
 
-    const isCredentialOrAdminProbe =
+    const isKnownExploitProbe =
       pathLower.includes('/.git') ||
       pathLower.includes('/.env') ||
       pathLower.includes('/wp-admin') ||
       pathLower.includes('/phpmyadmin') ||
-      pathLower.includes('/api/admin') ||
-      pathLower.includes('php') ||
       pathLower.includes('eval(') ||
       pathLower.includes('select%20') ||
       pathLower.includes('<script') ||
-      pathLower.includes('cmd=') ||
-      pathLower.includes('admin');
+      pathLower.includes('cmd=');
 
-    const isAggressiveBot = isObviousAutomation || (isCredentialOrAdminProbe && !pathname.startsWith('/api/analytics'));
+    const isAggressiveBot = isObviousAutomation || isKnownExploitProbe;
 
     if (isAggressiveBot) {
       return new NextResponse('Access Denied: Automated scraping or probing prohibited.', {

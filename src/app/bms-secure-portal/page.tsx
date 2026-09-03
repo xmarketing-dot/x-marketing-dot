@@ -377,14 +377,9 @@ export default function BmsSecurePortalDashboard() {
       reasons.push('🕵️ Dahili Vercel Link Taraması');
     }
 
-    if (v.isBanned) {
-      reasons.push('🚫 Sistemce Yasaklanmış');
-    }
-
     const isHighRisk = reasons.some((reason) =>
       reason.includes('Otomasyon') ||
       reason.includes('Saldırı') ||
-      reason.includes('Yasaklanmış') ||
       reason.includes('Tarama')
     );
 
@@ -2111,11 +2106,6 @@ export default function BmsSecurePortalDashboard() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 truncate max-w-[170px]">
                       <span className="font-mono text-[11px] text-white truncate">{v.path}</span>
-                      {v.isBanned && (
-                        <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-red-500/20 text-red-400 border border-red-500/40 shrink-0 animate-pulse">
-                          🚫 ŞUTLANDI
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       {v.hostname && (
@@ -2124,13 +2114,12 @@ export default function BmsSecurePortalDashboard() {
                         </span>
                       )}
                       <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase font-heading ${
-                        v.isBanned ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
                         isGoogle ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
                         isWa ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
                         isFb ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40' :
                         'bg-slate-800 text-slate-300'
                       }`}>
-                        {v.isBanned ? 'BANLI' : (v.refererSource?.toUpperCase() || 'DIRECT')}
+                        {v.refererSource?.toUpperCase() || 'DIRECT'}
                       </span>
                     </div>
                   </div>
@@ -2178,14 +2167,7 @@ export default function BmsSecurePortalDashboard() {
                       {/* IP & Şehir */}
                       <td className="py-3 px-3">
                         <div className="flex flex-col">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
-                            {v.isBanned && (
-                              <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse">
-                                🚫 ŞUTLANDI
-                              </span>
-                            )}
-                          </div>
+                          <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
                           <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
                         </div>
                       </td>
@@ -2194,12 +2176,12 @@ export default function BmsSecurePortalDashboard() {
                       <td className="py-3 px-3">
                         {analysis.isSuspicious ? (
                           <div className="flex flex-col gap-1 max-w-[200px]">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-red-500/30 text-red-300 border border-red-500/50 animate-pulse w-fit">
-                              🚨 ŞÜPHELİ / BOT
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
+                              🤖 OTOMASYON
                             </span>
                             <div className="flex flex-wrap gap-1">
                               {analysis.reasons.map((r: string, idx: number) => (
-                                <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-red-500/30 font-mono font-medium">
+                                <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-amber-500/30 font-mono font-medium">
                                   {r}
                                 </span>
                               ))}
@@ -2231,12 +2213,11 @@ export default function BmsSecurePortalDashboard() {
                       {/* Trafik Kaynağı */}
                       <td className="py-3 px-3">
                         <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase font-heading ${
-                          v.isBanned ? 'bg-red-500/20 text-red-400 border border-red-500/40' :
                           isGoogle ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
                           isWa ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
                           'bg-slate-800 text-slate-300'
                         }`}>
-                          {v.isBanned ? 'BANLI' : (v.refererSource?.toUpperCase() || 'DIRECT')}
+                          {v.refererSource?.toUpperCase() || 'DIRECT'}
                         </span>
                       </td>
 
