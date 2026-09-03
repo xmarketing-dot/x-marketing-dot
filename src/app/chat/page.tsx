@@ -150,8 +150,26 @@ export default function ChatPage() {
       }
     });
 
+    // Otomatik senkronizasyon (SSE'ye ek olarak 2.5 saniyede bir sessiz kontrol — mesaj asla kaçmaz)
+    const pollInterval = setInterval(() => {
+      fetch(`/api/chat/messages?threadId=${threadId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.messages && Array.isArray(data.messages)) {
+            setMessages((prev) => {
+              if (data.messages.length !== prev.length) {
+                return data.messages;
+              }
+              return prev;
+            });
+          }
+        })
+        .catch(() => {});
+    }, 2500);
+
     return () => {
       eventSource.close();
+      clearInterval(pollInterval);
     };
   }, [threadId]);
 

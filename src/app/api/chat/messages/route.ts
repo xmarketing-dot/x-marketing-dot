@@ -106,14 +106,32 @@ export async function POST(req: NextRequest) {
 
     // Telegram bildirimi — sadece kullanıcı mesajında (admin mesajlarında değil)
     if (sender === 'user') {
-      const preview = mesaj.length > 120 ? mesaj.slice(0, 120) + '...' : mesaj;
+      const forwardedFor = req.headers.get('x-forwarded-for');
+      const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
+      const nowStr = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+      // HTML kaçış (özel karakterler Telegram mesajını bozmasın)
+      const cleanMsg = String(mesaj)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
       const notifText = [
-        '💬 <b>Yeni Chat Mesajı!</b>',
-        '',
-        `📝 <b>Mesaj:</b> ${preview}`,
-        `🔗 <a href="https://besteskort.devs.surf/bms-secure-portal">Panele Git &amp; Yanıtla</a>`,
-      ].join('\n');
-      sendTelegramNotification(notifText); // fire-and-forget, siteyi bloklamaz
+        `💬 <b>MÜŞTERİ MESAJI</b> (${nowStr})`,
+        clientIp ? `📍 IP: <code>${clientIp}</code>` : '',
+        ``,
+        `<blockquote>${cleanMsg}</blockquote>`,
+        ``,
+        `👉 <i>Bu mesaja Telegram'dan Yanıtla (Reply) diyerek doğrudan cevap verebilirsin.</i>`,
+      ].filter(Boolean).join('\n');
+
+      sendTelegramNotification(notifText).then((tgRes) => {
+        if (tgRes && tgRes.message_id) {
+          ChatMessageModel.findByIdAndUpdate(newMsg._id, {
+            telegramMessageId: tgRes.message_id,
+          }).catch(() => {});
+        }
+      }).catch(() => {});
     }
 
     return NextResponse.json({ success: true, message: serializedMsg });

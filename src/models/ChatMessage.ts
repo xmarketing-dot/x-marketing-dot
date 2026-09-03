@@ -5,6 +5,7 @@ export interface IChatMessage extends Document {
   gonderenTipi: 'user' | 'admin';
   mesaj: string;
   okundu: boolean;
+  telegramMessageId?: number;
   createdAt: Date;
 }
 
@@ -14,6 +15,7 @@ const ChatMessageSchema = new Schema<IChatMessage>(
     gonderenTipi: { type: String, enum: ['user', 'admin'], required: true },
     mesaj: { type: String, required: true },
     okundu: { type: Boolean, default: false },
+    telegramMessageId: { type: Number, index: true },
   },
   { timestamps: true, autoIndex: false }
 );
