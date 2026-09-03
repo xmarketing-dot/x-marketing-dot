@@ -5,6 +5,7 @@ import ChatThreadModel from '@/models/ChatThread';
 import ChatMessageModel from '@/models/ChatMessage';
 import BanModel from '@/models/Ban';
 import { chatEmitter } from '@/lib/chatEmitter';
+import { sendTelegramNotification } from '@/lib/telegramNotify';
 
 export async function GET(req: NextRequest) {
   try {
@@ -102,6 +103,18 @@ export async function POST(req: NextRequest) {
     // Instantly emit events to open SSE streams (0ms latency, ZERO polling)
     chatEmitter.emit('new_message', serializedMsg);
     chatEmitter.emit('thread_update', serializedThread);
+
+    // Telegram bildirimi — sadece kullanıcı mesajında (admin mesajlarında değil)
+    if (sender === 'user') {
+      const preview = mesaj.length > 120 ? mesaj.slice(0, 120) + '...' : mesaj;
+      const notifText = [
+        '💬 <b>Yeni Chat Mesajı!</b>',
+        '',
+        `📝 <b>Mesaj:</b> ${preview}`,
+        `🔗 <a href="https://besteskort.devs.surf/bms-secure-portal">Panele Git &amp; Yanıtla</a>`,
+      ].join('\n');
+      sendTelegramNotification(notifText); // fire-and-forget, siteyi bloklamaz
+    }
 
     return NextResponse.json({ success: true, message: serializedMsg });
   } catch (error: any) {

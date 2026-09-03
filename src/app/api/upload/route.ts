@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 import sharp from 'sharp';
+import connectToDatabase from '@/lib/mongodb';
+import mongoose from 'mongoose';
+import { Readable } from 'stream';
 
 // Allowed image MIME types & extensions
 const ALLOWED_MIME_TYPES = new Set([
@@ -27,6 +28,31 @@ const ALLOWED_EXTENSIONS = new Set([
   '.avif',
 ]);
 
+/**
+ * GridFS'e buffer yükler ve dosya ID'sini döner.
+ * Vercel read-only dosya sistemi sorununu tamamen ortadan kaldırır.
+ */
+async function uploadToGridFS(buffer: Buffer, filename: string): Promise<string> {
+  await connectToDatabase();
+  const db = mongoose.connection.db!;
+  const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'uploads' });
+
+  return new Promise((resolve, reject) => {
+    const readable = Readable.from(buffer);
+    const uploadStream = bucket.openUploadStream(filename, {
+      metadata: { contentType: 'image/webp', uploadedAt: new Date() },
+    });
+
+    readable.pipe(uploadStream);
+
+    uploadStream.on('finish', () => {
+      resolve(uploadStream.id.toString());
+    });
+
+    uploadStream.on('error', reject);
+  });
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -41,21 +67,15 @@ export async function POST(req: NextRequest) {
     }
 
     const uploadedUrls: string[] = [];
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (err) {}
 
     for (const file of files) {
       if (file.size > 10 * 1024 * 1024) {
         return NextResponse.json({ error: `"${file.name}" çok büyük. Maksimum dosya boyutu 10MB olmalıdır.` }, { status: 400 });
       }
 
-      const fileExt = path.extname(file.name || '').toLowerCase();
+      const fileExt = (file.name ? require('path').extname(file.name) : '').toLowerCase();
       const mime = (file.type || '').toLowerCase();
 
-      // Check MIME or extension
       const isValid = ALLOWED_MIME_TYPES.has(mime) || mime.startsWith('image/') || ALLOWED_EXTENSIONS.has(fileExt);
 
       if (!isValid) {
@@ -69,56 +89,37 @@ export async function POST(req: NextRequest) {
       const bytes = await file.arrayBuffer();
       const inputBuffer = Buffer.from(bytes);
 
-      // Process with Sharp to WebP with Anti-Theft Permanent Watermark
-      try {
-        const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-        const cleanDomain = host ? host.split(':')[0].toLowerCase() : 'Doğrulanmış Profil';
+      // Process with Sharp → WebP + Anti-Theft Watermark
+      const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+      const cleanDomain = host ? host.split(':')[0].toLowerCase() : 'besteskort.com';
 
-        const image = sharp(inputBuffer).rotate();
-        const metadata = await image.metadata();
-        const imgWidth = metadata.width || 1200;
-        const imgHeight = metadata.height || 1200;
+      const image = sharp(inputBuffer).rotate();
+      const metadata = await image.metadata();
+      const imgWidth = metadata.width || 1200;
+      const imgHeight = metadata.height || 1200;
 
-        // Sahibinden-style diagonal center watermark with subtle opacity
-        const fontSize = Math.round(imgWidth * 0.08);
-        const watermarkSvg = `
-        <svg width="${imgWidth}" height="${imgHeight}" viewBox="0 0 ${imgWidth} ${imgHeight}" xmlns="http://www.w3.org/2000/svg">
-          <g transform="rotate(-28 ${imgWidth / 2} ${imgHeight / 2})">
-            <text x="${imgWidth / 2}" y="${imgHeight / 2 - fontSize * 0.2}" font-family="sans-serif" font-size="${fontSize}" font-weight="900" fill="white" fill-opacity="0.22" text-anchor="middle" letter-spacing="6">BEST ESKORT</text>
-            <text x="${imgWidth / 2}" y="${imgHeight / 2 + fontSize * 0.85}" font-family="sans-serif" font-size="${Math.round(fontSize * 0.42)}" font-weight="700" fill="#fbbf24" fill-opacity="0.25" text-anchor="middle" letter-spacing="3">${cleanDomain}</text>
-          </g>
-        </svg>
-        `;
+      const fontSize = Math.round(imgWidth * 0.08);
+      const watermarkSvg = `
+      <svg width="${imgWidth}" height="${imgHeight}" viewBox="0 0 ${imgWidth} ${imgHeight}" xmlns="http://www.w3.org/2000/svg">
+        <g transform="rotate(-28 ${imgWidth / 2} ${imgHeight / 2})">
+          <text x="${imgWidth / 2}" y="${imgHeight / 2 - fontSize * 0.2}" font-family="sans-serif" font-size="${fontSize}" font-weight="900" fill="white" fill-opacity="0.22" text-anchor="middle" letter-spacing="6">BEST ESKORT</text>
+          <text x="${imgWidth / 2}" y="${imgHeight / 2 + fontSize * 0.85}" font-family="sans-serif" font-size="${Math.round(fontSize * 0.42)}" font-weight="700" fill="#fbbf24" fill-opacity="0.25" text-anchor="middle" letter-spacing="3">${cleanDomain}</text>
+        </g>
+      </svg>
+      `;
 
-        const processedBuffer = await image
-          .resize(1600, 1600, {
-            fit: 'inside',
-            withoutEnlargement: true,
-          })
-          .composite([
-            {
-              input: Buffer.from(watermarkSvg),
-              gravity: 'center',
-              blend: 'over',
-            }
-          ])
-          .webp({ quality: 86, effort: 4 })
-          .toBuffer();
+      const processedBuffer = await image
+        .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
+        .composite([{ input: Buffer.from(watermarkSvg), gravity: 'center', blend: 'over' }])
+        .webp({ quality: 86, effort: 4 })
+        .toBuffer();
 
-        const fileName = `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.webp`;
-        const filePath = path.join(uploadDir, fileName);
+      // GridFS'e yükle — Vercel read-only sorununu aşar
+      const fileName = `img_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.webp`;
+      const fileId = await uploadToGridFS(processedBuffer, fileName);
 
-        try {
-          await writeFile(filePath, processedBuffer);
-          uploadedUrls.push(`/uploads/${fileName}`);
-        } catch (fsErr) {
-          console.error('Filesystem write failed for uploaded image:', fsErr);
-          throw new Error(`Resim kaydedilemedi. Sunucu dosya yazma izni sorunlu olabilir: ${String(fsErr)}`);
-        }
-      } catch (sharpError: any) {
-        console.error('Sharp process error:', sharpError);
-        throw new Error(`Resim işlenirken hata oluştu: ${sharpError.message || 'Bilinmeyen hata'}`);
-      }
+      // /api/img/[id] route üzerinden servis edilecek
+      uploadedUrls.push(`/api/img/${fileId}`);
     }
 
     return NextResponse.json({
