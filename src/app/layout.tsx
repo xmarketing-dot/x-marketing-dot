@@ -90,7 +90,7 @@ export const metadata: Metadata = {
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || undefined,
-    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || undefined,
+    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION || 'f65d1a854e45395b',
   },
   other: {
     'geo.region': 'TR',
