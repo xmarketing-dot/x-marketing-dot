@@ -56,123 +56,6 @@ async function scrapeGoogleSerp(
   const seenDomains = new Set<string>();
   let rankCounter = 1;
 
-  // 0. ADIM: SERP API Entegrasyonu (Serper.dev / SerpApi / ValueSERP - Vercel Uyumlu & %100 Canlı)
-  const serperKey = process.env.SERPER_API_KEY;
-  const serpApiKey = process.env.SERPAPI_API_KEY || process.env.SERP_API_KEY;
-  const valKey = process.env.VALUESERP_API_KEY;
-
-  if (serperKey) {
-    try {
-      const sRes = await fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: {
-          'X-API-KEY': serperKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          q: keyword,
-          gl: 'tr',
-          hl: 'tr',
-          num: 30,
-        }),
-      });
-      if (sRes.ok) {
-        const sData = await sRes.json();
-        const organic = sData?.organic || [];
-        for (const item of organic) {
-          const rawUrl = item.link || '';
-          if (!rawUrl.startsWith('http')) continue;
-          try {
-            const host = new URL(rawUrl).hostname.toLowerCase().replace(/^www\./, '');
-            if (seenDomains.has(host)) continue;
-            seenDomains.add(host);
-            const pos = item.position || rankCounter;
-            const isOurSite = isOurSiteDomain(host, targetDomain);
-            if (isOurSite && foundPosition === 0) {
-              foundPosition = pos;
-            } else if (!isOurSite && competitors.length < 3) {
-              competitors.push({ position: pos, domain: host, title: item.title || host });
-            }
-            rankCounter++;
-          } catch (e) {}
-        }
-        if (organic.length > 0) {
-          return { position: foundPosition, competitors };
-        }
-      }
-    } catch (e) {
-      console.warn('Serper.dev scan notice:', e);
-    }
-  }
-
-  if (serpApiKey) {
-    try {
-      const sRes = await fetch(
-        `https://serpapi.com/search.json?q=${encodeURIComponent(keyword)}&gl=tr&hl=tr&num=30&api_key=${serpApiKey}`
-      );
-      if (sRes.ok) {
-        const sData = await sRes.json();
-        const organic = sData?.organic_results || [];
-        for (const item of organic) {
-          const rawUrl = item.link || '';
-          if (!rawUrl.startsWith('http')) continue;
-          try {
-            const host = new URL(rawUrl).hostname.toLowerCase().replace(/^www\./, '');
-            if (seenDomains.has(host)) continue;
-            seenDomains.add(host);
-            const pos = item.position || rankCounter;
-            const isOurSite = isOurSiteDomain(host, targetDomain);
-            if (isOurSite && foundPosition === 0) {
-              foundPosition = pos;
-            } else if (!isOurSite && competitors.length < 3) {
-              competitors.push({ position: pos, domain: host, title: item.title || host });
-            }
-            rankCounter++;
-          } catch (e) {}
-        }
-        if (organic.length > 0) {
-          return { position: foundPosition, competitors };
-        }
-      }
-    } catch (e) {
-      console.warn('SerpApi scan notice:', e);
-    }
-  }
-
-  if (valKey) {
-    try {
-      const vRes = await fetch(
-        `https://api.valueserp.com/search?q=${encodeURIComponent(keyword)}&gl=tr&hl=tr&num=30&api_key=${valKey}`
-      );
-      if (vRes.ok) {
-        const vData = await vRes.json();
-        const organic = vData?.organic_results || [];
-        for (const item of organic) {
-          const rawUrl = item.link || '';
-          if (!rawUrl.startsWith('http')) continue;
-          try {
-            const host = new URL(rawUrl).hostname.toLowerCase().replace(/^www\./, '');
-            if (seenDomains.has(host)) continue;
-            seenDomains.add(host);
-            const pos = item.position || rankCounter;
-            const isOurSite = isOurSiteDomain(host, targetDomain);
-            if (isOurSite && foundPosition === 0) {
-              foundPosition = pos;
-            } else if (!isOurSite && competitors.length < 3) {
-              competitors.push({ position: pos, domain: host, title: item.title || host });
-            }
-            rankCounter++;
-          } catch (e) {}
-        }
-        if (organic.length > 0) {
-          return { position: foundPosition, competitors };
-        }
-      }
-    } catch (e) {
-      console.warn('ValueSERP scan notice:', e);
-    }
-  }
-
   // 1. ADIM: Doğrudan Google Canlı Arama
   try {
     const googleUrl = `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}&num=30&hl=tr&gl=tr`;
@@ -239,7 +122,7 @@ async function scrapeGoogleSerp(
 
           rankCounter++;
           if (rankCounter > 30) break;
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   } catch (err) {
@@ -292,10 +175,10 @@ async function scrapeGoogleSerp(
 
             rankCounter++;
             if (rankCounter > 30) break;
-          } catch(e){}
+          } catch (e) { }
         }
       }
-    } catch(e){}
+    } catch (e) { }
   }
 
   // 3. ADIM: Google Bot Challenge Durumunda Canlı Bing TR Base64 Decoder Fallback
@@ -355,10 +238,10 @@ async function scrapeGoogleSerp(
 
             rankCounter++;
             if (rankCounter > 30) break;
-          } catch (e) {}
+          } catch (e) { }
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   return { position: foundPosition, competitors };
@@ -431,7 +314,7 @@ async function scrapeYandexSerp(
 
           rankCounter++;
           if (rankCounter > 30) break;
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   } catch (err) {
@@ -467,7 +350,7 @@ export async function GET(req: NextRequest) {
       const rankA = (posAY > 0 && posAG > 0)
         ? Math.min(posAY, posAG)
         : posAY > 0 ? posAY : posAG > 0 ? posAG : 999;
-      
+
       const rankB = (posBY > 0 && posBG > 0)
         ? Math.min(posBY, posBG)
         : posBY > 0 ? posBY : posBG > 0 ? posBG : 999;
@@ -514,7 +397,7 @@ export async function GET(req: NextRequest) {
         previousYandexPosition: 0,
         yandexChange: 0,
         yandexCompetitors: [],
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     rawKeywords = await KeywordRankModel.find({}).lean();
@@ -643,7 +526,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const rawKeywords = await KeywordRankModel.find({}).lean();
-    
+
     const allKeywords = rawKeywords.sort((a: any, b: any) => {
       const posAY = typeof a.yandexPosition === 'number' ? a.yandexPosition : 0;
       const posAG = typeof a.currentPosition === 'number' ? a.currentPosition : 0;
@@ -653,7 +536,7 @@ export async function PUT(req: NextRequest) {
       const rankA = (posAY > 0 && posAG > 0)
         ? Math.min(posAY, posAG)
         : posAY > 0 ? posAY : posAG > 0 ? posAG : 999;
-      
+
       const rankB = (posBY > 0 && posBG > 0)
         ? Math.min(posBY, posBG)
         : posBY > 0 ? posBY : posBG > 0 ? posBG : 999;
