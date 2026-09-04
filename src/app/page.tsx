@@ -145,15 +145,119 @@ export default async function HomePage() {
   // Grid listings
   const gridListings = allSortedListings.slice(0, 48);
 
+  // Group locations by region for the 81-city crawl hub
+  const regionalHubs = {
+    'Marmara & Metropol': locations.filter((l: any) => ['istanbul', 'bursa', 'kocaeli', 'tekirdag', 'balikesir', 'canakkale', 'edirne', 'kirklareli', 'sakarya', 'yalova', 'bilecik'].includes(l.ilSlug)),
+    'Ege & Akdeniz': locations.filter((l: any) => ['izmir', 'antalya', 'mugla', 'aydin', 'denizli', 'manisa', 'mersin', 'adana', 'hatay', 'isparta', 'burdur', 'osmaniye', 'kahramanmaras'].includes(l.ilSlug)),
+    'İç Anadolu & Başkent': locations.filter((l: any) => ['ankara', 'konya', 'kayseri', 'eskisehir', 'sivas', 'aksaray', 'karaman', 'kirikkale', 'kirsehir', 'nevsehir', 'nigde', 'yozgat', 'cankiri'].includes(l.ilSlug)),
+    'Karadeniz Bölgesi': locations.filter((l: any) => ['samsun', 'trabzon', 'ordu', 'giresun', 'rize', 'artvin', 'zonguldak', 'karabuk', 'bartin', 'kastamonu', 'sinop', 'bolu', 'duzce', 'amasya', 'corum', 'tokat', 'gumushane', 'bayburt'].includes(l.ilSlug)),
+    'Güneydoğu & Doğu Anadolu': locations.filter((l: any) => ['gaziantep', 'diyarbakir', 'sanliurfa', 'batman', 'mardin', 'adiyaman', 'sirnak', 'siirt', 'kilis', 'malatya', 'elazig', 'erzurum', 'van', 'agri', 'kars', 'igdir', 'ardahan', 'mus', 'bingol', 'bitlis', 'hakkari', 'tunceli', 'erzincan'].includes(l.ilSlug)),
+  };
+
+  const siteUrl = getSiteUrl();
+
+  // ── JSON-LD SCHEMA OBJECTS (Google & Yandex Rich Snippets) ──
+  const webSiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    'name': 'Best Eskort',
+    'alternateName': 'Best Escort Türkiye',
+    'url': siteUrl,
+    'description': 'Türkiye genelinde 81 il ve tüm ilçelerde doğrulanmış güncel eskort, escort bayan ve VIP model ilanları.',
+    'potentialAction': {
+      '@type': 'SearchAction',
+      'target': `${siteUrl}/ara?q={search_term_string}`,
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    'name': 'Best Eskort Türkiye',
+    'url': siteUrl,
+    'logo': `${siteUrl}/api/og/site`,
+    'sameAs': [
+      'https://t.me/besteskort',
+      'https://twitter.com/besteskort',
+    ],
+  };
+
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'name': 'Öne Çıkan Doğrulanmış VIP Eskort İlanları',
+    'numberOfItems': gridListings.length,
+    'itemListElement': gridListings.slice(0, 10).map((l: any, idx: number) => ({
+      '@type': 'ListItem',
+      'position': idx + 1,
+      'name': l.baslik || 'Doğrulanmış Model İlanı',
+      'url': `${siteUrl}/ilan/${l.slug}`,
+    })),
+  };
+
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': [
+      {
+        '@type': 'Question',
+        'name': 'Best Eskort üzerindeki ilanlar nasıl doğrulanır?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'Platformumuzda yayınlanan tüm bağımsız ve VIP eskort ilanları, editörlerimiz tarafından görsel doğrulama ve telefon teyidi yapılarak onaylanır. Sahte ve yanıltıcı profillere izin verilmez.',
+        },
+      },
+      {
+        '@type': 'Question',
+        'name': 'İlan sahipleriyle nasıl güvenli iletişim kurulur?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'İlan detaylarında yer alan doğrudan WhatsApp ve telefon butonlarını kullanarak aracısız ve komisyonsuz olarak profil sahibiyle birebir görüşebilirsiniz.',
+        },
+      },
+      {
+        '@type': 'Question',
+        'name': 'Hangi şehir ve ilçelerde hizmet verilmektedir?',
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': 'İstanbul, Ankara, İzmir, Antalya, Bursa başta olmak üzere Türkiye\'nin 81 ilinde ve tüm popüler ilçelerinde 7/24 güncel eskort ve VIP model ilanları listelenmektedir.',
+        },
+      },
+    ],
+  };
+
   return (
     <div className="flex flex-col gap-3 pb-8 w-full max-w-full text-left">
+      {/* ── JSON-LD SCHEMAS ── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webSiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      {/* ── SEMANTIC SEO H1 (Google & Yandex #1 Index Trigger) ── */}
+      <h1 className="sr-only">
+        Best Eskort &amp; Escort Bayan Model Kataloğu — Türkiye 81 İl Doğrulanmış VIP ve Bağımsız İlanlar
+      </h1>
 
       {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları) */}
       <section className="w-full">
         <HeroSlider slides={formattedShowcaseListings} />
       </section>
 
-      {/* 2. SPONSOR BANNER REKLAM ALANI (Hero Slider gibi kenarlara sıfır, tam yapışık) */}
+      {/* 2. SPONSOR BANNER REKLAM ALANI */}
       <div className="w-full px-0">
         <SponsorBannerArea konum="anasayfa" initialBanner={activeBanner} />
       </div>
@@ -164,7 +268,6 @@ export default async function HomePage() {
           href="/sehirler"
           className="relative w-full p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#1c160c] via-[#161b22] to-[#12161c] border border-amber-500/40 hover:border-amber-400/80 flex items-center justify-between shadow-lg shadow-black/40 group transition-all duration-300 hover:scale-[1.01] overflow-hidden"
         >
-          {/* Arka Plan Hafif Amber Parıltısı */}
           <div className="absolute -left-8 -top-8 w-28 h-28 bg-amber-500/15 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-500/25 transition-all duration-500" />
 
           <div className="relative z-10 flex items-center gap-3 text-left">
@@ -192,7 +295,7 @@ export default async function HomePage() {
         </Link>
       </div>
 
-      {/* 3. ÖZEL İLAN VİTRİN KARTLARI (Başlıksız, Doğrudan Kartlar) */}
+      {/* 3. ÖZEL İLAN VİTRİN KARTLARI */}
       <section className="w-full">
         <CategoryShowcase
           vipCovers={vipListings.map((l: any) => l.anaFotograf?.url).filter(Boolean)}
@@ -219,7 +322,6 @@ export default async function HomePage() {
           </span>
         </div>
 
-        {/* YAN YANA 2'Lİ DÜZENLİ LİSTE GRİDİ */}
         <div className="grid grid-cols-2 gap-3">
           {gridListings.map((listing: any) => (
             <CompactListingCard key={listing._id} listing={listing} />
@@ -227,8 +329,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-
-      {/* ── 6. GÜVEN & DOĞRULAMA BİLGİ KUTUSU ──────────────── */}
+      {/* ── 5. GÜVEN & DOĞRULAMA BİLGİ KUTUSU ──────────────── */}
       <div className="px-4 mt-2">
         <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-4 shadow-xl">
           <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
@@ -243,36 +344,109 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* ── 7. EN ALTTTAKİ DÜZENLİ FOOTER (81 İL REHBERİ) ──────────────── */}
-      <footer className="px-4 mt-6">
-        <div className="p-6 rounded-[32px] bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-2xl text-xs text-[#8b949e] leading-relaxed">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h3 className="font-black text-sm text-white font-heading uppercase tracking-wider">
-              Türkiye Genelinde Bölgesel Eskort Rehberi
-            </h3>
-            <span className="text-amber-400 font-mono text-[11px] font-bold">81 İl Tam Kapsam</span>
+      {/* ── 6. E-E-A-T SEO REHBERİ VE SSS AKORDİYON (TOPİCAL AUTHORITY) ──────────────── */}
+      <section className="px-4 mt-4">
+        <div className="p-5 sm:p-6 rounded-[28px] bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] flex flex-col gap-4 shadow-2xl">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
+              <Award className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="font-heading font-black text-sm text-white">
+                Türkiye Eskort (Escort) &amp; VIP Model Rehberi
+              </h2>
+              <p className="text-[11px] text-[#8b949e]">
+                Doğrulanmış profiller, güvenli iletişim ve bölgesel katalog standartları
+              </p>
+            </div>
           </div>
 
-          <p>
-            Best Eskort; İstanbul, Ankara, İzmir, Bursa, Antalya, Adana, Konya ve Türkiye'nin tüm illerindeki en güncel bağımsız ve VIP eskort ilanlarını bir araya getiren güvenilir rehber platformudur.
-          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#8b949e] leading-relaxed">
+            <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-1.5">
+              <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
+                <BadgeCheck className="w-3.5 h-3.5 text-emerald-400" />
+                Doğrulanmış İlan Garantisi
+              </h4>
+              <p className="text-[11px]">
+                Best Eskort üzerindeki tüm bağımsız ve ajans profilleri birebir fotoğraf teyidi ve iletişim kontrolünden geçer. Sahte görsellere ve kapora talep eden yanıltıcı ilanlara izin verilmez.
+              </p>
+            </div>
 
-          <div className="pt-2 border-t border-[#30363d] flex flex-wrap gap-x-3.5 gap-y-2.5 text-[11px] font-semibold">
-            <Link href="/istanbul" className="text-amber-400 hover:text-white transition-colors">İstanbul Eskort</Link>
-            <Link href="/ankara" className="text-amber-400 hover:text-white transition-colors">Ankara Eskort</Link>
-            <Link href="/izmir" className="text-amber-400 hover:text-white transition-colors">İzmir Eskort</Link>
-            <Link href="/bursa" className="text-amber-400 hover:text-white transition-colors">Bursa Eskort</Link>
-            <Link href="/antalya" className="text-amber-400 hover:text-white transition-colors">Antalya Eskort</Link>
-            <Link href="/adana" className="text-amber-400 hover:text-white transition-colors">Adana Eskort</Link>
-            <Link href="/konya" className="text-amber-400 hover:text-white transition-colors">Konya Eskort</Link>
-            <Link href="/gizem-bagdacicek" className="text-rose-400 font-black hover:text-rose-300 transition-colors">🔥 Gizem Bağdaçiçek</Link>
-            <Link href="/merve-ozdemir" className="text-amber-300 font-black hover:text-amber-200 transition-colors">👑 Merve Özdemir</Link>
-            <Link href="/sehirler" className="text-white font-bold bg-[#21262d] px-2.5 py-1 rounded-lg border border-white/10 hover:bg-amber-500 hover:text-slate-950 transition-all">→ Tüm 81 İl Listesi</Link>
+            <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-1.5">
+              <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                VIP &amp; Bağımsız Modeller
+              </h4>
+              <p className="text-[11px]">
+                İstanbul, Ankara, İzmir, Antalya ve 81 ilde kendi evinde veya otelde hizmet veren bağımsız bayanlar, üniversiteli modeller ve VIP vitrin seçeneklerine tek tıkla ulaşın.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 7. TÜRKİYE 81 İL CRAWLER MATRİSİ (BÖLGESEL LINK AĞI - WEX/ELITEGIRLS MODELİ) ──────────────── */}
+      <footer className="px-4 mt-6">
+        <div className="p-6 rounded-[32px] bg-[#161b22] border border-[#30363d] flex flex-col gap-5 shadow-2xl text-xs text-[#8b949e] leading-relaxed">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div>
+              <h3 className="font-black text-sm text-white font-heading uppercase tracking-wider">
+                Türkiye 81 İl Eskort &amp; Escort Şehir Kataloğu
+              </h3>
+              <p className="text-[10px] text-[#6e7681] mt-0.5">
+                Tüm il ve ilçelere doğrudan hızlı erişim matrisi
+              </p>
+            </div>
+            <span className="text-amber-400 font-mono text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30">
+              81 İl Canlı
+            </span>
+          </div>
+
+          {/* BÖLGE BÖLGE 81 İL LİNKLERİ */}
+          <div className="flex flex-col gap-4">
+            {Object.entries(regionalHubs).map(([regionName, cityList]) => (
+              <div key={regionName} className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold text-white/90 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  {regionName}
+                </span>
+                <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[11px]">
+                  {cityList.map((loc: any) => (
+                    <Link
+                      key={loc.ilSlug}
+                      href={`/${loc.ilSlug}`}
+                      className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
+                    >
+                      {loc.ilAdi} Eskort
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* POPÜLER KATEGORİLER & ETİKETLER */}
+          <div className="pt-3 border-t border-[#30363d] flex flex-wrap gap-2 text-[11px]">
+            <Link href="/kategori/vip" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-amber-400 font-bold border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-all">
+              👑 VIP Eskort
+            </Link>
+            <Link href="/kategori/gold" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-yellow-300 font-bold border border-yellow-500/30 hover:bg-yellow-400 hover:text-slate-950 transition-all">
+              ⭐ Gold Escort
+            </Link>
+            <Link href="/kategori/turbanli" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-purple-300 font-bold border border-purple-500/30 hover:bg-purple-400 hover:text-slate-950 transition-all">
+              🧕 Türbanlı Eskort
+            </Link>
+            <Link href="/kategori/amator" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-emerald-300 font-bold border border-emerald-500/30 hover:bg-emerald-400 hover:text-slate-950 transition-all">
+              🌿 Amatör Eskort
+            </Link>
+            <Link href="/sehirler" className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 transition-all ml-auto">
+              → Tüm Şehirleri Görüntüle
+            </Link>
           </div>
 
           <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-[#6e7681]">
-            <span>&copy; {new Date().getFullYear()} Best Eskort. Tüm hakları saklıdır.</span>
-            <span>Gizlilik &amp; Güvenlik Standartları</span>
+            <span>&copy; {new Date().getFullYear()} Best Eskort &amp; Escort Kataloğu. Tüm hakları saklıdır.</span>
+            <span>E-E-A-T Doğrulanmış Güvenlik ve Gizlilik Standartları</span>
           </div>
         </div>
       </footer>
@@ -280,4 +454,5 @@ export default async function HomePage() {
     </div>
   );
 }
+
 
