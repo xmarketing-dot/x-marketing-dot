@@ -89,7 +89,7 @@ export const metadata: Metadata = {
     canonical: siteUrl,
   },
   verification: {
-    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || undefined,
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION || 'Xrpyfl4bjrgIAMuOiV4JI5jDhZVuU9Zxc5-wTt5wcEA',
     yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION
       ? [process.env.NEXT_PUBLIC_YANDEX_VERIFICATION, 'f65d1a854e45395b', 'b94d8c81d8b58fac', '5f93294064f2f463', 'c2eb710564994f5b', '9b8ca2b97769a1ce']
       : ['f65d1a854e45395b', 'b94d8c81d8b58fac', '5f93294064f2f463', 'c2eb710564994f5b', '9b8ca2b97769a1ce'],
