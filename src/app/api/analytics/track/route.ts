@@ -80,12 +80,28 @@ export async function POST(req: NextRequest) {
     const targetRef = (isInternalReferer && isEntryExternal) ? entryRefLower : refLower;
     const finalStoredReferer = (isInternalReferer && isEntryExternal) ? entryReferer : (referer || 'Direct');
 
-    let source: 'google' | 'yandex' | 'whatsapp' | 'telegram' | 'direct' | 'x' | 'instagram' | 'facebook' | 'other' = 'direct';
+    let source = 'direct';
 
     if (targetRef.includes('google.') || searchKeyword) {
       source = 'google';
     } else if (targetRef.includes('yandex')) {
       source = 'yandex';
+    } else if (targetRef.includes('duckduckgo') || targetRef.includes('ddg')) {
+      source = 'duckduckgo';
+    } else if (targetRef.includes('bing.com')) {
+      source = 'bing';
+    } else if (targetRef.includes('yahoo.com')) {
+      source = 'yahoo';
+    } else if (targetRef.includes('brave.com')) {
+      source = 'brave';
+    } else if (targetRef.includes('tiktok.com')) {
+      source = 'tiktok';
+    } else if (targetRef.includes('reddit.com')) {
+      source = 'reddit';
+    } else if (targetRef.includes('pinterest.com')) {
+      source = 'pinterest';
+    } else if (targetRef.includes('youtube.com') || targetRef.includes('youtu.be')) {
+      source = 'youtube';
     } else if (
       targetRef.includes('whatsapp') ||
       targetRef.includes('wa.me') ||
@@ -122,7 +138,12 @@ export async function POST(req: NextRequest) {
     } else if (!targetRef || targetRef === 'direct' || (hostDomain && targetRef.includes(hostDomain))) {
       source = 'direct';
     } else {
-      source = 'other';
+      try {
+        const parsedDomain = new URL(finalStoredReferer.startsWith('http') ? finalStoredReferer : `https://${finalStoredReferer}`).hostname.replace(/^www\./, '');
+        source = parsedDomain || 'other';
+      } catch (e) {
+        source = 'other';
+      }
     }
 
     // Check if visitor is unique for today

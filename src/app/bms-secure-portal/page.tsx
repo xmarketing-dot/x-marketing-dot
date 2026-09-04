@@ -391,6 +391,103 @@ export default function BmsSecurePortalDashboard() {
     };
   };
 
+  const renderTrafficSourceBadge = (v: any) => {
+    const src = (v.refererSource || 'direct').toLowerCase();
+    const rawRef = v.referer || '';
+    const isDirect = !rawRef || rawRef.toLowerCase() === 'direct' || src === 'direct';
+
+    let badgeStyle = 'bg-slate-800 text-slate-300 border-slate-700';
+    let label = src.toUpperCase();
+    let icon = '🔗';
+
+    if (src === 'google') {
+      badgeStyle = 'bg-blue-500/20 text-blue-400 border-blue-500/40';
+      icon = '🔍';
+      label = 'Google';
+    } else if (src === 'yandex') {
+      badgeStyle = 'bg-red-500/20 text-red-400 border-red-500/40';
+      icon = '🟡';
+      label = 'Yandex';
+    } else if (src === 'duckduckgo' || src === 'ddg') {
+      badgeStyle = 'bg-orange-500/20 text-orange-400 border-orange-500/40';
+      icon = '🦆';
+      label = 'DuckDuckGo';
+    } else if (src === 'bing') {
+      badgeStyle = 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40';
+      icon = '🔵';
+      label = 'Bing';
+    } else if (src === 'yahoo') {
+      badgeStyle = 'bg-purple-500/20 text-purple-400 border-purple-500/40';
+      icon = '🟣';
+      label = 'Yahoo';
+    } else if (src === 'brave') {
+      badgeStyle = 'bg-amber-500/20 text-amber-400 border-amber-500/40';
+      icon = '🦁';
+      label = 'Brave';
+    } else if (src === 'whatsapp') {
+      badgeStyle = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40';
+      icon = '🟢';
+      label = 'WhatsApp';
+    } else if (src === 'telegram') {
+      badgeStyle = 'bg-sky-500/20 text-sky-400 border-sky-500/40';
+      icon = '💬';
+      label = 'Telegram';
+    } else if (src === 'tiktok') {
+      badgeStyle = 'bg-rose-500/20 text-rose-400 border-rose-500/40';
+      icon = '🎵';
+      label = 'TikTok';
+    } else if (src === 'instagram') {
+      badgeStyle = 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/40';
+      icon = '📸';
+      label = 'Instagram';
+    } else if (src === 'x' || src === 'twitter') {
+      badgeStyle = 'bg-slate-700 text-white border-white/20';
+      icon = '🐦';
+      label = 'X / Twitter';
+    } else if (src === 'facebook') {
+      badgeStyle = 'bg-indigo-500/20 text-indigo-400 border-indigo-500/40';
+      icon = '🟦';
+      label = 'Facebook';
+    } else if (src === 'reddit') {
+      badgeStyle = 'bg-orange-600/20 text-orange-400 border-orange-600/40';
+      icon = '🤖';
+      label = 'Reddit';
+    } else if (src === 'youtube') {
+      badgeStyle = 'bg-red-600/20 text-red-400 border-red-600/40';
+      icon = '▶️';
+      label = 'YouTube';
+    } else if (!isDirect) {
+      badgeStyle = 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+      icon = '🌐';
+      label = src;
+    } else {
+      badgeStyle = 'bg-slate-800/80 text-slate-400 border-white/5';
+      icon = '🔗';
+      label = 'Direkt Giriş';
+    }
+
+    return (
+      <div className="flex flex-col gap-1">
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-black font-heading border ${badgeStyle}`}>
+          <span>{icon}</span>
+          <span>{label}</span>
+        </span>
+        {!isDirect && rawRef.startsWith('http') && (
+          <a
+            href={rawRef}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[9px] text-amber-400/80 hover:text-amber-300 flex items-center gap-0.5 truncate max-w-[130px] font-mono hover:underline"
+            title={rawRef}
+          >
+            <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+            <span className="truncate">{rawRef.replace(/^https?:\/\/(www\.)?/, '')}</span>
+          </a>
+        )}
+      </div>
+    );
+  };
+
   const suspiciousTotalCount = (recentVisitors as any[]).filter(
     (v: any) => getSuspiciousAnalysis(v).isSuspicious
   ).length;
@@ -2113,14 +2210,7 @@ export default function BmsSecurePortalDashboard() {
                           {v.hostname}
                         </span>
                       )}
-                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase font-heading ${
-                        isGoogle ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
-                        isWa ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
-                        isFb ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40' :
-                        'bg-slate-800 text-slate-300'
-                      }`}>
-                        {v.refererSource?.toUpperCase() || 'DIRECT'}
-                      </span>
+                      {renderTrafficSourceBadge(v)}
                     </div>
                   </div>
 
@@ -2151,8 +2241,6 @@ export default function BmsSecurePortalDashboard() {
               </thead>
               <tbody className="divide-y divide-[#21262d]">
                 {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
-                  const isGoogle = v.refererSource === 'google';
-                  const isWa = v.refererSource === 'whatsapp';
                   const analysis = getSuspiciousAnalysis(v);
 
                   return (
@@ -2212,13 +2300,7 @@ export default function BmsSecurePortalDashboard() {
 
                       {/* Trafik Kaynağı */}
                       <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase font-heading ${
-                          isGoogle ? 'bg-blue-500/20 text-blue-400 border border-blue-500/40' :
-                          isWa ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
-                          'bg-slate-800 text-slate-300'
-                        }`}>
-                          {v.refererSource?.toUpperCase() || 'DIRECT'}
-                        </span>
+                        {renderTrafficSourceBadge(v)}
                       </td>
 
                       {/* Arama Kelimesi */}
