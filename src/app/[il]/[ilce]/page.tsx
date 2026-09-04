@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteUrl, getRequestSiteUrl } from '@/lib/siteUrl';
+import { getSiteUrl, getRequestSiteUrl, getCanonicalUrlForLocation } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -42,10 +42,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const districtName = district ? district.ad : ilceSlug;
 
   const siteUrl = await getRequestSiteUrl();
-  const canonicalUrl = `${siteUrl}/${location.ilSlug}/${ilceSlug}`;
+  const canonicalUrl = getCanonicalUrlForLocation(siteUrl, location.ilSlug, ilceSlug);
 
   return {
-    title: `${districtName} Eskort & Escort Bayan İlanları (2026 Teyitli) | ${location.il} Vip Escort`,
+    title: `${districtName} Escort Eskort Bayan İlanları (2026 Teyitli) | ${location.il} Vip Escort`,
     description: `${location.il} ${districtName} eskort ve escort bayan profilleri. WhatsApp numaraları, doğrulanmış VIP fotoğraflar ve 7/24 güncel ${districtName} eskort ilanları.`,
     keywords: [
       `${districtName} eskort`,
@@ -58,6 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `${districtName} eskort ilanları`,
       `${districtName} escort ilanları`,
       `${districtName} bağımsız eskort`,
+      `${districtName} bağımsız escort`,
       `${districtName} vip eskort`,
       `${districtName} vip escort`,
       `${districtName} whatsapp eskort`,
@@ -73,8 +74,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${districtName} Eskort & Escort Bayan İlanları | Best Eskort`,
-      description: `${districtName} (${location.il}) bölgesindeki tüm doğrulanmış eskort bayan ilanları ve WhatsApp iletişim numaraları.`,
+      title: `${districtName} Escort Eskort Bayan İlanları | Best Eskort`,
+      description: `${districtName} genelinde teyitli eskort ilanları ve WhatsApp iletişim hatları.`,
       url: canonicalUrl,
       type: 'website',
       locale: 'tr_TR',

@@ -33,3 +33,38 @@ export async function getRequestSiteUrl(): Promise<string> {
   return getSiteUrl();
 }
 
+/**
+ * Subdomain veya ana domain durumuna göre en doğru canonical URL'i hesaplar.
+ * Eğer gelen istek zaten o il/ilçeye ait özel bir subdomain ise (örn: istanbulescort.devs.surf),
+ * canonical URL olarak subdomainin anasayfasını (/) gösterir; böylece Yandex ve Google subdomain anasayfasını dizine alır.
+ */
+export function getCanonicalUrlForLocation(siteUrl: string, ilSlug: string, ilceSlug?: string): string {
+  try {
+    const url = new URL(siteUrl);
+    const host = url.hostname.toLowerCase();
+    
+    // Eğer ilçe subdomaini ise (örn: beylikduzuescort.devs.surf veya beylikduzueskort.devs.surf)
+    if (ilceSlug) {
+      const cleanIlce = ilceSlug.replace(/[-_]/g, '');
+      if (host.includes(cleanIlce)) {
+        return siteUrl;
+      }
+    }
+
+    // Eğer il subdomaini ise (örn: istanbulescort.devs.surf veya izmireskort.devs.surf)
+    if (!ilceSlug && ilSlug) {
+      const cleanIl = ilSlug.replace(/[-_]/g, '');
+      if (host.includes(cleanIl)) {
+        return siteUrl;
+      }
+    }
+  } catch (e) {
+    // URL parsing hatasında fallback
+  }
+
+  if (ilceSlug) {
+    return `${siteUrl}/${ilSlug}/${ilceSlug}`;
+  }
+  return `${siteUrl}/${ilSlug}`;
+}
+

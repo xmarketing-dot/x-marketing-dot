@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteUrl, getRequestSiteUrl } from '@/lib/siteUrl';
+import { getSiteUrl, getRequestSiteUrl, getCanonicalUrlForLocation } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -32,10 +32,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Sayfa Bulunamadı | Best Eskort' };
   }
 
-  const canonicalUrl = `${siteUrl}/${location.ilSlug}`;
+  const canonicalUrl = getCanonicalUrlForLocation(siteUrl, location.ilSlug);
 
   return {
-    title: `${location.il} Eskort & Escort Bayan İlanları (2026 Teyitli) | ${location.il} Vip Escort`,
+    title: `${location.il} Escort Eskort Bayan İlanları (2026 Teyitli) | ${location.il} Vip Escort`,
     description: `${location.il} eskort ve escort bayan ilanları. Doğrulanmış bağımsız eskort profilleri, VIP vitrin, doğrudan WhatsApp numaraları ve güncel ${location.il} eskort rehberi.`,
     keywords: [
       `${location.il} eskort`,
@@ -45,6 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `${location.il} eskort ilanları`,
       `${location.il} escort ilanları`,
       `${location.il} bağımsız eskort`,
+      `${location.il} bağımsız escort`,
       `${location.il} vip eskort`,
       `${location.il} vip escort`,
       `${location.il} whatsapp eskort`,
@@ -60,7 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${location.il} Eskort & Escort Bayan İlanları | Best Eskort`,
+      title: `${location.il} Escort Eskort Bayan İlanları | Best Eskort`,
       description: `${location.il} genelinde teyitli eskort ilanları ve WhatsApp iletişim hatları.`,
       url: canonicalUrl,
       type: 'website',
