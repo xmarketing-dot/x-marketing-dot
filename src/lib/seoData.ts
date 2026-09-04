@@ -139,48 +139,10 @@ export function generateBreadcrumbSchema(items: { name: string; url: string }[])
   };
 }
 
-/**
- * Google Rich Snippets: ⭐⭐⭐⭐⭐ 4.9/5.0 AggregateRating Schema
- * Arama sonuçlarında sarı yıldızları göstererek CTR'ı %40 artırır.
- */
-export function generateAggregateRatingSchema({
-  name,
-  description,
-  url,
-  itemCount = 12,
-}: {
-  name: string;
-  description: string;
-  url: string;
-  itemCount?: number;
-}) {
-  const seed = getSeedNumber(name);
-  const ratingValue = (4.8 + (seed % 2) * 0.1).toFixed(1); // 4.8 veya 4.9
-  const reviewCount = 65 + (seed % 95); // 65-160 arası doğal yorum sayısı
-
-  return {
-    '@type': 'Product',
-    name,
-    description,
-    url,
-    image: `${new URL(url).origin}/api/og/site`,
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue,
-      bestRating: '5',
-      worstRating: '1',
-      ratingCount: reviewCount.toString(),
-      reviewCount: reviewCount.toString(),
-    },
-    offers: {
-      '@type': 'AggregateOffer',
-      priceCurrency: 'TRY',
-      lowPrice: '1500',
-      highPrice: '10000',
-      offerCount: Math.max(itemCount, 5).toString(),
-    },
-  };
-}
+// NOT: Sahte AggregateRating schema kaldırıldı.
+// Google, gerçek kullanıcı yorumu olmayan uydurma rating verisini
+// spam olarak işaretler ve sayfaların indexlenmesini engeller.
+// (Google Rich Results spam policy ihlali)
 
 /**
  * Bölgedeki Modeller Kadrosu Schema.org ItemList (Google Rich Snippets & Person Schema)
@@ -236,15 +198,10 @@ export function generateCombinedSeoGraph({
   siteUrl?: string;
   districtName?: string;
 }) {
+  void itemCount; // artık kullanılmıyor, type hatası önlemek için
   const graph: any[] = [
     generateBreadcrumbSchema(breadcrumbs),
     generateFaqSchema(faqItems),
-    generateAggregateRatingSchema({
-      name: pageName,
-      description: pageDescription,
-      url: pageUrl,
-      itemCount,
-    }),
   ];
 
   if (models && models.length > 0 && siteUrl && districtName) {
