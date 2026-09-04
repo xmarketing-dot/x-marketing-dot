@@ -3,8 +3,9 @@ import { getAllLocations, getListings } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
 import { getSiteUrl } from '@/lib/siteUrl';
 
+// ISR: 6 saatte bir yenile — çok sık yenileme Google'ın güvenini zedeler
 export const dynamic = 'force-dynamic';
-export const revalidate = 43200; // 12 saat önbellek (Sitemap ISR tasarrufu)
+export const revalidate = 21600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = getSiteUrl();
@@ -18,6 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const now = new Date();
 
+  // ── TIER 1: Ana sayfalar — en yüksek öncelik ──
   const routes: MetadataRoute.Sitemap = [
     {
       url: `${siteUrl}`,
@@ -71,39 +73,52 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${siteUrl}/ilan-ver`,
       lastModified: now,
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.5,
     },
   ];
 
-  // City pages (81 il) — high priority with Istanbul & Izmir boosted
+  // ── TIER 2: Şehir sayfaları (81 il) ──
+  // NOT: 'hourly' changeFrequency yeni siteler için zararlı — Google bunu görmezden gelir
+  // ve spam sinyali olarak algılayabilir. 'daily' en güvenli değer.
+  const megaCities = ['istanbul', 'izmir', 'ankara', 'antalya', 'bursa'];
+
   for (const loc of locations) {
-    const isMegaCity = ['istanbul', 'izmir', 'ankara', 'antalya', 'bursa'].includes(loc.ilSlug);
+    const isMegaCity = megaCities.includes(loc.ilSlug);
     routes.push({
       url: `${siteUrl}/${loc.ilSlug}`,
       lastModified: now,
-      changeFrequency: isMegaCity ? 'hourly' : 'daily',
-      priority: isMegaCity ? 1.0 : 0.9,
+      changeFrequency: 'daily',          // hourly → daily (Google için daha güvenilir)
+      priority: isMegaCity ? 0.95 : 0.85,
     });
+  }
 
-    // District pages (~970 ilçe) with priority boost for hot districts (Beylikdüzü, Kadıköy, Şişli, Konak, Alsancak, Karşıyaka vb.)
+  // ── TIER 3: İlçe sayfaları (~970 ilçe) ──
+  const hotDistricts = [
+    'beylikduzu', 'kadikoy', 'sisli', 'besiktas', 'bakirkoy',
+    'alsancak', 'konak', 'karsiyaka', 'bornova', 'cankaya',
+    'esenyurt', 'bahcelievler', 'bagcilar', 'pendik', 'umraniye',
+    'maltepe', 'kartal', 'atakum', 'muratpasa', 'kepez',
+  ];
+
+  for (const loc of locations) {
+    const isMegaCity = megaCities.includes(loc.ilSlug);
     for (const ilce of loc.ilceler) {
-      const isHotDistrict = isMegaCity || ['beylikduzu', 'kadikoy', 'sisli', 'besiktas', 'bakirkoy', 'alsancak', 'konak', 'karsiyaka', 'bornova', 'cankaya'].includes(ilce.slug);
+      const isHot = isMegaCity || hotDistricts.includes(ilce.slug);
       routes.push({
         url: `${siteUrl}/${loc.ilSlug}/${ilce.slug}`,
         lastModified: now,
-        changeFrequency: isHotDistrict ? 'hourly' : 'daily',
-        priority: isHotDistrict ? 0.95 : 0.85,
+        changeFrequency: 'daily',        // hourly → daily
+        priority: isHot ? 0.9 : 0.75,
       });
     }
   }
 
-  // Individual listing pages with Google Image Sitemap metadata
+  // ── TIER 4: İlan sayfaları — gerçek lastModified tarihi kullan ──
   for (const listing of listings) {
     const images: string[] = [];
 
     const addImage = (u: string | undefined | null) => {
       if (!u) return;
-      // Base64 data URL'leri sitemap'e eklenmez
       if (u.startsWith('data:') || u.includes(';base64,')) return;
       const fullU = u.startsWith('http') ? u : `${siteUrl}${u}`;
       if (!images.includes(fullU)) images.push(fullU);
@@ -114,11 +129,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       listing.fotograflar.forEach((f: any) => addImage(typeof f === 'string' ? f : f?.url));
     }
 
+    // Sadece güncel ilanları yüksek öncelikle ekle
+    const listingDate = new Date(listing.updatedAt || listing.createdAt || now);
+    const daysSinceUpdate = (now.getTime() - listingDate.getTime()) / (1000 * 60 * 60 * 24);
+    const listingPriority = daysSinceUpdate < 7 ? 0.85 : daysSinceUpdate < 30 ? 0.75 : 0.65;
+
     routes.push({
       url: `${siteUrl}/ilan/${listing.slug}`,
-      lastModified: new Date(listing.updatedAt || listing.createdAt || now),
-      changeFrequency: 'daily',
-      priority: 0.8,
+      lastModified: listingDate,
+      changeFrequency: 'weekly',
+      priority: listingPriority,
       ...(images.length > 0 ? { images: images.slice(0, 5) } : {}),
     });
   }
