@@ -411,15 +411,18 @@ export default async function HomePage() {
                   {regionName}
                 </span>
                 <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[11px]">
-                  {cityList.map((loc: any) => (
-                    <Link
-                      key={loc.ilSlug}
-                      href={`/${loc.ilSlug}`}
-                      className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
-                    >
-                      {loc.ilAdi} Eskort
-                    </Link>
-                  ))}
+                  {cityList.map((loc: any) => {
+                    const cityName = loc.il || (loc.ilSlug.charAt(0).toUpperCase() + loc.ilSlug.slice(1));
+                    return (
+                      <Link
+                        key={loc.ilSlug}
+                        href={`/${loc.ilSlug}`}
+                        className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
+                      >
+                        {cityName} Eskort
+                      </Link>
+                    );
+                  })}
                 </div>
               </div>
             ))}

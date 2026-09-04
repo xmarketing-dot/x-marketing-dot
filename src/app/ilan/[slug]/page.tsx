@@ -21,7 +21,7 @@ import {
   BadgeCheck,
   Check
 } from 'lucide-react';
-import { getListingBySlug, getListings, getActiveBanner } from '@/lib/data';
+import { getListingBySlug, getListings, getActiveBanner, getAllLocations } from '@/lib/data';
 import WhatsAppButton, { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 import CompactListingCard from '@/components/common/CompactListingCard';
@@ -98,14 +98,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ListingDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [listing, activeBanner] = await Promise.all([
+  const [listing, activeBanner, locations] = await Promise.all([
     getListingBySlug(slug),
     getActiveBanner('ilan_detay'),
+    getAllLocations(),
   ]);
 
   if (!listing) {
     notFound();
   }
+
+  // Regional hubs for 81-city crawl matrix
+  const regionalHubs = {
+    'Marmara & Metropol': locations.filter((l: any) => ['istanbul', 'bursa', 'kocaeli', 'tekirdag', 'balikesir', 'canakkale', 'edirne', 'kirklareli', 'sakarya', 'yalova', 'bilecik'].includes(l.ilSlug)),
+    'Ege & Akdeniz': locations.filter((l: any) => ['izmir', 'antalya', 'mugla', 'aydin', 'denizli', 'manisa', 'mersin', 'adana', 'hatay', 'isparta', 'burdur', 'osmaniye', 'kahramanmaras'].includes(l.ilSlug)),
+    'İç Anadolu & Başkent': locations.filter((l: any) => ['ankara', 'konya', 'kayseri', 'eskisehir', 'sivas', 'aksaray', 'karaman', 'kirikkale', 'kirsehir', 'nevsehir', 'nigde', 'yozgat', 'cankiri'].includes(l.ilSlug)),
+    'Karadeniz Bölgesi': locations.filter((l: any) => ['samsun', 'trabzon', 'ordu', 'giresun', 'rize', 'artvin', 'zonguldak', 'karabuk', 'bartin', 'kastamonu', 'sinop', 'bolu', 'duzce', 'amasya', 'corum', 'tokat', 'gumushane', 'bayburt'].includes(l.ilSlug)),
+    'Güneydoğu & Doğu Anadolu': locations.filter((l: any) => ['gaziantep', 'diyarbakir', 'sanliurfa', 'batman', 'mardin', 'adiyaman', 'sirnak', 'siirt', 'kilis', 'malatya', 'elazig', 'erzurum', 'van', 'agri', 'kars', 'igdir', 'ardahan', 'mus', 'bingol', 'bitlis', 'hakkari', 'tunceli', 'erzincan'].includes(l.ilSlug)),
+  };
 
   const siteUrl = await getRequestSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
@@ -288,6 +298,62 @@ export default async function ListingDetailPage({ params }: Props) {
           </div>
         </div>
       )}
+
+      {/* ── 2.5 TÜRKİYE 81 İL CRAWLER MATRİSİ (BÖLGESEL LINK AĞI) ──────────────── */}
+      <div className="mt-8 px-3 sm:px-6 max-w-4xl mx-auto w-full">
+        <div className="p-6 rounded-[32px] bg-[#161b22] border border-[#30363d] flex flex-col gap-5 shadow-2xl text-xs text-[#8b949e] leading-relaxed">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <div>
+              <h3 className="font-black text-sm text-white font-heading uppercase tracking-wider">
+                Türkiye 81 İl Eskort &amp; Escort Şehir Kataloğu
+              </h3>
+              <p className="text-[10px] text-[#6e7681] mt-0.5">
+                Tüm il ve ilçelerin güncel eskort profilleri
+              </p>
+            </div>
+            <span className="text-amber-400 font-mono text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30">
+              81 İl Canlı
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {Object.entries(regionalHubs).map(([regionName, cityList]) => (
+              <div key={regionName} className="flex flex-col gap-1.5">
+                <span className="text-[11px] font-bold text-white/90 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                  {regionName}
+                </span>
+                <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[11px]">
+                  {cityList.map((loc: any) => {
+                    const cityName = loc.il || (loc.ilSlug.charAt(0).toUpperCase() + loc.ilSlug.slice(1));
+                    return (
+                      <Link
+                        key={loc.ilSlug}
+                        href={`/${loc.ilSlug}`}
+                        className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
+                      >
+                        {cityName} Eskort
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-3 border-t border-[#30363d] flex flex-wrap gap-2 text-[11px]">
+            <Link href="/kategori/vip" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-amber-400 font-bold border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-all">
+              👑 VIP Eskort
+            </Link>
+            <Link href="/kategori/gold" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-yellow-300 font-bold border border-yellow-500/30 hover:bg-yellow-400 hover:text-slate-950 transition-all">
+              ⭐ Gold Escort
+            </Link>
+            <Link href="/sehirler" className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 transition-all ml-auto">
+              → Tüm Şehirleri Görüntüle
+            </Link>
+          </div>
+        </div>
+      </div>
 
       {/* ── 3. MOBİLDE ALTA YAPIŞIK SABİT İLETİŞİM BARI (STICKY WHATSAPP ACTION BAR) ──────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-[#0d1117]/95 backdrop-blur-xl border-t border-[#30363d] p-3 px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] pb-[max(env(safe-area-inset-bottom),12px)]">
