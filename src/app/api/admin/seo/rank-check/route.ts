@@ -56,6 +56,123 @@ async function scrapeGoogleSerp(
   const seenDomains = new Set<string>();
   let rankCounter = 1;
 
+  // 0. ADIM: SERP API Entegrasyonu (Serper.dev / SerpApi / ValueSERP - Vercel Uyumlu & %100 Canlı)
+  const serperKey = process.env.SERPER_API_KEY;
+  const serpApiKey = process.env.SERPAPI_API_KEY || process.env.SERP_API_KEY;
+  const valKey = process.env.VALUESERP_API_KEY;
+
+  if (serperKey) {
+    try {
+      const sRes = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: {
+          'X-API-KEY': serperKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          q: keyword,
+          gl: 'tr',
+          hl: 'tr',
+          num: 30,
+        }),
+      });
+      if (sRes.ok) {
+        const sData = await sRes.json();
+        const organic = sData?.organic || [];
+        for (const item of organic) {
+          const rawUrl = item.link || '';
+          if (!rawUrl.startsWith('http')) continue;
+          try {
+            const host = new URL(rawUrl).hostname.toLowerCase().replace(/^www\./, '');
+            if (seenDomains.has(host)) continue;
+            seenDomains.add(host);
+            const pos = item.position || rankCounter;
+            const isOurSite = isOurSiteDomain(host, targetDomain);
+            if (isOurSite && foundPosition === 0) {
+              foundPosition = pos;
+            } else if (!isOurSite && competitors.length < 3) {
+              competitors.push({ position: pos, domain: host, title: item.title || host });
+            }
+            rankCounter++;
+          } catch (e) {}
+        }
+        if (organic.length > 0) {
+          return { position: foundPosition, competitors };
+        }
+      }
+    } catch (e) {
+      console.warn('Serper.dev scan notice:', e);
+    }
+  }
+
+  if (serpApiKey) {
+    try {
+      const sRes = await fetch(
+        `https://serpapi.com/search.json?q=${encodeURIComponent(keyword)}&gl=tr&hl=tr&num=30&api_key=${serpApiKey}`
+      );
+      if (sRes.ok) {
+        const sData = await sRes.json();
+        const organic = sData?.organic_results || [];
+        for (const item of organic) {
+          const rawUrl = item.link || '';
+          if (!rawUrl.startsWith('http')) continue;
+          try {
+            const host = new URL(rawUrl).hostname.toLowerCase().replace(/^www\./, '');
+            if (seenDomains.has(host)) continue;
+            seenDomains.add(host);
+            const pos = item.position || rankCounter;
+            const isOurSite = isOurSiteDomain(host, targetDomain);
+            if (isOurSite && foundPosition === 0) {
+              foundPosition = pos;
+            } else if (!isOurSite && competitors.length < 3) {
+              competitors.push({ position: pos, domain: host, title: item.title || host });
+            }
+            rankCounter++;
+          } catch (e) {}
+        }
+        if (organic.length > 0) {
+          return { position: foundPosition, competitors };
+        }
+      }
+    } catch (e) {
+      console.warn('SerpApi scan notice:', e);
+    }
+  }
+
+  if (valKey) {
+    try {
+      const vRes = await fetch(
+        `https://api.valueserp.com/search?q=${encodeURIComponent(keyword)}&gl=tr&hl=tr&num=30&api_key=${valKey}`
+      );
+      if (vRes.ok) {
+        const vData = await vRes.json();
+        const organic = vData?.organic_results || [];
+        for (const item of organic) {
+          const rawUrl = item.link || '';
+          if (!rawUrl.startsWith('http')) continue;
+          try {
+            const host = new URL(rawUrl).hostname.toLowerCase().replace(/^www\./, '');
+            if (seenDomains.has(host)) continue;
+            seenDomains.add(host);
+            const pos = item.position || rankCounter;
+            const isOurSite = isOurSiteDomain(host, targetDomain);
+            if (isOurSite && foundPosition === 0) {
+              foundPosition = pos;
+            } else if (!isOurSite && competitors.length < 3) {
+              competitors.push({ position: pos, domain: host, title: item.title || host });
+            }
+            rankCounter++;
+          } catch (e) {}
+        }
+        if (organic.length > 0) {
+          return { position: foundPosition, competitors };
+        }
+      }
+    } catch (e) {
+      console.warn('ValueSERP scan notice:', e);
+    }
+  }
+
   // 1. ADIM: Doğrudan Google Canlı Arama
   try {
     const googleUrl = `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}&num=30&hl=tr&gl=tr`;
@@ -129,7 +246,59 @@ async function scrapeGoogleSerp(
     console.warn('Google direct scan notice:', err);
   }
 
-  // 2. ADIM: Google Bot Challenge Durumunda Canlı Bing TR Base64 Decoder Fallback
+  // 2. ADIM: DuckDuckGo Canlı Organik SERP Tarama (Google İndeks Yansıtıcısı)
+  if (competitors.length === 0 && foundPosition === 0) {
+    try {
+      const resDdg = await fetch('https://html.duckduckgo.com/html/', {
+        method: 'POST',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0',
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        body: `q=${encodeURIComponent(keyword)}`
+      });
+
+      if (resDdg.ok) {
+        const ddgHtml = await resDdg.text();
+        const allHrefs = [...ddgHtml.matchAll(/href="([^"]+)"/g)].map(m => m[1]);
+
+        for (let rawHref of allHrefs) {
+          if (rawHref.includes('uddg=')) {
+            const match = rawHref.match(/uddg=([^&]+)/);
+            if (match) rawHref = decodeURIComponent(match[1]);
+          }
+
+          if (!rawHref.startsWith('http') || rawHref.includes('duckduckgo.com')) continue;
+
+          try {
+            const host = new URL(rawHref).hostname.toLowerCase().replace(/^www\./, '');
+            if (
+              host.includes('duckduckgo.') ||
+              host.includes('schema.org') ||
+              host.includes('w3.org') ||
+              seenDomains.has(host)
+            ) continue;
+
+            seenDomains.add(host);
+
+            const isOurSite = isOurSiteDomain(host, targetDomain);
+
+            if (isOurSite) {
+              if (foundPosition === 0) foundPosition = rankCounter;
+            } else if (competitors.length < 3) {
+              competitors.push({ position: rankCounter, domain: host, title: host });
+            }
+
+            rankCounter++;
+            if (rankCounter > 30) break;
+          } catch(e){}
+        }
+      }
+    } catch(e){}
+  }
+
+  // 3. ADIM: Google Bot Challenge Durumunda Canlı Bing TR Base64 Decoder Fallback
   if (competitors.length === 0 && foundPosition === 0) {
     try {
       const bingUrl = `https://www.bing.com/search?q=${encodeURIComponent(keyword)}&cc=tr&count=30`;
