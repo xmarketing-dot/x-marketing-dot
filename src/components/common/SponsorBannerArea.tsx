@@ -170,7 +170,7 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
             <div className="flex flex-col min-w-0 gap-0.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-heading font-black text-sm sm:text-lg md:text-xl text-white tracking-wide group-hover:text-amber-400 transition-colors drop-shadow-sm">
-                  BURAYA REKLAM VERİN
+                  BURAYA ÖZEL REKLAM VERİN
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-rose-600 to-amber-600 text-white font-black text-[10px] sm:text-xs font-heading tracking-wider shadow-sm animate-pulse">
                   BOŞ REKLAM ALANI
@@ -185,7 +185,7 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
           {/* Sağ Taraf: Büyük Satın Al Butonu */}
           <div className="flex items-center justify-end shrink-0 w-full sm:w-auto">
             <div className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-110 text-slate-950 font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/25 group-hover:scale-105 transition-all">
-              <span>Hemen Reklam Ver</span>
+              <span>Hemen Özel Reklam Ver</span>
               <ArrowUpRight className="w-4 h-4 stroke-[3]" />
             </div>
           </div>

@@ -8,6 +8,7 @@ import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import AdsterraBanner320x50 from '@/components/ads/AdsterraBanner320x50';
+import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
 import FaqAccordion from '@/components/seo/FaqAccordion';
 import { generateLocationFaq, generateCombinedSeoGraph, generateLocationGuide } from '@/lib/seoData';
 import { getActiveBanner } from '@/lib/data';
@@ -327,6 +328,9 @@ export default async function CityPage({ params }: Props) {
           ))}
         </div>
       )}
+
+      {/* ── 2.5 SPONSORLU NATIVE 4:1 VİTRİN ──────────────── */}
+      <AdsterraNativeBanner />
 
       {/* ── 3. GOOGLE RICH SNIPPET FAQ ACCORDION ──────────────── */}
       <FaqAccordion
