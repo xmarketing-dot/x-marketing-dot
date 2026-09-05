@@ -27,6 +27,8 @@ import HeaderTicker from '@/components/common/HeaderTicker';
 import SeoBacklinkFooter from '@/components/common/SeoBacklinkFooter';
 import GlobalChatNotification from '@/components/common/GlobalChatNotification';
 import SpecialAdPopup from '@/components/common/SpecialAdPopup';
+import AdsterraBanner320x50 from '@/components/ads/AdsterraBanner320x50';
+import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
 
 interface MobileShellProps {
   children: React.ReactNode;
@@ -265,6 +267,11 @@ export default function MobileShell({ children }: MobileShellProps) {
             </div>
           </section>
 
+          {/* Desktop Sponsorlu Banner Alanı */}
+          <div className="w-full max-w-2xl mx-auto">
+            <AdsterraBanner320x50 />
+          </div>
+
           {/* Full-Width Interactive Türkiye Regional Network Hub */}
           <section className="p-10 lg:p-14 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-10 shadow-xl text-left">
             <div className="flex items-center justify-between border-b border-[#30363d] pb-6 flex-wrap gap-4">
@@ -323,6 +330,11 @@ export default function MobileShell({ children }: MobileShellProps) {
               </div>
             </div>
           </section>
+
+          {/* Desktop 4:1 Native Sponsor Vitrini */}
+          <div className="w-full max-w-4xl mx-auto">
+            <AdsterraNativeBanner />
+          </div>
         </main>
 
         {/* SEO DOFOLLOW & NOFOLLOW BACKLINK NETWORK ALANI */}
