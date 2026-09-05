@@ -26,7 +26,7 @@ import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
-import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
+import AdsterraBanner320x50 from '@/components/ads/AdsterraBanner320x50';
 
 export const dynamic = 'force-dynamic';
 
@@ -307,9 +307,9 @@ export default async function HomePage() {
         />
       </section>
 
-      {/* 3.5 SPONSORLU NATIVE REKLAM VİTRİNİ */}
+      {/* 3.5 SPONSORLU MOBİL BANNER */}
       <div className="px-4">
-        <AdsterraNativeBanner />
+        <AdsterraBanner320x50 />
       </div>
 
       {/* 4. TÜM İLANLAR GRID LİSTESİ */}
