@@ -153,9 +153,74 @@ export default function MobileShell({ children }: MobileShellProps) {
       {/* ── 1. FULL-WIDTH DESKTOP KURUMSAL AJANS & BÖLGESEL PAZARLAMA GÖRÜNÜMÜ ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-[#080b0f] w-full max-w-full overflow-x-hidden">
         
+        {/* DESKTOP TOP TICKER & STICKY HEADER NAVBAR */}
+        <div className="sticky top-0 z-40 bg-[#0d1117]/95 backdrop-blur-md border-b border-[#30363d] w-full shadow-xl">
+          <HeaderTicker />
+          <div className="px-8 lg:px-16 py-3.5 flex items-center justify-between gap-6 w-full max-w-full">
+            
+            {/* Sol: Logo */}
+            <Link href="/" className="flex items-center gap-3 shrink-0 group">
+              <CorporateLogo className="w-10 h-10 group-hover:scale-105 transition-transform" />
+              <div className="flex flex-col text-left">
+                <span className="font-black text-xl text-white font-heading tracking-tight group-hover:text-amber-400 transition-colors">
+                  Best Eskort
+                </span>
+                <span className="text-[10px] text-amber-400/90 font-bold tracking-wider">
+                  Türkiye Kurumsal Bölgesel İlan A.Ş. 👑
+                </span>
+              </div>
+            </Link>
+
+            {/* Orta: Header Boş Alanındaki Sponsorlu Banner */}
+            <div className="flex-1 max-w-lg hidden lg:flex items-center justify-center">
+              <AdsterraBanner320x50 className="!my-0 scale-95" />
+            </div>
+
+            {/* Sağ: Hızlı Butonlar */}
+            <div className="flex items-center gap-3 shrink-0">
+              <Link
+                href="/sehirler"
+                className="px-5 py-2.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-bold text-xs uppercase tracking-wider transition-all font-heading"
+              >
+                81 İl Rehberi
+              </Link>
+
+              <Link
+                href="/reklam-ver"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:brightness-110 text-white font-black text-xs uppercase tracking-wider font-heading shadow-md shadow-pink-600/25 transition-all"
+              >
+                Reklam Ver
+              </Link>
+
+              {isLoggedIn ? (
+                <Link
+                  href="/panelim"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs font-heading uppercase tracking-wider shadow-md shadow-amber-500/25 transition-all flex items-center gap-1.5"
+                >
+                  <LayoutDashboard className="w-4 h-4 stroke-[2.5]" />
+                  <span>Panelim</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/ilan-ver"
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs font-heading uppercase tracking-wider shadow-md shadow-amber-500/20 transition-all"
+                >
+                  İlan Ver
+                </Link>
+              )}
+            </div>
+
+          </div>
+        </div>
+
         {/* Full-Width Corporate Main Body */}
-        <main className="flex-1 flex flex-col gap-16 w-full px-8 lg:px-16 py-12 max-w-full overflow-x-hidden">
+        <main className="flex-1 flex flex-col gap-12 w-full px-8 lg:px-16 py-8 max-w-full overflow-x-hidden">
           
+          {/* Header Altı 4:1 Geniş Sponsor Vitrini */}
+          <div className="w-full max-w-6xl mx-auto">
+            <AdsterraNativeBanner />
+          </div>
+
           {/* Embedded Corporate Brand Hero Banner with Slogan */}
           <section className="p-10 lg:p-14 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col lg:flex-row items-center justify-between gap-12 shadow-2xl relative overflow-hidden">
             
