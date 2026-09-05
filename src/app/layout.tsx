@@ -5,7 +5,6 @@ import './globals.css';
 import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
 import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
-import AdsterraSocialBar from '@/components/ads/AdsterraSocialBar';
 import { Analytics } from '@vercel/analytics/next';
 import React, { Suspense } from 'react';
 
@@ -182,17 +181,17 @@ export default function RootLayout({
             `
           }}
         />
-        <noscript>
-          <div>
-            <img src="https://mc.yandex.ru/watch/112120217" style={{position: 'absolute', left: '-9999px'}} alt="" />
-          </div>
-        </noscript>
+        {/* Adsterra Social Bar (In-Page Push / VIP Bildirim) */}
+        <script
+          type="text/javascript"
+          src="https://pl31198533.profitableratecpmnetwork.com/2f/3c/76/2f3c765a40b621b76ed53cd9f8d141c6.js"
+          async
+        />
       </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
         <Suspense fallback={null}>
           <AnalyticsTracker />
           <RouteTransitionLoader />
-          <AdsterraSocialBar />
         </Suspense>
         <MobileShell>{children}</MobileShell>
         <Analytics />
