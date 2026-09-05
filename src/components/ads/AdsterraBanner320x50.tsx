@@ -47,16 +47,16 @@ export default function AdsterraBanner320x50({ className = '' }: Props) {
   `;
 
   return (
-    <div className={`my-3 w-full flex flex-col items-center justify-center ${className}`}>
-      <div className="w-[320px] max-w-full overflow-hidden rounded-xl border border-white/10 bg-[#161b22]/70 shadow-lg shadow-black/30 flex flex-col items-center">
-        <div className="w-full flex items-center justify-between px-2 py-0.5 bg-black/40 text-[9px] text-gray-400 font-medium">
-          <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-pink-500 animate-pulse"></span>
-            SPONSORLU VİTRİN
-          </span>
-          <span className="text-gray-500 uppercase tracking-wider">Reklam</span>
-        </div>
-        <div className="w-[320px] h-[50px] overflow-hidden flex items-center justify-center bg-black/20">
+    <div className={`my-3 w-full max-w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-[#30363d] bg-gradient-to-b from-[#161b22] to-[#0d1117] p-2.5 sm:p-3 shadow-xl flex flex-col gap-2 ${className}`}>
+      <div className="w-full flex items-center justify-between px-1 text-[10px] text-gray-400 font-medium tracking-wide">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 rounded-full bg-pink-500 animate-pulse shadow-sm shadow-pink-500/50"></span>
+          SPONSORLU VİTRİN
+        </span>
+        <span className="text-gray-500 text-[9px] uppercase tracking-wider font-mono">Tanıtım</span>
+      </div>
+      <div className="w-full flex items-center justify-center overflow-hidden py-1">
+        <div className="w-[320px] max-w-full h-[50px] overflow-hidden flex items-center justify-center rounded-xl bg-black/30 border border-white/5">
           <iframe
             srcDoc={iframeContent}
             width="320"
