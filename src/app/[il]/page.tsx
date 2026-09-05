@@ -252,27 +252,35 @@ export default async function CityPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(seoGraph) }}
       />
 
-      {/* ── 1. HERO BAŞLIK & İSTATİSTİK ──────────────── */}
-      <div className="p-6 rounded-[28px] bg-gradient-to-r from-[#1c1408] via-[#161b22] to-[#161b22] border-2 border-amber-500/40 shadow-2xl flex flex-col gap-3">
-        <div className="flex items-center gap-2 text-amber-400 font-heading text-xs font-bold uppercase tracking-wider">
-          <MapPin className="w-4 h-4" />
-          <span>Bölgesel İlan Rehberi</span>
+      {/* ── 1. DÜZ VE ŞIK BAŞLIK & İLÇE ŞERİDİ ──────────────── */}
+      <div className="flex flex-col gap-2.5 px-1 pt-1 text-left">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col">
+              <h1 className="font-heading font-black text-xl sm:text-2xl text-white tracking-tight">
+                {location.il} Eskort İlanları
+              </h1>
+              <p className="text-[11px] text-[#8b949e]">
+                {location.il} genelinde doğrulanmış güncel VIP ve bağımsız profiller
+              </p>
+            </div>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-black font-heading border border-amber-500/20">
+            {listings.length} İlan
+          </span>
         </div>
-        <h1 className="font-heading font-black text-2xl sm:text-3xl text-white">
-          {location.il} Eskort & Escort İlanları
-        </h1>
-        <p className="text-xs text-[#8b949e] leading-relaxed max-w-2xl font-medium">
-          {location.il} ili ve tüm ilçelerindeki doğrulanmış eskort ve escort bayan profilleri. VIP vitrin, bağımsız bayanlar ve doğrudan WhatsApp irtibat hatları.
-        </p>
 
         {/* İlçe Hapları */}
         {location.ilceler && location.ilceler.length > 0 && (
-          <div className="flex items-center gap-2 pt-2 overflow-x-auto no-scrollbar py-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             {location.ilceler.map((ilce: any) => (
               <Link
                 key={ilce.slug}
                 href={`/${location.ilSlug}/${ilce.slug}`}
-                className="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-white font-bold text-xs border border-[#363b42] transition-colors shrink-0 shadow-sm"
+                className="px-3 py-1 rounded-lg bg-[#161b22] hover:bg-amber-500 hover:text-slate-950 text-gray-300 font-bold text-[11px] border border-[#30363d] transition-all shrink-0 shadow-sm"
               >
                 {ilce.ad}
               </Link>
@@ -281,24 +289,12 @@ export default async function CityPage({ params }: Props) {
         )}
       </div>
 
-      {/* ── 1.5 SPONSORLU VIP BANNER REKLAM ALANI ──────────────── */}
-      <div className="w-full px-0">
-        <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
+      {/* ── 1.5 BAŞLIK ALTI SPONSORLU MOBİL BANNER ──────────────── */}
+      <div className="w-full">
+        <AdsterraBanner320x50 />
       </div>
 
-      {/* ── 2. İLAN LİSTESİ (3 SÜTUNLU COMPACT GRID) ──────────────── */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <h2 className="font-heading font-bold text-sm text-white">
-            {location.il} Güncel İlanları ({listings.length})
-          </h2>
-        </div>
-        <span className="text-xs text-[#8b949e] font-mono">
-          Aktif Yayınlar
-        </span>
-      </div>
-
+      {/* ── 2. İLAN LİSTESİ VEYA TEKLİ VİTRİN ──────────────── */}
       {listings.length === 0 ? (
         <div className="p-12 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3">
           <p className="text-sm font-bold text-white font-heading">
@@ -314,7 +310,19 @@ export default async function CityPage({ params }: Props) {
             Hemen İlan Ver
           </Link>
         </div>
+      ) : listings.length === 1 ? (
+        /* TEK İLAN VARSA: SAYFADA SOLA YASLI DEĞİL, MERKEZİ VIP VİTRİN KARTI OLARAK DURUR */
+        <div className="flex flex-col items-center gap-3 w-full my-2">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black font-heading">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{location.il} BÖLGESİ ÖZEL VIP VİTRİN İLANI</span>
+          </div>
+          <div className="w-full max-w-sm mx-auto">
+            <CompactListingCard listing={listings[0]} />
+          </div>
+        </div>
       ) : (
+        /* ÇOKLU İLAN VARSA: 2/3 SÜTUNLU GRID LİSTESİ */
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {listings.map((item: any, index: number) => (
             <React.Fragment key={item._id || index}>

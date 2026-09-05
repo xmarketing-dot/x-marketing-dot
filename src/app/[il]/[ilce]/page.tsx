@@ -7,6 +7,7 @@ import { MapPin, ChevronRight, Sparkles, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import AdsterraBanner320x50 from '@/components/ads/AdsterraBanner320x50';
 import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
 import FaqAccordion from '@/components/seo/FaqAccordion';
 import { generateLocationFaq, generateCombinedSeoGraph, generateLocationGuide } from '@/lib/seoData';
@@ -290,59 +291,49 @@ export default async function DistrictPage({ params }: Props) {
         <span className="text-white font-black capitalize">{districtName}</span>
       </nav>
 
-      {/* ── 1. HERO BAŞLIK & İSTATİSTİK ──────────────── */}
-      <div className="p-6 rounded-[28px] bg-gradient-to-r from-[#1c1408] via-[#161b22] to-[#161b22] border-2 border-amber-500/40 shadow-2xl flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-amber-400 font-heading text-xs font-bold uppercase tracking-wider bg-[#21262d] px-3 py-1 rounded-full border border-[#30363d]">
-            <MapPin className="w-4 h-4" />
-            <span>{location.il} / {districtName} Bölgesi • 2026 Güncel</span>
+      {/* ── 1. DÜZ VE ŞIK BAŞLIK & DİĞER İLÇELER ŞERİDİ ──────────────── */}
+      <div className="flex flex-col gap-2.5 px-1 pt-1 text-left">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <MapPin className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col">
+              <h1 className="font-heading font-black text-xl sm:text-2xl text-white tracking-tight">
+                {districtName} Eskort İlanları
+              </h1>
+              <p className="text-[11px] text-[#8b949e]">
+                {location.il} / {districtName} bölgesinde doğrulanmış güncel VIP ve bağımsız profiller
+              </p>
+            </div>
           </div>
-          <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase font-heading">
-            Teyitli İlçe Vitrini
+          <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-black font-heading border border-amber-500/20">
+            {listings.length} İlan
           </span>
         </div>
 
-        <h1 className="font-heading font-black text-2xl sm:text-3xl text-white">
-          {districtName} Eskort & Escort Bayan İlanları 2026 | {location.il} Vip Escort | Bağımsız Eskort | WhatsApp Eskort
-        </h1>
-        <p className="text-xs text-[#8b949e] leading-relaxed max-w-2xl font-medium">
-          {location.il} ili {districtName} ilçesindeki tüm doğrulanmış eskort ve escort bayan profilleri. VIP vitrin, bağımsız bayanlar, {districtName} vip eskort, {districtName} amatör eskort, {districtName} türbanlı eskort, {districtName} tango eskort, {districtName} eve gelen eskort, {districtName} otele gelen escort, doğrudan WhatsApp ve Telegram irtibat hatları. 2026 güncel teyitli {districtName} eskort rehberi.
-        </p>
-
         {/* Diğer İlçeler Hapları */}
         {otherDistricts.length > 0 && (
-          <div className="flex items-center gap-2 pt-2 overflow-x-auto no-scrollbar py-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             {otherDistricts.map((d: any) => (
               <Link
                 key={d.slug}
                 href={`/${location.ilSlug}/${d.slug}`}
-                className="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-white font-bold text-xs border border-[#363b42] transition-colors shrink-0 shadow-sm"
+                className="px-3 py-1 rounded-lg bg-[#161b22] hover:bg-amber-500 hover:text-slate-950 text-gray-300 font-bold text-[11px] border border-[#30363d] transition-all shrink-0 shadow-sm"
               >
-                {d.ad} Eskort
+                {d.ad}
               </Link>
             ))}
           </div>
         )}
       </div>
 
-      {/* ── 1.5 SPONSORLU VIP BANNER REKLAM ALANI ──────────────── */}
-      <div className="w-full px-0">
-        <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
+      {/* ── 1.5 BAŞLIK ALTI SPONSORLU MOBİL BANNER ──────────────── */}
+      <div className="w-full">
+        <AdsterraBanner320x50 />
       </div>
 
-      {/* ── 2. İLAN LİSTESİ (3 SÜTUNLU COMPACT GRID) ──────────────── */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <h2 className="font-heading font-bold text-sm text-white">
-            {districtName} Güncel Eskort & Escort İlanları 2026 ({listings.length}) | Vip • Bağımsız • WhatsApp
-          </h2>
-        </div>
-        <span className="text-xs text-[#8b949e] font-mono">
-          {location.il} / {districtName} Aktif
-        </span>
-      </div>
-
+      {/* ── 2. İLAN LİSTESİ VEYA TEKLİ VİTRİN ──────────────── */}
       {listings.length === 0 ? (
         <div className="p-12 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3">
           <p className="text-sm font-bold text-white font-heading">
@@ -358,10 +349,29 @@ export default async function DistrictPage({ params }: Props) {
             Hemen {districtName} Eskort İlanı Ver
           </Link>
         </div>
+      ) : listings.length === 1 ? (
+        /* TEK İLAN VARSA: SAYFADA SOLA YASLI DEĞİL, MERKEZİ VIP VİTRİN KARTI OLARAK DURUR */
+        <div className="flex flex-col items-center gap-3 w-full my-2">
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black font-heading">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{districtName} BÖLGESİ ÖZEL VIP VİTRİN İLANI</span>
+          </div>
+          <div className="w-full max-w-sm mx-auto">
+            <CompactListingCard listing={listings[0]} />
+          </div>
+        </div>
       ) : (
+        /* ÇOKLU İLAN VARSA: 2/3 SÜTUNLU GRID LİSTESİ */
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {listings.map((item: any) => (
-            <CompactListingCard key={item._id} listing={item} />
+          {listings.map((item: any, index: number) => (
+            <React.Fragment key={item._id || index}>
+              <CompactListingCard listing={item} />
+              {index === 5 && (
+                <div className="col-span-2 sm:col-span-3 my-1.5">
+                  <AdsterraBanner320x50 />
+                </div>
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}
