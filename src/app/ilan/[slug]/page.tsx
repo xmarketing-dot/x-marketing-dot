@@ -29,6 +29,7 @@ import ImageSlider from '@/components/common/ImageSlider';
 import LikeButton from '@/components/common/LikeButton';
 import ShareButtons from '@/components/common/ShareButtons';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -267,6 +268,11 @@ export default async function ListingDetailPage({ params }: Props) {
             </Link>
           </div>
 
+        </div>
+
+        {/* ── SPONSORLU NATIVE VİTRİN BANNER ── */}
+        <div className="mx-3.5 sm:mx-0">
+          <AdsterraNativeBanner />
         </div>
 
       </div>

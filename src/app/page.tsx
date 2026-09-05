@@ -26,6 +26,7 @@ import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -305,6 +306,11 @@ export default async function HomePage() {
           silverCount={silverListings.length}
         />
       </section>
+
+      {/* 3.5 SPONSORLU NATIVE REKLAM VİTRİNİ */}
+      <div className="px-4">
+        <AdsterraNativeBanner />
+      </div>
 
       {/* 4. TÜM İLANLAR GRID LİSTESİ */}
       <section className="px-4 flex flex-col gap-3 pt-1">
