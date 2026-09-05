@@ -216,11 +216,6 @@ export default function MobileShell({ children }: MobileShellProps) {
         {/* Full-Width Corporate Main Body */}
         <main className="flex-1 flex flex-col gap-12 w-full px-8 lg:px-16 py-8 max-w-full overflow-x-hidden">
           
-          {/* Header Altı 4:1 Geniş Sponsor Vitrini */}
-          <div className="w-full max-w-6xl mx-auto">
-            <AdsterraNativeBanner />
-          </div>
-
           {/* Embedded Corporate Brand Hero Banner with Slogan */}
           <section className="p-10 lg:p-14 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col lg:flex-row items-center justify-between gap-12 shadow-2xl relative overflow-hidden">
             
@@ -390,9 +385,9 @@ export default function MobileShell({ children }: MobileShellProps) {
             </div>
           </section>
 
-          {/* Desktop Şık Sponsor Vitrini */}
-          <div className="w-full max-w-4xl mx-auto my-4">
-            <AdsterraBanner320x50 />
+          {/* Desktop Alt 4:1 Sponsor Vitrini */}
+          <div className="w-full max-w-5xl mx-auto my-6">
+            <AdsterraNativeBanner />
           </div>
         </main>
 
