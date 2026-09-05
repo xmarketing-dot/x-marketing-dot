@@ -151,38 +151,10 @@ export default function MobileShell({ children }: MobileShellProps) {
     <div className="min-h-screen bg-[#080b0f] text-[#f0f6fc] font-sans selection:bg-amber-500 selection:text-slate-950 w-full max-w-full overflow-x-hidden">
       
       {/* ── 1. FULL-WIDTH DESKTOP KURUMSAL AJANS & BÖLGESEL PAZARLAMA GÖRÜNÜMÜ ──────────────── */}
-      <div className="hidden md:flex flex-col min-h-screen bg-[#080b0f] w-full max-w-full overflow-x-hidden relative">
-        
-        {/* TOP DESKTOP SPONSOR BANNER ŞERİDİ */}
-        <div className="w-full bg-[#0d1117] border-b border-[#30363d]/80 py-2 px-8 flex items-center justify-center">
-          <div className="w-full max-w-4xl">
-            <AdsterraBanner320x50 />
-          </div>
-        </div>
-
-        {/* MASAÜSTÜ SOL VE SAĞ SABİT YAN KULE (STICKY SKYSCRAPERS / TOWER REKLAMLAR) */}
-        <aside aria-label="Sponsor Reklam Alanı" className="hidden 2xl:flex flex-col fixed left-4 top-28 z-30 w-[140px] pointer-events-auto">
-          <div className="p-3 rounded-2xl bg-[#161b22]/90 border border-amber-500/30 backdrop-blur-md shadow-2xl flex flex-col items-center text-center gap-2">
-            <span className="text-[9px] font-black text-amber-400 uppercase tracking-wider font-heading">VIP SPONSOR</span>
-            <div className="scale-90 origin-top">
-              <AdsterraBanner320x50 />
-            </div>
-            <Link href="/reklam-ver" className="text-[9px] text-gray-400 hover:text-white underline">Reklam Ver</Link>
-          </div>
-        </aside>
-
-        <aside aria-label="Sponsor Reklam Alanı" className="hidden 2xl:flex flex-col fixed right-4 top-28 z-30 w-[140px] pointer-events-auto">
-          <div className="p-3 rounded-2xl bg-[#161b22]/90 border border-pink-500/30 backdrop-blur-md shadow-2xl flex flex-col items-center text-center gap-2">
-            <span className="text-[9px] font-black text-pink-400 uppercase tracking-wider font-heading">ÖZEL VİTRİN</span>
-            <div className="scale-90 origin-top">
-              <AdsterraBanner320x50 />
-            </div>
-            <Link href="/reklam-ver" className="text-[9px] text-gray-400 hover:text-white underline">Reklam Ver</Link>
-          </div>
-        </aside>
+      <div className="hidden md:flex flex-col min-h-screen bg-[#080b0f] w-full max-w-full overflow-x-hidden">
         
         {/* Full-Width Corporate Main Body */}
-        <main className="flex-1 flex flex-col gap-14 w-full px-8 lg:px-16 py-8 max-w-full overflow-x-hidden">
+        <main className="flex-1 flex flex-col gap-16 w-full px-8 lg:px-16 py-12 max-w-full overflow-x-hidden">
           
           {/* Embedded Corporate Brand Hero Banner with Slogan */}
           <section className="p-10 lg:p-14 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col lg:flex-row items-center justify-between gap-12 shadow-2xl relative overflow-hidden">
@@ -255,11 +227,6 @@ export default function MobileShell({ children }: MobileShellProps) {
             <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
           </section>
 
-          {/* Desktop İçerik Arası 4:1 Sponsor Vitrini */}
-          <div className="w-full max-w-5xl mx-auto">
-            <AdsterraNativeBanner />
-          </div>
-
           {/* Corporate Ecosystem Features */}
           <section className="flex flex-col lg:flex-row items-center gap-12 text-left">
             <div className="flex-1 flex flex-col gap-6">
@@ -299,11 +266,6 @@ export default function MobileShell({ children }: MobileShellProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-[#161b22] via-transparent to-transparent opacity-50"></div>
             </div>
           </section>
-
-          {/* Desktop Sponsorlu Banner Alanı */}
-          <div className="w-full max-w-3xl mx-auto">
-            <AdsterraBanner320x50 />
-          </div>
 
           {/* Full-Width Interactive Türkiye Regional Network Hub */}
           <section className="p-10 lg:p-14 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-10 shadow-xl text-left">
@@ -363,9 +325,9 @@ export default function MobileShell({ children }: MobileShellProps) {
             </div>
           </section>
 
-          {/* Desktop Alt 4:1 Native Sponsor Vitrini */}
-          <div className="w-full max-w-5xl mx-auto">
-            <AdsterraNativeBanner />
+          {/* Desktop Şık Sponsor Vitrini */}
+          <div className="w-full max-w-4xl mx-auto my-4">
+            <AdsterraBanner320x50 />
           </div>
         </main>
 
