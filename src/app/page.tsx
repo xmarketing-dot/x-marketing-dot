@@ -329,8 +329,16 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {gridListings.map((listing: any) => (
-            <CompactListingCard key={listing._id} listing={listing} />
+          {gridListings.map((listing: any, index: number) => (
+            <React.Fragment key={listing._id || index}>
+              <CompactListingCard listing={listing} />
+              {/* 3 satırdan (6 ilandan) sonra araya tam genişlikli reklam sok */}
+              {index === 5 && (
+                <div className="col-span-2 my-1.5">
+                  <AdsterraBanner320x50 />
+                </div>
+              )}
+            </React.Fragment>
           ))}
         </div>
       </section>

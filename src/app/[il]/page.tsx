@@ -7,6 +7,7 @@ import { MapPin, Sparkles, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import AdsterraBanner320x50 from '@/components/ads/AdsterraBanner320x50';
 import FaqAccordion from '@/components/seo/FaqAccordion';
 import { generateLocationFaq, generateCombinedSeoGraph, generateLocationGuide } from '@/lib/seoData';
 import { getActiveBanner } from '@/lib/data';
@@ -314,8 +315,15 @@ export default async function CityPage({ params }: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {listings.map((item: any) => (
-            <CompactListingCard key={item._id} listing={item} />
+          {listings.map((item: any, index: number) => (
+            <React.Fragment key={item._id || index}>
+              <CompactListingCard listing={item} />
+              {index === 5 && (
+                <div className="col-span-2 sm:col-span-3 my-1.5">
+                  <AdsterraBanner320x50 />
+                </div>
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}
