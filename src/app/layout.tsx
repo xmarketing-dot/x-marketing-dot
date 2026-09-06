@@ -97,6 +97,7 @@ export const metadata: Metadata = {
       : ['f65d1a854e45395b', 'b94d8c81d8b58fac', '5f93294064f2f463', 'c2eb710564994f5b', '9b8ca2b97769a1ce'],
   },
   other: {
+    '6a97888e-site-verification': 'd56702bff7a1051249d301cd6c520d4f',
     'geo.region': 'TR',
     'geo.placename': 'Turkey',
     'geo.position': '39.9334;32.8597',
