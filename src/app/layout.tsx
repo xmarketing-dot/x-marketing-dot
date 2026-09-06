@@ -147,6 +147,7 @@ export default function RootLayout({
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
       <head>
+        <meta name="6a97888e-site-verification" content="d56702bff7a1051249d301cd6c520d4f" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/apple-icon" />
