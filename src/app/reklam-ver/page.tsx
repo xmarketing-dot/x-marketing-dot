@@ -19,42 +19,76 @@ import {
 } from 'lucide-react';
 import ImageCropModal from '@/components/common/ImageCropModal';
 
-const PACKAGES = [
+const PRESET_TIERS = [
+  {
+    gun: 1,
+    label: '24 Saat',
+    sublabel: 'GÜNLÜK DENEME',
+    fiyat: 750,
+    eskiFiyat: 1000,
+    gunlukMaliyet: '750 ₺ / gün',
+    desc: '24 saat boyunca tüm anasayfa ve şehirlerde sabit görünüm.',
+    badge: '⚡ 24 SAAT ANINDA YAYIN',
+    highlight: false,
+  },
   {
     gun: 7,
-    title: '7 Günlük Başlangıç',
+    label: '7 Gün',
+    sublabel: 'HAFTALIK VİP',
     fiyat: 3000,
     eskiFiyat: 5000,
-    gunluk: '428 ₺/gün',
-    desc: 'Hızlı deneme & anlık müşteri trafiği',
-    badge: '2.000 ₺ İNDİRİM 🔥',
-    isBest: false,
+    gunlukMaliyet: '428 ₺ / gün',
+    desc: 'Haftalık kesintisiz sabit vitrin hakimiyeti.',
+    badge: '🔥 2.000 ₺ İNDİRİMLİ',
+    highlight: false,
   },
   {
     gun: 15,
-    title: '15 Günlük Standart',
+    label: '15 Gün',
+    sublabel: 'STANDART VİTRİN',
     fiyat: 7000,
     eskiFiyat: 9000,
-    gunluk: '466 ₺/gün',
-    desc: 'Bölgesel hakimiyet & yoğun WhatsApp randevusu',
-    badge: 'POPÜLER TERCİH ⚡',
-    isBest: false,
+    gunlukMaliyet: '466 ₺ / gün',
+    desc: '15 gün boyunca zirvede kalıp yoğun randevu toplayın.',
+    badge: '⭐ EN POPÜLER',
+    highlight: false,
   },
   {
     gun: 30,
-    title: '30 Günlük (1 Ay) VIP',
+    label: '30 Gün (1 Ay)',
+    sublabel: 'AYLIK MEGA VİP',
     fiyat: 13000,
     eskiFiyat: 15000,
-    gunluk: '433 ₺/gün',
-    desc: 'Tam 1 ay kesintisiz sabit vitrin + %35 Maksimum Kâr',
+    gunlukMaliyet: '433 ₺ / gün',
+    desc: 'Tam 1 ay kesintisiz VIP vitrin + %35 Maksimum Kâr.',
     badge: '👑 EN ÇOK KAZANDIRAN (%35 KÂR)',
-    isBest: true,
+    highlight: true,
   },
 ];
 
+function calculateBannerPrice(days: number): { fiyat: number; eskiFiyat: number; gunlukMaliyet: string } {
+  const d = Math.max(1, Number(days) || 1);
+  if (d === 1) return { fiyat: 750, eskiFiyat: 1000, gunlukMaliyet: '750 ₺ / gün' };
+  if (d === 7) return { fiyat: 3000, eskiFiyat: 5000, gunlukMaliyet: '428 ₺ / gün' };
+  if (d === 15) return { fiyat: 7000, eskiFiyat: 9000, gunlukMaliyet: '466 ₺ / gün' };
+  if (d === 30) return { fiyat: 13000, eskiFiyat: 15000, gunlukMaliyet: '433 ₺ / gün' };
+
+  // Özel Gün Hesabı
+  const rawPrice = d > 30 ? Math.round(d * 400) : Math.round(d * 450);
+  const oldPrice = Math.round(rawPrice * 1.3);
+  const dailyCost = Math.round(rawPrice / d);
+  return {
+    fiyat: rawPrice,
+    eskiFiyat: oldPrice,
+    gunlukMaliyet: `${dailyCost.toLocaleString('tr-TR')} ₺ / gün`,
+  };
+}
+
 export default function ReklamVerPage() {
   const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
-  const [selectedGun, setSelectedGun] = useState<number>(15);
+  const [selectedGun, setSelectedGun] = useState<number>(7);
+  const [isCustomDays, setIsCustomDays] = useState<boolean>(false);
+  const [customDaysInput, setCustomDaysInput] = useState<number>(10);
   const [baslik, setBaslik] = useState('');
   const [hedefUrl, setHedefUrl] = useState('');
   const [musteriIletisim, setMusteriIletisim] = useState('');
@@ -69,7 +103,8 @@ export default function ReklamVerPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedPackage = PACKAGES.find((p) => p.gun === selectedGun) || PACKAGES[1];
+  const activeDays = isCustomDays ? Math.max(1, customDaysInput || 1) : selectedGun;
+  const currentPricing = calculateBannerPrice(activeDays);
 
   // Dosya Seçildiğinde (PC / Mobil)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -148,7 +183,7 @@ export default function ReklamVerPage() {
           baslik: baslik.trim(),
           gorselUrl,
           hedefUrl: hedefUrl.trim(),
-          sureGun: selectedGun,
+          sureGun: activeDays,
           musteriIletisim: musteriIletisim.trim(),
         }),
       });
@@ -166,7 +201,7 @@ export default function ReklamVerPage() {
     }
   };
 
-  const usdtAmount = Math.round(selectedPackage.fiyat / 38);
+  const usdtAmount = Math.round(currentPricing.fiyat / 38);
   const cryptoAddress = 'TYDzsTqW4m8m5jP24944yCq2HwQJzV9999';
 
   return (
@@ -237,72 +272,155 @@ export default function ReklamVerPage() {
             </div>
           </div>
 
-          {/* ── 1. SÜRE SEÇİMİ (NET, AYRIK, ÜST ÜSTE BİNMEYEN LÜKS KARTLAR) ──────────────── */}
-          <div className="flex flex-col gap-3.5">
+          {/* ── 1. SÜRE SEÇİMİ (4 NET KART + İSTEDİĞİN GÜNÜ SEÇ SLIDER/INPUT) ──────────────── */}
+          <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-heading font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-black">1</span>
+              <span className="text-sm sm:text-base font-heading font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center text-xs font-black shadow-md">1</span>
                 <span>Reklam Süresini Seçin</span>
               </span>
-              <span className="text-[11px] text-[#8b949e]">Tüm sayfalarda kesintisiz yayın</span>
+              <span className="text-xs text-[#8b949e] font-medium hidden sm:inline">Anasayfa + Tüm Şehirler</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-              {PACKAGES.map((pkg) => {
-                const isSelected = selectedGun === pkg.gun;
+            {/* 4 Ana Paket Seçeneği (24 Saat, 7 Gün, 15 Gün, 30 Gün) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {PRESET_TIERS.map((pkg) => {
+                const isSelected = !isCustomDays && selectedGun === pkg.gun;
                 return (
                   <div
                     key={pkg.gun}
-                    onClick={() => setSelectedGun(pkg.gun)}
-                    className={`relative p-4 sm:p-5 rounded-2xl border-2 text-left transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[170px] select-none ${
+                    onClick={() => {
+                      setIsCustomDays(false);
+                      setSelectedGun(pkg.gun);
+                    }}
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[190px] select-none ${
                       isSelected
-                        ? 'bg-gradient-to-b from-[#2d1e06] via-[#1c1407] to-[#120e06] border-amber-400 ring-2 ring-amber-400/50 shadow-2xl shadow-amber-500/25 scale-[1.02] z-10'
-                        : pkg.isBest
-                        ? 'bg-[#161b22] border-amber-500/40 hover:border-amber-400 hover:bg-[#1a2029]'
-                        : 'bg-[#161b22] border-[#30363d] hover:border-[#484f58] hover:bg-[#1a2029]'
+                        ? 'bg-gradient-to-b from-[#2d1e06] via-[#1c1407] to-[#120e06] border-amber-400 ring-2 ring-amber-400/50 shadow-2xl shadow-amber-500/25 scale-[1.03] z-10'
+                        : pkg.highlight
+                        ? 'bg-[#161b22] border-amber-500/40 hover:border-amber-400'
+                        : 'bg-[#161b22] border-[#30363d] hover:border-[#484f58]'
                     }`}
                   >
                     {/* Üst Rozet */}
-                    {pkg.badge && (
-                      <div className="absolute -top-3 right-3 z-20">
-                        <span className={`px-2.5 py-0.5 rounded-full font-black text-[9px] font-heading shadow-lg uppercase tracking-wider ${
-                          pkg.isBest 
+                    <div className="min-h-[22px]">
+                      {pkg.badge ? (
+                        <span className={`inline-block px-2 py-0.5 rounded-full font-black text-[9px] font-heading tracking-wider uppercase shadow-md ${
+                          pkg.highlight 
                             ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 border border-amber-200' 
-                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                         }`}>
                           {pkg.badge}
                         </span>
-                      </div>
-                    )}
-
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center justify-between">
-                        <span className={`font-heading font-black text-sm sm:text-base ${isSelected ? 'text-amber-400' : 'text-white'}`}>
-                          {pkg.title}
-                        </span>
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${isSelected ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-[#484f58]'}`}>
-                          {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-[#8b949e] leading-snug mt-0.5">{pkg.desc}</p>
+                      ) : null}
                     </div>
 
-                    <div className="flex items-end justify-between mt-4 pt-3 border-t border-white/10">
-                      <div className="flex flex-col">
-                        <span className="text-[11px] text-[#8b949e] line-through font-mono">
+                    <div className="flex flex-col gap-0.5 my-auto py-1">
+                      <span className="text-[10px] font-mono font-bold text-[#8b949e] tracking-wider uppercase">
+                        {pkg.sublabel}
+                      </span>
+                      <span className={`font-heading font-black text-lg sm:text-xl leading-tight ${isSelected ? 'text-amber-400' : 'text-white'}`}>
+                        {pkg.label}
+                      </span>
+                      <p className="text-[11px] text-[#8b949e] leading-snug mt-1 line-clamp-2">
+                        {pkg.desc}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-1 pt-2.5 border-t border-white/10 mt-2">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-xs text-[#8b949e] line-through font-mono">
                           {pkg.eskiFiyat.toLocaleString('tr-TR')} ₺
                         </span>
-                        <span className="font-heading font-black text-xl text-amber-400 leading-none mt-0.5">
+                        <span className="font-heading font-black text-xl text-amber-400 leading-none">
                           {pkg.fiyat.toLocaleString('tr-TR')} ₺
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/15 px-2 py-1 rounded-md border border-emerald-500/30">
-                        {pkg.gunluk}
+                      <span className="text-[10px] font-mono font-bold text-emerald-400">
+                        {pkg.gunlukMaliyet}
                       </span>
                     </div>
                   </div>
                 );
               })}
+            </div>
+
+            {/* İsteğe Bağlı: Özel Gün Sayısı Belirleme (Custom Days) */}
+            <div className={`p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300 ${
+              isCustomDays 
+                ? 'bg-gradient-to-b from-[#2d1e06] via-[#161b22] to-[#120e06] border-amber-400 ring-2 ring-amber-400/50 shadow-xl' 
+                : 'bg-[#161b22] border-[#30363d] hover:border-[#484f58]'
+            }`}>
+              <div 
+                onClick={() => setIsCustomDays(true)}
+                className="flex items-center justify-between cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isCustomDays ? 'border-amber-400 bg-amber-400 text-slate-950' : 'border-[#484f58]'}`}>
+                    {isCustomDays && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-heading font-black text-sm text-white">
+                      Özel Gün Sayısı Belirleyin (İstediğiniz Süre)
+                    </span>
+                    <span className="text-xs text-[#8b949e]">
+                      Örn: 3 gün, 10 gün, 45 gün, 60 gün vb. istediğiniz gün kadar yayınlayın.
+                    </span>
+                  </div>
+                </div>
+
+                <span className="text-xs font-heading font-black text-amber-400 uppercase bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
+                  ESNEK SÜRE
+                </span>
+              </div>
+
+              {isCustomDays && (
+                <div className="flex flex-col gap-4 mt-4 pt-4 border-t border-white/10 animate-fadeIn">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-[#8b949e] font-bold">Yayın Süresi:</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={365}
+                          value={customDaysInput}
+                          onChange={(e) => setCustomDaysInput(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                          className="w-20 px-3 py-2 rounded-xl bg-[#0d1117] border border-amber-400 text-white font-heading font-black text-base text-center outline-none focus:ring-2 focus:ring-amber-400"
+                        />
+                        <span className="font-heading font-black text-sm text-white">GÜN</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs text-[#8b949e] line-through font-mono">
+                        {currentPricing.eskiFiyat.toLocaleString('tr-TR')} ₺
+                      </span>
+                      <span className="font-heading font-black text-2xl text-amber-400">
+                        {currentPricing.fiyat.toLocaleString('tr-TR')} ₺
+                      </span>
+                      <span className="text-xs text-emerald-400 font-mono font-bold">
+                        ({currentPricing.gunlukMaliyet})
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Range Slider */}
+                  <input
+                    type="range"
+                    min={1}
+                    max={60}
+                    value={customDaysInput}
+                    onChange={(e) => setCustomDaysInput(parseInt(e.target.value, 10))}
+                    className="w-full accent-amber-400 cursor-pointer h-2 bg-[#0d1117] rounded-lg"
+                  />
+                  <div className="flex justify-between text-[10px] text-[#8b949e] font-mono px-1">
+                    <span>1 Gün (24 Saat)</span>
+                    <span>15 Gün</span>
+                    <span>30 Gün (1 Ay)</span>
+                    <span>60 Gün (2 Ay)</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -434,7 +552,7 @@ export default function ReklamVerPage() {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <span>Reklamı Başlat &amp; Ödeme Adımına Geç ({selectedPackage.fiyat.toLocaleString('tr-TR')} ₺)</span>
+                  <span>Reklamı Başlat &amp; Ödeme Adımına Geç ({activeDays} Gün — {currentPricing.fiyat.toLocaleString('tr-TR')} ₺)</span>
                   <ArrowRight className="w-5 h-5 stroke-[3]" />
                 </>
               )}
@@ -468,13 +586,13 @@ export default function ReklamVerPage() {
 
             <div className="p-5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-3.5 text-left">
               <div className="flex justify-between items-center text-xs sm:text-sm">
-                <span className="text-[#8b949e]">Seçilen Paket:</span>
-                <span className="font-bold text-white">{selectedPackage.title}</span>
+                <span className="text-[#8b949e]">Seçilen Süre:</span>
+                <span className="font-bold text-white font-heading">{activeDays} Gün ({activeDays === 1 ? '24 Saat Anında Yayın' : `${activeDays} Günlük VIP Banner`})</span>
               </div>
               <div className="flex justify-between items-center text-xs sm:text-sm">
                 <span className="text-[#8b949e]">Ödenecek Tutar:</span>
                 <span className="font-black text-amber-400 text-lg sm:text-xl">
-                  {selectedPackage.fiyat.toLocaleString('tr-TR')} ₺ ({usdtAmount} USDT)
+                  {currentPricing.fiyat.toLocaleString('tr-TR')} ₺ ({usdtAmount} USDT)
                 </span>
               </div>
 

@@ -66,11 +66,17 @@ export async function POST(req: NextRequest) {
 
     await connectToDatabase();
 
-    const gun = Number(sureGun) || 7;
-    // Fiyatlandırma: 7 Gün: 5.000 TL, 15 Gün: 9.000 TL, 30 Gün: 15.000 TL
-    let fiyat = 5000;
-    if (gun === 15) fiyat = 9000;
-    if (gun === 30) fiyat = 15000;
+    const gun = Math.max(1, Number(sureGun) || 7);
+    
+    // Dinamik ve Avantajlı Fiyatlandırma:
+    // 1 Gün: 750 TL, 7 Gün: 3.000 TL, 15 Gün: 7.000 TL, 30 Gün: 13.000 TL
+    // Özel gün seçimi: gün x 450 TL (minimum 750 TL)
+    let fiyat = gun * 450;
+    if (gun === 1) fiyat = 750;
+    else if (gun === 7) fiyat = 3000;
+    else if (gun === 15) fiyat = 7000;
+    else if (gun === 30) fiyat = 13000;
+    else if (gun > 30) fiyat = Math.round(gun * 400);
 
     const newBanner = await BannerAdModel.create({
       konum: konum || 'her_ikisi',
