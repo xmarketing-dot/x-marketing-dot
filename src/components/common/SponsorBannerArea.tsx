@@ -94,14 +94,6 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
             sizes="100vw"
             className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
-
-          {/* Temiz & Sade Sağ Üst Rozet (Görseli Asla Kapatmaz / Karartmaz) */}
-          <div className="absolute top-2.5 right-2.5 z-10">
-            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-amber-400 text-[10px] font-heading font-black tracking-wider uppercase border border-amber-400/30 shadow-md">
-              <Crown className="w-3 h-3 fill-amber-400" />
-              <span>SPONSORLU VIP BANNER</span>
-            </span>
-          </div>
         </a>
       </div>
     );
