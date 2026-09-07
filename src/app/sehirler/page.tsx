@@ -2,8 +2,9 @@ import React from 'react';
 import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import { Globe, MapPin, Sparkles, ShieldCheck } from 'lucide-react';
-import { getAllLocations, getListings } from '@/lib/data';
+import { getAllLocations, getListings, getActiveBanner } from '@/lib/data';
 import CityExplorer from '@/components/locations/CityExplorer';
+import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
 
 export const dynamic = 'force-dynamic';
@@ -25,9 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default async function SehirlerPage() {
-  const [locations, allListings] = await Promise.all([
+  const [locations, allListings, activeBanner] = await Promise.all([
     getAllLocations(),
     getListings({ limit: 500 }),
+    getActiveBanner('anasayfa'),
   ]);
 
   // Calculate actual listing count per province
@@ -73,6 +75,11 @@ export default async function SehirlerPage() {
         <p className="text-xs sm:text-sm text-[#8b949e] leading-relaxed max-w-xl">
           Aktif ilanı olan şehirleri filtreleyin, ilçeleri listeleyin ve doğrudan aradığınız bölgenin doğrulanmış ilanlarına ulaşın.
         </p>
+      </div>
+
+      {/* ── 1.5 SPONSOR BANNER REKLAM ALANI ──────────────── */}
+      <div className="w-full px-0">
+        <SponsorBannerArea konum="anasayfa" initialBanner={activeBanner} />
       </div>
 
       {/* ── 2. İNTERAKTİF ŞEHİR VE İLÇE KEŞİF BİLEŞENİ ──────────────── */}

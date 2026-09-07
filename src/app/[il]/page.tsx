@@ -289,6 +289,11 @@ export default async function CityPage({ params }: Props) {
         )}
       </div>
 
+      {/* ── 1.25 ÖZEL SPONSORLU VIP BANNER REKLAMI (TÜM ŞEHİRLERDE SABİT) ──────────────── */}
+      <div className="w-full px-0 -mx-1 sm:mx-0">
+        <SponsorBannerArea konum="her_ikisi" initialBanner={activeBanner} />
+      </div>
+
       {/* ── 1.5 BAŞLIK ALTI SPONSORLU MOBİL BANNER ──────────────── */}
       <div className="w-full">
         <AdsterraBanner320x50 />
