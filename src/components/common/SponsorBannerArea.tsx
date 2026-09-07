@@ -68,27 +68,6 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     }).catch(() => { });
   };
 
-  // 3-5 saniye sonra kullanıcı tıklamasa bile otomatik pop-up / yeni sekmede açılma mantığı
-  useEffect(() => {
-    if (!banner?.hedefUrl) return;
-
-    // Sayfa başına oturumda 1 kere tetiklensin (kullanıcıyı flood yapıp kitlemesin)
-    const sessionKey = `autoclick_${banner._id}`;
-    if (sessionStorage.getItem(sessionKey)) return;
-
-    const timer = setTimeout(() => {
-      try {
-        sessionStorage.setItem(sessionKey, 'true');
-        handleBannerClick();
-        window.open(banner.hedefUrl, '_blank', 'noopener,noreferrer');
-      } catch (e) {
-        // Popup engelleyici olursa sessizce geç
-      }
-    }, 4000); // 4 saniye sonra otomatik yönlendirme
-
-    return () => clearTimeout(timer);
-  }, [banner]);
-
   if (loading) {
     return (
       <div className="w-full h-24 sm:h-28 bg-[#161b22]/60 border-y border-[#30363d]/50 animate-pulse my-1.5" />
