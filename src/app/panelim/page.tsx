@@ -845,17 +845,37 @@ export default function PanelimPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <div className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-col justify-between">
-                    <span className="text-xs text-[#8b949e]">7 Günlük Banner</span>
-                    <span className="font-heading font-black text-lg text-amber-400 mt-2">5.000 ₺</span>
+                  <div className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-col justify-between relative">
+                    <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-mono font-bold text-[9px] border border-amber-500/30">
+                      2.000 ₺ İndirim
+                    </span>
+                    <span className="text-xs text-[#8b949e]">7 Günlük Başlangıç</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-xs text-[#8b949e] line-through font-mono">5.000 ₺</span>
+                      <span className="font-heading font-black text-lg text-amber-400">3.000 ₺</span>
+                    </div>
                   </div>
-                  <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/50 flex flex-col justify-between relative">
-                    <span className="text-xs text-amber-300 font-bold">15 Gün (En Popüler) 🔥</span>
-                    <span className="font-heading font-black text-lg text-white mt-2">9.000 ₺</span>
+
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 flex flex-col justify-between relative">
+                    <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-heading font-black text-[9px] shadow-md">
+                      POPÜLER TERCİH 🔥
+                    </span>
+                    <span className="text-xs text-amber-300 font-bold">15 Günlük Standart</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-xs text-[#8b949e] line-through font-mono">9.000 ₺</span>
+                      <span className="font-heading font-black text-lg text-white">7.000 ₺</span>
+                    </div>
                   </div>
-                  <div className="p-4 rounded-2xl bg-black/40 border border-white/5 flex flex-col justify-between">
-                    <span className="text-xs text-[#8b949e]">30 Günlük Banner</span>
-                    <span className="font-heading font-black text-lg text-amber-400 mt-2">15.000 ₺</span>
+
+                  <div className="p-4 rounded-2xl bg-gradient-to-b from-[#2a1d06] to-[#161b22] border-2 border-amber-400/80 shadow-lg shadow-amber-500/10 flex flex-col justify-between relative">
+                    <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 font-heading font-black text-[9px] shadow-md">
+                      👑 %35 MAKSİMUM KÂR
+                    </span>
+                    <span className="text-xs text-amber-300 font-bold">30 Günlük (1 Ay) VIP</span>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-xs text-[#8b949e] line-through font-mono">15.000 ₺</span>
+                      <span className="font-heading font-black text-lg text-amber-400">13.000 ₺</span>
+                    </div>
                   </div>
                 </div>
 

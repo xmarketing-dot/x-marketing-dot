@@ -22,24 +22,33 @@ import ImageCropModal from '@/components/common/ImageCropModal';
 const PACKAGES = [
   {
     gun: 7,
-    title: '7 Günlük Banner',
-    fiyat: 5000,
-    desc: 'Anasayfa ve ilan detaylarında 7 gün kesintisiz yayın',
-    badge: null,
+    title: '7 Günlük Başlangıç',
+    fiyat: 3000,
+    eskiFiyat: 5000,
+    gunluk: '428 ₺/gün',
+    desc: 'Hızlı deneme & anlık müşteri trafiği',
+    badge: '2.000 ₺ İNDİRİM 🔥',
+    isBest: false,
   },
   {
     gun: 15,
-    title: '15 Günlük Banner',
-    fiyat: 9000,
-    desc: 'En popüler tercih! 15 gün boyunca zirvede görünün',
-    badge: 'EN POPÜLER 🔥',
+    title: '15 Günlük Standart',
+    fiyat: 7000,
+    eskiFiyat: 9000,
+    gunluk: '466 ₺/gün',
+    desc: 'Bölgesel hakimiyet & yoğun WhatsApp randevusu',
+    badge: 'POPÜLER TERCİH ⚡',
+    isBest: false,
   },
   {
     gun: 30,
-    title: '30 Günlük Banner',
-    fiyat: 15000,
-    desc: 'Tam 1 ay kesintisiz VIP vitrin hakimiyeti (%40 İndirimli)',
-    badge: 'EN AVANTAJLI 👑',
+    title: '30 Günlük (1 Ay) VIP',
+    fiyat: 13000,
+    eskiFiyat: 15000,
+    gunluk: '433 ₺/gün',
+    desc: 'Tam 1 ay kesintisiz sabit vitrin + %35 Maksimum Kâr',
+    badge: '👑 EN ÇOK KAZANDIRAN (%35 KÂR)',
+    isBest: true,
   },
 ];
 
@@ -196,7 +205,7 @@ export default function ReklamVerPage() {
             <span className="text-xs font-heading font-black text-amber-400 uppercase tracking-wider">
               1. Reklam Süresini Seçin
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {PACKAGES.map((pkg) => {
                 const isSelected = selectedGun === pkg.gun;
                 return (
@@ -204,24 +213,43 @@ export default function ReklamVerPage() {
                     key={pkg.gun}
                     type="button"
                     onClick={() => setSelectedGun(pkg.gun)}
-                    className={`p-3.5 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
+                    className={`p-4 rounded-2xl border text-left transition-all relative flex flex-col justify-between ${
                       isSelected
-                        ? 'bg-amber-500/15 border-amber-500 shadow-lg shadow-amber-500/10'
+                        ? 'bg-gradient-to-b from-[#2a1d06] to-[#161b22] border-amber-400 ring-2 ring-amber-400/50 shadow-xl shadow-amber-500/20 scale-[1.02]'
+                        : pkg.isBest
+                        ? 'bg-[#161b22] border-amber-500/40 hover:border-amber-400'
                         : 'bg-[#161b22] border-[#30363d] hover:border-[#484f58]'
                     }`}
                   >
                     {pkg.badge && (
-                      <span className="absolute -top-2.5 right-2 px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black text-[9px] font-heading shadow-md">
+                      <span className={`absolute -top-3 right-3 px-2.5 py-0.5 rounded-full font-black text-[9px] font-heading shadow-md ${
+                        pkg.isBest 
+                          ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 border border-amber-200' 
+                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                      }`}>
                         {pkg.badge}
                       </span>
                     )}
                     <div className="flex flex-col">
-                      <span className="font-heading font-black text-sm text-white">{pkg.title}</span>
-                      <span className="text-[10px] text-[#8b949e] mt-0.5">{pkg.desc}</span>
+                      <span className="font-heading font-black text-sm text-white flex items-center justify-between">
+                        <span>{pkg.title}</span>
+                      </span>
+                      <span className="text-[10px] text-[#8b949e] mt-1 leading-snug">{pkg.desc}</span>
                     </div>
-                    <span className="font-heading font-black text-base text-amber-400 mt-2">
-                      {pkg.fiyat.toLocaleString('tr-TR')} ₺
-                    </span>
+
+                    <div className="flex items-baseline justify-between mt-3 pt-2.5 border-t border-white/10">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] text-[#8b949e] line-through font-mono">
+                          {pkg.eskiFiyat.toLocaleString('tr-TR')} ₺
+                        </span>
+                        <span className="font-heading font-black text-lg text-amber-400 leading-none">
+                          {pkg.fiyat.toLocaleString('tr-TR')} ₺
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                        {pkg.gunluk}
+                      </span>
+                    </div>
                   </button>
                 );
               })}
