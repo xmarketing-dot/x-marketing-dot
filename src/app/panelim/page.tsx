@@ -596,7 +596,7 @@ export default function PanelimPage() {
                     </span>
                     <span className="text-[10px] text-emerald-400 font-bold font-mono">Gerçek</span>
                   </div>
-                  <span className="text-[9px] text-[#8b949e] mt-1 font-mono">Tekil Ziyaretçi</span>
+                  <span className="text-[9px] text-[#8b949e] mt-1 font-mono">Toplam Görüntülenme</span>
                 </div>
 
                 {/* 2. WhatsApp Tıklama */}

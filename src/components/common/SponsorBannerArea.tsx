@@ -116,23 +116,12 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
             className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
 
-          {/* Şık Alt Gradyan & Başlık Çubuğu */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent flex flex-col justify-between p-3.5 sm:p-5">
-            {/* Üst Kısım: Sponsorlu yazısı ÇERÇEVESİZ ve SAĞA HİZALI */}
-            <div className="flex items-center justify-end w-full">
-              <span className="flex items-center gap-1.5 text-amber-400 text-[11px] font-heading font-black tracking-wider uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] opacity-90">
-                <Crown className="w-3.5 h-3.5 fill-amber-400" />
-                <span>SPONSORLU VIP BANNER</span>
-              </span>
-            </div>
-
-            {/* Alt Kısım: Vurucu, Ultra Belirgin Başlık */}
-            <div className="flex flex-col gap-1 text-left">
-              <span className="font-heading font-black text-sm sm:text-lg md:text-xl text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] tracking-wide line-clamp-2 leading-tight">
-                {banner.baslik}
-              </span>
-
-            </div>
+          {/* Temiz & Sade Sağ Üst Rozet (Görseli Asla Kapatmaz / Karartmaz) */}
+          <div className="absolute top-2.5 right-2.5 z-10">
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-amber-400 text-[10px] font-heading font-black tracking-wider uppercase border border-amber-400/30 shadow-md">
+              <Crown className="w-3 h-3 fill-amber-400" />
+              <span>SPONSORLU VIP BANNER</span>
+            </span>
           </div>
         </a>
       </div>

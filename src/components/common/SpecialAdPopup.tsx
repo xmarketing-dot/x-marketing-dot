@@ -311,13 +311,10 @@ export default function SpecialAdPopup() {
             </div>
           ))}
 
-          {/* Karartma Gradyanı */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#161b22] via-transparent to-black/50 z-10 pointer-events-none" />
-
           {/* Sol Üst Sponsorlu Rozeti */}
           <div className="absolute top-3 left-3 z-20">
-            <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 font-black text-[9px] uppercase font-heading tracking-wider shadow-lg flex items-center gap-1">
-              <Crown className="w-3 h-3 fill-slate-950" />
+            <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-amber-400 font-black text-[9px] uppercase font-heading tracking-wider shadow-lg flex items-center gap-1 border border-amber-400/30">
+              <Crown className="w-3 h-3 fill-amber-400" />
               <span>{currentAd.rozet || '🔥 GÜNÜN ÖZEL VIP İLANI'}</span>
             </span>
           </div>

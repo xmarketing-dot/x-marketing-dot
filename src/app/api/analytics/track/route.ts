@@ -48,24 +48,7 @@ export async function POST(req: NextRequest) {
     const vercelCity = req.headers.get('x-vercel-ip-city') || req.headers.get('x-vercel-ip-country-region') || 'İstanbul';
     const userAgent = req.headers.get('user-agent') || '';
 
-    // ── 1. DEDUPLICATION (Aynı kişinin 10 dakika içindeki aynı sayfa isteklerini mükerrer saymama) ──
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
-    const existingRecentVisit = await AnalyticsVisitorModel.findOne({
-      visitorId,
-      path,
-      createdAt: { $gte: tenMinutesAgo },
-    });
-
-    if (existingRecentVisit) {
-      // Update duration / updatedAt without inflating unique visitor count
-      return NextResponse.json({
-        success: true,
-        visitorId: existingRecentVisit._id,
-        deduplicated: true,
-      });
-    }
-
-    // ── 2. TRAFİK KAYNAĞI TESPİTİ (Oturum Giriş Referansı Destekli) ──
+    // ── 1. TRAFİK KAYNAĞI TESPİTİ (Oturum Giriş Referansı Destekli) ──
     const entryReferer = (body.entryReferer || '').trim();
     const refLower = (referer || '').toLowerCase();
     const entryRefLower = entryReferer.toLowerCase();
@@ -82,9 +65,21 @@ export async function POST(req: NextRequest) {
 
     let source = 'direct';
 
-    if (targetRef.includes('google.') || searchKeyword) {
+    if (
+      targetRef.includes('google.') || 
+      targetRef.includes('goo.gl') || 
+      targetRef.includes('googlequicksearchbox') || 
+      searchKeyword
+    ) {
       source = 'google';
-    } else if (targetRef.includes('yandex')) {
+    } else if (
+      targetRef.includes('yandex') || 
+      targetRef.includes('ya.ru') || 
+      targetRef.includes('clck.yandex') || 
+      targetRef.includes('zen.yandex') || 
+      targetRef.includes('yabs.yandex') ||
+      targetRef.includes('turbopages.org')
+    ) {
       source = 'yandex';
     } else if (targetRef.includes('duckduckgo') || targetRef.includes('ddg')) {
       source = 'duckduckgo';

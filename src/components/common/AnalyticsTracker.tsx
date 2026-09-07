@@ -100,8 +100,8 @@ export default function AnalyticsTracker() {
     const fullPath = currentSearch ? `${pathname}${currentSearch}` : pathname;
     const now = Date.now();
 
-    // Prevent duplicated rapid hits on identical URL within 10 seconds
-    if (lastTrackedPathRef.current === fullPath && now - lastTrackedTimeRef.current < 10000) {
+    // Sadece aynı saniye içindeki çift render tetiklemelerini önle (1 saniye)
+    if (lastTrackedPathRef.current === fullPath && now - lastTrackedTimeRef.current < 1000) {
       return;
     }
 
