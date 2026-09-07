@@ -35,11 +35,11 @@ const PRESET_TIERS = [
     gun: 7,
     label: '7 Gün',
     sublabel: 'HAFTALIK VİP',
-    fiyat: 3000,
-    eskiFiyat: 5000,
-    gunlukMaliyet: '428 ₺ / gün',
+    fiyat: 3850,
+    eskiFiyat: 5500,
+    gunlukMaliyet: '550 ₺ / gün',
     desc: 'Haftalık kesintisiz sabit vitrin hakimiyeti.',
-    badge: '🔥 2.000 ₺ İNDİRİMLİ',
+    badge: '🔥 1.650 ₺ İNDİRİMLİ',
     highlight: false,
   },
   {
@@ -57,11 +57,11 @@ const PRESET_TIERS = [
     gun: 30,
     label: '30 Gün (1 Ay)',
     sublabel: 'AYLIK MEGA VİP',
-    fiyat: 13000,
-    eskiFiyat: 15000,
-    gunlukMaliyet: '433 ₺ / gün',
-    desc: 'Tam 1 ay kesintisiz VIP vitrin + %35 Maksimum Kâr.',
-    badge: '👑 EN ÇOK KAZANDIRAN (%35 KÂR)',
+    fiyat: 12000,
+    eskiFiyat: 16000,
+    gunlukMaliyet: '400 ₺ / gün',
+    desc: 'Tam 1 ay kesintisiz VIP vitrin + %40 Maksimum Kâr.',
+    badge: '👑 EN ÇOK KAZANDIRAN (%40 KÂR)',
     highlight: true,
   },
 ];
@@ -69,13 +69,19 @@ const PRESET_TIERS = [
 function calculateBannerPrice(days: number): { fiyat: number; eskiFiyat: number; gunlukMaliyet: string } {
   const d = Math.max(1, Number(days) || 1);
   if (d === 1) return { fiyat: 750, eskiFiyat: 1000, gunlukMaliyet: '750 ₺ / gün' };
-  if (d === 7) return { fiyat: 3000, eskiFiyat: 5000, gunlukMaliyet: '428 ₺ / gün' };
+  if (d === 7) return { fiyat: 3850, eskiFiyat: 5500, gunlukMaliyet: '550 ₺ / gün' };
   if (d === 15) return { fiyat: 7000, eskiFiyat: 9000, gunlukMaliyet: '466 ₺ / gün' };
-  if (d === 30) return { fiyat: 13000, eskiFiyat: 15000, gunlukMaliyet: '433 ₺ / gün' };
+  if (d === 30) return { fiyat: 12000, eskiFiyat: 16000, gunlukMaliyet: '400 ₺ / gün' };
 
-  // Özel Gün Hesabı
-  const rawPrice = d > 30 ? Math.round(d * 400) : Math.round(d * 450);
-  const oldPrice = Math.round(rawPrice * 1.3);
+  // Özel Gün Hesabı (Gün sayısı arttıkça birim maliyet kademeli düşer)
+  let unitPrice = 550;
+  if (d >= 30) unitPrice = 400;
+  else if (d >= 15) unitPrice = 466;
+  else if (d >= 7) unitPrice = 500;
+  else unitPrice = 600;
+
+  const rawPrice = Math.round(d * unitPrice);
+  const oldPrice = Math.round(rawPrice * 1.35);
   const dailyCost = Math.round(rawPrice / d);
   return {
     fiyat: rawPrice,
@@ -314,28 +320,28 @@ export default function ReklamVerPage() {
                       ) : null}
                     </div>
 
-                    <div className="flex flex-col gap-0.5 my-auto py-1">
-                      <span className="text-[10px] font-mono font-bold text-[#8b949e] tracking-wider uppercase">
+                    <div className="flex flex-col gap-1 my-auto py-1">
+                      <span className="text-[11px] font-mono font-black text-amber-400/90 tracking-wider uppercase">
                         {pkg.sublabel}
                       </span>
-                      <span className={`font-heading font-black text-lg sm:text-xl leading-tight ${isSelected ? 'text-amber-400' : 'text-white'}`}>
+                      <span className={`font-heading font-black text-xl sm:text-2xl leading-tight ${isSelected ? 'text-amber-400' : 'text-white'}`}>
                         {pkg.label}
                       </span>
-                      <p className="text-[11px] text-[#8b949e] leading-snug mt-1 line-clamp-2">
+                      <p className="text-xs text-slate-300 font-medium leading-snug mt-1">
                         {pkg.desc}
                       </p>
                     </div>
 
-                    <div className="flex flex-col gap-1 pt-2.5 border-t border-white/10 mt-2">
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-xs text-[#8b949e] line-through font-mono">
+                    <div className="flex flex-col gap-1 pt-3 border-t border-white/15 mt-2">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-xs text-rose-400/80 line-through font-mono font-bold">
                           {pkg.eskiFiyat.toLocaleString('tr-TR')} ₺
                         </span>
-                        <span className="font-heading font-black text-xl text-amber-400 leading-none">
+                        <span className="font-heading font-black text-2xl text-amber-400 leading-none drop-shadow-sm">
                           {pkg.fiyat.toLocaleString('tr-TR')} ₺
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono font-bold text-emerald-400">
+                      <span className="text-xs font-mono font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md w-fit border border-emerald-500/20">
                         {pkg.gunlukMaliyet}
                       </span>
                     </div>
@@ -392,14 +398,14 @@ export default function ReklamVerPage() {
                     </div>
 
                     <div className="flex items-baseline gap-2">
-                      <span className="text-xs text-[#8b949e] line-through font-mono">
+                      <span className="text-xs text-rose-400/80 line-through font-mono font-bold">
                         {currentPricing.eskiFiyat.toLocaleString('tr-TR')} ₺
                       </span>
                       <span className="font-heading font-black text-2xl text-amber-400">
                         {currentPricing.fiyat.toLocaleString('tr-TR')} ₺
                       </span>
-                      <span className="text-xs text-emerald-400 font-mono font-bold">
-                        ({currentPricing.gunlukMaliyet})
+                      <span className="text-xs text-emerald-400 font-mono font-black bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                        {currentPricing.gunlukMaliyet}
                       </span>
                     </div>
                   </div>
