@@ -191,54 +191,83 @@ export default async function ListingDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6 pb-28 w-full max-w-6xl mx-auto">
+    <div className="flex flex-col gap-4 sm:gap-6 pb-28 w-full max-w-6xl mx-auto px-1 sm:px-4">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
       {/* ── 1. MERKEZİ PROFİL DÜZENİ (NATIVE APP GİBİ) ──────────────── */}
-      <div className="flex flex-col gap-3.5 sm:gap-4 w-full max-w-2xl mx-auto px-0 sm:px-4 lg:px-6 pt-0 lg:pt-4">
+      <div className="flex flex-col gap-3 sm:gap-4 w-full max-w-2xl mx-auto px-0 pt-0 sm:pt-2">
 
         {/* ── FOTOĞRAF GALERİSİ ──────────────── */}
-        <div className="w-full overflow-hidden bg-[#0d1117] relative rounded-none sm:rounded-[32px] border-0 sm:border-2 sm:border-[#30363d] shadow-none sm:shadow-2xl">
+        <div className="w-full overflow-hidden bg-[#0d1117] relative rounded-2xl sm:rounded-[32px] border border-[#30363d] sm:border-2 shadow-xl">
           <ImageSlider
             images={allImages}
             alt={`${listing.baslik} ${ilceAdi} eskort`}
-            aspectRatio="aspect-[3/4] sm:aspect-[4/5] min-h-[500px] h-[70vh] max-h-[660px]"
+            aspectRatio="aspect-[3/4] sm:aspect-[4/5] min-h-[480px] h-[68vh] max-h-[640px]"
             badge={`${rozet.toUpperCase()} VİTRİN`}
           />
         </div>
 
-        {/* ── SPONSORLU VIP BANNER (Tam Genişlikte, Kenarlara Sıfır Yapışık) ──────────────── */}
-        <div className="w-full px-0 -mx-0 sm:mx-0">
+        {/* ── SPONSORLU VIP BANNER (Kenarlara Sıfır) ──────────────── */}
+        <div className="w-full px-0">
           <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
         </div>
 
-        {/* ── BİRLEŞİK İLAN AÇIKLAMASI VE BAŞLIK KARTI ──────────────── */}
-        <div className="mx-3.5 sm:mx-0 p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col items-center text-center gap-5">
+        {/* ── 2. BAŞLIK, KONUM VE DOĞRULAMA KARTI ──────────────── */}
+        <div className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#161b22] border transition-all duration-300 shadow-xl flex flex-col gap-3.5 ${
+          isUltraVip || isVip
+            ? 'border-amber-500/70 ring-1 ring-amber-500/20 shadow-amber-500/10'
+            : isGold
+            ? 'border-yellow-500/60 ring-1 ring-yellow-500/15 shadow-yellow-500/10'
+            : 'border-slate-600/50 ring-1 ring-slate-400/10'
+        }`}>
+          {/* Üst Satır: Başlık (Sol) & Konum (Sağ) */}
+          <div className="flex items-start justify-between gap-3 w-full">
+            <div className="flex flex-col gap-1 min-w-0 flex-1">
+              <h1 className="font-black text-lg sm:text-2xl text-white font-heading tracking-tight leading-snug drop-shadow-md">
+                {listing.baslik}
+              </h1>
+            </div>
 
-          {/* Rozetler: Teyitli & Bölge */}
-          <div className="flex items-center justify-center flex-wrap gap-2">
-            <span className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase font-heading border border-emerald-500/40">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              %100 Doğrulanmış Profil
-            </span>
+            {/* Konum Rozeti */}
             <Link
               href={`/${listing.ilSlug}/${listing.ilceSlug}`}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-black uppercase font-heading border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/75 backdrop-blur-md text-amber-400 font-extrabold text-xs uppercase border border-amber-400/35 font-heading shrink-0 shadow-md hover:bg-amber-500/20 transition-all"
             >
-              <MapPin className="w-3.5 h-3.5" />
-              {ilAdi} / {ilceAdi}
+              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="truncate max-w-[130px] sm:max-w-none">{ilAdi} / {ilceAdi}</span>
             </Link>
           </div>
 
-          {/* Başlık ve Like */}
-          <div className="flex flex-col items-center gap-4 w-full">
-            <h1 className="font-black text-2xl sm:text-3xl text-white leading-tight font-heading tracking-tight drop-shadow-md px-2">
-              {listing.baslik}
-            </h1>
-            <div className="scale-110">
+          {/* Orta Satır: Rozetler & Beğeni (Like) */}
+          <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#30363d]/70 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 text-[11px] font-black uppercase font-heading border border-emerald-500/30">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>%100 Doğrulanmış</span>
+              </span>
+
+              {isUltraVip || isVip ? (
+                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 text-[10px] font-black uppercase font-heading shadow-md">
+                  <Crown className="w-3 h-3 fill-slate-950" />
+                  <span>VIP MODEL</span>
+                </span>
+              ) : isGold ? (
+                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 text-[10px] font-black uppercase font-heading shadow-md">
+                  <Award className="w-3 h-3" />
+                  <span>GOLD MODEL</span>
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-700 text-slate-200 text-[10px] font-black uppercase font-heading shadow-md">
+                  <Medal className="w-3 h-3" />
+                  <span>SILVER MODEL</span>
+                </span>
+              )}
+            </div>
+
+            <div className="scale-105">
               <LikeButton
                 listingId={listing._id.toString()}
                 initialLikes={
@@ -249,32 +278,99 @@ export default async function ListingDetailPage({ params }: Props) {
               />
             </div>
           </div>
+        </div>
 
-          {/* İlan Metni (Büyütüldü ve Ortalandı) */}
-          <div className="text-base sm:text-lg text-[#f0f6fc] leading-relaxed whitespace-pre-line font-medium px-2">
+        {/* ── 3. MOBİLE ÖZEL PREMİUM AÇIKLAMA VE BİLGİ KUTUSU ──────────────── */}
+        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] shadow-xl flex flex-col gap-4">
+          {/* Bölüm Başlığı */}
+          <div className="flex items-center justify-between pb-2.5 border-b border-[#30363d]/80">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <h2 className="font-black text-sm sm:text-base text-white font-heading uppercase tracking-wide">
+                Hakkımda &amp; Hizmet Detayları
+              </h2>
+            </div>
+            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+              ● Aktif &amp; Müsait
+            </span>
+          </div>
+
+          {/* Açıklama Metni (Okunaklı, Temiz Tipografi) */}
+          <div className="text-sm sm:text-base text-[#e6edf3] leading-relaxed whitespace-pre-line font-normal tracking-normal">
             {listing.aciklama}
           </div>
 
-          <ShareButtons title={metaTitle} />
+          {/* 4'lü Hızlı Özellik Çipleri */}
+          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#30363d]/60 font-heading text-xs">
+            <div className="p-2.5 rounded-xl bg-[#21262d]/60 border border-[#30363d] flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-[#8b949e]">Hizmet Bölgesi</span>
+                <span className="font-bold text-white truncate">{ilceAdi}, {ilAdi}</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-[#21262d]/60 border border-[#30363d] flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-[#8b949e]">Güvenlik</span>
+                <span className="font-bold text-white truncate">%100 Teyitli Profil</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-[#21262d]/60 border border-[#30363d] flex items-center gap-2">
+              <Crown className="w-4 h-4 text-amber-400 shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-[#8b949e]">Kategori</span>
+                <span className="font-bold text-white truncate">{rozet.toUpperCase()} Vitrin</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-[#21262d]/60 border border-[#30363d] flex items-center gap-2">
+              <OfficialWhatsAppIcon className="w-4 h-4 fill-emerald-400 shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-[#8b949e]">İletişim Hattı</span>
+                <span className="font-bold text-white truncate">Direkt WhatsApp</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Sayfa İçi Büyük WhatsApp Butonu */}
+          <div className="pt-2">
+            <a
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="py-3.5 sm:py-4 px-4 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-sm sm:text-base tracking-wide shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2.5 w-full"
+            >
+              <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+              <span>WhatsApp İle Hemen Görüş</span>
+            </a>
+          </div>
+
+          <div className="pt-1 flex items-center justify-center">
+            <ShareButtons title={metaTitle} />
+          </div>
 
           {/* Bölgesel Hızlı Yönlendirme Linkleri */}
-          <div className="pt-4 border-t border-[#30363d] flex flex-wrap justify-center gap-2 text-[11px] font-heading font-bold w-full">
-            <Link href={`/${listing.ilSlug}`} className="px-4 py-2.5 rounded-xl bg-[#21262d] text-amber-400 hover:bg-[#30363d] border border-white/5 transition-colors">
+          <div className="pt-3 border-t border-[#30363d]/80 flex flex-wrap justify-center gap-2 text-[11px] font-heading font-bold w-full">
+            <Link href={`/${listing.ilSlug}`} className="px-3.5 py-2 rounded-xl bg-[#21262d] text-amber-400 hover:bg-[#30363d] border border-white/5 transition-colors">
               📍 {ilAdi} İlanları
             </Link>
-            <Link href={`/${listing.ilSlug}/${listing.ilceSlug}`} className="px-4 py-2.5 rounded-xl bg-[#21262d] text-amber-400 hover:bg-[#30363d] border border-white/5 transition-colors">
+            <Link href={`/${listing.ilSlug}/${listing.ilceSlug}`} className="px-3.5 py-2 rounded-xl bg-[#21262d] text-amber-400 hover:bg-[#30363d] border border-white/5 transition-colors">
               📍 {ilceAdi} Bölgesi
             </Link>
           </div>
-
         </div>
 
       </div>
 
-      {/* ── 2. AYNI ŞEHİRDEKİ BENZER İLANLAR (3 SÜTUNLU KOMPAKT GRID) ──────────────── */}
+      {/* ── 4. AYNI ŞEHİRDEKİ BENZER İLANLAR (2/3 SÜTUNLU GRID) ──────────────── */}
       {filteredSimilar.length > 0 && (
-        <div className="mt-6 flex flex-col gap-4 px-3 sm:px-6 max-w-4xl mx-auto w-full">
-          <div className="flex items-center justify-between pb-2 border-b border-[#30363d]">
+        <div className="mt-4 flex flex-col gap-3 px-1 sm:px-4 max-w-4xl mx-auto w-full">
+          <div className="flex items-center justify-between pb-1.5 border-b border-[#30363d]">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
                 <Layers className="w-4 h-4" />
@@ -291,7 +387,7 @@ export default async function ListingDetailPage({ params }: Props) {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {filteredSimilar.map((item: any) => (
               <CompactListingCard key={item._id} listing={item} />
             ))}
@@ -299,9 +395,9 @@ export default async function ListingDetailPage({ params }: Props) {
         </div>
       )}
 
-      {/* ── 2.5 TÜRKİYE 81 İL CRAWLER MATRİSİ (BÖLGESEL LINK AĞI) ──────────────── */}
-      <div className="mt-8 px-3 sm:px-6 max-w-4xl mx-auto w-full">
-        <div className="p-6 rounded-[32px] bg-[#161b22] border border-[#30363d] flex flex-col gap-5 shadow-2xl text-xs text-[#8b949e] leading-relaxed">
+      {/* ── 5. TÜRKİYE 81 İL CRAWLER MATRİSİ (BÖLGESEL LINK AĞI) ──────────────── */}
+      <div className="mt-6 px-1 sm:px-4 max-w-4xl mx-auto w-full">
+        <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl text-xs text-[#8b949e] leading-relaxed">
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <div>
               <h3 className="font-black text-sm text-white font-heading uppercase tracking-wider">
@@ -316,7 +412,7 @@ export default async function ListingDetailPage({ params }: Props) {
             </span>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3.5">
             {Object.entries(regionalHubs).map(([regionName, cityList]) => (
               <div key={regionName} className="flex flex-col gap-1.5">
                 <span className="text-[11px] font-bold text-white/90 flex items-center gap-1.5">
@@ -355,19 +451,18 @@ export default async function ListingDetailPage({ params }: Props) {
         </div>
       </div>
 
-      {/* ── 3. MOBİLDE ALTA YAPIŞIK SABİT İLETİŞİM BARI (STICKY WHATSAPP ACTION BAR) ──────────────── */}
+      {/* ── 6. MOBİLDE ALTA YAPIŞIK SABİT İLETİŞİM BARI (STICKY WHATSAPP ACTION BAR) ──────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-[#0d1117]/95 backdrop-blur-xl border-t border-[#30363d] p-3 px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] pb-[max(env(safe-area-inset-bottom),12px)]">
         <div className="max-w-2xl mx-auto w-full">
-          <WhatsAppButton
-            numara={listing.whatsappNumara}
-            baslik={listing.baslik}
-            listingId={listing._id.toString()}
-            slug={listing.slug}
-            il={ilAdi}
-            ilce={ilceAdi}
-            customMessage={prefilledMessage}
-            compact={true}
-          />
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-xl active:scale-95 transition-all font-heading"
+          >
+            <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+            <span>WhatsApp ile İletişime Geç</span>
+          </a>
         </div>
       </div>
 
