@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
 interface Props {
@@ -8,7 +7,6 @@ interface Props {
 }
 
 export default function AdsterraNativeBanner({ className = '' }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
   // Admin panelinde reklam gösterme
@@ -16,17 +14,36 @@ export default function AdsterraNativeBanner({ className = '' }: Props) {
     return null;
   }
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    if (containerRef.current.querySelector('script')) return;
-
-    const script = document.createElement('script');
-    script.async = true;
-    script.setAttribute('data-cfasync', 'false');
-    script.src = 'https://pl31198532.profitableratecpmnetwork.com/67fb70cfd547bd484057daf3b46c5fda/invoke.js';
-
-    containerRef.current.appendChild(script);
-  }, []);
+  const iframeContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+          }
+          #container-67fb70cfd547bd484057daf3b46c5fda {
+            width: 100% !important;
+            display: flex;
+            justify-content: center;
+          }
+        </style>
+      </head>
+      <body>
+        <script async="async" data-cfasync="false" src="https://pl31198532.profitableratecpmnetwork.com/67fb70cfd547bd484057daf3b46c5fda/invoke.js"></script>
+        <div id="container-67fb70cfd547bd484057daf3b46c5fda"></div>
+      </body>
+    </html>
+  `;
 
   return (
     <div className={`my-4 w-full overflow-hidden rounded-2xl sm:rounded-3xl border border-[#30363d] bg-gradient-to-b from-[#161b22] to-[#0d1117] p-3 sm:p-4 shadow-xl ${className}`}>
@@ -37,13 +54,15 @@ export default function AdsterraNativeBanner({ className = '' }: Props) {
         </span>
         <span className="text-gray-500 text-[9px] uppercase tracking-wider font-mono">Tanıtım</span>
       </div>
-      <div
-        ref={containerRef}
-        id="container-67fb70cfd547bd484057daf3b46c5fda"
-        className="w-full min-h-[120px] flex items-center justify-center text-xs text-gray-500"
-      >
-        {/* Adsterra Native 4:1 Widget */}
+      <div className="w-full flex items-center justify-center min-h-[140px]">
+        <iframe
+          srcDoc={iframeContent}
+          className="w-full min-h-[140px] border-0"
+          scrolling="no"
+          title="Sponsorlu Vitrin"
+        />
       </div>
     </div>
   );
 }
+
