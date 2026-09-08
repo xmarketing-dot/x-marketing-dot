@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Share2, Check, Copy } from 'lucide-react';
+import { Share2, Check, Copy, Send } from 'lucide-react';
 import { OfficialWhatsAppIcon } from './WhatsAppButton';
 
 export default function ShareButtons({ title }: { url?: string; title: string }) {
@@ -9,7 +9,6 @@ export default function ShareButtons({ title }: { url?: string; title: string })
   const [currentUrl, setCurrentUrl] = useState('');
 
   useEffect(() => {
-    // Always use the real browser URL
     const cleanUrl = window.location.href.split('?')[0];
     setCurrentUrl(cleanUrl);
   }, []);
@@ -27,7 +26,7 @@ export default function ShareButtons({ title }: { url?: string; title: string })
       if (typeof window !== 'undefined' && (window as any).trackEvent) {
         (window as any).trackEvent('share_listing', { title, channel: 'copy_link' });
       }
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), 2200);
     } catch (err) {
       console.error('Kopyalama başarısız', err);
     }
@@ -38,14 +37,14 @@ export default function ShareButtons({ title }: { url?: string; title: string })
     if (typeof window !== 'undefined' && (window as any).trackEvent) {
       (window as any).trackEvent('share_listing', { title, channel: 'native' });
     }
-    if (navigator.share) {
+    if (typeof navigator !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
           title: title,
           url: shareUrl || currentUrl,
         });
-      } catch (err) {
-        console.error('Paylaşım hatası', err);
+      } catch {
+        // User canceled or failed
       }
     } else {
       handleCopy();
@@ -65,51 +64,33 @@ export default function ShareButtons({ title }: { url?: string; title: string })
   const encodedTitle = encodeURIComponent(title);
 
   return (
-    <div className="flex flex-col items-center gap-3 w-full py-4 border-t border-[#30363d] mt-2 mb-2">
-      <div className="flex items-center gap-2 text-sm text-[#8b949e] font-bold font-heading">
-        <Share2 className="w-4 h-4" />
-        <span>Bu İlanı Paylaş</span>
+    <div className="flex flex-col items-center gap-3 w-full py-3 border-t border-[#30363d]/70 mt-1">
+      {/* Başlık */}
+      <div className="flex items-center gap-1.5 text-xs text-[#8b949e] font-extrabold uppercase tracking-wider font-heading">
+        <Share2 className="w-3.5 h-3.5 text-amber-400" />
+        <span>İlanı Arkadaşınla Paylaş</span>
       </div>
-      
-      <div className="flex flex-wrap justify-center gap-2">
-        {/* Native Share for Mobile */}
-        <button
-          onClick={handleNativeShare}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#21262d] text-white hover:bg-[#30363d] transition-colors border border-white/10 md:hidden text-xs font-bold"
-        >
-          <Share2 className="w-3.5 h-3.5" />
-          <span>Paylaş</span>
-        </button>
 
-        {/* WhatsApp Share Button with UTM & Tracking */}
+      {/* ── MOBİL-NATİVE APP TARZI İKON AKSİYONLARI ──────────────── */}
+      <div className="grid grid-cols-4 sm:grid-cols-5 gap-2.5 sm:gap-4 w-full max-w-sm justify-center">
+        
+        {/* 1. WHATSAPP */}
         <a
           href={`https://wa.me/?text=${encodedWaUrl}`}
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleWhatsAppShare}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors border border-[#25D366]/30 text-xs font-bold"
+          className="group flex flex-col items-center gap-1 text-center active:scale-90 transition-transform"
         >
-          <OfficialWhatsAppIcon className="w-3.5 h-3.5" />
-          <span>WhatsApp'ta Paylaş</span>
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#25D366]/15 hover:bg-[#25D366] text-[#25D366] hover:text-slate-950 border border-[#25D366]/40 flex items-center justify-center shadow-md transition-all">
+            <OfficialWhatsAppIcon className="w-5 h-5 fill-current" />
+          </div>
+          <span className="text-[10px] font-heading font-extrabold text-[#8b949e] group-hover:text-emerald-400">
+            WhatsApp
+          </span>
         </a>
 
-        {/* Twitter / X */}
-        <a
-          href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(getTaggedUrl('x'))}&text=${encodedTitle}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => {
-            if (typeof window !== 'undefined' && (window as any).trackEvent) {
-              (window as any).trackEvent('share_listing', { title, channel: 'x' });
-            }
-          }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1DA1F2]/10 text-[#1DA1F2] hover:bg-[#1DA1F2]/20 transition-colors border border-[#1DA1F2]/30 text-xs font-bold"
-        >
-          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
-          <span>Twitter</span>
-        </a>
-
-        {/* Telegram */}
+        {/* 2. TELEGRAM */}
         <a
           href={`https://t.me/share/url?url=${encodeURIComponent(getTaggedUrl('telegram'))}&text=${encodedTitle}`}
           target="_blank"
@@ -119,21 +100,72 @@ export default function ShareButtons({ title }: { url?: string; title: string })
               (window as any).trackEvent('share_listing', { title, channel: 'telegram' });
             }
           }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#0088cc]/10 text-[#0088cc] hover:bg-[#0088cc]/20 transition-colors border border-[#0088cc]/30 text-xs font-bold"
+          className="group flex flex-col items-center gap-1 text-center active:scale-90 transition-transform"
         >
-          <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20.665 3.717l-17.73 6.837c-1.21.486-1.203 1.161-.222 1.462l4.552 1.42 10.532-6.645c.498-.303.953-.14.579.192l-8.533 7.701h-.002l.002.001-.314 4.692c.46 0 .663-.211.921-.46l2.211-2.15 4.599 3.397c.848.467 1.457.227 1.668-.785l3.019-14.228c.309-1.239-.473-1.8-1.282-1.434z"/></svg>
-          <span>Telegram</span>
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#0088cc]/15 hover:bg-[#0088cc] text-[#0088cc] hover:text-white border border-[#0088cc]/40 flex items-center justify-center shadow-md transition-all">
+            <Send className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] font-heading font-extrabold text-[#8b949e] group-hover:text-sky-400">
+            Telegram
+          </span>
         </a>
 
-        {/* Copy Link */}
+        {/* 3. TWITTER / X */}
+        <a
+          href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(getTaggedUrl('x'))}&text=${encodedTitle}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => {
+            if (typeof window !== 'undefined' && (window as any).trackEvent) {
+              (window as any).trackEvent('share_listing', { title, channel: 'x' });
+            }
+          }}
+          className="group flex flex-col items-center gap-1 text-center active:scale-90 transition-transform"
+        >
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-white/10 hover:bg-white text-white hover:text-slate-950 border border-white/20 flex items-center justify-center shadow-md transition-all">
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </div>
+          <span className="text-[10px] font-heading font-extrabold text-[#8b949e] group-hover:text-white">
+            Twitter (X)
+          </span>
+        </a>
+
+        {/* 4. LİNKİ KOPYALA */}
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#21262d] text-white hover:bg-[#30363d] transition-colors border border-white/10 text-xs font-bold"
+          className="group flex flex-col items-center gap-1 text-center active:scale-90 transition-transform"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-          <span>{copied ? 'Kopyalandı' : 'Kopyala'}</span>
+          <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl border flex items-center justify-center shadow-md transition-all ${
+            copied
+              ? 'bg-emerald-500 text-slate-950 border-emerald-400'
+              : 'bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-amber-400 border-amber-500/30'
+          }`}>
+            {copied ? <Check className="w-5 h-5 stroke-[3]" /> : <Copy className="w-5 h-5" />}
+          </div>
+          <span className={`text-[10px] font-heading font-extrabold transition-colors ${
+            copied ? 'text-emerald-400' : 'text-[#8b949e] group-hover:text-amber-400'
+          }`}>
+            {copied ? 'Kopyalandı!' : 'Kopyala'}
+          </span>
         </button>
+
+        {/* 5. NATIVE SİSTEM PAYLAŞIMI (Mobilde Açılır) */}
+        <button
+          onClick={handleNativeShare}
+          className="hidden sm:flex group flex-col items-center gap-1 text-center active:scale-90 transition-transform"
+        >
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white border border-[#363b42] flex items-center justify-center shadow-md transition-all">
+            <Share2 className="w-5 h-5" />
+          </div>
+          <span className="text-[10px] font-heading font-extrabold text-[#8b949e] group-hover:text-white">
+            Diğer
+          </span>
+        </button>
+
       </div>
     </div>
   );
 }
+
