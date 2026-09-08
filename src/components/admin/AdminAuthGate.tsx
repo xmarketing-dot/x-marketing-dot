@@ -226,27 +226,32 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative">
       
-      {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between bg-[#161b22] border-b border-[#30363d] p-4 sticky top-0 z-40">
+      {/* Mobile Top Header */}
+      <div className="md:hidden flex items-center justify-between bg-[#161b22] border-b border-[#30363d] px-4 py-3 sticky top-0 z-30 shadow-md">
         <div className="flex items-center gap-2.5">
-          <CorporateLogo className="w-8 h-8" />
-          <span className="font-black text-sm text-white font-heading tracking-tight">BMS System Gate</span>
+          <CorporateLogo className="w-7 h-7" />
+          <div className="flex flex-col">
+            <span className="font-black text-xs text-white font-heading tracking-tight">BMS Portal</span>
+            <span className="text-[9px] text-emerald-400 font-bold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Yönetici Aktif
+            </span>
+          </div>
         </div>
-        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -mr-2 text-white">
-          <Menu className="w-6 h-6" />
-        </button>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#21262d] text-amber-400 border border-[#30363d] text-[11px] font-bold font-heading"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span>Siteye Git</span>
+          </Link>
+        </div>
       </div>
 
-      {/* Mobile Overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Desktop Admin Sidebar / Mobile Drawer */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-[260px] md:w-64 bg-[#161b22] border-r border-[#30363d] p-5 flex flex-col justify-between shrink-0 shadow-2xl transform transition-transform duration-300 md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
+      {/* Desktop Admin Sidebar */}
+      <aside className="hidden md:flex w-64 bg-[#161b22] border-r border-[#30363d] p-5 flex-col justify-between shrink-0 shadow-2xl overflow-y-auto">
         <div className="flex flex-col gap-6">
           
           {/* Logo & Secret Gate Badge */}
@@ -261,16 +266,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 </span>
               </div>
             </div>
-            <button className="md:hidden p-1 text-[#8b949e] hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>
-              <X className="w-5 h-5" />
-            </button>
           </div>
 
           {/* Navigation Links */}
-          <nav 
-            className="flex flex-col gap-1 text-xs font-extrabold uppercase tracking-wider font-heading"
-            onClick={() => setIsMobileMenuOpen(false)}
-          >
+          <nav className="flex flex-col gap-1 text-xs font-extrabold uppercase tracking-wider font-heading">
             <Link
               href="/bms-secure-portal"
               prefetch={false}
@@ -374,10 +373,150 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       </aside>
 
       {/* Secret Admin Content Viewport */}
-      <main className="flex-1 p-6 md:p-10 overflow-y-auto w-full max-w-full">
+      <main className="flex-1 p-3.5 sm:p-6 md:p-10 pb-24 md:pb-10 overflow-y-auto w-full max-w-full">
         {children}
       </main>
+
+      {/* ── MOBİL SABİT ALT GEZİNME ÇUBUĞU (MOBILE BOTTOM BAR) ──────────────── */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#161b22]/95 backdrop-blur-xl border-t border-[#30363d] px-2 py-1.5 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.6)]">
+        <Link
+          href="/bms-secure-portal/ilanlar"
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all ${
+            pathname === '/bms-secure-portal/ilanlar'
+              ? 'text-amber-400 font-black'
+              : 'text-[#8b949e] hover:text-white font-medium'
+          }`}
+        >
+          <List className="w-5 h-5" />
+          <span className="text-[10px] font-heading">İlanlar</span>
+        </Link>
+
+        <Link
+          href="/bms-secure-portal/chat"
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all relative ${
+            pathname === '/bms-secure-portal/chat'
+              ? 'text-amber-400 font-black'
+              : 'text-[#8b949e] hover:text-white font-medium'
+          }`}
+        >
+          <div className="relative">
+            <MessageSquare className="w-5 h-5" />
+            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          </div>
+          <span className="text-[10px] font-heading">Chat</span>
+        </Link>
+
+        <Link
+          href="/bms-secure-portal"
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all ${
+            pathname === '/bms-secure-portal'
+              ? 'text-amber-400 font-black'
+              : 'text-[#8b949e] hover:text-white font-medium'
+          }`}
+        >
+          <BarChart3 className="w-5 h-5" />
+          <span className="text-[10px] font-heading">Analiz</span>
+        </Link>
+
+        <Link
+          href="/bms-secure-portal/guvenlik"
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all ${
+            pathname === '/bms-secure-portal/guvenlik'
+              ? 'text-red-400 font-black'
+              : 'text-red-400/70 hover:text-red-300 font-medium'
+          }`}
+        >
+          <ShieldAlert className="w-5 h-5" />
+          <span className="text-[10px] font-heading">Güvenlik</span>
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(true)}
+          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all ${
+            isMobileMenuOpen ? 'text-amber-400 font-black' : 'text-[#8b949e] hover:text-white font-medium'
+          }`}
+        >
+          <Sliders className="w-5 h-5" />
+          <span className="text-[10px] font-heading">Menü</span>
+        </button>
+      </div>
+
+      {/* ── MOBİL DİĞER MODÜLLER ÇEKMECESİ (BOTTOM SHEET) ──────────────── */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div 
+            className="flex-1 w-full"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          <div className="w-full bg-[#161b22] border-t-2 border-amber-500/40 rounded-t-[32px] p-6 flex flex-col gap-4 shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-250 text-left">
+            <div className="flex items-center justify-between pb-3 border-b border-[#30363d]">
+              <div className="flex items-center gap-2">
+                <CorporateLogo className="w-7 h-7" />
+                <span className="font-black text-sm text-white font-heading">Tüm Yönetim Masaları</span>
+              </div>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5 text-xs font-bold font-heading">
+              <Link
+                href="/bms-secure-portal/kullanicilar"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+              >
+                <Users className="w-5 h-5 text-amber-400" />
+                <span>Kullanıcılar</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/anasayfa-yonetimi"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+              >
+                <Sliders className="w-5 h-5 text-amber-400" />
+                <span>Anasayfa Yönetimi</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/banners"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+              >
+                <Megaphone className="w-5 h-5 text-amber-400" />
+                <span>Banner Masası</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/backlinks"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+              >
+                <Link2 className="w-5 h-5 text-blue-400" />
+                <span>SEO Backlink Ağı</span>
+              </Link>
+            </div>
+
+            <div className="pt-3 border-t border-[#30363d] flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-red-500/15 hover:bg-red-500/25 text-red-400 font-black text-xs uppercase tracking-wider font-heading border border-red-500/40"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Güvenli Çıkış Yap</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
+
 
