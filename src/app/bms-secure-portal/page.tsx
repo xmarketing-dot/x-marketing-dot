@@ -8,7 +8,8 @@ import {
   Zap, ArrowUpRight, Loader2, Sparkles, MapPin, Activity, Calendar, Share2,
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
   Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
-  Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3
+  Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3, X, Copy,
+  PhoneCall, ArrowRight, SlidersHorizontal
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
@@ -23,6 +24,12 @@ export default function BmsSecurePortalDashboard() {
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
+
+  // Mobile Drawers
+  const [showPagesDrawer, setShowPagesDrawer] = useState(false);
+  const [showWaDrawer, setShowWaDrawer] = useState(false);
+  const [pageDrawerSearch, setPageDrawerSearch] = useState('');
+  const [waDrawerSearch, setWaDrawerSearch] = useState('');
 
   // Admin Direct Listing Edit States
   const [editingListing, setEditingListing] = useState<any | null>(null);
@@ -511,136 +518,142 @@ export default function BmsSecurePortalDashboard() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full text-left">
       
-      {/* ── 1. HEADER BAR & ZAMAN FİLTRELERİ ──────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
-            <BarChart3 className="w-6 h-6" />
+      {/* ── 1. UNIFIED COMPACT HEADER & DATE CONTROLS (MOBİL ODAKLI ENTEGRE BAŞLIK) ──────────────── */}
+      <div className="flex flex-col gap-3 bg-[#161b22] border border-[#30363d] p-3.5 sm:p-5 rounded-3xl shadow-xl">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <h1 className="font-black text-lg sm:text-2xl text-white font-heading tracking-tight truncate">
+                Trafik &amp; Ziyaretçi Analizi
+              </h1>
+              <p className="text-[11px] text-[#8b949e] truncate hidden sm:block">
+                Tekil ziyaretçiler, Google &amp; Yandex arama kelimeleri, WhatsApp dönüşümleri ve canlı akış.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <h1 className="font-black text-2xl text-white font-heading tracking-tight">
-              Trafik &amp; Ziyaretçi Analizleri
-            </h1>
-            <p className="text-xs text-[#8b949e]">
-              Tekil ziyaretçiler, Google arama kelimeleri, Facebook referansları ve detaylı tıklama haritası.
-            </p>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Yenile Butonu */}
+            <button
+              onClick={fetchAnalytics}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-xs transition-all active:scale-95 shadow-sm"
+              title="Verileri Yenile"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span className="font-heading font-black">Yenile</span>
+            </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Tarih Filtresi Butonları */}
-          <div className="flex items-center bg-[#161b22] border border-[#30363d] rounded-xl p-1 shrink-0 overflow-x-auto">
-            {[
-              { id: 'today', label: 'Bugün' },
-              { id: 'yesterday', label: 'Dün' },
-              { id: 'week', label: 'Son 1 Hafta' },
-              { id: 'month', label: 'Son 30 Gün' },
-              { id: 'all', label: 'Tüm Zamanlar' },
-            ].map((r) => (
-              <button
-                key={r.id}
-                onClick={() => setRange(r.id)}
-                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap ${
-                  range === r.id 
-                    ? 'bg-amber-500 text-slate-950 font-black' 
-                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-                }`}
-              >
-                {r.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Yenile Butonu */}
-          <button
-            onClick={fetchAnalytics}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-lg shrink-0"
-            title="Verileri Yenile"
-          >
-            <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Yenile</span>
-          </button>
+        {/* Tarih Filtresi Butonları - Kompakt Segmented Bar */}
+        <div className="grid grid-cols-5 bg-[#0d1117] p-1 rounded-2xl border border-[#21262d] gap-1">
+          {[
+            { id: 'today', label: 'Bugün' },
+            { id: 'yesterday', label: 'Dün' },
+            { id: 'week', label: '7 Gün' },
+            { id: 'month', label: '30 Gün' },
+            { id: 'all', label: 'Tümü' },
+          ].map((r) => (
+            <button
+              key={r.id}
+              onClick={() => setRange(r.id)}
+              className={`py-1.5 px-1 text-center text-[11px] sm:text-xs font-black rounded-xl transition-all truncate font-heading ${
+                range === r.id 
+                  ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black scale-[1.02]' 
+                  : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ── ÇOKLU DOMAİN FİLTRESİ ÇUBUĞU ──────────────── */}
-      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 -mt-2">
-        <span className="text-[11px] font-bold text-[#8b949e] flex items-center gap-1.5 shrink-0">
-          <Globe className="w-3.5 h-3.5 text-amber-400" />
-          Domain Filtresi:
-        </span>
-        <button
-          onClick={() => setSelectedDomain('all')}
-          className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all shrink-0 flex items-center gap-1.5 ${
-            selectedDomain === 'all'
-              ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-sm shadow-amber-500/20'
-              : 'bg-[#161b22] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#484f58]'
-          }`}
-        >
-          <span>🌐 Tüm Domainler</span>
-        </button>
-        {domainBreakdown.map((dItem: any) => (
-          <button
-            key={dItem.domain}
-            onClick={() => setSelectedDomain(dItem.domain)}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all shrink-0 flex items-center gap-1.5 font-mono ${
-              selectedDomain === dItem.domain
-                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-sm shadow-emerald-500/20'
-                : 'bg-[#161b22] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#484f58]'
-            }`}
-          >
-            <span>{dItem.domain}</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#21262d] text-white">
-              {dItem.uniqueVisitors} tekil
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {/* ── AKTİF FİLTRE & ZAMAN DİLİMİ BİLGİLENDİRME ÇUBUĞU ──────────────── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs">
-        <div className="flex items-center gap-2 text-amber-300">
-          <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
-          <span>
-            Şu an gösterilen veriler: <strong className="text-white uppercase">{
-              range === 'today' ? 'Bugün (Son 24 Saat)' :
-              range === 'yesterday' ? 'Dün' :
-              range === 'week' ? 'Son 7 Gün' :
-              range === 'month' ? 'Son 30 Gün' : 'Tüm Zamanlar (Genel Kümülatif)'
-            }</strong>
-            {range === 'today' && ' — İlan görüntülenmeleri ve WhatsApp tıklamaları sadece bugünün net rakamlarıdır.'}
+      {/* ── RESPONSİVE DOMAİN FİLTRESİ ──────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-2xl bg-[#161b22] border border-[#30363d]">
+        <div className="flex items-center justify-between sm:justify-start gap-2">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-xs font-heading font-black text-white">Domain Filtresi:</span>
+          </div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#0d1117] border border-[#30363d] text-amber-400 font-mono font-bold">
+            {selectedDomain === 'all' ? 'Tüm Ağ' : selectedDomain}
           </span>
         </div>
-        {range !== 'all' && (
-          <button
-            onClick={() => setRange('all')}
-            className="text-[11px] text-amber-400 hover:text-amber-200 underline font-bold shrink-0"
+
+        {/* Mobilde Clean Select Dropdown */}
+        <div className="block sm:hidden w-full">
+          <select
+            value={selectedDomain}
+            onChange={(e) => setSelectedDomain(e.target.value)}
+            className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-amber-500/40 text-amber-300 font-mono text-xs font-bold outline-none"
           >
-            Tüm Zamanların İstatistiklerini Gör →
+            <option value="all">🌐 Tüm Domainler (Kümülatif Ağ)</option>
+            {domainBreakdown.map((dItem: any) => (
+              <option key={dItem.domain} value={dItem.domain}>
+                {dItem.domain} ({dItem.uniqueVisitors} Tekil Ziyaretçi)
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Masaüstünde Segmented Pills */}
+        <div className="hidden sm:flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={() => setSelectedDomain('all')}
+            className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 ${
+              selectedDomain === 'all'
+                ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-sm shadow-amber-500/20'
+                : 'bg-[#0d1117] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#484f58]'
+            }`}
+          >
+            <span>🌐 Tüm Domainler</span>
           </button>
-        )}
+          {domainBreakdown.map((dItem: any) => (
+            <button
+              key={dItem.domain}
+              onClick={() => setSelectedDomain(dItem.domain)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 font-mono ${
+                selectedDomain === dItem.domain
+                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-sm shadow-emerald-500/20'
+                  : 'bg-[#0d1117] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#484f58]'
+              }`}
+            >
+              <span>{dItem.domain}</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#21262d] text-white">
+                {dItem.uniqueVisitors}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* ── 2. TAB NAVİGASYON ÇUBUĞU (MOBİLDE KAYDIRILABİLİR, DÜZENLİ SEKMELER) ──────────────── */}
-      <div className="flex items-center gap-2 border-b border-[#30363d] pb-2 overflow-x-auto no-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
+      {/* ── 2. TAB NAVİGASYON (MOBİLDE 2x2 GRID, MASAÜSTÜNDE 4'LÜ ÇUBUK) ──────────────── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
-          { id: 'overview', label: '📊 Genel Bakış', count: null },
-          { id: 'seo_rankings', label: '🎯 Google Sıralama & Dönüşüm', count: keywordList.length > 0 ? keywordList.length : null },
-          { id: 'listings', label: '👑 İlan Performans & Referrer', count: filteredListings.length },
-          { id: 'live_visitors', label: '⚡ Canlı Ziyaretçi Günlüğü', count: recentVisitors.length },
+          { id: 'overview', icon: '📊', label: 'Genel Bakış', count: null },
+          { id: 'seo_rankings', icon: '🎯', label: 'Google Sıralama', count: keywordList.length > 0 ? keywordList.length : null },
+          { id: 'listings', icon: '👑', label: 'İlan Performans', count: filteredListings.length },
+          { id: 'live_visitors', icon: '⚡', label: 'Canlı Ziyaretçi', count: recentVisitors.length },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2.5 rounded-2xl font-black text-xs font-heading transition-all whitespace-nowrap flex items-center gap-2 shrink-0 ${
+            className={`p-3 rounded-2xl font-black text-xs font-heading transition-all flex items-center justify-between gap-2 border ${
               activeTab === tab.id
-                ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 scale-[1.02]'
-                : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#30363d] hover:border-amber-400/40'
+                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20 scale-[1.01]'
+                : 'bg-[#161b22] text-[#8b949e] hover:text-white border-[#30363d] hover:border-amber-400/40'
             }`}
           >
-            <span>{tab.label}</span>
+            <div className="flex items-center gap-2 truncate">
+              <span>{tab.icon}</span>
+              <span className="truncate">{tab.label}</span>
+            </div>
             {tab.count !== null && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${
                 activeTab === tab.id ? 'bg-slate-950/30 text-slate-950' : 'bg-[#21262d] text-amber-400'
               }`}>
                 {tab.count}
@@ -654,26 +667,26 @@ export default function BmsSecurePortalDashboard() {
       {/* ── SEKME 1: GENEL BAKIŞ & TRAFİK KAYNAKLARI ────────────────────────── */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'overview' && (
-        <div className="flex flex-col gap-6 animate-fadeIn">
+        <div className="flex flex-col gap-5 sm:gap-6 animate-fadeIn">
           
           {/* Canlı Kullanıcı Bannerı */}
-          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#161b22] to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-xl">
-            <div className="flex items-center gap-3.5">
-              <div className="relative flex items-center justify-center w-10 h-10">
+          <div className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#161b22] to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 shrink-0">
                 <div className="absolute inset-0 bg-emerald-500/30 rounded-full animate-ping"></div>
-                <div className="relative bg-emerald-500 text-slate-950 w-8 h-8 rounded-full flex items-center justify-center font-black">
-                  <Activity className="w-5 h-5" />
+                <div className="relative bg-emerald-500 text-slate-950 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-black">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <div className="flex flex-col">
-                <span className="font-black text-emerald-400 text-base sm:text-lg uppercase tracking-wider font-heading flex items-center gap-2">
-                  <span>Şu An Sitede {activeUsers} Tekil Ziyaretçi Aktif</span>
+              <div className="flex flex-col min-w-0">
+                <span className="font-black text-emerald-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
+                  Şu An Sitede {activeUsers} Tekil Ziyaretçi Aktif
                 </span>
-                <span className="text-xs text-[#8b949e]">Son 5 dakika içerisinde sayfaları gezen gerçek kullanıcılar</span>
+                <span className="text-[11px] text-[#8b949e] truncate">Son 5 dakika içerisinde sayfaları gezen gerçek kullanıcılar</span>
               </div>
             </div>
 
-            <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-heading">
+            <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-heading shrink-0">
               CANLI AKIŞ
             </span>
           </div>
@@ -749,41 +762,33 @@ export default function BmsSecurePortalDashboard() {
             </div>
           </div>
 
-          {/* Sosyal & Facebook Trafiği Şeridi */}
-          {((sources.facebook || 0) + (sources.x || 0) + (sources.instagram || 0)) > 0 && (
-            <div className="p-3 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex items-center justify-between text-xs shadow-md">
-              <div className="flex items-center gap-2 text-[#8b949e]">
-                <Share2 className="w-4 h-4 text-indigo-400 shrink-0" />
-                <span>Sosyal Medya Trafiği: <strong className="text-white">FB: {sources.facebook || 0}</strong> &bull; <strong className="text-white">X: {sources.x || 0}</strong> &bull; <strong className="text-white">IG: {sources.instagram || 0}</strong></span>
-              </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-black text-[10px] font-mono">
-                {((sources.facebook || 0) + (sources.x || 0) + (sources.instagram || 0)).toLocaleString()} Hit
-              </span>
-            </div>
-          )}
-
-          {/* ── ÇOKLU DOMAİN GATEWAY İSTİHBARAT & PERFORMANS MASASI ── */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-3">
-              <div className="flex items-center gap-2.5">
-                <Globe className="w-5 h-5 text-amber-400" />
+          {/* ── ÇOKLU DOMAİN GATEWAY İSTİHBARAT & PERFORMANS MASASI (SLIDE KARTLAR) ── */}
+          <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 sm:gap-4 shadow-xl">
+            <div className="flex items-center justify-between gap-2 border-b border-[#30363d] pb-3">
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-amber-400 shrink-0" />
                 <div className="flex flex-col">
-                  <h2 className="font-black text-base text-white font-heading">
-                    Çoklu Domain Gateway Ağı — Canlı Performans &amp; WhatsApp ROI
+                  <h2 className="font-black text-sm sm:text-base text-white font-heading">
+                    Çoklu Domain Gateway Ağı
                   </h2>
-                  <span className="text-[11px] text-[#8b949e]">
-                    Hangi domain kaç tekil müşteri getirdi, kaç kişi WhatsApp'tan yazdı ve dönüşüm oranları (CTR).
+                  <span className="text-[10px] sm:text-[11px] text-[#8b949e]">
+                    Domain bazlı canlı müşteri trafiği ve WhatsApp dönüşüm oranları (CTR).
                   </span>
                 </div>
               </div>
-              <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono font-bold flex items-center gap-1.5 self-start sm:self-auto">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono font-bold shrink-0 hidden sm:flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Dinamik Domain Router Aktif
+                Router Aktif
               </span>
             </div>
 
-            {/* Domain Kartları / Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Mobilde Yatay Kaydırılabilir Slide Strip Kartlar */}
+            <div className="flex items-center justify-between text-[11px] text-amber-400/90 font-bold sm:hidden px-1">
+              <span>👈 Domain kartlarını yana kaydırın</span>
+              <span className="text-white/60 font-mono">({domainBreakdown.length} Alan Adı)</span>
+            </div>
+
+            <div className="flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible">
               {domainBreakdown.length === 0 ? (
                 <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] text-xs text-[#8b949e] col-span-full">
                   İlk domain istekleri kaydedildiğinde burada canlı olarak karşılaştırılacak.
@@ -796,24 +801,24 @@ export default function BmsSecurePortalDashboard() {
                   return (
                     <div 
                       key={item.domain}
-                      className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] hover:border-amber-500/40 transition-all flex flex-col justify-between gap-3"
+                      className="min-w-[280px] sm:min-w-0 snap-center p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] hover:border-amber-500/40 transition-all flex flex-col justify-between gap-3 shadow-md shrink-0 sm:shrink"
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-mono font-black text-white flex items-center gap-1.5">
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-mono font-black text-white flex items-center gap-1.5 truncate">
                             {isMainPortal ? <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" /> : <MapPin className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
-                            {item.domain}
+                            <span className="truncate">{item.domain}</span>
                           </span>
-                          <span className="text-[10px] text-[#8b949e] mt-0.5">
+                          <span className="text-[10px] text-[#8b949e] mt-0.5 truncate">
                             {isMainPortal ? 'Türkiye Geneli Ana Merkez' : `${targetLoc.ilSlug?.toUpperCase()} / ${(targetLoc.ilceSlug || 'Tüm İlçe')?.toUpperCase()}`}
                           </span>
                         </div>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold border ${
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-mono font-bold border shrink-0 ${
                           isMainPortal 
                             ? 'bg-amber-500/10 text-amber-300 border-amber-500/30' 
                             : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                         }`}>
-                          {isMainPortal ? 'GENEL MERKEZ' : 'BÖLGESEL GATEWAY'}
+                          {isMainPortal ? 'ANA MERKEZ' : 'GATEWAY'}
                         </span>
                       </div>
 
@@ -828,12 +833,12 @@ export default function BmsSecurePortalDashboard() {
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[10px] text-emerald-400 font-bold">WhatsApp</span>
-                          <span className="text-sm font-black text-emerald-400 font-mono">{item.whatsappClicks} Tık</span>
+                          <span className="text-sm font-black text-emerald-400 font-mono">{item.whatsappClicks}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-[#8b949e]">WhatsApp Dönüşüm (CTR):</span>
+                        <span className="text-[#8b949e]">Dönüşüm (CTR):</span>
                         <span className="font-bold text-amber-400 font-mono">{item.conversionRate}</span>
                       </div>
                     </div>
@@ -844,254 +849,248 @@ export default function BmsSecurePortalDashboard() {
           </div>
 
           {/* Özel İlan Vitrin Bannerı */}
-          <div className="p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 via-[#161b22] to-amber-500/5 border border-amber-500/30 flex flex-col gap-4 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-3">
-              <div className="flex items-center gap-2.5">
-                <Sparkles className="w-5 h-5 text-amber-400" />
-                <h2 className="font-black text-base text-white font-heading">
-                  Özel Vitrin Popup &amp; Banner İstatistikleri
+          <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/10 via-[#161b22] to-amber-500/5 border border-amber-500/30 flex flex-col gap-3 sm:gap-4 shadow-xl">
+            <div className="flex items-center justify-between gap-3 border-b border-[#30363d] pb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-400 shrink-0" />
+                <h2 className="font-black text-sm sm:text-base text-white font-heading">
+                  Özel Vitrin Popup &amp; Banner
                 </h2>
               </div>
               <span className="text-xs text-amber-400 font-bold font-mono">
-                Dönüşüm Oranı: %{specialAdStats?.ctr || '0.0'}
+                Dönüşüm: %{specialAdStats?.ctr || '0.0'}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
-                <span className="text-[11px] text-[#8b949e]">Popup Gösterimi</span>
-                <span className="font-black text-xl text-white font-heading">{specialAdStats?.impressions || 0} Kez</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+              <div className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
+                <span className="text-[10px] sm:text-[11px] text-[#8b949e]">Popup Gösterim</span>
+                <span className="font-black text-lg sm:text-xl text-white font-heading">{specialAdStats?.impressions || 0}</span>
               </div>
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
-                <span className="text-[11px] text-[#8b949e]">Tekil Gösterim</span>
-                <span className="font-black text-xl text-amber-300 font-heading">{specialAdStats?.uniqueVisitors || 0} Kişi</span>
+              <div className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
+                <span className="text-[10px] sm:text-[11px] text-[#8b949e]">Tekil Kişi</span>
+                <span className="font-black text-lg sm:text-xl text-amber-300 font-heading">{specialAdStats?.uniqueVisitors || 0}</span>
               </div>
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
-                <span className="text-[11px] text-[#8b949e]">İlan Detayına Tıklama</span>
-                <span className="font-black text-xl text-cyan-400 font-heading">{specialAdStats?.clicks || 0}</span>
+              <div className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
+                <span className="text-[10px] sm:text-[11px] text-[#8b949e]">İlana Tıklama</span>
+                <span className="font-black text-lg sm:text-xl text-cyan-400 font-heading">{specialAdStats?.clicks || 0}</span>
               </div>
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
-                <span className="text-[11px] text-[#8b949e]">Direkt WhatsApp Butonu</span>
-                <span className="font-black text-xl text-emerald-400 font-heading">{specialAdStats?.whatsappClicks || 0}</span>
+              <div className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
+                <span className="text-[10px] sm:text-[11px] text-[#8b949e]">WhatsApp Tık</span>
+                <span className="font-black text-lg sm:text-xl text-emerald-400 font-heading">{specialAdStats?.whatsappClicks || 0}</span>
               </div>
             </div>
           </div>
 
-          {/* Cihaz ve Trafik Kaynakları */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Cihaz Dağılımı */}
-            <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="w-5 h-5 text-amber-400" />
-                  <h2 className="font-black text-base text-white font-heading">Cihaz Türleri</h2>
-                </div>
-                <span className="text-xs text-[#8b949e] font-mono">%{mobilePercentage} Mobil</span>
+          {/* Cihaz Dağılımı */}
+          <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 sm:gap-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-5 h-5 text-amber-400" />
+                <h2 className="font-black text-sm sm:text-base text-white font-heading">Cihaz Dağılımı</h2>
               </div>
-
-              <div className="flex flex-col gap-4 pt-2">
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                      <Smartphone className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-xs text-white">Mobil Cihazlar</span>
-                      <span className="text-[10px] text-[#8b949e]">{mobileCount.toLocaleString()} Sayfa İsteği</span>
-                    </div>
-                  </div>
-                  <span className="font-black text-xl text-amber-400 font-heading">%{mobilePercentage}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d]">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                      <Monitor className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-xs text-white">Masaüstü &amp; Laptop</span>
-                      <span className="text-[10px] text-[#8b949e]">{desktopCount.toLocaleString()} Sayfa İsteği</span>
-                    </div>
-                  </div>
-                  <span className="font-black text-xl text-blue-400 font-heading">%{desktopPercentage}</span>
-                </div>
-              </div>
+              <span className="text-xs text-amber-400 font-mono font-bold">%{mobilePercentage} Mobil</span>
             </div>
 
-            {/* Trafik Kaynakları 7'li Grid */}
-            <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] lg:col-span-2 flex flex-col gap-4 shadow-xl">
-              <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d]">
                 <div className="flex items-center gap-2.5">
-                  <Globe className="w-5 h-5 text-amber-400" />
-                  <h2 className="font-black text-base text-white font-heading">Trafik Kaynakları (Referrer Kanalları)</h2>
+                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                    <Smartphone className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-xs text-white">Mobil Cihazlar</span>
+                    <span className="text-[10px] text-[#8b949e]">{mobileCount.toLocaleString()} Sayfa İsteği</span>
+                  </div>
                 </div>
-                <span className="text-xs text-[#8b949e]">Geliş Yolları</span>
+                <span className="font-black text-lg sm:text-xl text-amber-400 font-heading">%{mobilePercentage}</span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-1">
-                  <span className="text-[11px] font-bold text-[#8b949e]">Google Arama</span>
-                  <span className="font-black text-xl text-blue-400 font-heading">{sources.google}</span>
+              <div className="flex items-center justify-between p-3 sm:p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                    <Monitor className="w-4 h-4" />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-xs text-white">Masaüstü &amp; PC</span>
+                    <span className="text-[10px] text-[#8b949e]">{desktopCount.toLocaleString()} Sayfa İsteği</span>
+                  </div>
                 </div>
-
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-indigo-500/30 flex flex-col gap-1">
-                  <span className="text-[11px] font-bold text-[#8b949e]">Facebook</span>
-                  <span className="font-black text-xl text-indigo-400 font-heading">{sources.facebook}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col gap-1">
-                  <span className="text-[11px] font-bold text-[#8b949e]">WhatsApp</span>
-                  <span className="font-black text-xl text-[#25D366] font-heading">{sources.whatsapp}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-cyan-500/30 flex flex-col gap-1">
-                  <span className="text-[11px] font-bold text-[#8b949e]">X (Twitter)</span>
-                  <span className="font-black text-xl text-cyan-400 font-heading">{sources.x}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-pink-500/30 flex flex-col gap-1">
-                  <span className="text-[11px] font-bold text-[#8b949e]">Instagram</span>
-                  <span className="font-black text-xl text-pink-400 font-heading">{sources.instagram}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-sky-500/30 flex flex-col gap-1">
-                  <span className="text-[11px] font-bold text-[#8b949e]">Telegram</span>
-                  <span className="font-black text-xl text-sky-400 font-heading">{sources.telegram || 0}</span>
-                </div>
-
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-1 col-span-2 sm:col-span-2">
-                  <span className="text-[11px] font-bold text-[#8b949e]">Doğrudan / Direkt Giriş</span>
-                  <span className="font-black text-xl text-white font-heading">{sources.direct}</span>
-                </div>
+                <span className="font-black text-lg sm:text-xl text-blue-400 font-heading">%{desktopPercentage}</span>
               </div>
             </div>
           </div>
 
-          {/* En Çok Gezilen Sayfalar & Şehir Dağılımı */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Popüler Sayfalar */}
-            <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] lg:col-span-2 shadow-xl flex flex-col gap-4">
-              <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
-                <div className="flex items-center gap-2">
-                  <Eye className="w-5 h-5 text-amber-400" />
-                  <h2 className="font-black text-base text-white font-heading">
-                    En Çok Ziyaret Edilen Sayfalar
-                  </h2>
+          {/* ── EN ÇOK GEZİLEN SAYFALAR & ZİYARETÇİ ŞEHİRLERİ ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+            
+            {/* Popüler Sayfalar - Drawer Tetikleyicili Genişletilebilir Kart */}
+            <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-4">
+              <div>
+                <div className="flex items-center justify-between border-b border-[#30363d] pb-3 mb-3">
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-5 h-5 text-amber-400" />
+                    <h2 className="font-black text-sm sm:text-base text-white font-heading">
+                      En Çok Ziyaret Edilen Sayfalar
+                    </h2>
+                  </div>
+                  <span className="text-xs text-amber-400 font-bold font-mono">
+                    {popularPages.length} Sayfa
+                  </span>
                 </div>
-                <span className="text-xs text-[#8b949e]">Görüntülenme &amp; Kalma Süresi</span>
+
+                {/* Top 3 Önizleme */}
+                <div className="flex flex-col gap-2">
+                  {popularPages.slice(0, 3).map((p: any, idx: number) => {
+                    const avgSec = Math.round(p.avgDuration || 0);
+                    return (
+                      <div 
+                        key={idx}
+                        className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-mono text-xs text-amber-400 font-bold truncate max-w-[220px]">
+                            {p._id}
+                          </span>
+                          <span className="text-[10px] text-[#8b949e] truncate">{p.pageTitle || 'Sayfa'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="px-2 py-0.5 rounded-lg bg-[#21262d] text-white font-black text-xs font-heading">
+                            {p.count} Hit
+                          </span>
+                          <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-0.5">
+                            <Clock className="w-3 h-3" /> {avgSec}s
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[360px] overflow-y-auto pr-1">
-                {popularPages.map((p: any, idx: number) => {
-                  const avgSec = Math.round(p.avgDuration || 0);
-                  return (
-                    <div 
-                      key={idx}
-                      className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col justify-between gap-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs text-amber-400 font-bold truncate max-w-[200px]">
-                          {p._id}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-lg bg-[#21262d] text-white font-black text-xs font-heading">
-                          {p.count} Hit
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-[11px] text-[#8b949e] border-t border-[#21262d] pt-1.5">
-                        <span className="truncate">{p.pageTitle || 'Sayfa'}</span>
-                        <span className="flex items-center gap-1 font-mono text-emerald-400 font-bold">
-                          <Clock className="w-3 h-3" /> {avgSec}s
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Drawer Açma Butonu */}
+              <button
+                onClick={() => setShowPagesDrawer(true)}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white font-black text-xs font-heading flex items-center justify-center gap-2 transition-all border border-[#30363d]"
+              >
+                <Eye className="w-4 h-4 text-amber-400" />
+                <span>Tüm Sayfaları İncele &amp; Genişlet ({popularPages.length}) →</span>
+              </button>
             </div>
 
-            {/* En Çok Ziyaretçi Alan Şehirler */}
-            <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+            {/* En Çok Ziyaretçi Alan Şehirler - Görsel Progress Barlı Modern Kart */}
+            <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
               <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-amber-400" />
-                  <h2 className="font-black text-base text-white font-heading">
-                    Ziyaretçi Şehirleri
+                  <h2 className="font-black text-sm sm:text-base text-white font-heading">
+                    Ziyaretçi Şehir Dağılımı
                   </h2>
                 </div>
-                <span className="text-xs text-amber-400 font-bold">Top 10</span>
+                <span className="text-xs text-amber-400 font-bold font-mono">Top {topCities.length}</span>
               </div>
 
-              <div className="flex flex-col gap-2 max-h-[360px] overflow-y-auto pr-1">
+              <div className="flex flex-col gap-2.5 max-h-[320px] overflow-y-auto pr-1">
                 {topCities.length === 0 ? (
                   <div className="p-8 text-center text-xs text-[#8b949e]">Henüz şehir verisi kaydedilmedi.</div>
                 ) : (
-                  topCities.map((c: any, idx: number) => (
-                    <div key={idx} className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="w-6 h-6 rounded-lg bg-[#21262d] text-amber-400 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
-                          #{idx + 1}
-                        </span>
-                        <span className="font-bold text-xs text-white truncate">
-                          📍 {c._id}
-                        </span>
-                      </div>
-                      <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-400 font-black text-xs shrink-0 font-heading">
-                        {c.count} Ziyaret
-                      </span>
-                    </div>
-                  ))
+                  (() => {
+                    const maxCityCount = Math.max(...topCities.map((c: any) => c.count || 1), 1);
+                    return topCities.map((c: any, idx: number) => {
+                      const percent = Math.min(100, Math.round((c.count / maxCityCount) * 100));
+                      const badgeColors = [
+                        'bg-amber-500/20 text-amber-300 border-amber-500/40',
+                        'bg-slate-300/20 text-slate-200 border-slate-300/40',
+                        'bg-orange-500/20 text-orange-300 border-orange-500/40',
+                      ];
+                      const badge = idx < 3 ? badgeColors[idx] : 'bg-[#21262d] text-[#8b949e] border-[#30363d]';
+
+                      return (
+                        <div key={idx} className="p-2.5 sm:p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-1.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`w-6 h-6 rounded-lg font-mono text-[11px] font-black flex items-center justify-center shrink-0 border ${badge}`}>
+                                {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
+                              </span>
+                              <span className="font-bold text-xs text-white truncate uppercase tracking-wide">
+                                📍 {c._id}
+                              </span>
+                            </div>
+                            <span className="px-2.5 py-0.5 rounded-xl bg-amber-500/20 text-amber-400 font-black text-xs font-mono shrink-0">
+                              {c.count.toLocaleString()} Ziyaret
+                            </span>
+                          </div>
+
+                          {/* Progress bar */}
+                          <div className="w-full h-1.5 rounded-full bg-[#21262d] overflow-hidden">
+                            <div 
+                              className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-500"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    });
+                  })()
                 )}
               </div>
             </div>
           </div>
 
-          {/* En Çok WhatsApp & Etkileşim Alan İlanlar (Top İlanlar) */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+          {/* ── EN ÇOK WHATSAPP ETKİLEŞİM ALAN İLANLAR (DRAWER TETİKLEYİCİLİ STAT KARTI) ── */}
+          <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-br from-[#161b22] via-[#111827] to-[#161b22] border-2 border-emerald-500/30 shadow-xl flex flex-col gap-4">
             <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
               <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-amber-400" />
-                <h2 className="font-black text-base text-white font-heading">
-                  En Çok WhatsApp &amp; Etkileşim Alan İlanlar
+                <Flame className="w-5 h-5 text-emerald-400" />
+                <h2 className="font-black text-sm sm:text-base text-white font-heading">
+                  En Çok WhatsApp Etkileşimi Alan İlanlar
                 </h2>
               </div>
-              <span className="text-xs text-emerald-400 font-bold">Top İlanlar</span>
+              <span className="text-xs text-emerald-400 font-bold font-mono">
+                {topContactedListings.length} İlan
+              </span>
             </div>
 
-            {topContactedListings.length === 0 ? (
-              <div className="p-8 text-center text-xs text-[#8b949e]">
-                Bu tarih aralığında henüz ilan etkileşim verisi bulunmuyor.
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {topContactedListings.map((item: any, idx: number) => (
-                  <div 
-                    key={idx}
-                    className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-3 hover:border-amber-500/40 transition-colors"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold flex items-center justify-center shrink-0">
-                        #{idx + 1}
-                      </span>
-                      <span className="font-bold text-xs text-white truncate font-heading">
-                        {item._id || 'İsimsiz İlan'}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-black font-heading flex items-center gap-1">
-                        <OfficialWhatsAppIcon className="w-3 h-3 fill-emerald-300" />
-                        {item.whatsappClicks || 0}
-                      </span>
-                      <span className="px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 text-[11px] font-black font-heading flex items-center gap-1">
-                        <Share2 className="w-3 h-3" />
-                        {item.shares || 0}
-                      </span>
-                    </div>
+            {/* İstatistik & Top 3 Önizleme */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {topContactedListings.slice(0, 3).map((item: any, idx: number) => (
+                <div 
+                  key={idx}
+                  onClick={() => setShowWaDrawer(true)}
+                  className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] hover:border-emerald-500/50 cursor-pointer transition-all flex flex-col justify-between gap-2 shadow-md"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono text-[11px] font-black flex items-center justify-center shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-black font-mono flex items-center gap-1 shrink-0">
+                      <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-300" />
+                      {item.whatsappClicks || 0} Tık
+                    </span>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <span className="font-bold text-xs text-white truncate font-heading">
+                    {item._id || 'İsimsiz İlan'}
+                  </span>
+
+                  <div className="flex items-center justify-between text-[11px] text-[#8b949e] border-t border-[#21262d] pt-1.5">
+                    <span className="flex items-center gap-1 text-purple-300">
+                      <Share2 className="w-3 h-3" /> {item.shares || 0} Paylaşım
+                    </span>
+                    <span className="text-emerald-400 font-bold">Detay →</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Drawer Butonu */}
+            <button
+              onClick={() => setShowWaDrawer(true)}
+              className="w-full py-2.5 px-4 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-black text-xs font-heading flex items-center justify-center gap-2 transition-all border border-emerald-500/40"
+            >
+              <OfficialWhatsAppIcon className="w-4 h-4 fill-emerald-400" />
+              <span>Tüm WhatsApp &amp; İlan Etkileşim Raporunu Aç ({topContactedListings.length}) →</span>
+            </button>
           </div>
 
         </div>
@@ -2452,6 +2451,190 @@ export default function BmsSecurePortalDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── EN ÇOK ZİYARET EDİLEN SAYFALAR DRAWER (GENİŞLETİLMİŞ MOBİL BOTTOM SHEET / MODAL) ── */}
+      {showPagesDrawer && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex justify-end animate-fadeIn">
+          <div className="w-full max-w-xl h-full bg-[#161b22] border-l border-[#30363d] flex flex-col shadow-2xl">
+            {/* Drawer Header */}
+            <div className="p-4 sm:p-5 border-b border-[#30363d] flex items-center justify-between gap-3 bg-[#0d1117]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                  <Eye className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base text-white font-heading">
+                    Ziyaret Edilen Sayfalar ({popularPages.length})
+                  </h3>
+                  <p className="text-[11px] text-[#8b949e]">Tüm sayfa gösterimleri, kalma süreleri ve doğrudan bağlantılar</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPagesDrawer(false)}
+                className="w-9 h-9 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Drawer Search */}
+            <div className="p-3.5 border-b border-[#30363d] bg-[#161b22]">
+              <div className="relative">
+                <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={pageDrawerSearch}
+                  onChange={(e) => setPageDrawerSearch(e.target.value)}
+                  placeholder="Sayfa URL veya başlık ara..."
+                  className="w-full pl-9 pr-4 py-2 bg-[#0d1117] border border-[#30363d] rounded-xl text-white text-xs placeholder:text-[#8b949e] outline-none focus:border-amber-500 font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Drawer List */}
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
+              {popularPages.length === 0 ? (
+                <div className="p-8 text-center text-xs text-[#8b949e]">Henüz sayfa verisi kaydedilmedi.</div>
+              ) : (
+                popularPages
+                  .filter((p: any) => 
+                    !pageDrawerSearch || 
+                    (p._id || '').toLowerCase().includes(pageDrawerSearch.toLowerCase()) || 
+                    (p.pageTitle || '').toLowerCase().includes(pageDrawerSearch.toLowerCase())
+                  )
+                  .map((p: any, idx: number) => {
+                    const avgSec = Math.round(p.avgDuration || 0);
+                    return (
+                      <div 
+                        key={idx}
+                        className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] hover:border-amber-500/40 transition-colors flex flex-col gap-2 shadow-sm"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-mono text-xs text-amber-400 font-bold truncate max-w-[280px]">
+                            {p._id}
+                          </span>
+                          <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 font-black text-xs font-mono shrink-0">
+                            {p.count.toLocaleString()} Hit
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] text-[#8b949e] border-t border-[#21262d] pt-1.5">
+                          <span className="truncate">{p.pageTitle || 'Sayfa'}</span>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <span className="flex items-center gap-1 font-mono text-emerald-400 font-bold">
+                              <Clock className="w-3 h-3" /> {avgSec}s
+                            </span>
+                            <Link 
+                              href={p._id || '#'} 
+                              target="_blank"
+                              className="text-amber-400 hover:text-white flex items-center gap-0.5 font-bold"
+                            >
+                              <span>Aç</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── EN ÇOK WHATSAPP ETKİLEŞİM DETAYLARI DRAWER (BOTTOM SHEET / MODAL) ── */}
+      {showWaDrawer && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex justify-end animate-fadeIn">
+          <div className="w-full max-w-xl h-full bg-[#161b22] border-l border-[#30363d] flex flex-col shadow-2xl">
+            {/* Drawer Header */}
+            <div className="p-4 sm:p-5 border-b border-[#30363d] flex items-center justify-between gap-3 bg-[#0d1117]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-bold">
+                  <OfficialWhatsAppIcon className="w-5 h-5 fill-[#25D366]" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base text-white font-heading">
+                    WhatsApp Etkileşim Raporu ({topContactedListings.length})
+                  </h3>
+                  <p className="text-[11px] text-[#8b949e]">İlanların WhatsApp randevu dönüşümleri ve sosyal paylaşımları</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowWaDrawer(false)}
+                className="w-9 h-9 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white flex items-center justify-center transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Drawer Search */}
+            <div className="p-3.5 border-b border-[#30363d] bg-[#161b22]">
+              <div className="relative">
+                <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={waDrawerSearch}
+                  onChange={(e) => setWaDrawerSearch(e.target.value)}
+                  placeholder="İlan başlığı ara..."
+                  className="w-full pl-9 pr-4 py-2 bg-[#0d1117] border border-[#30363d] rounded-xl text-white text-xs placeholder:text-[#8b949e] outline-none focus:border-emerald-500 font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Drawer Content */}
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2.5">
+              {topContactedListings.length === 0 ? (
+                <div className="p-8 text-center text-xs text-[#8b949e]">Bu aralıkta henüz WhatsApp tıklaması kaydedilmedi.</div>
+              ) : (
+                topContactedListings
+                  .filter((item: any) => 
+                    !waDrawerSearch || 
+                    (item._id || '').toLowerCase().includes(waDrawerSearch.toLowerCase())
+                  )
+                  .map((item: any, idx: number) => (
+                    <div 
+                      key={idx}
+                      className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] hover:border-emerald-500/40 transition-colors flex flex-col gap-2.5 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono text-[11px] font-black flex items-center justify-center shrink-0">
+                            #{idx + 1}
+                          </span>
+                          <span className="font-bold text-xs text-white truncate font-heading">
+                            {item._id || 'İsimsiz İlan'}
+                          </span>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-black text-xs font-mono flex items-center gap-1 shrink-0">
+                          <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-300" />
+                          {item.whatsappClicks || 0} Tık
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                        <span className="flex items-center gap-1 text-purple-300">
+                          <Share2 className="w-3 h-3" /> {item.shares || 0} Paylaşım
+                        </span>
+                        <button
+                          onClick={() => {
+                            setListingSearchTerm(item._id);
+                            setActiveTab('listings');
+                            setShowWaDrawer(false);
+                          }}
+                          className="text-amber-400 hover:text-white font-bold flex items-center gap-1"
+                        >
+                          <span>İlan Detayını Gör</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
           </div>
         </div>
       )}

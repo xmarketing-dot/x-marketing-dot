@@ -423,15 +423,15 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         </Link>
 
         <Link
-          href="/bms-secure-portal/guvenlik"
+          href="/bms-secure-portal/banners"
           className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
-            pathname === '/bms-secure-portal/guvenlik'
-              ? 'text-red-400 font-black'
-              : 'text-red-400/70 hover:text-red-300 font-medium'
+            pathname === '/bms-secure-portal/banners'
+              ? 'text-amber-400 font-black'
+              : 'text-[#8b949e] hover:text-white font-medium'
           }`}
         >
-          <ShieldAlert className="w-5 h-5" />
-          <span className="text-[10px] font-heading">Güvenlik</span>
+          <Megaphone className="w-5 h-5" />
+          <span className="text-[10px] font-heading">Bannerlar</span>
         </Link>
 
         <button
