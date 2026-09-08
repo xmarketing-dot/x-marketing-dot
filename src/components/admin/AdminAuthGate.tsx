@@ -373,15 +373,19 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       </aside>
 
       {/* Secret Admin Content Viewport */}
-      <main className="flex-1 p-3.5 sm:p-6 md:p-10 pb-24 md:pb-10 overflow-y-auto w-full max-w-full">
+      <main className={`flex-1 overflow-y-auto w-full max-w-full ${
+        pathname === '/bms-secure-portal/chat' 
+          ? 'p-0 pb-16 md:p-6 md:pb-8' 
+          : 'p-3 sm:p-6 md:p-8 pb-24 md:pb-8'
+      }`}>
         {children}
       </main>
 
       {/* ── MOBİL SABİT ALT GEZİNME ÇUBUĞU (MOBILE BOTTOM BAR) ──────────────── */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#161b22]/95 backdrop-blur-xl border-t border-[#30363d] px-2 py-1.5 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.6)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#161b22]/95 backdrop-blur-xl border-t border-[#30363d] px-1 py-1.5 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.6)]">
         <Link
           href="/bms-secure-portal/ilanlar"
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
             pathname === '/bms-secure-portal/ilanlar'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
@@ -393,7 +397,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
         <Link
           href="/bms-secure-portal/chat"
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all relative ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
             pathname === '/bms-secure-portal/chat'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
@@ -408,7 +412,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
         <Link
           href="/bms-secure-portal"
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
             pathname === '/bms-secure-portal'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
@@ -420,7 +424,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
         <Link
           href="/bms-secure-portal/guvenlik"
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
             pathname === '/bms-secure-portal/guvenlik'
               ? 'text-red-400 font-black'
               : 'text-red-400/70 hover:text-red-300 font-medium'
@@ -433,27 +437,27 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         <button
           type="button"
           onClick={() => setIsMobileMenuOpen(true)}
-          className={`flex flex-col items-center gap-1 py-1 px-2.5 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
             isMobileMenuOpen ? 'text-amber-400 font-black' : 'text-[#8b949e] hover:text-white font-medium'
           }`}
         >
           <Sliders className="w-5 h-5" />
-          <span className="text-[10px] font-heading">Menü</span>
+          <span className="text-[10px] font-heading">Tüm Menü</span>
         </button>
       </div>
 
       {/* ── MOBİL DİĞER MODÜLLER ÇEKMECESİ (BOTTOM SHEET) ──────────────── */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
           <div 
             className="flex-1 w-full"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="w-full bg-[#161b22] border-t-2 border-amber-500/40 rounded-t-[32px] p-6 flex flex-col gap-4 shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-250 text-left">
+          <div className="w-full bg-[#161b22] border-t-2 border-amber-500/40 rounded-t-[32px] p-5 flex flex-col gap-4 shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-250 text-left">
             <div className="flex items-center justify-between pb-3 border-b border-[#30363d]">
               <div className="flex items-center gap-2">
                 <CorporateLogo className="w-7 h-7" />
-                <span className="font-black text-sm text-white font-heading">Tüm Yönetim Masaları</span>
+                <span className="font-black text-sm text-white font-heading">Tüm 8 Yönetici Masası</span>
               </div>
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -465,47 +469,83 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
             <div className="grid grid-cols-2 gap-2.5 text-xs font-bold font-heading">
               <Link
+                href="/bms-secure-portal"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+              >
+                <BarChart3 className="w-5 h-5 text-amber-400" />
+                <span>1. Trafik &amp; Analiz</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/ilanlar"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+              >
+                <List className="w-5 h-5 text-amber-400" />
+                <span>2. İlan Moderasyonu</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/chat"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+              >
+                <MessageSquare className="w-5 h-5 text-emerald-400" />
+                <span>3. Canlı Müşteri Chat</span>
+              </Link>
+
+              <Link
                 href="/bms-secure-portal/kullanicilar"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
               >
                 <Users className="w-5 h-5 text-amber-400" />
-                <span>Kullanıcılar</span>
+                <span>4. Kullanıcı Hesapları</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/anasayfa-yonetimi"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
               >
                 <Sliders className="w-5 h-5 text-amber-400" />
-                <span>Anasayfa Yönetimi</span>
+                <span>5. Anasayfa Yönetimi</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/banners"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
               >
                 <Megaphone className="w-5 h-5 text-amber-400" />
-                <span>Banner Masası</span>
+                <span>6. Banner Masası</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/backlinks"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
               >
                 <Link2 className="w-5 h-5 text-blue-400" />
-                <span>SEO Backlink Ağı</span>
+                <span>7. SEO Backlink Ağı</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/guvenlik"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-300 flex flex-col gap-1 border border-red-500/30"
+              >
+                <ShieldAlert className="w-5 h-5 text-red-400" />
+                <span>8. Güvenlik &amp; IP Ban</span>
               </Link>
             </div>
 
-            <div className="pt-3 border-t border-[#30363d] flex flex-col gap-2">
+            <div className="pt-2 border-t border-[#30363d] flex flex-col gap-2">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-red-500/15 hover:bg-red-500/25 text-red-400 font-black text-xs uppercase tracking-wider font-heading border border-red-500/40"
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-2xl bg-red-500/15 hover:bg-red-500/25 text-red-400 font-black text-xs uppercase tracking-wider font-heading border border-red-500/40"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Güvenli Çıkış Yap</span>

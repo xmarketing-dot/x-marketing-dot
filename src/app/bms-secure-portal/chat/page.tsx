@@ -306,24 +306,24 @@ export default function AdminChatPage() {
   const totalUnread = threads.reduce((acc, t) => acc + (t.okunmadiAdminSayisi || 0), 0);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-130px)] md:h-[calc(100vh-120px)] w-full max-w-full gap-2.5 overflow-hidden select-none">
+    <div className="flex flex-col h-[calc(100dvh-55px-58px)] md:h-[calc(100vh-110px)] w-full max-w-full gap-0 md:gap-3 overflow-hidden select-none">
       
-      {/* ── ÜST BAŞLIK & YENİLE BUTONU (Masaüstünde ve Mobilde Başlık) ──────────────── */}
-      <div className="flex items-center justify-between shrink-0 px-1">
+      {/* ── ÜST BAŞLIK & YENİLE BUTONU (Sadece Masaüstünde Görünür, Mobilde Alan Tasarrufu) ──────────────── */}
+      <div className="hidden md:flex items-center justify-between shrink-0 px-1">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
-            <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
+          <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
+            <MessageSquare className="w-5 h-5" />
           </div>
           <div className="flex flex-col text-left">
             <div className="flex items-center gap-2">
-              <h1 className="font-black text-sm md:text-lg text-white font-heading">Canlı Müşteri Sohbet Masası</h1>
+              <h1 className="font-black text-lg text-white font-heading">Canlı Müşteri Sohbet Masası</h1>
               {totalUnread > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-red-500 text-white font-black text-[9px] animate-pulse">
                   {totalUnread} YENİ
                 </span>
               )}
             </div>
-            <p className="text-[10px] md:text-xs text-[#8b949e]">
+            <p className="text-xs text-[#8b949e]">
               0ms Canlı SSE Destek Hattı &bull; Müşteri Onay ve Güvenlik Masası
             </p>
           </div>
@@ -334,12 +334,12 @@ export default function AdminChatPage() {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-lg shrink-0"
         >
           <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-          <span className="hidden sm:inline">Yenile</span>
+          <span>Yenile</span>
         </button>
       </div>
 
-      {/* ── ANA PENCERE: INSTAGRAM / WHATSAPP STİLİ DİNAMİK YAPI ──────────────── */}
-      <div className="flex-1 min-h-0 flex rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl overflow-hidden relative">
+      {/* ── ANA PENCERE: INSTAGRAM / WHATSAPP STİLİ TAM EKRAN DİNAMİK YAPI ──────────────── */}
+      <div className="flex-1 min-h-0 flex w-full h-full rounded-none md:rounded-3xl bg-[#0d1117] md:bg-[#161b22] border-0 md:border md:border-[#30363d] shadow-none md:shadow-2xl overflow-hidden relative">
         
         {/* ── SOL SÜTUN: MÜŞTERİ / SOHBETLER LİSTESİ (Mobilde seçili değilken full ekran) ──────────────── */}
         <div className={`w-full md:w-80 lg:w-96 border-r border-[#30363d] flex flex-col h-full shrink-0 bg-[#161b22] overflow-hidden ${

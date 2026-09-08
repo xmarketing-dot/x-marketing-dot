@@ -663,8 +663,8 @@ export default function AdminListingsPage() {
         </button>
       </div>
 
-      {/* ── 3. LISTINGS LIST ──────────────── */}
-      <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+      {/* ── 3. LISTINGS LIST (MOBİLDE SIFIRLANMIŞ, NATIVE TEK KATMANLI KARTLAR) ──────────────── */}
+      <div className="p-0 sm:p-6 bg-transparent sm:bg-[#161b22] border-0 sm:border sm:border-[#30363d] rounded-none sm:rounded-3xl shadow-none sm:shadow-xl flex flex-col gap-3 sm:gap-4">
         {loading ? (
           <div className="p-12 text-center flex items-center justify-center">
             <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
@@ -674,7 +674,7 @@ export default function AdminListingsPage() {
             Bu filtreye uygun ilan bulunamadı.
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4">
             {filteredListings.map((item) => {
               const remaining = getRemainingTime(item.paketBitisTarihi, item.status);
               const isPending = item.status === 'onay_bekliyor';
@@ -683,9 +683,9 @@ export default function AdminListingsPage() {
               return (
                 <div
                   key={item._id}
-                  className={`p-5 rounded-3xl border transition-all flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 shadow-xl ${isPending
-                    ? 'bg-gradient-to-r from-amber-500/10 via-[#21262d] to-[#21262d] border-amber-500/60 shadow-[0_0_30px_rgba(245,158,11,0.15)]'
-                    : 'bg-[#21262d] border-[#363b42]'
+                  className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-4 shadow-lg ${isPending
+                    ? 'bg-gradient-to-r from-amber-500/10 via-[#161b22] to-[#161b22] border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.15)]'
+                    : 'bg-[#161b22] border-[#30363d]'
                     }`}
                 >
 

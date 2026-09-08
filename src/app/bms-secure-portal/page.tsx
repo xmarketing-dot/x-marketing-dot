@@ -678,95 +678,89 @@ export default function BmsSecurePortalDashboard() {
             </span>
           </div>
 
-          {/* 4 Ana Metrik Kartı */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
-            {/* Tekil Ziyaretçi */}
-            <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-amber-500/50 transition-colors">
+          {/* 4 Ana Metrik Kartı — Mobilde 2x2 4'lü Kompakt Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            {/* 1. Tekil Ziyaretçi */}
+            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-amber-500/50 transition-colors">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Tekil Ziyaretçi</span>
-                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                  <Globe className="w-5 h-5" />
+                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">Tekil Ziyaret</span>
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                  <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-black text-3xl text-white font-heading">{uniqueVisitors.toLocaleString()}</span>
-                <span className="text-xs text-amber-400 font-bold">Tekil Kişi</span>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="font-black text-xl sm:text-3xl text-white font-heading">{uniqueVisitors.toLocaleString()}</span>
+                <span className="text-[10px] sm:text-xs text-amber-400 font-bold">Kişi</span>
               </div>
-              <span className="text-[11px] text-[#8b949e] flex items-center gap-1 border-t border-[#30363d] pt-2">
-                Toplam {totalPageviews.toLocaleString()} sayfa görüntülendi
+              <span className="text-[10px] sm:text-[11px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                {totalPageviews.toLocaleString()} sayfa gösterimi
               </span>
             </div>
 
-            {/* WhatsApp İletişim Tıklamaları */}
-            <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-emerald-500/50 transition-colors">
+            {/* 2. WhatsApp İletişim Tıklamaları */}
+            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-emerald-500/50 transition-colors">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">WhatsApp Tıklamaları</span>
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center">
-                  <OfficialWhatsAppIcon className="w-5 h-5 fill-[#25D366]" />
+                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">WhatsApp Hit</span>
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center shrink-0">
+                  <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-[#25D366]" />
                 </div>
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-black text-3xl text-[#25D366] font-heading">{eventCounts.whatsappClicks.toLocaleString()}</span>
-                <span className="text-xs text-emerald-400 font-bold">Dönüşüm</span>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="font-black text-xl sm:text-3xl text-[#25D366] font-heading">{eventCounts.whatsappClicks.toLocaleString()}</span>
+                <span className="text-[10px] sm:text-xs text-emerald-400 font-bold">Dönüşüm</span>
               </div>
-              <span className="text-[11px] text-[#8b949e] flex items-center gap-1 border-t border-[#30363d] pt-2">
-                Genel toplam: {totalWhatsappClicks.toLocaleString()} WhatsApp iletişimi
+              <span className="text-[10px] sm:text-[11px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                Genel: {totalWhatsappClicks.toLocaleString()} iletişim
               </span>
             </div>
 
-            {/* Google Organik Arama Trafiği */}
-            <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-blue-500/50 transition-colors">
+            {/* 3. Google Organik Arama Trafiği */}
+            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-blue-500/50 transition-colors">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Google Arama</span>
-                <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                  <Search className="w-5 h-5" />
+                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">Google Arama</span>
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                  <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-black text-3xl text-blue-400 font-heading">{sources.google.toLocaleString()}</span>
-                <span className="text-xs text-blue-300 font-bold">Google Girişi</span>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="font-black text-xl sm:text-3xl text-blue-400 font-heading">{sources.google.toLocaleString()}</span>
+                <span className="text-[10px] sm:text-xs text-blue-300 font-bold">Hit</span>
               </div>
-              <span className="text-[11px] text-[#8b949e] flex items-center gap-1 border-t border-[#30363d] pt-2">
-                {searchTerms.length} Farklı arama kelimesi tespit edildi
+              <span className="text-[10px] sm:text-[11px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                {searchTerms.length} anahtar kelime
               </span>
             </div>
 
-            {/* Yandex Arama Trafiği (YENİ) */}
-            <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-red-500/50 transition-colors">
+            {/* 4. Yandex Arama Trafiği */}
+            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-red-500/50 transition-colors">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Yandex Arama</span>
-                <div className="w-9 h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5" />
+                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">Yandex Arama</span>
+                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-black text-3xl text-red-400 font-heading">{sources.yandex.toLocaleString()}</span>
-                <span className="text-xs text-red-300 font-bold">Yandex Girişi</span>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="font-black text-xl sm:text-3xl text-red-400 font-heading">{sources.yandex.toLocaleString()}</span>
+                <span className="text-[10px] sm:text-xs text-red-300 font-bold">Hit</span>
               </div>
-              <span className="text-[11px] text-[#8b949e] flex items-center gap-1 border-t border-[#30363d] pt-2">
-                Yandex Search Engine trafiği 🇷🇺
-              </span>
-            </div>
-
-            {/* Sosyal & Facebook Trafiği */}
-            <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl hover:border-indigo-500/50 transition-colors">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading">Facebook &amp; Sosyal</span>
-                <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                  <Share2 className="w-5 h-5" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="font-black text-3xl text-indigo-400 font-heading">
-                  {((sources.facebook || 0) + (sources.x || 0) + (sources.instagram || 0)).toLocaleString()}
-                </span>
-                <span className="text-xs text-indigo-300 font-bold">Sosyal Hit</span>
-              </div>
-              <span className="text-[11px] text-[#8b949e] flex items-center gap-1 border-t border-[#30363d] pt-2">
-                FB: {sources.facebook || 0} • X: {sources.x || 0} • IG: {sources.instagram || 0}
+              <span className="text-[10px] sm:text-[11px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                Yandex Organik 🇷🇺
               </span>
             </div>
           </div>
+
+          {/* Sosyal & Facebook Trafiği Şeridi */}
+          {((sources.facebook || 0) + (sources.x || 0) + (sources.instagram || 0)) > 0 && (
+            <div className="p-3 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex items-center justify-between text-xs shadow-md">
+              <div className="flex items-center gap-2 text-[#8b949e]">
+                <Share2 className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span>Sosyal Medya Trafiği: <strong className="text-white">FB: {sources.facebook || 0}</strong> &bull; <strong className="text-white">X: {sources.x || 0}</strong> &bull; <strong className="text-white">IG: {sources.instagram || 0}</strong></span>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-black text-[10px] font-mono">
+                {((sources.facebook || 0) + (sources.x || 0) + (sources.instagram || 0)).toLocaleString()} Hit
+              </span>
+            </div>
+          )}
 
           {/* ── ÇOKLU DOMAİN GATEWAY İSTİHBARAT & PERFORMANS MASASI ── */}
           <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
