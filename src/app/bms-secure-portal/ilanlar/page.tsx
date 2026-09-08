@@ -591,64 +591,69 @@ export default function AdminListingsPage() {
   const pendingCount = listings.filter((l) => l.status === 'onay_bekliyor').length;
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-full">
+    <div className="flex flex-col gap-3 sm:gap-6 w-full max-w-full px-1 sm:px-0 pb-24 sm:pb-8">
 
-      {/* ── 1. HEADER BAR ──────────────── */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
+      {/* ── 1. ÜST HEADER BAR ──────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold">
-            <List className="w-6 h-6" />
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
+            <List className="w-5 h-5" />
           </div>
-          <div className="flex flex-col">
-            <h1 className="font-black text-2xl text-white font-heading flex items-center gap-2">
-              <span>İlan Moderasyonu &amp; Onay Masası</span>
+          <div className="flex flex-col min-w-0">
+            <h1 className="font-black text-base sm:text-2xl text-white font-heading flex items-center gap-2 truncate">
+              <span>İlan Moderasyon Masası</span>
               {pendingCount > 0 && (
-                <span className="px-2.5 py-0.5 rounded-full bg-red-500 text-white text-xs font-black animate-pulse">
-                  {pendingCount} Onay Bekliyor!
+                <span className="px-2 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse shrink-0">
+                  {pendingCount} Bekliyor
                 </span>
               )}
             </h1>
-            <p className="text-xs text-[#8b949e]">Gelen ilanları onaylayın, reddedin, fotoğrafları ve süreleri yönetin.</p>
+            <p className="text-[11px] text-[#8b949e] truncate">Gelen ilanları onaylayın, düzenleyin, süreleri ve hesapları yönetin.</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-amber-500/25 active:scale-95 transition-all"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading shadow-md shadow-amber-500/25 active:scale-95 transition-all"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>+ Sıfırdan Yeni VIP Model / İlan Ekle</span>
+            <span className="truncate">+ Yeni VIP Model / İlan Ekle</span>
           </button>
 
           <button
             onClick={fetchListings}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-lg"
+            className="p-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 hover:text-white border border-[#30363d] transition-all active:scale-95 shrink-0"
+            title="İlanları Yenile"
           >
-            <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-            <span>Yenile</span>
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* ── 2. FILTER TABS ──────────────── */}
-      <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-[#161b22] border border-[#30363d] w-fit font-heading text-xs font-bold">
+      {/* ── 2. FILTER TABS (MOBİLDE KAYDIRILABİLİR SEGMENTED BAR) ──────────────── */}
+      <div className="p-1 rounded-xl bg-[#161b22] border border-[#30363d] flex items-center gap-1 overflow-x-auto no-scrollbar shadow-md">
         <button
           onClick={() => setFilter('all')}
-          className={`px-4 py-2 rounded-xl transition-all ${filter === 'all' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
-            }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+            filter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+          }`}
         >
-          Tüm İlanlar ({listings.length})
+          <span>Tüm İlanlar</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-amber-400'}`}>
+            {listings.length}
+          </span>
         </button>
 
         <button
           onClick={() => setFilter('onay_bekliyor')}
-          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
-            }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+            filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+          }`}
         >
           <span>⏳ Onay Bekleyenler</span>
           {pendingCount > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[10px] font-black">
+            <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse">
               {pendingCount}
             </span>
           )}
@@ -656,25 +661,30 @@ export default function AdminListingsPage() {
 
         <button
           onClick={() => setFilter('yayinda')}
-          className={`px-4 py-2 rounded-xl transition-all ${filter === 'yayinda' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
-            }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
+            filter === 'yayinda' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+          }`}
         >
-          🟢 Yayındakiler ({listings.filter((l) => l.status === 'yayinda').length})
+          <span>🟢 Yayındakiler</span>
+          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'yayinda' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-emerald-400'}`}>
+            {listings.filter((l) => l.status === 'yayinda').length}
+          </span>
         </button>
       </div>
 
-      {/* ── 3. LISTINGS LIST (MOBİLDE SIFIRLANMIŞ, NATIVE TEK KATMANLI KARTLAR) ──────────────── */}
-      <div className="p-0 sm:p-6 bg-transparent sm:bg-[#161b22] border-0 sm:border sm:border-[#30363d] rounded-none sm:rounded-3xl shadow-none sm:shadow-xl flex flex-col gap-3 sm:gap-4">
+      {/* ── 3. LISTINGS LIST (MOBİL İÇİN OPTİMİZE EDİLMİŞ NATIVE KARTLAR) ──────────────── */}
+      <div className="flex flex-col gap-3">
         {loading ? (
-          <div className="p-12 text-center flex items-center justify-center">
+          <div className="p-12 text-center flex flex-col items-center justify-center gap-2 bg-[#161b22] rounded-2xl border border-[#30363d]">
             <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+            <span className="text-xs text-[#8b949e]">İlanlar yükleniyor...</span>
           </div>
         ) : filteredListings.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#8b949e]">
+          <div className="p-10 text-center text-xs text-[#8b949e] bg-[#161b22] rounded-2xl border border-[#30363d]">
             Bu filtreye uygun ilan bulunamadı.
           </div>
         ) : (
-          <div className="flex flex-col gap-3 sm:gap-4">
+          <div className="flex flex-col gap-3">
             {filteredListings.map((item) => {
               const remaining = getRemainingTime(item.paketBitisTarihi, item.status);
               const isPending = item.status === 'onay_bekliyor';
@@ -683,154 +693,183 @@ export default function AdminListingsPage() {
               return (
                 <div
                   key={item._id}
-                  className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-4 shadow-lg ${isPending
-                    ? 'bg-gradient-to-r from-amber-500/10 via-[#161b22] to-[#161b22] border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.15)]'
-                    : 'bg-[#161b22] border-[#30363d]'
-                    }`}
+                  className={`p-3 sm:p-4 rounded-2xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg ${
+                    isPending
+                      ? 'border-amber-500/60 shadow-amber-500/5 bg-gradient-to-b from-[#1c1811] to-[#161b22]'
+                      : 'border-[#30363d] hover:border-[#3d444d]'
+                  }`}
                 >
-
-                  {/* Left: Thumbnail & Info */}
-                  <div className="flex items-start sm:items-center gap-4 w-full lg:w-auto">
-                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117]">
+                  {/* ── KART ÜST BİLGİ ALANI ──────────────── */}
+                  <div className="flex items-start gap-3 w-full">
+                    {/* Thumbnail */}
+                    <div 
+                      onClick={() => handleOpenInspect(item)}
+                      className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117] cursor-pointer group shadow-md"
+                      title="Büyük boyutta incele"
+                    >
                       <Image
                         src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=200'}
                         alt={item.baslik}
                         fill
-                        sizes="96px"
-                        className="object-cover"
+                        sizes="80px"
+                        className="object-cover group-hover:scale-105 transition-transform"
                       />
-                      <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-amber-400 text-[9px] font-bold">
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                      <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/85 text-amber-400 text-[8px] font-bold backdrop-blur-sm">
                         {item.fotograflar?.length || 1} Foto
                       </span>
                     </div>
 
+                    {/* Meta Bilgileri */}
                     <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-black text-sm sm:text-base text-white font-heading">{item.baslik}</h3>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h3 
+                          onClick={() => handleOpenInspect(item)}
+                          className="font-heading font-black text-sm sm:text-base text-white truncate max-w-[200px] sm:max-w-md cursor-pointer hover:text-amber-400 transition-colors"
+                        >
+                          {item.baslik}
+                        </h3>
 
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-heading ${isLive
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-                          }`}>
+                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase font-heading ${
+                          isLive
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
+                        }`}>
                           {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
                         </span>
 
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                          {item.rozet || 'ultravip'}
+                        <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          {item.rozet || 'vip'}
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-3 text-xs text-amber-400 font-bold capitalize flex-wrap">
+                      {/* Konum & Süre */}
+                      <div className="flex items-center gap-2 text-[11px] text-amber-400 font-bold capitalize flex-wrap">
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5" />
-                          {item.ilSlug} / {item.ilceSlug}
+                          <MapPin className="w-3 h-3 shrink-0" />
+                          <span>{item.ilSlug} / {item.ilceSlug}</span>
                         </span>
-                        <span className="text-[#8b949e]">|</span>
+                        <span className="text-[#8b949e]">•</span>
                         <span className="text-emerald-400 font-mono flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          {remaining.text}
+                          <Clock className="w-3 h-3 shrink-0" />
+                          <span>{remaining.text}</span>
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-4 text-xs text-[#8b949e] font-medium flex-wrap mt-0.5">
-                        <span className="text-white font-bold">📞 WhatsApp: {item.whatsappNumara}</span>
+                      {/* İletişim & Şifre Çipleri */}
+                      <div className="flex items-center gap-2 text-[11px] text-[#8b949e] flex-wrap mt-0.5">
+                        <span className="text-white font-mono font-bold flex items-center gap-1">
+                          <Phone className="w-3 h-3 text-emerald-400" />
+                          <span>{item.whatsappNumara}</span>
+                        </span>
                         {item.panelSifresi && (
-                          <span className="px-2 py-0.5 rounded-lg bg-[#161b22] text-amber-300 font-mono font-black border border-amber-500/30 flex items-center gap-1">
-                            <KeyRound className="w-3 h-3" />
-                            Şifre: {item.panelSifresi}
+                          <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-amber-300 font-mono font-bold border border-amber-500/30 flex items-center gap-1">
+                            <KeyRound className="w-2.5 h-2.5 text-amber-400" />
+                            <span>Şifre: {item.panelSifresi}</span>
                           </span>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Right: Moderation Actions */}
-                  <div className="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-white/10">
+                  {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (2 SATIRLI DÜZEN) ──────────────── */}
+                  <div className="flex flex-col gap-1.5 border-t border-[#30363d]/60 pt-2.5">
+                    {/* Satır 1: Ana Operasyon Butonları */}
+                    <div className="flex items-center gap-1.5">
+                      {/* Onayla / Beklemeye Al */}
+                      {isPending ? (
+                        <button
+                          onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
+                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                        >
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          <span>Hemen Onayla</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
+                          className="py-2 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 font-bold text-xs border border-[#30363d] transition-colors"
+                          title="İlanı beklemeye al"
+                        >
+                          <span>Durdur</span>
+                        </button>
+                      )}
 
-                    {/* 1. DETAYLI İNCELE (RESİMLERİ VE BİLGİLERİ GÖR) */}
-                    <button
-                      onClick={() => handleOpenInspect(item)}
-                      className="px-3.5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold text-xs font-heading border border-amber-500/40 flex items-center gap-1.5 transition-all shadow-sm"
-                      title="İlanın tüm fotoğraflarını ve detaylarını tam ekranda incele"
-                    >
-                      <Eye className="w-4 h-4 text-amber-400" />
-                      <span>Detaylı İncele</span>
-                    </button>
-
-                    {/* TEK TIKLA ONAYLA (YAYINA AL) */}
-                    {isPending ? (
+                      {/* Detaylı İncele */}
                       <button
-                        onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
-                        className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading uppercase flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+                        onClick={() => handleOpenInspect(item)}
+                        className={`py-2 px-3 rounded-xl text-xs font-heading font-black border flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+                          isPending
+                            ? 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border-[#30363d]'
+                            : 'flex-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30'
+                        }`}
                       >
-                        <Check className="w-4 h-4 stroke-[3]" />
-                        <span>Hemen Onayla</span>
+                        <Eye className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Detaylı İncele</span>
                       </button>
-                    ) : (
+
+                      {/* Düzenle */}
                       <button
-                        onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                        className="px-3 py-2 rounded-xl bg-[#161b22] hover:bg-[#30363d] text-[#8b949e] font-bold text-xs border border-[#363b42] transition-colors"
+                        onClick={() => handleOpenEdit(item)}
+                        className="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 border border-[#30363d] text-xs font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
                       >
-                        Beklemeye Al
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Düzenle</span>
                       </button>
-                    )}
 
-                    {/* QUICK EXTEND BUTTONS */}
-                    <button
-                      onClick={() => handleExtendDuration(item._id, 7)}
-                      className="px-2.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 font-black text-xs border border-amber-500/40 transition-colors"
-                      title="Yayın Süresine +7 Gün Ekle"
-                    >
-                      +7 Gün
-                    </button>
+                      {/* +7 Gün Uzat */}
+                      <button
+                        onClick={() => handleExtendDuration(item._id, 7)}
+                        className="py-2 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-mono font-bold text-xs border border-amber-500/30 transition-all shrink-0 active:scale-95"
+                        title="Yayın Süresine +7 Gün Ekle"
+                      >
+                        +7G
+                      </button>
+                    </div>
 
-                    {/* CANLI İNCELE */}
-                    <Link
-                      href={`/ilan/${item.slug}`}
-                      target="_blank"
-                      className="p-2.5 rounded-xl bg-[#161b22] hover:bg-[#30363d] text-cyan-400 border border-[#363b42] transition-colors"
-                      title="Canlı İlan Sayfasını Aç"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </Link>
+                    {/* Satır 2: Hızlı Araç Butonları (Chate At, Hesap, Sitede Aç, Sil) */}
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {/* Chate Link At */}
+                      <button
+                        onClick={() => handleSendApprovalChat(item._id)}
+                        className="py-1.5 px-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                        title="Müşteri chatine onay ve link ilet"
+                      >
+                        <MessageSquare className="w-3 h-3 text-cyan-400 shrink-0" />
+                        <span className="truncate">Chate At</span>
+                      </button>
 
-                    {/* CHATE ONAY METNİ & LİNK FIRLAT */}
-                    <button
-                      onClick={() => handleSendApprovalChat(item._id)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 font-extrabold text-xs border border-cyan-500/40 transition-all shadow-sm"
-                      title="Müşterinin chatine canlı ilan linki ve kalan süreyi otomatik yolla"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
-                      <span>Chate Link At</span>
-                    </button>
+                      {/* Hesap Tanımla */}
+                      <button
+                        onClick={() => handleOpenAssignModal(item)}
+                        className="py-1.5 px-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                        title="Bu ilana kullanıcı hesabı oluştur ve şifre ver"
+                      >
+                        <KeyRound className="w-3 h-3 text-amber-400 shrink-0" />
+                        <span className="truncate">Hesap</span>
+                      </button>
 
-                    {/* HESAP OLUŞTUR & ŞİFRE VER */}
-                    <button
-                      onClick={() => handleOpenAssignModal(item)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-extrabold text-xs border border-amber-500/40 transition-all shadow-sm"
-                      title="Bu ilana kullanıcı hesabı oluştur ve şifre ver"
-                    >
-                      <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Hesap Tanımla</span>
-                    </button>
+                      {/* Sitede Aç */}
+                      <Link
+                        href={`/ilan/${item.slug}`}
+                        target="_blank"
+                        className="py-1.5 px-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-cyan-400 border border-[#30363d] text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                        title="Canlı İlan Sayfasını Aç"
+                      >
+                        <ExternalLink className="w-3 h-3 shrink-0" />
+                        <span className="truncate">Sitede Gör</span>
+                      </Link>
 
-                    {/* EDIT BUTTON */}
-                    <button
-                      onClick={() => handleOpenEdit(item)}
-                      className="flex items-center gap-1 px-3 py-2 rounded-xl bg-[#161b22] hover:bg-[#30363d] text-amber-400 font-bold text-xs border border-[#363b42] transition-colors"
-                    >
-                      <Edit3 className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Düzenle</span>
-                    </button>
-
-                    {/* DELETE BUTTON */}
-                    <button
-                      onClick={() => handleDelete(item._id)}
-                      className="p-2.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                      title="İlanı Sil"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      {/* Sil */}
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="py-1.5 px-1.5 rounded-xl bg-[#21262d] hover:bg-red-500/20 text-[#8b949e] hover:text-red-400 border border-[#30363d] hover:border-red-500/40 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                        title="İlanı Sil"
+                      >
+                        <Trash2 className="w-3 h-3 shrink-0" />
+                        <span>Sil</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -839,41 +878,41 @@ export default function AdminListingsPage() {
         )}
       </div>
 
-      {/* FULL EDITING MODAL */}
+      {/* ── 4. FULL EDITING MODAL (MOBİL UYUMLU) ──────────────── */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-2xl bg-[#161b22] border border-[#30363d] rounded-3xl p-6 flex flex-col gap-5 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-[#161b22] border border-[#30363d] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[92vh] overflow-y-auto">
 
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
-              <div className="flex flex-col">
-                <h2 className="font-black text-lg text-white font-heading flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-amber-400" />
-                  <span>İlanı Düzenle &amp; Resim Yönetimi</span>
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <div className="flex flex-col min-w-0">
+                <h2 className="font-heading font-black text-base sm:text-lg text-white flex items-center gap-2 truncate">
+                  <Edit3 className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="truncate">İlanı Düzenle &amp; Resimler</span>
                 </h2>
-                <span className="text-xs text-amber-400 font-mono mt-0.5">
+                <span className="text-[11px] text-amber-400 font-mono mt-0.5 truncate">
                   {getRemainingTime(editingItem.paketBitisTarihi, editingItem.status).text}
                 </span>
               </div>
 
               <button
                 onClick={() => setEditingItem(null)}
-                className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
+                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="flex flex-col gap-5">
+            <form onSubmit={handleSaveEdit} className="flex flex-col gap-4">
 
               {/* Photo Management Section */}
-              <div className="p-4 rounded-2xl bg-[#21262d] border border-[#363b42] flex flex-col gap-3">
+              <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4" />
-                    <span>İlan Fotoğrafları Yönetimi ({photoUrls.length} Resim)</span>
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    <span>Fotoğraflar ({photoUrls.length})</span>
                   </span>
 
-                  <label className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs cursor-pointer flex items-center gap-1.5 shadow-md">
+                  <label className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs cursor-pointer flex items-center gap-1.5 shadow-md">
                     <input
                       type="file"
                       accept="image/*"
@@ -883,33 +922,34 @@ export default function AdminListingsPage() {
                       disabled={uploading}
                     />
                     {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 stroke-[2.5]" />}
-                    <span>Yeni Fotoğraf Yükle</span>
+                    <span>+ Fotoğraf Yükle</span>
                   </label>
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1">
                   {photoUrls.map((url, idx) => {
                     const isCover = idx === coverPhotoIdx;
                     return (
                       <div
                         key={idx}
-                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-32 bg-[#0d1117] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-[#30363d]'
-                          }`}
+                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-28 sm:h-32 bg-[#161b22] ${
+                          isCover ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-[#30363d]'
+                        }`}
                       >
                         <img src={url} alt={`Resim ${idx}`} className="absolute inset-0 w-full h-full object-cover z-0" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 z-10"></div>
 
-                        <div className="relative z-20 flex items-center justify-between">
+                        <div className="relative z-20 flex items-center justify-between w-full">
                           {isCover ? (
-                            <span className="px-1.5 py-0.5 rounded-md bg-amber-500 text-slate-950 font-black text-[9px] flex items-center gap-0.5">
-                              <Star className="w-3 h-3 fill-slate-950" />
+                            <span className="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[9px] flex items-center gap-0.5">
+                              <Star className="w-2.5 h-2.5 fill-slate-950" />
                               Kapak
                             </span>
                           ) : (
                             <button
                               type="button"
                               onClick={() => setCoverPhotoIdx(idx)}
-                              className="px-1.5 py-0.5 rounded-md bg-[#161b22]/90 text-amber-400 font-bold text-[9px] hover:bg-amber-500 hover:text-slate-950"
+                              className="px-1.5 py-0.5 rounded bg-[#161b22]/90 text-amber-400 font-bold text-[9px] hover:bg-amber-500 hover:text-slate-950"
                             >
                               Kapak Yap
                             </button>
@@ -918,7 +958,7 @@ export default function AdminListingsPage() {
                           <button
                             type="button"
                             onClick={() => removePhotoUrl(idx)}
-                            className="p-1 rounded-md bg-red-600/90 text-white hover:bg-red-500"
+                            className="p-1 rounded bg-red-600/90 text-white hover:bg-red-500"
                             title="Sil"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -931,51 +971,51 @@ export default function AdminListingsPage() {
               </div>
 
               {/* Title & Description */}
-              <div className="grid grid-cols-1 gap-4">
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+              <div className="grid grid-cols-1 gap-3">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   İlan Başlığı *
                   <input
                     type="text"
                     required
                     value={editForm.baslik}
                     onChange={(e) => setEditForm({ ...editForm, baslik: e.target.value })}
-                    className="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Detaylı İlan Açıklaması *
                   <textarea
                     rows={3}
                     required
                     value={editForm.aciklama}
                     onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
-                    className="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
               {/* Tier & Status */}
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Vitrin Kademe Rozeti *
                   <select
                     value={editForm.rozet}
                     onChange={(e) => setEditForm({ ...editForm, rozet: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2.5 rounded-xl bg-[#21262d] border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   >
-                    <option value="vip">👑 VIP Vitrin (En Üst Sıra)</option>
+                    <option value="vip">👑 VIP Vitrin</option>
                     <option value="gold">🥇 Gold Vitrin</option>
                     <option value="silver">🥈 Silver Standart</option>
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Yayın Durumu *
                   <select
                     value={editForm.status}
                     onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-emerald-500/50 text-emerald-400 font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2.5 rounded-xl bg-[#21262d] border border-emerald-500/50 text-emerald-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   >
                     <option value="yayinda">✅ Yayında</option>
                     <option value="onay_bekliyor">⏳ Onay Bekliyor</option>
@@ -985,18 +1025,18 @@ export default function AdminListingsPage() {
               </div>
 
               {/* Panel Şifresi & Kullanıcı Hesabı Eşleştirme */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Özel Panel Şifresi
                   <input
                     type="text"
                     value={editForm.panelSifresi}
                     onChange={(e) => setEditForm({ ...editForm, panelSifresi: e.target.value })}
-                    className="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-amber-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-amber-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Bağlı Kullanıcı Hesabı
                   <select
                     value={editForm.kullaniciId}
@@ -1009,9 +1049,9 @@ export default function AdminListingsPage() {
                         ...(u?.sifreHash ? { panelSifresi: u.sifreHash } : {}),
                       });
                     }}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   >
-                    <option value="">-- Kullanıcı Hesabı Seçilmedi (Bağımsız) --</option>
+                    <option value="">-- Bağımsız İlan --</option>
                     {systemUsers.map((u) => (
                       <option key={u._id} value={u._id}>
                         {u.kullaniciAdi} ({u.telefon || 'No tel'})
@@ -1021,26 +1061,26 @@ export default function AdminListingsPage() {
                 </label>
               </div>
 
-              {/* ── ÖZEL VİP MODEL PROFİL BİLGİLERİ (ADMİN YÖNETİMİ) ──────────────── */}
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/40 flex flex-col gap-3">
+              {/* VIP Model Profil Bilgileri */}
+              <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-amber-500/40 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-amber-400 font-heading uppercase tracking-wider flex items-center gap-1.5">
-                    <Crown className="w-4 h-4" />
-                    <span>Özel VIP Model Portföyü &amp; Fiziksel Nitelikler</span>
+                  <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5" />
+                    <span>Model Sahne Bilgileri</span>
                   </span>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={editForm.isVerifiedProfile}
                       onChange={(e) => setEditForm({ ...editForm, isVerifiedProfile: e.target.checked })}
-                      className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400"
+                      className="w-3.5 h-3.5 rounded text-amber-500 focus:ring-amber-400"
                     />
-                    <span className="text-xs text-emerald-400 font-bold">%100 Teyitli Profil</span>
+                    <span className="text-[11px] text-emerald-400 font-bold">%100 Teyitli</span>
                   </label>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
                     Model Sahne / Tam Adı
                     <input
@@ -1048,24 +1088,25 @@ export default function AdminListingsPage() {
                       placeholder="Örn: Merve Özdemir"
                       value={editForm.tamAd}
                       onChange={(e) => setEditForm({ ...editForm, tamAd: e.target.value })}
-                      className="px-3.5 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
+                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
                     />
                   </label>
 
                   <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
-                    👍 Like &amp; Öneri Sayısı (Facebook Tarzı)
+                    👍 Like Sayısı
                     <input
                       type="number"
                       value={editForm.likeSayisi}
                       onChange={(e) => setEditForm({ ...editForm, likeSayisi: Number(e.target.value) })}
-                      className="px-3.5 py-2 rounded-xl bg-[#161b22] border border-blue-500/40 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
+                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-blue-500/40 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
                     />
                   </label>
                 </div>
               </div>
-              {/* Location */}
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+
+              {/* Location & WhatsApp */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   İl Seçin *
                   <select
                     value={editForm.ilSlug}
@@ -1078,7 +1119,7 @@ export default function AdminListingsPage() {
                         ilceSlug: prov?.ilceler[0]?.slug || 'merkez',
                       });
                     }}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     {turkeyProvinces.map((p) => (
                       <option key={p.ilSlug} value={p.ilSlug}>{p.il}</option>
@@ -1086,34 +1127,33 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   İlçe Seçin *
                   <select
                     value={editForm.ilceSlug}
                     onChange={(e) => setEditForm({ ...editForm, ilceSlug: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     {selectedProvince.ilceler.map((d) => (
                       <option key={d.slug} value={d.slug}>{d.ad}</option>
                     ))}
                   </select>
                 </label>
+
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                  WhatsApp Numarası *
+                  <input
+                    type="text"
+                    required
+                    value={editForm.whatsappNumara}
+                    onChange={(e) => setEditForm({ ...editForm, whatsappNumara: e.target.value })}
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                  />
+                </label>
               </div>
 
-              {/* WhatsApp */}
-              <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
-                WhatsApp Telefon Numarası *
-                <input
-                  type="text"
-                  required
-                  value={editForm.whatsappNumara}
-                  onChange={(e) => setEditForm({ ...editForm, whatsappNumara: e.target.value })}
-                  className="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
-                />
-              </label>
-
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#30363d]">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
@@ -1125,17 +1165,17 @@ export default function AdminListingsPage() {
                 <button
                   type="submit"
                   disabled={saving || uploading}
-                  className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg flex items-center gap-1.5 font-heading uppercase"
+                  className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md flex items-center justify-center gap-1.5 font-heading uppercase active:scale-95"
                 >
                   {saving ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>Kaydediliyor...</span>
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
-                      <span>Değişiklikleri &amp; Resimleri Kaydet</span>
+                      <Save className="w-3.5 h-3.5" />
+                      <span>Kaydet</span>
                     </>
                   )}
                 </button>
@@ -1144,72 +1184,58 @@ export default function AdminListingsPage() {
           </div>
         </div>
       )}
-      {/* ── 4.5 DETAYLI İNCELEME & FOTOĞRAF GALERİSİ MODALI ──────────────── */}
+
+      {/* ── 5. DETAYLI İNCELEME & FOTO GALERİSİ MODALI (MOBİL UYUMLU) ──────────────── */}
       {inspectItem && (
         <div
           onClick={() => setInspectItem(null)}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 overflow-y-auto"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-4xl bg-[#161b22] border-2 border-amber-500/50 rounded-3xl p-5 sm:p-7 flex flex-col gap-6 shadow-2xl max-h-[92vh] overflow-y-auto"
+            className="w-full max-w-4xl bg-[#161b22] border-2 border-amber-500/50 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-4 shadow-2xl max-h-[92vh] overflow-y-auto"
           >
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-[#30363d] pb-4 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-black">
-                  <Eye className="w-6 h-6" />
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3 gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-black shrink-0">
+                  <Eye className="w-5 h-5" />
                 </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-black text-lg sm:text-xl text-white font-heading">
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <h2 className="font-heading font-black text-sm sm:text-lg text-white truncate max-w-[180px] sm:max-w-md">
                       {inspectItem.baslik}
                     </h2>
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-heading ${inspectItem.status === 'yayinda'
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-                      }`}>
+                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${
+                      inspectItem.status === 'yayinda' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                    }`}>
                       {inspectItem.status === 'yayinda' ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                      {inspectItem.rozet || 'ultravip'}
-                    </span>
                   </div>
-                  <span className="text-xs text-[#8b949e] flex items-center gap-2 mt-0.5">
-                    <span>📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug}</span>
-                    <span>•</span>
-                    <span className="text-amber-400 font-mono">Eklenme: {new Date(inspectItem.createdAt).toLocaleString('tr-TR')}</span>
+                  <span className="text-[10px] text-[#8b949e] truncate">
+                    📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug} • {new Date(inspectItem.createdAt).toLocaleDateString('tr-TR')}
                   </span>
                 </div>
               </div>
 
               <button
                 onClick={() => setInspectItem(null)}
-                className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors shrink-0"
+                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {inspectLoading ? (
-              <div className="py-16 text-center flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
-                <span className="text-xs text-[#8b949e]">Fotoğraflar ve ilan detayları yükleniyor...</span>
+              <div className="py-12 text-center flex flex-col items-center justify-center gap-2">
+                <Loader2 className="w-7 h-7 text-amber-400 animate-spin" />
+                <span className="text-xs text-[#8b949e]">Yükleniyor...</span>
               </div>
             ) : (
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-4">
 
-                {/* 1. FOTOĞRAF GALERİSİ & BÜYÜK ÖNİZLEME */}
-                <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5">
-                      <ImageIcon className="w-4 h-4" />
-                      <span>İlan Fotoğrafları Galerisi ({(inspectItem.fotograflar?.length || 1)} Adet)</span>
-                    </span>
-                    <span className="text-[11px] text-[#8b949e]">Tıklayarak büyük boyutta inceleyin</span>
-                  </div>
-
-                  {/* Main Large Photo Preview */}
+                {/* 1. Fotoğraf Galerisi & Büyük Önizleme */}
+                <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-2.5">
                   {(() => {
                     const photos = inspectItem.fotograflar && inspectItem.fotograflar.length > 0
                       ? inspectItem.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url))
@@ -1217,8 +1243,8 @@ export default function AdminListingsPage() {
                     const currentMainUrl = photos[inspectActivePhotoIdx] || photos[0];
 
                     return (
-                      <div className="flex flex-col gap-3">
-                        <div className="relative w-full h-72 sm:h-96 rounded-2xl overflow-hidden bg-black/80 border border-[#30363d] flex items-center justify-center group">
+                      <div className="flex flex-col gap-2.5">
+                        <div className="relative w-full h-56 sm:h-80 rounded-xl overflow-hidden bg-black/80 border border-[#30363d] flex items-center justify-center group">
                           <img
                             src={currentMainUrl}
                             alt="Önizleme"
@@ -1228,28 +1254,27 @@ export default function AdminListingsPage() {
                             href={currentMainUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="absolute bottom-3 right-3 px-3 py-1.5 rounded-xl bg-black/80 hover:bg-amber-500 hover:text-slate-950 text-white text-xs font-bold font-heading flex items-center gap-1.5 border border-white/20 transition-all shadow-lg"
+                            className="absolute bottom-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/80 hover:bg-amber-500 hover:text-slate-950 text-white text-[11px] font-bold flex items-center gap-1 border border-white/20 transition-all shadow-lg"
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                            <span>Tam Boyutta Aç</span>
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Tam Boyut</span>
                           </a>
                         </div>
 
                         {/* Thumbnail Strip */}
                         {photos.length > 1 && (
-                          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
                             {photos.map((url: string, idx: number) => (
                               <button
                                 key={idx}
                                 onClick={() => setInspectActivePhotoIdx(idx)}
-                                className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${idx === inspectActivePhotoIdx
-                                  ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30'
-                                  : 'border-[#30363d] opacity-70 hover:opacity-100'
-                                  }`}
+                                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                                  idx === inspectActivePhotoIdx ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30' : 'border-[#30363d] opacity-70'
+                                }`}
                               >
                                 <img src={url} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
                                 {idx === 0 && (
-                                  <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-amber-500 text-slate-950 text-[8px] font-black">
+                                  <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-amber-500 text-slate-950 text-[7px] font-black">
                                     Kapak
                                   </span>
                                 )}
@@ -1262,111 +1287,71 @@ export default function AdminListingsPage() {
                   })()}
                 </div>
 
-                {/* 2. İLAN VE MÜŞTERİ BİLGİLERİ KARTI */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                  {/* Sol: İletişim, Güvenlik ve Kimlik Bilgileri */}
-                  <div className="p-4 rounded-2xl bg-[#21262d] border border-[#363b42] flex flex-col gap-3">
-                    <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5 border-b border-white/10 pb-2">
-                      <ShieldCheck className="w-4 h-4" />
-                      <span>İletişim &amp; Güvenlik Detayları</span>
+                {/* 2. İletişim, Güvenlik ve Biyografi */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-[#21262d] border border-[#363b42] flex flex-col gap-2">
+                    <span className="text-[11px] font-black text-amber-400 font-heading uppercase flex items-center gap-1 border-b border-white/10 pb-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>İletişim &amp; Güvenlik</span>
                     </span>
 
-                    <div className="flex flex-col gap-2 text-xs">
-                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
-                        <span className="text-[#8b949e]">WhatsApp Hattı:</span>
-                        <a
-                          href={`https://wa.me/${(inspectItem.whatsappNumara || '').replace(/\D/g, '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-mono font-black text-emerald-400 hover:underline flex items-center gap-1"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          {inspectItem.whatsappNumara}
-                        </a>
-                      </div>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#161b22] border border-[#30363d]">
+                      <span className="text-[#8b949e]">WhatsApp:</span>
+                      <a
+                        href={`https://wa.me/${(inspectItem.whatsappNumara || '').replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono font-black text-emerald-400 hover:underline flex items-center gap-1"
+                      >
+                        <Phone className="w-3 h-3" />
+                        {inspectItem.whatsappNumara}
+                      </a>
+                    </div>
 
-                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
-                        <span className="text-[#8b949e]">Panel Giriş Şifresi:</span>
-                        <span className="font-mono font-black text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
-                          {inspectItem.panelSifresi || 'Tanımlı Değil'}
-                        </span>
-                      </div>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#161b22] border border-[#30363d]">
+                      <span className="text-[#8b949e]">Panel Şifresi:</span>
+                      <span className="font-mono font-bold text-amber-400">
+                        {inspectItem.panelSifresi || 'Tanımlı Değil'}
+                      </span>
+                    </div>
 
-                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
-                        <span className="text-[#8b949e]">Yayın Süresi:</span>
-                        <span className="font-bold text-white capitalize">{inspectItem.yayinSuresi || 'haftalık'}</span>
-                      </div>
-
-                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
-                        <span className="text-[#8b949e]">Kalan Süre:</span>
-                        <span className="font-mono font-black text-emerald-400">
-                          {getRemainingTime(inspectItem.paketBitisTarihi, inspectItem.status).text}
-                        </span>
-                      </div>
-
-                      {inspectItem.creatorIp && (
-                        <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
-                          <span className="text-[#8b949e]">Oluşturan IP Adresi:</span>
-                          <span className="font-mono text-cyan-300">{inspectItem.creatorIp}</span>
-                        </div>
-                      )}
-
-                      {inspectItem.visitorId && (
-                        <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
-                          <span className="text-[#8b949e]">Cihaz / Visitor ID:</span>
-                          <span className="font-mono text-[10px] text-purple-300 truncate max-w-[180px]">{inspectItem.visitorId}</span>
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#161b22] border border-[#30363d]">
+                      <span className="text-[#8b949e]">Kalan Süre:</span>
+                      <span className="font-mono font-bold text-emerald-400">
+                        {getRemainingTime(inspectItem.paketBitisTarihi, inspectItem.status).text}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Sağ: Model Fiziksel ve Biyografi Bilgileri */}
-                  <div className="p-4 rounded-2xl bg-[#21262d] border border-[#363b42] flex flex-col gap-3">
-                    <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5 border-b border-white/10 pb-2">
-                      <Crown className="w-4 h-4" />
-                      <span>Model Portföy &amp; Açıklama</span>
+                  <div className="p-3 rounded-xl bg-[#21262d] border border-[#363b42] flex flex-col gap-2">
+                    <span className="text-[11px] font-black text-amber-400 font-heading uppercase flex items-center gap-1 border-b border-white/10 pb-1.5">
+                      <Crown className="w-3.5 h-3.5" />
+                      <span>Model Detayları</span>
                     </span>
 
-                    <div className="flex flex-col gap-2 text-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#8b949e]">Model Sahne Adı:</span>
-                        <span className="font-bold text-white">{inspectItem.tamAd || 'Belirtilmedi'}</span>
-                      </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[#8b949e]">Sahne Adı:</span>
+                      <span className="font-bold text-white">{inspectItem.tamAd || 'Belirtilmedi'}</span>
+                    </div>
 
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#8b949e]">Yaş / Boy / Kilo:</span>
-                        <span className="font-bold text-white">
-                          {inspectItem.yas ? `${inspectItem.yas} Yaş` : '-'} / {inspectItem.boy ? `${inspectItem.boy} cm` : '-'} / {inspectItem.kilo ? `${inspectItem.kilo} kg` : '-'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#8b949e]">Göğüs / Saç / Göz:</span>
-                        <span className="font-bold text-white">
-                          {inspectItem.gogusOlcusu || '-'} / {inspectItem.sacRengi || '-'} / {inspectItem.gozRengi || '-'}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-col gap-1 mt-1">
-                        <span className="text-[#8b949e]">İlan Açıklama Metni:</span>
-                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-[11px] leading-relaxed max-h-24 overflow-y-auto whitespace-pre-wrap">
-                          {inspectItem.aciklama || 'Açıklama bulunmuyor.'}
-                        </div>
+                    <div className="flex flex-col gap-1 mt-1">
+                      <span className="text-[#8b949e]">Açıklama:</span>
+                      <div className="p-2 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-[11px] leading-relaxed max-h-20 overflow-y-auto whitespace-pre-wrap">
+                        {inspectItem.aciklama || 'Açıklama bulunmuyor.'}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* 3. MODAL ALT MODERASYON AKSİYONLARI */}
-                <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#30363d] flex-wrap">
-                  <div className="flex items-center gap-2">
+                {/* 3. Modal Alt Moderasyon Aksiyonları */}
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#30363d] flex-wrap">
+                  <div className="flex items-center gap-1.5 flex-1 sm:flex-none">
                     <Link
                       href={`/ilan/${inspectItem.slug}`}
                       target="_blank"
-                      className="px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-cyan-300 font-bold text-xs border border-[#363b42] flex items-center gap-1.5 transition-colors"
+                      className="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-cyan-300 font-bold text-xs border border-[#363b42] flex items-center gap-1 transition-colors"
                     >
-                      <ExternalLink className="w-4 h-4" />
+                      <ExternalLink className="w-3.5 h-3.5" />
                       <span>Sitede Gör</span>
                     </Link>
 
@@ -1376,24 +1361,24 @@ export default function AdminListingsPage() {
                         setInspectItem(null);
                         handleOpenEdit(itemToEdit);
                       }}
-                      className="px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 font-bold text-xs border border-[#363b42] flex items-center gap-1.5 transition-colors"
+                      className="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 font-bold text-xs border border-[#363b42] flex items-center gap-1 transition-colors"
                     >
-                      <Edit3 className="w-4 h-4" />
+                      <Edit3 className="w-3.5 h-3.5" />
                       <span>Düzenle</span>
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 flex-1 sm:flex-none justify-end">
                     {inspectItem.status === 'onay_bekliyor' ? (
                       <button
                         onClick={async () => {
                           await handleQuickStatusChange(inspectItem._id, 'yayinda');
                           setInspectItem((prev: any) => prev ? { ...prev, status: 'yayinda' } : null);
                         }}
-                        className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading uppercase flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition-all"
+                        className="py-2 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading uppercase flex items-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95"
                       >
-                        <Check className="w-4 h-4 stroke-[3]" />
-                        <span>İlanı Şimdi Onayla (Yayına Al)</span>
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>Onayla (Yayına Al)</span>
                       </button>
                     ) : (
                       <button
@@ -1401,7 +1386,7 @@ export default function AdminListingsPage() {
                           await handleQuickStatusChange(inspectItem._id, 'onay_bekliyor');
                           setInspectItem((prev: any) => prev ? { ...prev, status: 'onay_bekliyor' } : null);
                         }}
-                        className="px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] font-bold text-xs border border-[#363b42] transition-colors"
+                        className="py-2 px-3 rounded-xl bg-[#21262d] text-[#8b949e] font-bold text-xs border border-[#363b42]"
                       >
                         Beklemeye Al
                       </button>
@@ -1409,7 +1394,7 @@ export default function AdminListingsPage() {
 
                     <button
                       onClick={() => setInspectItem(null)}
-                      className="px-4 py-2.5 rounded-xl bg-[#21262d] text-white font-bold text-xs"
+                      className="py-2 px-3 rounded-xl bg-[#21262d] text-white font-bold text-xs"
                     >
                       Kapat
                     </button>
@@ -1422,27 +1407,27 @@ export default function AdminListingsPage() {
         </div>
       )}
 
-      {/* ── 5. QUICK USER ASSIGNMENT & CREDENTIALS MODAL (Mevcut Seç / Yeni Oluştur) ──────────────── */}
+      {/* ── 6. QUICK USER ASSIGNMENT & CREDENTIALS MODAL (MOBİL UYUMLU) ──────────────── */}
       {assignModalItem && (
         <div
           onClick={() => setAssignModalItem(null)}
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 selection:bg-amber-500 selection:text-slate-950"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-[#161b22] border-2 border-amber-500/60 rounded-[32px] p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left"
+            className="w-full max-w-lg bg-[#161b22] border-2 border-amber-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black">
-                  <KeyRound className="w-5 h-5 stroke-[2.5]" />
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0">
+                  <KeyRound className="w-4 h-4 stroke-[2.5]" />
                 </div>
-                <div className="flex flex-col">
-                  <h3 className="font-black text-base sm:text-lg text-white font-heading">
-                    İlana Kullanıcı Hesabı Tanımla
+                <div className="flex flex-col min-w-0">
+                  <h3 className="font-black text-sm sm:text-base text-white font-heading truncate">
+                    Hesap Tanımla / Şifre Ver
                   </h3>
-                  <span className="text-xs text-amber-400 font-bold truncate max-w-[280px]">
+                  <span className="text-[11px] text-amber-400 font-bold truncate">
                     {assignModalItem.baslik}
                   </span>
                 </div>
@@ -1450,113 +1435,107 @@ export default function AdminListingsPage() {
 
               <button
                 onClick={() => setAssignModalItem(null)}
-                className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
+                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Mode Switcher: Mevcut Kullanıcı Seç vs Yeni Kullanıcı Oluştur */}
+            {/* Mode Switcher */}
             {!createdCredentials && (
-              <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-[#0d1117] border border-[#30363d] text-xs font-heading">
+              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#0d1117] border border-[#30363d] text-xs font-heading">
                 <button
                   type="button"
                   onClick={() => setAssignMode('select')}
-                  className={`py-2.5 px-3 rounded-xl font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'select'
-                    ? 'bg-amber-500 text-slate-950 shadow-md'
-                    : 'text-[#8b949e] hover:text-white'
-                    }`}
+                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${
+                    assignMode === 'select' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-[#8b949e] hover:text-white'
+                  }`}
                 >
                   <Users className="w-3.5 h-3.5" />
-                  <span>Mevcut Kullanıcıyı Seç</span>
+                  <span>Mevcut Kullanıcı</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setAssignMode('create')}
-                  className={`py-2.5 px-3 rounded-xl font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'create'
-                    ? 'bg-amber-500 text-slate-950 shadow-md'
-                    : 'text-[#8b949e] hover:text-white'
-                    }`}
+                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${
+                    assignMode === 'create' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-[#8b949e] hover:text-white'
+                  }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />
-                  <span>+ Yeni Hesap Aç</span>
+                  <span>+ Yeni Hesap</span>
                 </button>
               </div>
             )}
 
             {/* Created Success State with One-Click Copy */}
             {createdCredentials ? (
-              <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col gap-4">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm font-heading">
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>Hesap Başarıyla Oluşturuldu ve İlanla Eşleştirildi!</span>
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs sm:text-sm font-heading">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>Hesap Başarıyla Oluşturuldu!</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[#0d1117] border border-[#30363d] font-mono text-xs text-[#c9d1d9] flex flex-col gap-1.5 select-all">
-                  <div><strong className="text-amber-400 font-heading">Panel Adresi:</strong> /panelim</div>
+                <div className="p-3 rounded-lg bg-[#0d1117] border border-[#30363d] font-mono text-xs text-[#c9d1d9] flex flex-col gap-1 select-all">
+                  <div><strong className="text-amber-400 font-heading">Panel:</strong> /panelim</div>
                   <div><strong className="text-amber-400 font-heading">Kullanıcı Adı:</strong> {createdCredentials.username}</div>
                   <div><strong className="text-amber-400 font-heading">Şifre:</strong> {createdCredentials.pass}</div>
-                  <div><strong className="text-amber-400 font-heading">İlan:</strong> {assignModalItem.baslik}</div>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={() => {
                       const panelUrl = typeof window !== 'undefined' ? `${window.location.origin}/panelim` : '/panelim';
-                      const text = `🎉 Tebrikler! İlanınız onaylandı ve yayına alındı.\n\n🔑 Müşteri Panel Bilgileriniz:\nPanel Giriş Adresi: ${panelUrl}\nKullanıcı Adı: ${createdCredentials.username}\nŞifre: ${createdCredentials.pass}\n\nPanelinize giriş yaparak ilanınızı yönetebilir, fotoğraflarınızı güncelleyebilir ve sürenizi uzatabilirsiniz.`;
+                      const text = `🎉 Tebrikler! İlanınız onaylandı ve yayına alındı.\n\n🔑 Müşteri Panel Bilgileriniz:\nPanel Giriş Adresi: ${panelUrl}\nKullanıcı Adı: ${createdCredentials.username}\nŞifre: ${createdCredentials.pass}\n\nPanelinize giriş yaparak ilanınızı yönetebilirsiniz.`;
                       navigator.clipboard.writeText(text);
                       setCopiedCreds(true);
                       setTimeout(() => setCopiedCreds(false), 2500);
                     }}
-                    className={`flex-1 py-3 px-4 rounded-xl font-black text-xs font-heading uppercase transition-all flex items-center justify-center gap-2 ${copiedCreds
-                      ? 'bg-emerald-500 text-slate-950 shadow-lg'
-                      : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
-                      }`}
+                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs font-heading uppercase transition-all flex items-center justify-center gap-1.5 ${
+                      copiedCreds ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
+                    }`}
                   >
                     {copiedCreds ? (
                       <>
-                        <Check className="w-4 h-4 stroke-[3]" />
-                        <span>Chat İçin Mesaj Kopyalandı!</span>
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                        <span>Kopyalandı!</span>
                       </>
                     ) : (
-                      <>
-                        <span>📋 Chat / WhatsApp Mesajını Kopyala</span>
-                      </>
+                      <span>📋 Mesajı Kopyala</span>
                     )}
                   </button>
 
                   <button
                     onClick={() => setAssignModalItem(null)}
-                    className="px-4 py-3 rounded-xl bg-[#21262d] text-white font-bold text-xs font-heading"
+                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] text-white font-bold text-xs font-heading"
                   >
                     Kapat
                   </button>
                 </div>
               </div>
             ) : assignMode === 'select' ? (
-              /* ── 1. MEVCUT KULLANICI LİSTESİNDEN SEÇİP ATAMA ── */
-              <div className="flex flex-col gap-3 text-xs font-heading">
+              /* Mevcut Kullanıcı Listesi */
+              <div className="flex flex-col gap-2.5 text-xs font-heading">
                 <div className="relative">
-                  <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3" />
+                  <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
                   <input
                     type="text"
-                    placeholder="Kullanıcı adı veya telefon numarası ara..."
+                    placeholder="Kullanıcı adı veya telefon ara..."
                     value={userSearchTerm}
                     onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
+                <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto pr-1">
                   {usersLoading ? (
-                    <div className="p-6 text-center text-[#8b949e]">
-                      <Loader2 className="w-5 h-5 text-amber-400 animate-spin mx-auto mb-2" />
-                      Kullanıcılar getiriliyor...
+                    <div className="p-4 text-center text-[#8b949e]">
+                      <Loader2 className="w-4 h-4 text-amber-400 animate-spin mx-auto mb-1" />
+                      Yükleniyor...
                     </div>
                   ) : systemUsers.length === 0 ? (
-                    <div className="p-4 text-center text-[#8b949e] bg-[#0d1117] rounded-xl border border-[#30363d]">
-                      Henüz kayıtlı kullanıcı bulunmuyor. Yeni hesap aç seçeneğini kullanabilirsiniz.
+                    <div className="p-3 text-center text-[#8b949e] bg-[#0d1117] rounded-xl border border-[#30363d]">
+                      Kayıtlı kullanıcı bulunamadı.
                     </div>
                   ) : (
                     systemUsers
@@ -1574,22 +1553,21 @@ export default function AdminListingsPage() {
                         return (
                           <div
                             key={u._id}
-                            className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-all ${isCurrentLinked
-                              ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
-                              : 'bg-[#0d1117] border-[#30363d] hover:border-amber-500/40 text-white'
-                              }`}
+                            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
+                              isCurrentLinked ? 'bg-emerald-500/10 border-emerald-500/40 text-white' : 'bg-[#0d1117] border-[#30363d] text-white'
+                            }`}
                           >
                             <div className="flex flex-col min-w-0">
-                              <span className="font-bold text-white flex items-center gap-1.5 truncate">
+                              <span className="font-bold text-white flex items-center gap-1 truncate text-xs">
                                 <span>{u.kullaniciAdi}</span>
                                 {isCurrentLinked && (
-                                  <span className="px-1.5 py-0.2 rounded bg-emerald-500 text-slate-950 font-black text-[9px]">
-                                    Şu anki Sahibi
+                                  <span className="px-1 py-0.2 rounded bg-emerald-500 text-slate-950 font-black text-[8px]">
+                                    Bağlı
                                   </span>
                                 )}
                               </span>
-                              <span className="text-[11px] text-[#8b949e] font-mono">
-                                📞 {u.telefon || 'Telefon yok'} {u.sifreHash ? `• Şifre: ${u.sifreHash}` : ''}
+                              <span className="text-[10px] text-[#8b949e] font-mono truncate">
+                                📞 {u.telefon || 'Tel yok'}
                               </span>
                             </div>
 
@@ -1597,12 +1575,11 @@ export default function AdminListingsPage() {
                               type="button"
                               onClick={() => handleAssignExistingUser(u._id)}
                               disabled={assignLoading || isCurrentLinked}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-black shrink-0 transition-all ${isCurrentLinked
-                                ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
-                                : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
-                                }`}
+                              className={`px-2.5 py-1 rounded-lg text-xs font-black shrink-0 transition-all ${
+                                isCurrentLinked ? 'bg-emerald-500/20 text-emerald-400 cursor-default' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
+                              }`}
                             >
-                              {isCurrentLinked ? 'Bağlı' : 'Bu Kullanıcıya Ata'}
+                              {isCurrentLinked ? 'Bağlı' : 'Ata'}
                             </button>
                           </div>
                         );
@@ -1611,54 +1588,54 @@ export default function AdminListingsPage() {
                 </div>
               </div>
             ) : (
-              /* ── 2. YENİ KULLANICI HESABI OLUŞTURMA FORMU ── */
-              <form onSubmit={handleCreateAndAssignUser} className="flex flex-col gap-4 text-xs font-heading">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[#8b949e] font-black uppercase">Atanacak Kullanıcı Adı</label>
+              /* Yeni Kullanıcı Formu */
+              <form onSubmit={handleCreateAndAssignUser} className="flex flex-col gap-3 text-xs font-heading">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[#8b949e] font-bold">Kullanıcı Adı</label>
                   <input
                     type="text"
                     required
                     value={assignForm.kullaniciAdi}
                     onChange={(e) => setAssignForm({ ...assignForm, kullaniciAdi: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono focus:border-amber-400 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[#8b949e] font-black uppercase">Giriş Şifresi (Otomatik Üretildi)</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[#8b949e] font-bold">Şifre</label>
                   <input
                     type="text"
                     required
                     value={assignForm.sifre}
                     onChange={(e) => setAssignForm({ ...assignForm, sifre: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-amber-400 font-mono font-bold text-xs focus:border-amber-400 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-amber-400 font-mono font-bold text-xs focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[#8b949e] font-black uppercase">Müşteri Telefon / WhatsApp</label>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[#8b949e] font-bold">Telefon / WhatsApp</label>
                   <input
                     type="text"
                     value={assignForm.telefon}
                     onChange={(e) => setAssignForm({ ...assignForm, telefon: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={assignLoading}
-                  className="mt-2 py-3.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs font-heading uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="mt-1 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs font-heading uppercase shadow-md transition-all flex items-center justify-center gap-1.5"
                 >
                   {assignLoading ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Hesap Oluşturuluyor...</span>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Oluşturuluyor...</span>
                     </>
                   ) : (
                     <>
-                      <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
-                      <span>Hesabı Oluştur &amp; İlanla Eşleştir</span>
+                      <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>Hesap Oluştur &amp; Eşleştir</span>
                     </>
                   )}
                 </button>
@@ -1669,57 +1646,57 @@ export default function AdminListingsPage() {
         </div>
       )}
 
-      {/* ── 6. SIFIRDAN YENİ VİP MODEL & İLAN EKLEME MODALI ──────────────── */}
+      {/* ── 7. SIFIRDAN YENİ VİP MODEL & İLAN EKLEME MODALI (MOBİL UYUMLU) ──────────────── */}
       {showCreateModal && (
         <div
           onClick={() => setShowCreateModal(false)}
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950"
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 selection:bg-amber-500 selection:text-slate-950"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl bg-[#161b22] border-2 border-amber-500/60 rounded-[32px] p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-2xl bg-[#161b22] border-2 border-amber-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black">
-                  <Crown className="w-5 h-5 stroke-[2.5]" />
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0">
+                  <Crown className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <div className="flex flex-col">
-                  <h3 className="font-black text-lg text-white font-heading">
-                    Sıfırdan Yeni VIP Model &amp; İlan Ekle
+                  <h3 className="font-heading font-black text-sm sm:text-base text-white">
+                    Sıfırdan Yeni VIP Model Ekle
                   </h3>
-                  <span className="text-xs text-amber-400 font-bold">
-                    %100 Teyitli Özel Profil, Biyografi &amp; Fotoğraflar
+                  <span className="text-[10px] text-amber-400 font-bold">
+                    Özel Profil, Biyografi &amp; Fotoğraflar
                   </span>
                 </div>
               </div>
 
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
+                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="flex flex-col gap-4 text-xs font-heading">
+            <form onSubmit={handleCreateSubmit} className="flex flex-col gap-3 text-xs font-heading">
 
               {/* Başlık & Model Sahne Adı */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   İlan Başlığı *
                   <input
                     type="text"
                     required
-                    placeholder="Örn: Beylikdüzü VIP Merve Özdemir"
+                    placeholder="Örn: Beylikdüzü VIP Merve"
                     value={createForm.baslik}
                     onChange={(e) => setCreateForm({ ...createForm, baslik: e.target.value })}
-                    className="px-4 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Model Sahne / Tam Adı *
                   <input
                     type="text"
@@ -1727,50 +1704,50 @@ export default function AdminListingsPage() {
                     placeholder="Örn: Merve Özdemir"
                     value={createForm.tamAd}
                     onChange={(e) => setCreateForm({ ...createForm, tamAd: e.target.value })}
-                    className="px-4 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
-              {/* Vitrin Paketi & Facebook Like */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
-                  Vitrin Kademe Rozeti *
+              {/* Vitrin Paketi & Facebook Like & Şifre */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                  Vitrin Rozeti *
                   <select
                     value={createForm.rozet}
                     onChange={(e) => setCreateForm({ ...createForm, rozet: e.target.value })}
-                    className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   >
-                    <option value="vip">👑 VIP Vitrin (En Üst Sıra)</option>
+                    <option value="vip">👑 VIP Vitrin</option>
                     <option value="gold">🥇 Gold Vitrin</option>
-                    <option value="silver">🥈 Silver Standart</option>
+                    <option value="silver">🥈 Silver</option>
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
-                  👍 Başlangıç Like / Öneri Sayısı
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                  👍 Başlangıç Like
                   <input
                     type="number"
                     value={createForm.likeSayisi}
                     onChange={(e) => setCreateForm({ ...createForm, likeSayisi: Number(e.target.value) })}
-                    className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-blue-500/50 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-blue-500/50 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
                   />
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Panel Şifresi
                   <input
                     type="text"
                     value={createForm.panelSifresi}
                     onChange={(e) => setCreateForm({ ...createForm, panelSifresi: e.target.value })}
-                    className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-emerald-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-emerald-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
               {/* Konum & WhatsApp */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   İl Seçin *
                   <select
                     value={createForm.ilSlug}
@@ -1783,7 +1760,7 @@ export default function AdminListingsPage() {
                         ilceSlug: prov?.ilceler[0]?.slug || 'merkez',
                       });
                     }}
-                    className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     {turkeyProvinces.map((p) => (
                       <option key={p.ilSlug} value={p.ilSlug}>{p.il}</option>
@@ -1791,12 +1768,12 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   İlçe Seçin *
                   <select
                     value={createForm.ilceSlug}
                     onChange={(e) => setCreateForm({ ...createForm, ilceSlug: e.target.value })}
-                    className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     {(turkeyProvinces.find((p) => p.ilSlug === createForm.ilSlug) || turkeyProvinces[0]).ilceler.map((d) => (
                       <option key={d.slug} value={d.slug}>{d.ad}</option>
@@ -1804,42 +1781,41 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   WhatsApp Numarası *
                   <input
                     type="text"
                     required
                     value={createForm.whatsappNumara}
                     onChange={(e) => setCreateForm({ ...createForm, whatsappNumara: e.target.value })}
-                    className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
               {/* Biyografi */}
-              <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
-                Detaylı Açıklama &amp; Biyografi Metni
+              <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                Açıklama &amp; Biyografi
                 <textarea
-                  rows={3}
-                  placeholder="Modelin hizmet tarzı, hijyen prensipleri ve detayları..."
+                  rows={2}
+                  placeholder="Hizmet tarzı, hijyen ve detaylar..."
                   value={createForm.aciklama}
                   onChange={(e) => setCreateForm({ ...createForm, aciklama: e.target.value })}
-                  className="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="px-3.5 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                 />
               </label>
 
-              {/* ── FOTOĞRAF YÜKLEME ALANI (ADMİN YENİ İLAN) ──────────────── */}
-              <div className="flex flex-col gap-3 p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30">
+              {/* Fotoğraf Yükleme Alanı */}
+              <div className="flex flex-col gap-2 p-3 rounded-xl bg-[#0d1117] border border-amber-500/30">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-amber-400 font-heading uppercase flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4" />
-                    <span>İlan Fotoğrafları ({createPhotoUrls.length} Adet)</span>
+                  <span className="font-bold text-xs text-amber-400 font-heading uppercase flex items-center gap-1">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    <span>Fotoğraflar ({createPhotoUrls.length})</span>
                   </span>
-                  <span className="text-[11px] text-[#8b949e]">JPG, PNG, WEBP Desteklenir</span>
+                  <span className="text-[10px] text-[#8b949e]">JPG, PNG, WEBP</span>
                 </div>
 
-                {/* Upload Input */}
-                <label className="relative flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-amber-500/40 hover:border-amber-400 bg-amber-500/5 hover:bg-amber-500/10 cursor-pointer transition-all text-center gap-2 group">
+                <label className="relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed border-amber-500/40 hover:border-amber-400 bg-amber-500/5 cursor-pointer transition-all text-center gap-1">
                   <input
                     type="file"
                     accept="image/*"
@@ -1849,27 +1825,26 @@ export default function AdminListingsPage() {
                     disabled={createUploading}
                   />
                   {createUploading ? (
-                    <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                    <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       <span>Fotoğraflar Yükleniyor...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-white text-xs font-bold font-heading">
-                      <Upload className="w-4 h-4 text-amber-400" />
-                      <span>Bilgisayardan / Galeriden Fotoğraf Seç &amp; Yükle</span>
+                    <div className="flex items-center gap-1.5 text-white text-xs font-bold font-heading">
+                      <Upload className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Galeriden Fotoğraf Seç &amp; Yükle</span>
                     </div>
                   )}
                 </label>
 
-                {/* Photo Previews */}
                 {createPhotoUrls.length > 0 && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 mt-1">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-1">
                     {createPhotoUrls.map((url, idx) => {
                       const isCover = idx === createCoverIdx;
                       return (
                         <div
                           key={idx}
-                          className={`relative aspect-square rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 bg-[#161b22] ${
+                          className={`relative aspect-square rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1 bg-[#161b22] ${
                             isCover ? 'border-amber-400 shadow-md shadow-amber-500/30' : 'border-[#30363d]'
                           }`}
                         >
@@ -1878,15 +1853,15 @@ export default function AdminListingsPage() {
 
                           <div className="relative z-20 flex items-center justify-between w-full">
                             {isCover ? (
-                              <span className="px-1.5 py-0.5 rounded-md bg-amber-500 text-slate-950 font-black text-[9px] flex items-center gap-0.5 font-heading">
-                                <Star className="w-3 h-3 fill-slate-950" />
+                              <span className="px-1 py-0.2 rounded bg-amber-500 text-slate-950 font-black text-[8px] flex items-center gap-0.5">
+                                <Star className="w-2.5 h-2.5 fill-slate-950" />
                                 Kapak
                               </span>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => setCreateCoverIdx(idx)}
-                                className="px-1.5 py-0.5 rounded-md bg-[#161b22]/90 text-amber-400 font-bold text-[9px] hover:bg-amber-500 hover:text-slate-950 font-heading"
+                                className="px-1 py-0.2 rounded bg-[#161b22]/90 text-amber-400 font-bold text-[8px] hover:bg-amber-500 hover:text-slate-950"
                               >
                                 Kapak Yap
                               </button>
@@ -1895,10 +1870,10 @@ export default function AdminListingsPage() {
                             <button
                               type="button"
                               onClick={() => removeCreatePhotoUrl(idx)}
-                              className="p-1 rounded-md bg-red-600/90 text-white hover:bg-red-500 transition-colors"
+                              className="p-1 rounded bg-red-600/90 text-white hover:bg-red-500"
                               title="Sil"
                             >
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-2.5 h-2.5" />
                             </button>
                           </div>
                         </div>
@@ -1909,11 +1884,11 @@ export default function AdminListingsPage() {
               </div>
 
               {/* Submit Buttons */}
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="w-1/3 py-3.5 px-4 rounded-xl bg-[#21262d] text-white font-bold text-xs border border-[#363b42]"
+                  className="w-1/3 py-2.5 px-3 rounded-xl bg-[#21262d] text-white font-bold text-xs border border-[#30363d]"
                 >
                   İptal
                 </button>
@@ -1921,14 +1896,14 @@ export default function AdminListingsPage() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 py-3.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md flex items-center justify-center gap-1.5 active:scale-95"
                 >
                   {creating ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
-                      <span>İlanı &amp; Modeli Şimdi Yayına Al</span>
+                      <Save className="w-3.5 h-3.5" />
+                      <span>İlanı Şimdi Yayına Al</span>
                     </>
                   )}
                 </button>
@@ -1942,6 +1917,3 @@ export default function AdminListingsPage() {
     </div>
   );
 }
-
-
-
