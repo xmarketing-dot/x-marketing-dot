@@ -191,6 +191,7 @@ export default function CreateListingPage() {
     setLoading(true);
     const coverUrl = photoUrls[coverPhotoIdx] || photoUrls[0];
     const savedThreadId = typeof window !== 'undefined' ? localStorage.getItem('best_eskort_chat_thread_id') : null;
+    const visitorId = typeof window !== 'undefined' ? localStorage.getItem('bms_vid') : null;
 
     try {
       const res = await fetch('/api/listings/create', {
@@ -201,6 +202,7 @@ export default function CreateListingPage() {
           anaFotografUrl: coverUrl,
           fotograflar: photoUrls.map((url) => ({ url })),
           chatThreadId: savedThreadId || null,
+          visitorId: visitorId || null,
         }),
       });
 

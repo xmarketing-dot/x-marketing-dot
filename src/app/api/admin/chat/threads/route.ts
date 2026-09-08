@@ -10,8 +10,14 @@ export async function GET() {
   try {
     await connectToDatabase();
     
-    // 1. Fetch latest 60 active threads with index
-    const rawThreads = await ChatThreadModel.find({})
+    // 1. Fetch latest 60 active threads that actually have messages or a linked listing (filter ghost threads)
+    const rawThreads = await ChatThreadModel.find({
+      $or: [
+        { sonMesajOzeti: { $exists: true, $nin: ['', 'Yeni Sohbet'] } },
+        { listingId: { $exists: true, $ne: null } },
+        { listingBaslik: { $exists: true, $ne: null } },
+      ],
+    })
       .sort({ updatedAt: -1 })
       .limit(60)
       .lean();

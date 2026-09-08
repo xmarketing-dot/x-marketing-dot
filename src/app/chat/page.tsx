@@ -193,7 +193,7 @@ export default function ChatPage() {
         const startRes = await fetch('/api/chat/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ threadId: savedThreadId }),
+          body: JSON.stringify({ threadId: savedThreadId, createIfNotFound: true }),
         });
         const startData = await startRes.json();
         if (startData.thread?._id) {

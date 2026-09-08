@@ -55,6 +55,9 @@ export interface IListing extends Document {
   hakkindaBiyografi?: string;
   anonimYorumlar?: IComment[];
 
+  visitorId?: string;
+  creatorIp?: string;
+
   onaylanmaTarihi?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -124,6 +127,9 @@ const ListingSchema = new Schema<IListing>(
     hizmetMekanlari: [{ type: String }],
     hakkindaBiyografi: { type: String, default: null },
     anonimYorumlar: [CommentSchema],
+
+    visitorId: { type: String, index: true },
+    creatorIp: { type: String, index: true },
 
     onaylanmaTarihi: { type: Date },
   },

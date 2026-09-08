@@ -26,7 +26,15 @@ import {
   Ban,
   ExternalLink,
   ShieldCheck,
-  Crown
+  Crown,
+  Eye,
+  UserCheck,
+  UserPlus,
+  Users,
+  Search,
+  ZoomIn,
+  Calendar,
+  Globe
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 
@@ -34,6 +42,11 @@ export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda'>('all');
+
+  // Detaylı İnceleme Modalı (Full Inspection Modal)
+  const [inspectItem, setInspectItem] = useState<any | null>(null);
+  const [inspectLoading, setInspectLoading] = useState(false);
+  const [inspectActivePhotoIdx, setInspectActivePhotoIdx] = useState(0);
 
   // Edit Modal states
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -47,6 +60,7 @@ export default function AdminListingsPage() {
     status: 'yayinda',
     yayinSuresi: 'haftalik',
     panelSifresi: '',
+    kullaniciId: '',
     tamAd: '',
     isVerifiedProfile: false,
     likeSayisi: 55,
@@ -77,6 +91,7 @@ export default function AdminListingsPage() {
     status: 'yayinda',
     yayinSuresi: 'haftalik',
     panelSifresi: '123456',
+    kullaniciId: '',
     tamAd: 'Merve Özdemir',
     isVerifiedProfile: true,
     likeSayisi: 55,
@@ -94,8 +109,13 @@ export default function AdminListingsPage() {
   const [createUploading, setCreateUploading] = useState(false);
   const [creating, setCreating] = useState(false);
 
-  // Quick User Account Assignment states
+  // Quick User Account Assignment states (Yeni Oluştur veya Mevcut Seç)
   const [assignModalItem, setAssignModalItem] = useState<any | null>(null);
+  const [assignMode, setAssignMode] = useState<'create' | 'select'>('select');
+  const [systemUsers, setSystemUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [selectedExistingUserId, setSelectedExistingUserId] = useState('');
   const [assignForm, setAssignForm] = useState({ kullaniciAdi: '', sifre: '', telefon: '' });
   const [assignLoading, setAssignLoading] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState<{ username: string; pass: string } | null>(null);
@@ -103,7 +123,25 @@ export default function AdminListingsPage() {
 
   useEffect(() => {
     fetchListings();
+    fetchSystemUsers();
   }, []);
+
+  const fetchSystemUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const res = await fetch('/api/admin/users');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setSystemUsers(data);
+      } else if (data.users && Array.isArray(data.users)) {
+        setSystemUsers(data.users);
+      }
+    } catch (e) {
+      // Silent
+    } finally {
+      setUsersLoading(false);
+    }
+  };
 
   const fetchListings = async () => {
     setLoading(true);
@@ -153,6 +191,7 @@ export default function AdminListingsPage() {
       status: item.status || 'yayinda',
       yayinSuresi: item.yayinSuresi || 'haftalik',
       panelSifresi: item.panelSifresi || '',
+      kullaniciId: item.kullaniciId ? (typeof item.kullaniciId === 'object' ? item.kullaniciId._id || item.kullaniciId.toString() : item.kullaniciId) : '',
       tamAd: item.tamAd || '',
       isVerifiedProfile: Boolean(item.isVerifiedProfile),
       likeSayisi: item.likeSayisi || 55,
@@ -267,9 +306,32 @@ export default function AdminListingsPage() {
     }
   };
 
-  // Open Quick User Create Modal for this specific listing
+  // ── DETAYLI İNCELEME MODALI AÇMA ──
+  const handleOpenInspect = async (item: any) => {
+    setInspectItem(item);
+    setInspectActivePhotoIdx(0);
+    setInspectLoading(true);
+
+    try {
+      const res = await fetch(`/api/admin/listings?id=${item._id}`);
+      const data = await res.json();
+      if (data.listing) {
+        setInspectItem(data.listing);
+      }
+    } catch (e) {
+      // Keep basic item
+    } finally {
+      setInspectLoading(false);
+    }
+  };
+
+  // Open Quick User Create / Assign Modal for this specific listing
   const handleOpenAssignModal = (listingItem: any) => {
     setAssignModalItem(listingItem);
+    setAssignMode('select');
+    setSelectedExistingUserId(listingItem.kullaniciId || '');
+    setUserSearchTerm('');
+
     const cleanPhone = (listingItem.whatsappNumara || '').replace(/\D/g, '');
     const phoneSuffix = cleanPhone.slice(-4) || Math.floor(1000 + Math.random() * 9000).toString();
     const suggestedUsername = `uye_${listingItem.ilceSlug || 'ilan'}_${phoneSuffix}`;
@@ -282,6 +344,44 @@ export default function AdminListingsPage() {
     });
     setCreatedCredentials(null);
     setCopiedCreds(false);
+  };
+
+  // Assign Existing User to Listing
+  const handleAssignExistingUser = async (userId: string) => {
+    if (!assignModalItem) return;
+    setAssignLoading(true);
+
+    try {
+      const selectedUser = systemUsers.find((u) => u._id === userId);
+      const res = await fetch('/api/admin/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: assignModalItem._id,
+          kullaniciId: userId,
+          ...(selectedUser?.sifreHash ? { panelSifresi: selectedUser.sifreHash } : {}),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`✅ İlan başarıyla "${selectedUser?.kullaniciAdi || 'Seçilen Kullanıcı'}" hesabına atandı!`);
+        setListings((prev) =>
+          prev.map((l) =>
+            l._id === assignModalItem._id
+              ? { ...l, kullaniciId: userId, ...(selectedUser?.sifreHash ? { panelSifresi: selectedUser.sifreHash } : {}) }
+              : l
+          )
+        );
+        setAssignModalItem(null);
+      } else {
+        alert(data.error || 'Atama başarısız.');
+      }
+    } catch (e) {
+      alert('Kullanıcı atanırken bağlantı hatası oluştu.');
+    } finally {
+      setAssignLoading(false);
+    }
   };
 
   // Create User in DB and bind to this listing
@@ -305,12 +405,15 @@ export default function AdminListingsPage() {
         return;
       }
 
+      const newUserId = userData.user._id;
+
       // 2. Bind user to listing & set panel password
       await fetch('/api/admin/listings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: assignModalItem._id,
+          kullaniciId: newUserId,
           panelSifresi: assignForm.sifre,
         }),
       });
@@ -322,8 +425,15 @@ export default function AdminListingsPage() {
 
       // Update local state
       setListings((prev) =>
-        prev.map((l) => (l._id === assignModalItem._id ? { ...l, panelSifresi: assignForm.sifre } : l))
+        prev.map((l) =>
+          l._id === assignModalItem._id
+            ? { ...l, kullaniciId: newUserId, panelSifresi: assignForm.sifre }
+            : l
+        )
       );
+
+      // Refresh system users
+      fetchSystemUsers();
     } catch (err) {
       alert('Hesap oluşturulurken bağlantı hatası oluştu.');
     } finally {
@@ -637,6 +747,16 @@ export default function AdminListingsPage() {
                   {/* Right: Moderation Actions */}
                   <div className="flex items-center gap-2 w-full lg:w-auto justify-end flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-white/10">
 
+                    {/* 1. DETAYLI İNCELE (RESİMLERİ VE BİLGİLERİ GÖR) */}
+                    <button
+                      onClick={() => handleOpenInspect(item)}
+                      className="px-3.5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold text-xs font-heading border border-amber-500/40 flex items-center gap-1.5 transition-all shadow-sm"
+                      title="İlanın tüm fotoğraflarını ve detaylarını tam ekranda incele"
+                    >
+                      <Eye className="w-4 h-4 text-amber-400" />
+                      <span>Detaylı İncele</span>
+                    </button>
+
                     {/* TEK TIKLA ONAYLA (YAYINA AL) */}
                     {isPending ? (
                       <button
@@ -664,20 +784,12 @@ export default function AdminListingsPage() {
                       +7 Gün
                     </button>
 
-                    <button
-                      onClick={() => handleExtendDuration(item._id, 30)}
-                      className="px-2.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-black text-xs border border-cyan-500/40 transition-colors"
-                      title="Yayın Süresine +30 Gün Ekle"
-                    >
-                      +30 Gün
-                    </button>
-
                     {/* CANLI İNCELE */}
                     <Link
                       href={`/ilan/${item.slug}`}
                       target="_blank"
                       className="p-2.5 rounded-xl bg-[#161b22] hover:bg-[#30363d] text-cyan-400 border border-[#363b42] transition-colors"
-                      title="İlanı Görüntüle"
+                      title="Canlı İlan Sayfasını Aç"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </Link>
@@ -872,16 +984,42 @@ export default function AdminListingsPage() {
                 </label>
               </div>
 
-              {/* Panel Şifresi */}
-              <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
-                Özel Panel Şifresi
-                <input
-                  type="text"
-                  value={editForm.panelSifresi}
-                  onChange={(e) => setEditForm({ ...editForm, panelSifresi: e.target.value })}
-                  className="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-amber-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
-                />
-              </label>
+              {/* Panel Şifresi & Kullanıcı Hesabı Eşleştirme */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                  Özel Panel Şifresi
+                  <input
+                    type="text"
+                    value={editForm.panelSifresi}
+                    onChange={(e) => setEditForm({ ...editForm, panelSifresi: e.target.value })}
+                    className="px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-amber-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
+                  />
+                </label>
+
+                <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
+                  Bağlı Kullanıcı Hesabı
+                  <select
+                    value={editForm.kullaniciId}
+                    onChange={(e) => {
+                      const selectedId = e.target.value;
+                      const u = systemUsers.find((user) => user._id === selectedId);
+                      setEditForm({
+                        ...editForm,
+                        kullaniciId: selectedId,
+                        ...(u?.sifreHash ? { panelSifresi: u.sifreHash } : {}),
+                      });
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                  >
+                    <option value="">-- Kullanıcı Hesabı Seçilmedi (Bağımsız) --</option>
+                    {systemUsers.map((u) => (
+                      <option key={u._id} value={u._id}>
+                        {u.kullaniciAdi} ({u.telefon || 'No tel'})
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
 
               {/* ── ÖZEL VİP MODEL PROFİL BİLGİLERİ (ADMİN YÖNETİMİ) ──────────────── */}
               <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/40 flex flex-col gap-3">
@@ -1006,7 +1144,285 @@ export default function AdminListingsPage() {
           </div>
         </div>
       )}
-      {/* ── 5. QUICK USER ASSIGNMENT & CREDENTIALS MODAL ──────────────── */}
+      {/* ── 4.5 DETAYLI İNCELEME & FOTOĞRAF GALERİSİ MODALI ──────────────── */}
+      {inspectItem && (
+        <div
+          onClick={() => setInspectItem(null)}
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-4xl bg-[#161b22] border-2 border-amber-500/50 rounded-3xl p-5 sm:p-7 flex flex-col gap-6 shadow-2xl max-h-[92vh] overflow-y-auto"
+          >
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-[#30363d] pb-4 gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-black">
+                  <Eye className="w-6 h-6" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-black text-lg sm:text-xl text-white font-heading">
+                      {inspectItem.baslik}
+                    </h2>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase font-heading ${inspectItem.status === 'yayinda'
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
+                      }`}>
+                      {inspectItem.status === 'yayinda' ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                      {inspectItem.rozet || 'ultravip'}
+                    </span>
+                  </div>
+                  <span className="text-xs text-[#8b949e] flex items-center gap-2 mt-0.5">
+                    <span>📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug}</span>
+                    <span>•</span>
+                    <span className="text-amber-400 font-mono">Eklenme: {new Date(inspectItem.createdAt).toLocaleString('tr-TR')}</span>
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setInspectItem(null)}
+                className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {inspectLoading ? (
+              <div className="py-16 text-center flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+                <span className="text-xs text-[#8b949e]">Fotoğraflar ve ilan detayları yükleniyor...</span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-6">
+
+                {/* 1. FOTOĞRAF GALERİSİ & BÜYÜK ÖNİZLEME */}
+                <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5">
+                      <ImageIcon className="w-4 h-4" />
+                      <span>İlan Fotoğrafları Galerisi ({(inspectItem.fotograflar?.length || 1)} Adet)</span>
+                    </span>
+                    <span className="text-[11px] text-[#8b949e]">Tıklayarak büyük boyutta inceleyin</span>
+                  </div>
+
+                  {/* Main Large Photo Preview */}
+                  {(() => {
+                    const photos = inspectItem.fotograflar && inspectItem.fotograflar.length > 0
+                      ? inspectItem.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url))
+                      : [inspectItem.anaFotograf?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800'];
+                    const currentMainUrl = photos[inspectActivePhotoIdx] || photos[0];
+
+                    return (
+                      <div className="flex flex-col gap-3">
+                        <div className="relative w-full h-72 sm:h-96 rounded-2xl overflow-hidden bg-black/80 border border-[#30363d] flex items-center justify-center group">
+                          <img
+                            src={currentMainUrl}
+                            alt="Önizleme"
+                            className="w-full h-full object-contain"
+                          />
+                          <a
+                            href={currentMainUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute bottom-3 right-3 px-3 py-1.5 rounded-xl bg-black/80 hover:bg-amber-500 hover:text-slate-950 text-white text-xs font-bold font-heading flex items-center gap-1.5 border border-white/20 transition-all shadow-lg"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            <span>Tam Boyutta Aç</span>
+                          </a>
+                        </div>
+
+                        {/* Thumbnail Strip */}
+                        {photos.length > 1 && (
+                          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                            {photos.map((url: string, idx: number) => (
+                              <button
+                                key={idx}
+                                onClick={() => setInspectActivePhotoIdx(idx)}
+                                className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${idx === inspectActivePhotoIdx
+                                  ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30'
+                                  : 'border-[#30363d] opacity-70 hover:opacity-100'
+                                  }`}
+                              >
+                                <img src={url} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                                {idx === 0 && (
+                                  <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-amber-500 text-slate-950 text-[8px] font-black">
+                                    Kapak
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* 2. İLAN VE MÜŞTERİ BİLGİLERİ KARTI */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  {/* Sol: İletişim, Güvenlik ve Kimlik Bilgileri */}
+                  <div className="p-4 rounded-2xl bg-[#21262d] border border-[#363b42] flex flex-col gap-3">
+                    <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5 border-b border-white/10 pb-2">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>İletişim &amp; Güvenlik Detayları</span>
+                    </span>
+
+                    <div className="flex flex-col gap-2 text-xs">
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+                        <span className="text-[#8b949e]">WhatsApp Hattı:</span>
+                        <a
+                          href={`https://wa.me/${(inspectItem.whatsappNumara || '').replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono font-black text-emerald-400 hover:underline flex items-center gap-1"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          {inspectItem.whatsappNumara}
+                        </a>
+                      </div>
+
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+                        <span className="text-[#8b949e]">Panel Giriş Şifresi:</span>
+                        <span className="font-mono font-black text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
+                          {inspectItem.panelSifresi || 'Tanımlı Değil'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+                        <span className="text-[#8b949e]">Yayın Süresi:</span>
+                        <span className="font-bold text-white capitalize">{inspectItem.yayinSuresi || 'haftalık'}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+                        <span className="text-[#8b949e]">Kalan Süre:</span>
+                        <span className="font-mono font-black text-emerald-400">
+                          {getRemainingTime(inspectItem.paketBitisTarihi, inspectItem.status).text}
+                        </span>
+                      </div>
+
+                      {inspectItem.creatorIp && (
+                        <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+                          <span className="text-[#8b949e]">Oluşturan IP Adresi:</span>
+                          <span className="font-mono text-cyan-300">{inspectItem.creatorIp}</span>
+                        </div>
+                      )}
+
+                      {inspectItem.visitorId && (
+                        <div className="flex items-center justify-between p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+                          <span className="text-[#8b949e]">Cihaz / Visitor ID:</span>
+                          <span className="font-mono text-[10px] text-purple-300 truncate max-w-[180px]">{inspectItem.visitorId}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Sağ: Model Fiziksel ve Biyografi Bilgileri */}
+                  <div className="p-4 rounded-2xl bg-[#21262d] border border-[#363b42] flex flex-col gap-3">
+                    <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5 border-b border-white/10 pb-2">
+                      <Crown className="w-4 h-4" />
+                      <span>Model Portföy &amp; Açıklama</span>
+                    </span>
+
+                    <div className="flex flex-col gap-2 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#8b949e]">Model Sahne Adı:</span>
+                        <span className="font-bold text-white">{inspectItem.tamAd || 'Belirtilmedi'}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#8b949e]">Yaş / Boy / Kilo:</span>
+                        <span className="font-bold text-white">
+                          {inspectItem.yas ? `${inspectItem.yas} Yaş` : '-'} / {inspectItem.boy ? `${inspectItem.boy} cm` : '-'} / {inspectItem.kilo ? `${inspectItem.kilo} kg` : '-'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#8b949e]">Göğüs / Saç / Göz:</span>
+                        <span className="font-bold text-white">
+                          {inspectItem.gogusOlcusu || '-'} / {inspectItem.sacRengi || '-'} / {inspectItem.gozRengi || '-'}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-col gap-1 mt-1">
+                        <span className="text-[#8b949e]">İlan Açıklama Metni:</span>
+                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-[11px] leading-relaxed max-h-24 overflow-y-auto whitespace-pre-wrap">
+                          {inspectItem.aciklama || 'Açıklama bulunmuyor.'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. MODAL ALT MODERASYON AKSİYONLARI */}
+                <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#30363d] flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/ilan/${inspectItem.slug}`}
+                      target="_blank"
+                      className="px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-cyan-300 font-bold text-xs border border-[#363b42] flex items-center gap-1.5 transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Sitede Gör</span>
+                    </Link>
+
+                    <button
+                      onClick={() => {
+                        const itemToEdit = inspectItem;
+                        setInspectItem(null);
+                        handleOpenEdit(itemToEdit);
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 font-bold text-xs border border-[#363b42] flex items-center gap-1.5 transition-colors"
+                    >
+                      <Edit3 className="w-4 h-4" />
+                      <span>Düzenle</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {inspectItem.status === 'onay_bekliyor' ? (
+                      <button
+                        onClick={async () => {
+                          await handleQuickStatusChange(inspectItem._id, 'yayinda');
+                          setInspectItem((prev: any) => prev ? { ...prev, status: 'yayinda' } : null);
+                        }}
+                        className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading uppercase flex items-center gap-1.5 shadow-lg shadow-emerald-500/25 transition-all"
+                      >
+                        <Check className="w-4 h-4 stroke-[3]" />
+                        <span>İlanı Şimdi Onayla (Yayına Al)</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={async () => {
+                          await handleQuickStatusChange(inspectItem._id, 'onay_bekliyor');
+                          setInspectItem((prev: any) => prev ? { ...prev, status: 'onay_bekliyor' } : null);
+                        }}
+                        className="px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] font-bold text-xs border border-[#363b42] transition-colors"
+                      >
+                        Beklemeye Al
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => setInspectItem(null)}
+                      className="px-4 py-2.5 rounded-xl bg-[#21262d] text-white font-bold text-xs"
+                    >
+                      Kapat
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── 5. QUICK USER ASSIGNMENT & CREDENTIALS MODAL (Mevcut Seç / Yeni Oluştur) ──────────────── */}
       {assignModalItem && (
         <div
           onClick={() => setAssignModalItem(null)}
@@ -1026,7 +1442,7 @@ export default function AdminListingsPage() {
                   <h3 className="font-black text-base sm:text-lg text-white font-heading">
                     İlana Kullanıcı Hesabı Tanımla
                   </h3>
-                  <span className="text-xs text-amber-400 font-bold">
+                  <span className="text-xs text-amber-400 font-bold truncate max-w-[280px]">
                     {assignModalItem.baslik}
                   </span>
                 </div>
@@ -1039,6 +1455,35 @@ export default function AdminListingsPage() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Mode Switcher: Mevcut Kullanıcı Seç vs Yeni Kullanıcı Oluştur */}
+            {!createdCredentials && (
+              <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-[#0d1117] border border-[#30363d] text-xs font-heading">
+                <button
+                  type="button"
+                  onClick={() => setAssignMode('select')}
+                  className={`py-2.5 px-3 rounded-xl font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'select'
+                    ? 'bg-amber-500 text-slate-950 shadow-md'
+                    : 'text-[#8b949e] hover:text-white'
+                    }`}
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Mevcut Kullanıcıyı Seç</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAssignMode('create')}
+                  className={`py-2.5 px-3 rounded-xl font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'create'
+                    ? 'bg-amber-500 text-slate-950 shadow-md'
+                    : 'text-[#8b949e] hover:text-white'
+                    }`}
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>+ Yeni Hesap Aç</span>
+                </button>
+              </div>
+            )}
 
             {/* Created Success State with One-Click Copy */}
             {createdCredentials ? (
@@ -1089,10 +1534,85 @@ export default function AdminListingsPage() {
                   </button>
                 </div>
               </div>
-            ) : (
-              /* Create Form */
-              <form onSubmit={handleCreateAndAssignUser} className="flex flex-col gap-4 text-xs font-heading">
+            ) : assignMode === 'select' ? (
+              /* ── 1. MEVCUT KULLANICI LİSTESİNDEN SEÇİP ATAMA ── */
+              <div className="flex flex-col gap-3 text-xs font-heading">
+                <div className="relative">
+                  <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    placeholder="Kullanıcı adı veya telefon numarası ara..."
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                  />
+                </div>
 
+                <div className="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
+                  {usersLoading ? (
+                    <div className="p-6 text-center text-[#8b949e]">
+                      <Loader2 className="w-5 h-5 text-amber-400 animate-spin mx-auto mb-2" />
+                      Kullanıcılar getiriliyor...
+                    </div>
+                  ) : systemUsers.length === 0 ? (
+                    <div className="p-4 text-center text-[#8b949e] bg-[#0d1117] rounded-xl border border-[#30363d]">
+                      Henüz kayıtlı kullanıcı bulunmuyor. Yeni hesap aç seçeneğini kullanabilirsiniz.
+                    </div>
+                  ) : (
+                    systemUsers
+                      .filter((u) => {
+                        if (!userSearchTerm) return true;
+                        const term = userSearchTerm.toLowerCase();
+                        return (
+                          (u.kullaniciAdi && u.kullaniciAdi.toLowerCase().includes(term)) ||
+                          (u.telefon && u.telefon.includes(term)) ||
+                          (u.ad && u.ad.toLowerCase().includes(term))
+                        );
+                      })
+                      .map((u) => {
+                        const isCurrentLinked = assignModalItem.kullaniciId === u._id;
+                        return (
+                          <div
+                            key={u._id}
+                            className={`p-3 rounded-xl border flex items-center justify-between gap-3 transition-all ${isCurrentLinked
+                              ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
+                              : 'bg-[#0d1117] border-[#30363d] hover:border-amber-500/40 text-white'
+                              }`}
+                          >
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-bold text-white flex items-center gap-1.5 truncate">
+                                <span>{u.kullaniciAdi}</span>
+                                {isCurrentLinked && (
+                                  <span className="px-1.5 py-0.2 rounded bg-emerald-500 text-slate-950 font-black text-[9px]">
+                                    Şu anki Sahibi
+                                  </span>
+                                )}
+                              </span>
+                              <span className="text-[11px] text-[#8b949e] font-mono">
+                                📞 {u.telefon || 'Telefon yok'} {u.sifreHash ? `• Şifre: ${u.sifreHash}` : ''}
+                              </span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleAssignExistingUser(u._id)}
+                              disabled={assignLoading || isCurrentLinked}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-black shrink-0 transition-all ${isCurrentLinked
+                                ? 'bg-emerald-500/20 text-emerald-400 cursor-default'
+                                : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
+                                }`}
+                            >
+                              {isCurrentLinked ? 'Bağlı' : 'Bu Kullanıcıya Ata'}
+                            </button>
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* ── 2. YENİ KULLANICI HESABI OLUŞTURMA FORMU ── */
+              <form onSubmit={handleCreateAndAssignUser} className="flex flex-col gap-4 text-xs font-heading">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[#8b949e] font-black uppercase">Atanacak Kullanıcı Adı</label>
                   <input

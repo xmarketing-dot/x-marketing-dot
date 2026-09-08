@@ -66,6 +66,7 @@ export async function PATCH(req: NextRequest) {
     if (whatsappNumara) updateFields.whatsappNumara = whatsappNumara.trim();
     if (status) updateFields.status = status;
     if (panelSifresi) updateFields.panelSifresi = panelSifresi.trim();
+    if (body.kullaniciId !== undefined) updateFields.kullaniciId = body.kullaniciId || null;
 
     // Özel VIP Model Profil ve Biyografi Alanları (Admin Tarafından)
     if (body.tamAd !== undefined) updateFields.tamAd = body.tamAd ? body.tamAd.trim() : null;

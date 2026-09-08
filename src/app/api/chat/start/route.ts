@@ -7,7 +7,8 @@ import BanModel from '@/models/Ban';
 
 export async function POST(req: NextRequest) {
   try {
-    const { threadId, kullaniciAdi } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { threadId, kullaniciAdi, createIfNotFound } = body;
     await connectToDatabase();
 
     // Resolve client IP
@@ -62,16 +63,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // If client is just checking or visiting without writing a message, do not create empty thread in DB
+    if (!createIfNotFound && !kullaniciAdi?.startsWith('İlan Sahibi:')) {
+      return NextResponse.json({ thread: null, messages: [] });
+    }
+
     const name = kullaniciAdi || `Müşteri #${Math.floor(1000 + Math.random() * 9000)}`;
     const newThread = await ChatThreadModel.create({
       kullaniciAdi: name,
       ip: clientIp,
-      sonMesajOzeti: 'Yeni Sohbet',
+      sonMesajOzeti: '',
       okunmadiAdminSayisi: 0,
       isBanned: false,
     });
 
-    return NextResponse.json({ thread: JSON.parse(JSON.stringify(newThread)) });
+    return NextResponse.json({ thread: JSON.parse(JSON.stringify(newThread)), messages: [] });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

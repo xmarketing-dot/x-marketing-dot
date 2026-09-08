@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
       chatThreadId,
       kullaniciId,
       tamAd,
+      visitorId,
     } = body;
 
     if (!baslik || !aciklama || !ilSlug || !ilceSlug || !whatsappNumara) {
@@ -63,6 +64,9 @@ export async function POST(req: NextRequest) {
     }
 
     await connectToDatabase();
+
+    const forwardedFor = req.headers.get('x-forwarded-for');
+    const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
 
     const slug = generateSlug(ilceSlug, baslik, tamAd);
     const imageUrl = anaFotografUrl && anaFotografUrl.trim() !== ''
@@ -80,6 +84,51 @@ export async function POST(req: NextRequest) {
     // 6 Haneli Kolay Düzenleme Şifresi Üret
     const generatedPassword = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // ── KULLANICIYI / ÖNCEKİ İLANLARI OTOMATİK İLİŞKİLENDİR ──
+    let resolvedUserId = kullaniciId || null;
+    let resolvedPassword = generatedPassword;
+
+    try {
+      const UserModel = (await import('@/models/User')).default;
+      const cleanPhone = whatsappNumara.replace(/\D/g, '');
+
+      // 1. Önce telefon veya daha önce verilmiş aynı visitorId'ye sahip ilanı ara
+      if (!resolvedUserId) {
+        // Telefonla eşleşen kullanıcı var mı?
+        const existingUser = await UserModel.findOne({
+          $or: [
+            { telefon: whatsappNumara },
+            { telefon: cleanPhone },
+            ...(cleanPhone.length >= 10 ? [{ telefon: { $regex: cleanPhone.slice(-10) } }] : [])
+          ]
+        }).lean();
+
+        if (existingUser) {
+          resolvedUserId = existingUser._id;
+          if (existingUser.sifreHash) {
+            resolvedPassword = existingUser.sifreHash;
+          }
+        } else if (visitorId) {
+          // visitorId ile daha önce verilmiş bir ilan var mı?
+          const prevListingWithUser = await ListingModel.findOne({
+            visitorId,
+            kullaniciId: { $ne: null }
+          }).lean();
+
+          if (prevListingWithUser?.kullaniciId) {
+            resolvedUserId = prevListingWithUser.kullaniciId;
+          } else {
+            const prevListing = await ListingModel.findOne({ visitorId }).sort({ createdAt: -1 }).lean();
+            if (prevListing?.panelSifresi) {
+              resolvedPassword = prevListing.panelSifresi;
+            }
+          }
+        }
+      }
+    } catch (userErr) {
+      // Non-critical, continue
+    }
+
     const newListing = await ListingModel.create({
       slug,
       baslik,
@@ -95,8 +144,10 @@ export async function POST(req: NextRequest) {
       yayinSuresi: yayinSuresi || 'haftalik',
       paketBitisTarihi,
       chatThreadId: chatThreadId || null,
-      kullaniciId: kullaniciId || null,
-      panelSifresi: generatedPassword,
+      kullaniciId: resolvedUserId,
+      visitorId: visitorId || null,
+      creatorIp: clientIp,
+      panelSifresi: resolvedPassword,
       status: 'onay_bekliyor',
     });
 
@@ -108,6 +159,7 @@ export async function POST(req: NextRequest) {
         listingBaslik: newListing.baslik,
         listingSlug: newListing.slug,
         kullaniciAdi: `👑 ${newListing.baslik}`,
+        password: resolvedPassword,
       }).catch(() => {});
     }
 
