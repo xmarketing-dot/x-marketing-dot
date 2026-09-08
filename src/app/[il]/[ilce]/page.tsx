@@ -278,11 +278,11 @@ export default async function DistrictPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(seoGraph) }}
       />
 
-      {/* ── 1. LÜKS İLÇE HERO KARTI & DİĞER İLÇELER ŞERİDİ ──────────────── */}
-      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] shadow-2xl flex flex-col gap-3.5">
+      {/* ── 1. MOBİL-NATİVE ORTALANMIŞ İLÇE HERO KARTI ──────────────── */}
+      <div className="p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] shadow-2xl flex flex-col items-center text-center gap-3.5">
         
-        {/* Breadcrumb & Canlı Rozet */}
-        <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-white/10">
+        {/* Breadcrumb & Canlı Rozet (Ortalanmış) */}
+        <div className="flex items-center justify-center flex-wrap gap-2 w-full pb-2.5 border-b border-white/10">
           <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#8b949e] font-heading">
             <Link href="/" className="hover:text-amber-400 transition-colors">Anasayfa</Link>
             <ChevronRight className="w-3.5 h-3.5 text-[#484f58]" />
@@ -292,39 +292,41 @@ export default async function DistrictPage({ params }: Props) {
             <ChevronRight className="w-3.5 h-3.5 text-[#484f58]" />
             <span className="text-amber-400 font-black capitalize">{districtName}</span>
           </nav>
+        </div>
 
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-[11px] font-mono font-bold border border-emerald-500/20">
-              ● Doğrulanmış Bölge
-            </span>
-            <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-black font-heading border border-amber-500/30">
-              {listings.length} İlan
-            </span>
-          </div>
+        <div className="flex items-center justify-center flex-wrap gap-2">
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 text-[11px] font-mono font-bold border border-emerald-500/25">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Doğrulanmış Bölge</span>
+          </span>
+
+          <span className="px-3 py-1 rounded-full bg-slate-800/80 text-amber-300 text-xs font-black font-heading border border-amber-500/20 shadow-sm">
+            {listings.length} Aktif İlan
+          </span>
         </div>
 
         {/* Ana Başlık ve Açıklama */}
-        <div className="flex flex-col gap-1">
-          <h1 className="font-heading font-black text-xl sm:text-3xl text-white tracking-tight leading-snug">
-            {districtName} <span className="text-amber-400">Eskort &amp; VIP Model İlanları</span>
+        <div className="flex flex-col items-center gap-1.5 max-w-xl mx-auto">
+          <h1 className="font-heading font-black text-xl sm:text-3xl text-white tracking-tight leading-tight">
+            {districtName} <span className="text-amber-400">Eskort İlanları</span>
           </h1>
           <p className="text-xs sm:text-sm text-[#8b949e] leading-relaxed">
-            {location.il} {districtName} bölgesinde teyit edilmiş VIP eskort profilleri, bağımsız bayanlar ve doğrudan iletişim hatları.
+            {location.il} {districtName} bölgesinde teyit edilmiş VIP eskort profilleri, bağımsız bayanlar ve doğrudan WhatsApp iletişim hatları.
           </p>
         </div>
 
         {/* Diğer İlçeler Şeridi */}
         {otherDistricts.length > 0 && (
-          <div className="flex flex-col gap-1.5 pt-2 border-t border-[#30363d]/70">
+          <div className="flex flex-col items-center gap-2 pt-2.5 border-t border-[#30363d]/80 w-full">
             <span className="text-[10px] font-black text-[#8b949e] uppercase tracking-wider font-heading">
-              {location.il} Diğer İlçeleri ({otherDistricts.length}):
+              {location.il} Diğer İlçeleri ({otherDistricts.length})
             </span>
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-center justify-start sm:justify-center gap-1.5 overflow-x-auto no-scrollbar py-1 w-full max-w-full">
               {otherDistricts.map((d: any) => (
                 <Link
                   key={d.slug}
                   href={`/${location.ilSlug}/${d.slug}`}
-                  className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-extrabold text-xs border border-[#363b42] transition-all shrink-0 shadow-sm active:scale-95"
+                  className="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-extrabold text-xs border border-[#363b42] transition-all shrink-0 shadow-sm active:scale-95"
                 >
                   {d.ad}
                 </Link>
