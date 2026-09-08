@@ -145,20 +145,20 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
       {/* ── 3. ALT KART & BUTONLAR (KUSURSUZ 3'LÜ GRID DÜZENİ) ──────────────── */}
       <div className="relative z-30 px-3.5 pb-4 pt-2 flex flex-col gap-2.5 w-full">
 
-        {/* Başlık ve Konum Alanı */}
-        <div className="flex flex-col gap-1 drop-shadow-lg">
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-black/60 backdrop-blur-md text-amber-400 font-extrabold text-[11px] uppercase border border-amber-400/30 font-heading">
-              <MapPin className="w-3 h-3 text-amber-400" />
-              {current.ilSlug} / {current.ilceSlug}
-            </span>
-          </div>
-
-          <Link href={`/ilan/${current.slug}`} className="block">
-            <h1 className="font-black text-lg sm:text-xl text-white font-heading tracking-tight leading-snug drop-shadow-md hover:text-amber-300 transition-colors line-clamp-1">
+        {/* Başlık (Sol) ve Konum / Adres (Sağ) Alanı ──────────────── */}
+        <div className="flex items-center justify-between gap-2.5 drop-shadow-lg w-full">
+          {/* Sol: Model Adı */}
+          <Link href={`/ilan/${current.slug}`} className="block min-w-0 flex-1">
+            <h1 className="font-black text-base sm:text-xl text-white font-heading tracking-tight leading-tight drop-shadow-md hover:text-amber-300 transition-colors truncate">
               {current.baslik}
             </h1>
           </Link>
+
+          {/* Sağ: Konum / Adres Rozeti */}
+          <span className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-black/75 backdrop-blur-md text-amber-400 font-extrabold text-[11px] sm:text-xs uppercase border border-amber-400/35 font-heading shrink-0 shadow-md">
+            <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="truncate max-w-[130px] sm:max-w-none capitalize">{current.ilSlug} / {current.ilceSlug}</span>
+          </span>
         </div>
 
         {/* ── PREMİUM VE MOBİL-NATİVE 2 VİTRİN AKSİYON BUTONU (WHATSAPP & VİP PROFİLİ İNCELE) ──────────────── */}
