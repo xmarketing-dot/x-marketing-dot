@@ -250,39 +250,57 @@ export default async function CityPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(seoGraph) }}
       />
 
-      {/* ── 1. DÜZ VE ŞIK BAŞLIK & İLÇE ŞERİDİ ──────────────── */}
-      <div className="flex flex-col gap-2.5 pt-1 text-left">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-              <MapPin className="w-5 h-5" />
+      {/* ── 1. LÜKS ŞEHİR HERO KARTI & İLÇE ŞERİDİ ──────────────── */}
+      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] shadow-2xl flex flex-col gap-3.5">
+        
+        {/* Üst Satır: Şehir Rozeti & Canlı Durum */}
+        <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <MapPin className="w-4 h-4" />
             </div>
-            <div className="flex flex-col">
-              <h1 className="font-heading font-black text-xl sm:text-2xl text-white tracking-tight">
-                {location.il} Eskort İlanları
-              </h1>
-              <p className="text-[11px] text-[#8b949e]">
-                {location.il} genelinde doğrulanmış güncel VIP ve bağımsız profiller
-              </p>
-            </div>
+            <span className="text-xs font-black uppercase tracking-widest text-amber-400 font-heading">
+              {location.il} Bölge Rehberi
+            </span>
           </div>
-          <span className="px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-400 text-xs font-black font-heading border border-amber-500/30 shadow-sm">
-            {listings.length} Doğrulanmış İlan
-          </span>
+
+          <div className="flex items-center gap-2">
+            <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] sm:text-[11px] font-mono font-bold border border-emerald-500/20">
+              ● Güncel İlanlar
+            </span>
+            <span className="px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 text-xs font-black font-heading border border-amber-500/30">
+              {listings.length} İlan
+            </span>
+          </div>
         </div>
 
-        {/* İlçe Hapları */}
+        {/* Ana Başlık ve Açıklama */}
+        <div className="flex flex-col gap-1">
+          <h1 className="font-heading font-black text-xl sm:text-3xl text-white tracking-tight leading-snug">
+            {location.il} <span className="text-amber-400">Eskort ve VIP Model İlanları</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-[#8b949e] leading-relaxed">
+            {location.il} genelinde ve ilçelerinde %100 doğrulanmış bağımsız eskort, VIP model ve elit bayan profilleri. WhatsApp ile doğrudan güvenle iletişim kurun.
+          </p>
+        </div>
+
+        {/* İlçe Hapları Şeridi */}
         {location.ilceler && location.ilceler.length > 0 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-            {location.ilceler.map((ilce: any) => (
-              <Link
-                key={ilce.slug}
-                href={`/${location.ilSlug}/${ilce.slug}`}
-                className="px-3.5 py-1.5 rounded-xl bg-[#161b22] hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-extrabold text-xs border border-[#30363d] transition-all shrink-0 shadow-sm active:scale-95"
-              >
-                {ilce.ad}
-              </Link>
-            ))}
+          <div className="flex flex-col gap-1.5 pt-2 border-t border-[#30363d]/70">
+            <span className="text-[10px] font-black text-[#8b949e] uppercase tracking-wider font-heading">
+              {location.il} Popüler İlçeleri ({location.ilceler.length}):
+            </span>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+              {location.ilceler.map((ilce: any) => (
+                <Link
+                  key={ilce.slug}
+                  href={`/${location.ilSlug}/${ilce.slug}`}
+                  className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-extrabold text-xs border border-[#363b42] transition-all shrink-0 shadow-sm active:scale-95"
+                >
+                  {ilce.ad}
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>

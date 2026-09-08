@@ -57,23 +57,46 @@ export default async function SehirlerPage() {
     <div className="flex flex-col gap-4 sm:gap-6 px-2 sm:px-4 py-3 pb-20 w-full max-w-5xl mx-auto">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* ── 1. SAYFA BAŞLIĞI & HERO ALANI ──────────────── */}
-      <div className="flex flex-col gap-2 pt-2 text-center sm:text-left">
-        <div className="flex items-center justify-center sm:justify-start gap-2">
-          <div className="w-8 h-8 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center">
-            <Globe className="w-4 h-4 text-amber-400" />
+      {/* ── 1. SAYFA BAŞLIĞI & HERO KARTI ──────────────── */}
+      <div className="p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] shadow-2xl flex flex-col gap-3.5">
+        <div className="flex items-center justify-between flex-wrap gap-2 pb-2.5 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <Globe className="w-4 h-4" />
+            </div>
+            <span className="text-xs font-black uppercase tracking-widest text-amber-400 font-heading">
+              81 İl &amp; 970+ İlçe Keşif Merkezi
+            </span>
           </div>
-          <span className="text-xs font-black uppercase tracking-widest text-amber-400 font-heading">
-            81 İl &amp; 970+ İlçe Keşif Merkezi
+
+          <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[11px] font-mono font-bold border border-emerald-500/20">
+            ● Canlı Rehber
           </span>
         </div>
-        
+
         <h1 className="font-black text-2xl sm:text-3xl text-white font-heading tracking-tight leading-snug">
           Türkiye Genelinde <span className="text-amber-400">Şehir ve İlçe İlanları</span>
         </h1>
-        <p className="text-xs sm:text-sm text-[#8b949e] leading-relaxed max-w-xl">
-          Aktif ilanı olan şehirleri filtreleyin, ilçeleri listeleyin ve doğrudan aradığınız bölgenin doğrulanmış ilanlarına ulaşın.
+
+        <p className="text-xs sm:text-sm text-[#8b949e] leading-relaxed">
+          Türkiye genelindeki 81 il ve tüm popüler ilçelerde doğrulanmış eskort ve VIP model ilanları. Şehrinizi seçerek doğrudan teyitli profillerle WhatsApp üzerinden iletişim kurun.
         </p>
+
+        {/* 3'lü Hızlı Özet Şerit */}
+        <div className="grid grid-cols-3 gap-2 pt-2 border-t border-[#30363d]/60 text-center font-heading">
+          <div className="p-2.5 rounded-xl bg-[#21262d]/50 border border-white/5">
+            <span className="text-xs sm:text-sm font-black text-white">81 İl</span>
+            <span className="block text-[10px] text-[#8b949e]">Tüm Türkiye</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-[#21262d]/50 border border-white/5">
+            <span className="text-xs sm:text-sm font-black text-amber-400">970+ İlçe</span>
+            <span className="block text-[10px] text-[#8b949e]">Bölgesel Ağ</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-[#21262d]/50 border border-white/5">
+            <span className="text-xs sm:text-sm font-black text-emerald-400">%100 Teyitli</span>
+            <span className="block text-[10px] text-[#8b949e]">Manuel Onay</span>
+          </div>
+        </div>
       </div>
 
       {/* ── 1.5 SPONSOR BANNER REKLAM ALANI ──────────────── */}
@@ -85,6 +108,7 @@ export default async function SehirlerPage() {
       <CityExplorer 
         cityListingCounts={cityListingCounts} 
         totalListingsCount={allListings.length} 
+        allListings={allListings}
       />
 
       {/* ── 3. GÜVEN BİLGİLENDİRME PANELİ ──────────────── */}
