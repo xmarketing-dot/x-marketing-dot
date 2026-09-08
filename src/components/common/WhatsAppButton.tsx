@@ -81,10 +81,10 @@ export default function WhatsAppButton({
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleClick}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-all font-heading"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-md active:scale-95 transition-all font-heading"
           title="WhatsApp'tan Mesaj Gönder"
         >
-          <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950" />
+          <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
           <span>WhatsApp ile İletişim</span>
         </a>
       </div>
@@ -98,9 +98,9 @@ export default function WhatsAppButton({
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="w-full flex items-center justify-center gap-2 py-3.5 px-5 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl active:scale-98 transition-all font-heading cursor-pointer"
+        className="w-full flex items-center justify-center gap-2.5 py-3.5 sm:py-4 px-5 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-lg active:scale-95 transition-all font-heading cursor-pointer"
       >
-        <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-slate-950 shrink-0" />
+        <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
         <span>WhatsApp ile İletişime Geç</span>
       </a>
     </div>

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, ShieldCheck, ChevronRight, Crown, Award, Medal } from 'lucide-react';
+import { MapPin, ShieldCheck, ChevronRight, Crown, Award, Medal, Eye, ArrowUpRight, Sparkles } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 
@@ -248,26 +248,29 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
           );
         })()}
 
-        {/* WhatsApp & Detay Butonları */}
-        <div className="grid grid-cols-2 gap-1.5 pt-0.5 font-heading">
+        {/* ── PREMİUM VE MOBİL-NATİVE AKSİYON BUTONLARI (WHATSAPP & PROFİLİ GÖR) ──────────────── */}
+        <div className="grid grid-cols-2 gap-2 pt-1 font-heading">
+          {/* 1. WHATSAPP BUTONU (Net, Canlı WhatsApp Yeşili & Beyaz Tipografi) */}
           <a
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleWaClick}
-            className="py-2 px-1 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-[10px] shadow-sm active:scale-95 transition-all flex items-center justify-center gap-1"
-            title="WhatsApp"
+            className="py-2.5 px-2 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-[13px] tracking-wide shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            title="WhatsApp ile Mesaj Gönder"
           >
-            <OfficialWhatsAppIcon className="w-3 h-3 fill-slate-950 shrink-0" />
+            <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
             <span className="truncate">WhatsApp</span>
           </a>
 
+          {/* 2. PROFİLİ İNCELE BUTONU (Lüks Koyu Panel & Altın Göz İkonu) */}
           <Link
             href={`/ilan/${listing.slug}`}
-            className="py-2 px-1 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white font-bold text-[10px] border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-0.5 text-center"
+            className="py-2.5 px-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 hover:text-amber-200 font-black text-xs sm:text-[13px] tracking-wide border border-amber-500/40 hover:border-amber-400 shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 text-center"
+            title="Model Profilini ve Fotoğraflarını İncele"
           >
-            <span>İncele</span>
-            <ChevronRight className="w-3 h-3 text-amber-400 stroke-[3] shrink-0" />
+            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0 stroke-[2.5]" />
+            <span className="truncate">Profili Gör</span>
           </Link>
         </div>
       </div>

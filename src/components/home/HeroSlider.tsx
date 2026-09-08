@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, MapPin, ShieldCheck, Phone, Crown, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, ShieldCheck, Phone, Crown, Sparkles, Eye, ArrowUpRight } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 
@@ -161,29 +161,29 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
           </Link>
         </div>
 
-        {/* ── 2 AYRI NET VE BÜYÜK AKSİYON BUTONU (WHATSAPP & DETAY) ──────────────── */}
+        {/* ── PREMİUM VE MOBİL-NATİVE 2 BÜYÜK AKSİYON BUTONU (WHATSAPP & PROFİLİ İNCELE) ──────────────── */}
         <div className="grid grid-cols-2 gap-2.5 w-full font-heading">
 
-          {/* 1. WHATSAPP BUTONU */}
+          {/* 1. WHATSAPP BUTONU (Net, Canlı WhatsApp Yeşili & Beyaz Tipografi) */}
           <a
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleWaClick}
-            className="py-3.5 px-3 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs sm:text-sm shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
-            title="WhatsApp ile İletişim"
+            className="py-3.5 px-3 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+            title="WhatsApp ile Mesaj Gönder"
           >
-            <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950 shrink-0" />
-            <span className="truncate">WhatsApp'dan Yaz</span>
+            <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-white shrink-0" />
+            <span className="truncate">WhatsApp İle Yaz</span>
           </a>
 
-          {/* 2. PROFİLİ İNCELE BUTONU */}
+          {/* 2. PROFİLİ İNCELE BUTONU (Lüks Koyu Vitrin & Altın Göz İkonu) */}
           <Link
             href={`/ilan/${current.slug}`}
-            className="py-3.5 px-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white font-black text-xs sm:text-sm border border-[#363b42] shadow-xl active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            className="py-3.5 px-3 rounded-2xl bg-[#161b22] hover:bg-[#21262d] text-amber-300 hover:text-amber-200 font-black text-xs sm:text-sm tracking-wide border-2 border-amber-500/50 hover:border-amber-400 shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
           >
+            <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0 stroke-[2.5]" />
             <span className="truncate">Profili İncele</span>
-            <ChevronRight className="w-4 h-4 text-amber-400 stroke-[3] shrink-0" />
           </Link>
 
         </div>
