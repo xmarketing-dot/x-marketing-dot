@@ -215,13 +215,13 @@ export default async function ListingDetailPage({ params }: Props) {
           <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
         </div>
 
-        {/* ── 2. BAŞLIK, KONUM VE DOĞRULAMA KARTI ──────────────── */}
-        <div className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#161b22] border transition-all duration-300 shadow-xl flex flex-col gap-3.5 ${
+        {/* ── 2. BİRLEŞİK TEK PARÇA PREMİUM PROFİL & AÇIKLAMA KARTI ──────────────── */}
+        <div className={`p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-[#161b22] border transition-all duration-300 shadow-2xl flex flex-col gap-4 sm:gap-5 ${
           isUltraVip || isVip
             ? 'border-amber-500/70 ring-1 ring-amber-500/20 shadow-amber-500/10'
             : isGold
             ? 'border-yellow-500/60 ring-1 ring-yellow-500/15 shadow-yellow-500/10'
-            : 'border-slate-600/50 ring-1 ring-slate-400/10'
+            : 'border-slate-600/50 ring-1 ring-slate-400/10 shadow-slate-500/5'
         }`}>
           {/* Üst Satır: Başlık (Sol) & Konum (Sağ) */}
           <div className="flex items-start justify-between gap-3 w-full">
@@ -242,7 +242,7 @@ export default async function ListingDetailPage({ params }: Props) {
           </div>
 
           {/* Orta Satır: Rozetler & Beğeni (Like) */}
-          <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#30363d]/70 flex-wrap">
+          <div className="flex items-center justify-between gap-2 pb-1 border-b border-[#30363d]/70 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 text-[11px] font-black uppercase font-heading border border-emerald-500/30">
                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -278,32 +278,31 @@ export default async function ListingDetailPage({ params }: Props) {
               />
             </div>
           </div>
-        </div>
 
-        {/* ── 3. MOBİLE ÖZEL PREMİUM AÇIKLAMA VE BİLGİ KUTUSU ──────────────── */}
-        <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] shadow-xl flex flex-col gap-4">
-          {/* Bölüm Başlığı */}
-          <div className="flex items-center justify-between pb-2.5 border-b border-[#30363d]/80">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-                <Sparkles className="w-4 h-4" />
+          {/* ── ÖNE ÇIKAN AÇIKLAMA ALANI (Vurgulanmış, Lüks Koyu Panel) ──────────────── */}
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <h2 className="font-black text-xs sm:text-sm text-white font-heading uppercase tracking-wide">
+                  Model Açıklaması &amp; Hizmet Detayları
+                </h2>
               </div>
-              <h2 className="font-black text-sm sm:text-base text-white font-heading uppercase tracking-wide">
-                Hakkımda &amp; Hizmet Detayları
-              </h2>
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                ● Aktif &amp; Müsait
+              </span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-              ● Aktif &amp; Müsait
-            </span>
-          </div>
 
-          {/* Açıklama Metni (Okunaklı, Temiz Tipografi) */}
-          <div className="text-sm sm:text-base text-[#e6edf3] leading-relaxed whitespace-pre-line font-normal tracking-normal">
-            {listing.aciklama}
+            {/* Vurgulu Açıklama Kutusu */}
+            <div className="bg-[#0d1117]/80 border border-[#30363d]/80 rounded-2xl p-4 sm:p-5 shadow-inner text-sm sm:text-base text-[#f0f6fc] leading-relaxed whitespace-pre-line font-medium">
+              {listing.aciklama}
+            </div>
           </div>
 
           {/* 4'lü Hızlı Özellik Çipleri */}
-          <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#30363d]/60 font-heading text-xs">
+          <div className="grid grid-cols-2 gap-2 font-heading text-xs">
             <div className="p-2.5 rounded-xl bg-[#21262d]/60 border border-[#30363d] flex items-center gap-2">
               <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
               <div className="flex flex-col min-w-0">
@@ -338,7 +337,7 @@ export default async function ListingDetailPage({ params }: Props) {
           </div>
 
           {/* Sayfa İçi Büyük WhatsApp Butonu */}
-          <div className="pt-2">
+          <div className="pt-1">
             <a
               href={waUrl}
               target="_blank"

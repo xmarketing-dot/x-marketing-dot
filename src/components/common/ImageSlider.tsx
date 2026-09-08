@@ -25,6 +25,9 @@ export default function ImageSlider({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const touchStartXRef = React.useRef<number | null>(null);
+  const touchEndXRef = React.useRef<number | null>(null);
+  const thumbTrackRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -48,16 +51,44 @@ export default function ImageSlider({
     { url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=1000&auto=format&fit=crop&q=80' },
   ];
 
-  const prevSlide = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const prevSlide = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setCurrentIndex((prev) => (prev === 0 ? safeImages.length - 1 : prev - 1));
   };
 
-  const nextSlide = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
+  const nextSlide = (e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
     setCurrentIndex((prev) => (prev === safeImages.length - 1 ? 0 : prev + 1));
+  };
+
+  // Touch Swipe Handlers for Mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndXRef.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartXRef.current === null || touchEndXRef.current === null) return;
+    const distance = touchStartXRef.current - touchEndXRef.current;
+    const minSwipeDistance = 35;
+
+    if (distance > minSwipeDistance) {
+      nextSlide();
+    } else if (distance < -minSwipeDistance) {
+      prevSlide();
+    }
+
+    touchStartXRef.current = null;
+    touchEndXRef.current = null;
   };
 
   const openFullscreen = (e: React.MouseEvent) => {
@@ -68,8 +99,13 @@ export default function ImageSlider({
 
   return (
     <div>
-      {/* Slider Main Viewport */}
-      <div className={`relative w-full ${aspectRatio} bg-slate-950 overflow-hidden group ${className}`}>
+      {/* Slider Main Viewport with Mobile Touch Gestures */}
+      <div 
+        className={`relative w-full ${aspectRatio} bg-slate-950 overflow-hidden select-none group ${className}`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Active Image */}
         <Image
           src={safeImages[currentIndex]?.url || safeImages[0].url}
@@ -81,8 +117,6 @@ export default function ImageSlider({
           className="object-cover transition-all duration-700 ease-out group-hover:scale-105 cursor-pointer"
           onClick={openFullscreen}
         />
-
-
 
         {/* Badge Overlay */}
         {badge && (
@@ -111,56 +145,56 @@ export default function ImageSlider({
           </span>
         </div>
 
-        {/* Image Counter Pill */}
-        {safeImages.length > 1 && (
-          <div className="absolute bottom-3 right-3 z-20 px-3 py-1 rounded-full bg-slate-950/90 backdrop-blur-md border border-white/20 text-white font-black text-xs font-heading tracking-wider shadow-lg">
-            {currentIndex + 1} / {safeImages.length}
-          </div>
-        )}
-
         {/* Navigation Arrows */}
         {safeImages.length > 1 && (
           <>
             <button
               onClick={prevSlide}
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-slate-950/80 hover:bg-amber-500 text-white hover:text-slate-950 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-2xl active:scale-90"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-950/80 hover:bg-amber-500 text-white hover:text-slate-950 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-2xl active:scale-90"
               aria-label="Önceki Fotoğraf"
             >
-              <ChevronLeft className="w-6 h-6 stroke-[3]" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
             </button>
 
             <button
               onClick={nextSlide}
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-slate-950/80 hover:bg-amber-500 text-white hover:text-slate-950 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-2xl active:scale-90"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-950/80 hover:bg-amber-500 text-white hover:text-slate-950 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all shadow-2xl active:scale-90"
               aria-label="Sonraki Fotoğraf"
             >
-              <ChevronRight className="w-6 h-6 stroke-[3]" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 stroke-[3]" />
             </button>
           </>
         )}
 
-        {/* Pagination Dots */}
+        {/* ── ORTALANMIŞ SLIDE GÖSTERGESİ (CENTERED DOTS) ──────────────── */}
         {safeImages.length > 1 && (
-          <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/80 backdrop-blur-md border border-white/20 shadow-lg">
-            {safeImages.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setCurrentIndex(idx);
-                }}
-                className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/50 hover:bg-white'
+          <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/85 backdrop-blur-md border border-white/20 shadow-xl pointer-events-auto">
+              {safeImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setCurrentIndex(idx);
+                  }}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    idx === currentIndex ? 'w-6 bg-amber-400 shadow-sm' : 'w-1.5 bg-white/50 hover:bg-white'
                   }`}
-              />
-            ))}
+                  aria-label={`Fotoğraf ${idx + 1}`}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Horizontal Thumbnail Track */}
+      {/* ── ALTTAN ORTALANMIŞ RESİM SEÇİM ŞERİDİ (CENTERED THUMBNAILS) ──────────────── */}
       {safeImages.length > 1 && (
-        <div className="flex items-center gap-2 p-2.5 bg-[#161b22] border-t border-[#30363d] overflow-x-auto no-scrollbar">
+        <div 
+          ref={thumbTrackRef}
+          className="flex items-center justify-center gap-2 p-2.5 bg-[#161b22] border-t border-[#30363d] overflow-x-auto no-scrollbar"
+        >
           {safeImages.map((img, idx) => (
             <button
               key={idx}
@@ -169,8 +203,11 @@ export default function ImageSlider({
                 e.preventDefault();
                 setCurrentIndex(idx);
               }}
-              className={`relative w-16 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${idx === currentIndex ? 'border-amber-400 scale-105 shadow-lg shadow-amber-500/30 ring-1 ring-amber-400' : 'border-[#30363d] opacity-50 hover:opacity-100'
-                }`}
+              className={`relative w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                idx === currentIndex
+                  ? 'border-amber-400 scale-105 shadow-lg shadow-amber-500/30 ring-2 ring-amber-400/50 z-10'
+                  : 'border-[#30363d] opacity-50 hover:opacity-100 hover:scale-100'
+              }`}
             >
               <Image src={img.url} alt={`Resim ${idx + 1}`} fill className="object-cover" sizes="64px" />
             </button>
