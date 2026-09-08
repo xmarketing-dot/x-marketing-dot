@@ -161,28 +161,28 @@ export default function HeroSlider({ slides = [] }: HeroSliderProps) {
           </Link>
         </div>
 
-        {/* ── PREMİUM VE MOBİL-NATİVE 2 BÜYÜK AKSİYON BUTONU (WHATSAPP & PROFİLİ İNCELE) ──────────────── */}
+        {/* ── PREMİUM VE MOBİL-NATİVE 2 VİTRİN AKSİYON BUTONU (WHATSAPP & VİP PROFİLİ İNCELE) ──────────────── */}
         <div className="grid grid-cols-2 gap-2.5 w-full font-heading">
 
-          {/* 1. WHATSAPP BUTONU (Net, Canlı WhatsApp Yeşili & Beyaz Tipografi) */}
+          {/* 1. WHATSAPP BUTONU */}
           <a
             href={waUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleWaClick}
-            className="py-3.5 px-3 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="py-3.5 sm:py-4 px-3 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-base tracking-wide shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2"
             title="WhatsApp ile Mesaj Gönder"
           >
             <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-white shrink-0" />
             <span className="truncate">WhatsApp İle Yaz</span>
           </a>
 
-          {/* 2. PROFİLİ İNCELE BUTONU (Lüks Koyu Vitrin & Altın Göz İkonu) */}
+          {/* 2. PROFİLİ İNCELE BUTONU (Özel VIP Vitrin Altın Butonu) */}
           <Link
             href={`/ilan/${current.slug}`}
-            className="py-3.5 px-3 rounded-2xl bg-[#161b22] hover:bg-[#21262d] text-amber-300 hover:text-amber-200 font-black text-xs sm:text-sm tracking-wide border-2 border-amber-500/50 hover:border-amber-400 shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="py-3.5 sm:py-4 px-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs sm:text-base tracking-wide shadow-2xl shadow-amber-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 border border-amber-200"
           >
-            <Eye className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 shrink-0 stroke-[2.5]" />
+            <Crown className="w-4 h-4 sm:w-5 sm:h-5 fill-slate-950 shrink-0" />
             <span className="truncate">Profili İncele</span>
           </Link>
 

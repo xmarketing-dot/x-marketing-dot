@@ -360,7 +360,7 @@ export default async function DistrictPage({ params }: Props) {
         </div>
       ) : (
         /* ÇOKLU İLAN VARSA: 2/3 SÜTUNLU GRID LİSTESİ */
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
           {listings.map((item: any, index: number) => (
             <CompactListingCard key={item._id || index} listing={item} />
           ))}

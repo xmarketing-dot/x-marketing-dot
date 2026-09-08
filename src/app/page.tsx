@@ -263,7 +263,7 @@ export default async function HomePage() {
       </div>
 
       {/* 2.5 TÜRKİYE 81 İL LİSTESİ - ULTRA MODERN VE ŞIK ETKİLEŞİMLİ KART */}
-      <div className="px-4">
+      <div className="px-2 sm:px-4">
         <Link
           href="/sehirler"
           className="relative w-full p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#1c160c] via-[#161b22] to-[#12161c] border border-amber-500/40 hover:border-amber-400/80 flex items-center justify-between shadow-lg shadow-black/40 group transition-all duration-300 hover:scale-[1.01] overflow-hidden"
@@ -307,7 +307,7 @@ export default async function HomePage() {
       </section>
 
       {/* 4. TÜM İLANLAR GRID LİSTESİ */}
-      <section className="px-4 flex flex-col gap-3 pt-1">
+      <section className="px-2 sm:px-4 flex flex-col gap-2.5 pt-1">
         <div className="flex items-center justify-between pb-1 border-b border-[#30363d]">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center font-black shadow-md">
@@ -322,7 +322,7 @@ export default async function HomePage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
           {gridListings.map((listing: any, index: number) => (
             <CompactListingCard key={listing._id || index} listing={listing} />
           ))}
@@ -330,9 +330,9 @@ export default async function HomePage() {
       </section>
 
       {/* ── 5. GÜVEN & DOĞRULAMA BİLGİ KUTUSU ──────────────── */}
-      <div className="px-4 mt-2">
-        <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-4 shadow-xl">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+      <div className="px-2 sm:px-4 mt-2">
+        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-3.5 sm:gap-4 shadow-xl">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
             <ShieldCheck className="w-6 h-6" />
           </div>
           <div className="flex flex-col">
@@ -345,7 +345,7 @@ export default async function HomePage() {
       </div>
 
       {/* ── 6. E-E-A-T SEO REHBERİ VE SSS AKORDİYON (TOPİCAL AUTHORITY) ──────────────── */}
-      <section className="px-4 mt-4">
+      <section className="px-2 sm:px-4 mt-3 sm:mt-4">
         <div className="p-5 sm:p-6 rounded-[28px] bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] flex flex-col gap-4 shadow-2xl">
           <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
             <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">

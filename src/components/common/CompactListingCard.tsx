@@ -129,10 +129,10 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     <div
       className={`group relative rounded-2xl overflow-hidden bg-[#161b22] border transition-all duration-300 flex flex-col justify-between shadow-md hover:shadow-xl ${
         isVip
-          ? 'border-amber-500/80 hover:border-amber-400 shadow-amber-500/10'
+          ? 'border-amber-500/75 hover:border-amber-400 shadow-amber-500/10 ring-1 ring-amber-500/20'
           : isGold
-          ? 'border-amber-600/60 hover:border-amber-500'
-          : 'border-[#30363d] hover:border-[#484f58]'
+          ? 'border-yellow-500/60 hover:border-yellow-400 shadow-yellow-500/10 ring-1 ring-yellow-500/15'
+          : 'border-slate-600/50 hover:border-slate-400 shadow-slate-500/5 ring-1 ring-slate-400/10'
       }`}
     >
       {/* ── 1. FOTOĞRAF ALANI (Otomatik Kayan & Mobilde Kaydırılabilir Slider) ──────────────── */}
@@ -166,19 +166,19 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
         <div className="absolute top-2 left-2 right-2 z-20 flex items-center justify-between pointer-events-none">
           <div>
             {isVip && (
-              <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 font-black text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
+              <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 font-black text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
                 <Crown className="w-2.5 h-2.5 fill-slate-950" />
                 <span>VIP</span>
               </span>
             )}
             {isGold && (
-              <span className="px-2 py-0.5 rounded-lg bg-amber-600 text-white font-black text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
+              <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
                 <Award className="w-2.5 h-2.5" />
                 <span>GOLD</span>
               </span>
             )}
             {isSilver && (
-              <span className="px-2 py-0.5 rounded-lg bg-slate-700 text-slate-200 font-bold text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
+              <span className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-slate-300 via-slate-200 to-slate-400 text-slate-950 font-black text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
                 <Medal className="w-2.5 h-2.5" />
                 <span>SILVER</span>
               </span>
@@ -199,7 +199,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
                 key={dotIdx}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   dotIdx === currentIndex
-                    ? 'w-4 bg-amber-400 shadow-sm shadow-black'
+                    ? isVip ? 'w-4 bg-amber-400' : isGold ? 'w-4 bg-yellow-400' : 'w-4 bg-slate-300'
                     : 'w-1.5 bg-white/50 backdrop-blur-sm'
                 }`}
               />
@@ -218,39 +218,46 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
         </div>
 
         {/* Alt Konum Etiketi */}
-        <div className="absolute bottom-2 left-2 z-20 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-sm text-amber-400 text-[10px] font-bold capitalize border border-amber-400/20">
-          <MapPin className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+        <div className={`absolute bottom-2 left-2 z-20 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/85 backdrop-blur-sm text-[10px] font-bold capitalize border ${
+          isVip ? 'text-amber-400 border-amber-400/30' : isGold ? 'text-yellow-400 border-yellow-400/30' : 'text-slate-300 border-slate-500/30'
+        }`}>
+          <MapPin className="w-2.5 h-2.5 shrink-0" />
           <span className="truncate max-w-[95px]">{listing.ilSlug} / {listing.ilceSlug}</span>
         </div>
       </div>
 
       {/* ── 2. BAŞLIK VE AKSİYON ALANI (Liste Tipi Çerçeveli Düzen) ──────────────── */}
-      <div className="p-2.5 bg-[#161b22] border-t border-[#30363d]/60 flex flex-col gap-2 justify-between flex-1">
+      <div className="p-2 sm:p-2.5 bg-[#161b22] border-t border-[#30363d]/60 flex flex-col gap-1.5 justify-between flex-1">
         <Link href={`/ilan/${listing.slug}`} className="block">
-          <h3 className="font-extrabold text-xs text-white leading-snug font-heading group-hover:text-amber-400 transition-colors line-clamp-2">
+          <h3 className={`font-black text-xs sm:text-[13px] text-white leading-snug font-heading transition-colors line-clamp-1 truncate ${
+            isVip ? 'group-hover:text-amber-300' : isGold ? 'group-hover:text-yellow-300' : 'group-hover:text-slate-200'
+          }`}>
             {listing.baslik}
           </h3>
         </Link>
 
-        {/* Facebook Style Recommendation Count (Dynamic & Organic) */}
+        {/* Facebook Style Recommendation & Verified Badges */}
         {(() => {
           const hash = (listing.slug || listing._id || 'es').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
           const baseLikes = isVip ? 240 + (hash % 95) : isGold ? 120 + (hash % 70) : 55 + (hash % 45);
 
           return (
-            <div className="flex items-center justify-between text-[10px] text-[#8b949e] font-bold border-b border-[#21262d] pb-1.5">
-              <span className="text-blue-400 flex items-center gap-1 font-heading">
+            <div className="flex items-center justify-between text-[11px] font-bold border-b border-[#21262d] pb-1.5">
+              <span className="text-blue-400 flex items-center gap-1 font-heading font-extrabold">
                 <span>👍</span>
                 <span>{baseLikes} Öneri</span>
               </span>
-              <span className="text-emerald-400 font-mono text-[9px]">● Doğrulandı</span>
+              <span className="flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20">
+                <ShieldCheck className="w-2.5 h-2.5 stroke-[2.5]" />
+                <span>Doğrulandı</span>
+              </span>
             </div>
           );
         })()}
 
         {/* ── PREMİUM VE MOBİL-NATİVE AKSİYON BUTONLARI (WHATSAPP & PROFİLİ GÖR) ──────────────── */}
-        <div className="grid grid-cols-2 gap-2 pt-1 font-heading">
-          {/* 1. WHATSAPP BUTONU (Net, Canlı WhatsApp Yeşili & Beyaz Tipografi) */}
+        <div className="grid grid-cols-2 gap-1.5 pt-0.5 font-heading">
+          {/* 1. WHATSAPP BUTONU */}
           <a
             href={waUrl}
             target="_blank"
@@ -263,13 +270,21 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
             <span className="truncate">WhatsApp</span>
           </a>
 
-          {/* 2. PROFİLİ İNCELE BUTONU (Lüks Koyu Panel & Altın Göz İkonu) */}
+          {/* 2. PROFİLİ İNCELE BUTONU (Paket Rengine Uyumlu Lüks Buton) */}
           <Link
             href={`/ilan/${listing.slug}`}
-            className="py-2.5 px-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 hover:text-amber-200 font-black text-xs sm:text-[13px] tracking-wide border border-amber-500/40 hover:border-amber-400 shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 text-center"
+            className={`py-2.5 px-2 rounded-xl font-black text-xs sm:text-[13px] tracking-wide border shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 text-center ${
+              isVip
+                ? 'bg-[#1c1811] hover:bg-[#251e15] text-amber-300 hover:text-amber-200 border-amber-500/50 hover:border-amber-400'
+                : isGold
+                ? 'bg-[#1a1710] hover:bg-[#262115] text-yellow-300 hover:text-yellow-200 border-yellow-500/50 hover:border-yellow-400'
+                : 'bg-[#161b22] hover:bg-[#21262d] text-slate-200 hover:text-white border-slate-500/40 hover:border-slate-300'
+            }`}
             title="Model Profilini ve Fotoğraflarını İncele"
           >
-            <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0 stroke-[2.5]" />
+            <Eye className={`w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 stroke-[2.5] ${
+              isVip ? 'text-amber-400' : isGold ? 'text-yellow-400' : 'text-slate-300'
+            }`} />
             <span className="truncate">Profili Gör</span>
           </Link>
         </div>

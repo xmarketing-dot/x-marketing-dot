@@ -167,7 +167,7 @@ export default async function CategoryDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-2 pb-16 w-full max-w-4xl mx-auto text-left">
+    <div className="flex flex-col gap-3 sm:gap-4 px-2 sm:px-4 py-2 pb-16 w-full max-w-4xl mx-auto text-left">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* Hero Header Banner (Entegre, Dengeli & Lüks Kartvizit Başlık) */}
@@ -254,7 +254,7 @@ export default async function CategoryDetailPage({ params }: Props) {
         </div>
 
         {categoryListings.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {categoryListings.map((listing: any) => (
               <CompactListingCard key={listing._id} listing={listing} />
             ))}
