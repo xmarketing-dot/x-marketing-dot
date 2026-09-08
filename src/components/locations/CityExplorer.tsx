@@ -202,7 +202,7 @@ export default function CityExplorer({ cityListingCounts, totalListingsCount }: 
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3.5">
           {filteredProvinces.map((prov) => {
             const count = cityListingCounts[prov.ilSlug] || 0;
             const hasListings = count > 0;
@@ -211,32 +211,33 @@ export default function CityExplorer({ cityListingCounts, totalListingsCount }: 
             return (
               <div
                 key={prov.ilSlug}
-                className={`rounded-3xl border transition-all shadow-xl overflow-hidden flex flex-col justify-between ${
+                className={`rounded-2xl sm:rounded-3xl border transition-all duration-200 shadow-xl overflow-hidden flex flex-col justify-between ${
                   hasListings
-                    ? 'bg-gradient-to-br from-[#161b22] to-[#1c2128] border-amber-500/50 shadow-amber-500/5'
-                    : 'bg-[#161b22] border-[#30363d]'
+                    ? 'bg-gradient-to-br from-[#161b22] to-[#1a1f26] border-amber-500/60 shadow-amber-500/10 ring-1 ring-amber-500/20'
+                    : 'bg-[#161b22] border-[#30363d]/80 hover:border-[#484f58]'
                 }`}
               >
                 {/* Şehir Başlık Kartı */}
-                <div className="p-4 flex items-center justify-between gap-3">
+                <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
                   <Link
                     href={`/${prov.ilSlug}`}
                     className="flex items-center gap-3 flex-1 min-w-0 group"
                   >
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-black text-sm shadow-md shrink-0 ${
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shadow-md shrink-0 ${
                       hasListings 
                         ? 'bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 shadow-amber-500/30' 
-                        : 'bg-[#21262d] text-[#8b949e]'
+                        : 'bg-[#21262d] text-[#8b949e] border border-white/5'
                     }`}>
                       {prov.il.charAt(0)}
                     </div>
 
                     <div className="flex flex-col min-w-0">
-                      <span className="font-black text-base text-white font-heading group-hover:text-amber-400 transition-colors truncate">
+                      <span className="font-black text-base sm:text-lg text-white font-heading group-hover:text-amber-400 transition-colors truncate">
                         {prov.il}
                       </span>
-                      <span className="text-[11px] text-[#8b949e] font-medium">
-                        {prov.ilceler.length} İlçe Rehberi
+                      <span className="text-[11px] text-[#8b949e] font-medium flex items-center gap-1">
+                        <Building2 className="w-3 h-3 text-amber-400/80" />
+                        <span>{prov.ilceler.length} İlçe Rehberi</span>
                       </span>
                     </div>
                   </Link>
@@ -245,10 +246,10 @@ export default function CityExplorer({ cityListingCounts, totalListingsCount }: 
                   <div className="flex items-center gap-2 shrink-0">
                     <Link
                       href={`/${prov.ilSlug}`}
-                      className={`px-3 py-1 rounded-xl text-xs font-black font-heading flex items-center gap-1 transition-all ${
+                      className={`px-3.5 py-2 rounded-xl text-xs font-black font-heading flex items-center gap-1 transition-all ${
                         hasListings
-                          ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25 active:scale-95'
-                          : 'bg-[#21262d] text-[#8b949e]'
+                          ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/25 active:scale-95'
+                          : 'bg-[#21262d] hover:bg-[#30363d] text-slate-200 border border-[#363b42]'
                       }`}
                     >
                       {hasListings ? `🔥 ${count} İlan` : 'İncele'}
@@ -258,8 +259,9 @@ export default function CityExplorer({ cityListingCounts, totalListingsCount }: 
                     <button
                       type="button"
                       onClick={() => setExpandedCity(isExpanded ? null : prov.ilSlug)}
-                      className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white transition-colors"
+                      className="p-2 sm:p-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#363b42] transition-colors"
                       title="İlçeleri Göster"
+                      aria-label={`${prov.il} ilçelerini listele`}
                     >
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180 text-amber-400' : ''}`} />
                     </button>
@@ -268,17 +270,25 @@ export default function CityExplorer({ cityListingCounts, totalListingsCount }: 
 
                 {/* ── İLÇELER AÇILIR LİSTESİ ──────────────── */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 pt-1 border-t border-[#30363d] bg-[#0d1117]/60 flex flex-col gap-2 animate-in fade-in duration-150">
-                    <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider font-heading mt-1">
-                      {prov.il} İlçeleri ({prov.ilceler.length}):
-                    </span>
+                  <div className="px-3.5 sm:px-4 pb-4 pt-2 border-t border-[#30363d] bg-[#0d1117]/80 flex flex-col gap-2.5 animate-in fade-in duration-150">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider font-heading">
+                        {prov.il} İlçeleri ({prov.ilceler.length}):
+                      </span>
+                      <Link
+                        href={`/${prov.ilSlug}`}
+                        className="text-[10px] text-amber-400/80 hover:text-amber-300 font-bold underline font-heading"
+                      >
+                        Tümünü İncele →
+                      </Link>
+                    </div>
 
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
                       {prov.ilceler.map((ilce) => (
                         <Link
                           key={ilce.slug}
                           href={`/${prov.ilSlug}/${ilce.slug}`}
-                          className="px-2.5 py-1 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-white text-[11px] font-bold border border-[#363b42] transition-all font-heading"
+                          className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-slate-100 text-xs font-bold border border-[#363b42] transition-all font-heading shadow-sm active:scale-95"
                         >
                           {ilce.ad}
                         </Link>

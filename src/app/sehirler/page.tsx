@@ -54,7 +54,7 @@ export default async function SehirlerPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 px-4 py-4 pb-16 w-full max-w-4xl mx-auto">
+    <div className="flex flex-col gap-4 sm:gap-6 px-2 sm:px-4 py-3 pb-20 w-full max-w-5xl mx-auto">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       {/* ── 1. SAYFA BAŞLIĞI & HERO ALANI ──────────────── */}

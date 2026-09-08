@@ -271,7 +271,7 @@ export default async function DistrictPage({ params }: Props) {
   const otherDistricts = location.ilceler.filter((d: any) => d.slug !== ilceSlug);
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full text-left">
+    <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-5xl mx-auto px-2 sm:px-4 text-left">
       {/* Googlebot Schema.org Structured Data Graph */}
       <script
         type="application/ld+json"
@@ -279,7 +279,7 @@ export default async function DistrictPage({ params }: Props) {
       />
 
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#8b949e] font-heading">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#8b949e] font-heading pt-1">
         <Link href="/" className="hover:text-amber-400 transition-colors">Anasayfa</Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <Link href={`/${location.ilSlug}`} className="hover:text-amber-400 transition-colors capitalize font-bold">
@@ -290,11 +290,11 @@ export default async function DistrictPage({ params }: Props) {
       </nav>
 
       {/* ── 1. DÜZ VE ŞIK BAŞLIK & DİĞER İLÇELER ŞERİDİ ──────────────── */}
-      <div className="flex flex-col gap-2.5 px-1 pt-1 text-left">
+      <div className="flex flex-col gap-2.5 pt-1 text-left">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-              <MapPin className="w-4 h-4" />
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <MapPin className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
               <h1 className="font-heading font-black text-xl sm:text-2xl text-white tracking-tight">
@@ -305,19 +305,19 @@ export default async function DistrictPage({ params }: Props) {
               </p>
             </div>
           </div>
-          <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 text-xs font-black font-heading border border-amber-500/20">
-            {listings.length} İlan
+          <span className="px-3.5 py-1.5 rounded-full bg-amber-500/15 text-amber-400 text-xs font-black font-heading border border-amber-500/30 shadow-sm">
+            {listings.length} Doğrulanmış İlan
           </span>
         </div>
 
         {/* Diğer İlçeler Hapları */}
         {otherDistricts.length > 0 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
             {otherDistricts.map((d: any) => (
               <Link
                 key={d.slug}
                 href={`/${location.ilSlug}/${d.slug}`}
-                className="px-3 py-1 rounded-lg bg-[#161b22] hover:bg-amber-500 hover:text-slate-950 text-gray-300 font-bold text-[11px] border border-[#30363d] transition-all shrink-0 shadow-sm"
+                className="px-3.5 py-1.5 rounded-xl bg-[#161b22] hover:bg-amber-500 hover:text-slate-950 text-slate-200 font-extrabold text-xs border border-[#30363d] transition-all shrink-0 shadow-sm active:scale-95"
               >
                 {d.ad}
               </Link>
@@ -327,13 +327,13 @@ export default async function DistrictPage({ params }: Props) {
       </div>
 
       {/* ── 1.25 ÖZEL SPONSORLU VIP BANNER REKLAMI (TÜM İLÇELERDE SABİT) ──────────────── */}
-      <div className="w-full px-0 -mx-1 sm:mx-0">
+      <div className="w-full px-0">
         <SponsorBannerArea konum="her_ikisi" initialBanner={activeBanner} />
       </div>
 
       {/* ── 2. İLAN LİSTESİ VEYA TEKLİ VİTRİN ──────────────── */}
       {listings.length === 0 ? (
-        <div className="p-12 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3">
+        <div className="p-10 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3 shadow-xl">
           <p className="text-sm font-bold text-white font-heading">
             {districtName} ({location.il}) bölgesinde henüz eskort / escort ilanı bulunmuyor.
           </p>
@@ -342,7 +342,7 @@ export default async function DistrictPage({ params }: Props) {
           </p>
           <Link
             href="/ilan-ver"
-            className="mt-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg transition-all"
+            className="mt-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-xl active:scale-95 transition-all"
           >
             Hemen {districtName} Eskort İlanı Ver
           </Link>
@@ -350,7 +350,7 @@ export default async function DistrictPage({ params }: Props) {
       ) : listings.length === 1 ? (
         /* TEK İLAN VARSA: SAYFADA SOLA YASLI DEĞİL, MERKEZİ VIP VİTRİN KARTI OLARAK DURUR */
         <div className="flex flex-col items-center gap-3 w-full my-2">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black font-heading">
+          <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black font-heading shadow-sm">
             <Sparkles className="w-3.5 h-3.5" />
             <span>{districtName} BÖLGESİ ÖZEL VIP VİTRİN İLANI</span>
           </div>
