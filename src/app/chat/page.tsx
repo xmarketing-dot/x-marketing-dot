@@ -90,11 +90,20 @@ export default function ChatPage() {
     const initThread = async () => {
       try {
         const savedThreadId = typeof window !== 'undefined' ? localStorage.getItem('best_eskort_chat_thread_id') : null;
+        const savedUserStr = typeof window !== 'undefined' ? localStorage.getItem('panel_user_session') : null;
+        let parsedUser: any = null;
+        if (savedUserStr) {
+          try { parsedUser = JSON.parse(savedUserStr); } catch (e) {}
+        }
 
         const res = await fetch('/api/chat/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ threadId: savedThreadId }),
+          body: JSON.stringify({ 
+            threadId: savedThreadId,
+            kullaniciAdi: parsedUser?.ad ? `İlan Sahibi: ${parsedUser.ad}` : undefined,
+            kullaniciTelefon: parsedUser?.telefon || parsedUser?.identifier || undefined,
+          }),
         });
         const data = await res.json();
         
@@ -188,12 +197,26 @@ export default function ChatPage() {
       let activeThreadId = threadId;
 
       // Ensure thread is created if not ready
+      const savedUserStr = typeof window !== 'undefined' ? localStorage.getItem('panel_user_session') : null;
+      let parsedUser: any = null;
+      if (savedUserStr) {
+        try { parsedUser = JSON.parse(savedUserStr); } catch (e) {}
+      }
+
+      const senderName = parsedUser?.ad ? `İlan Sahibi: ${parsedUser.ad}` : undefined;
+      const senderPhone = parsedUser?.telefon || parsedUser?.identifier || undefined;
+
       if (!activeThreadId) {
         const savedThreadId = typeof window !== 'undefined' ? localStorage.getItem('best_eskort_chat_thread_id') : null;
         const startRes = await fetch('/api/chat/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ threadId: savedThreadId, createIfNotFound: true }),
+          body: JSON.stringify({ 
+            threadId: savedThreadId, 
+            createIfNotFound: true,
+            kullaniciAdi: senderName,
+            kullaniciTelefon: senderPhone,
+          }),
         });
         const startData = await startRes.json();
         if (startData.thread?._id) {
@@ -229,6 +252,8 @@ export default function ChatPage() {
           threadId: activeThreadId,
           gonderenTipi: 'user',
           mesaj: content,
+          kullaniciAdi: senderName,
+          kullaniciTelefon: senderPhone,
         }),
       });
 

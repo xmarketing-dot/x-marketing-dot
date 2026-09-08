@@ -174,12 +174,12 @@ export async function GET(req: Request) {
         { $sort: { periodViews: -1 } },
         { $limit: 1000 }
       ]),
-      // 12. İlan Etkinlik Dağılımı (Anasayfa, şehir ve detay sayfalarından gelen tüm tıklamaları kapsar)
+      // 12. İlan Etkinlik & Gösterim Dağılımı (Anasayfa, vitrin, şehir, arama ve detay gösterimlerini kapsar)
       AnalyticsEventModel.aggregate([
         {
           $match: {
             ...dateQuery,
-            eventType: { $in: ['whatsapp_click', 'share_listing', 'phone_call'] },
+            eventType: { $in: ['whatsapp_click', 'share_listing', 'phone_call', 'listing_impression'] },
           }
         },
         {
@@ -189,6 +189,8 @@ export async function GET(req: Request) {
               targetTitle: "$targetTitle",
               path: { $toLower: { $arrayElemAt: [{ $split: ["$path", "?"] }, 0] } }
             },
+            impressions: { $sum: { $cond: [{ $eq: ["$eventType", "listing_impression"] }, 1, 0] } },
+            uniqueImpressionVisitors: { $addToSet: "$visitorId" },
             whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "whatsapp_click"] }, 1, 0] } },
             shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
           }
@@ -248,22 +250,27 @@ export async function GET(req: Request) {
     // Arama Terimlerini Birleştir (Ziyaretçi Referrer/URL + Canlı Arama Kutusu Etkinlikleri)
     const mergedSearchMap: Record<string, { count: number; lastSeen: any }> = {};
     [...searchTermsVisitors, ...searchTermsEvents].forEach((item: any) => {
-      const term = (item._id || '').trim();
+      const term = (item._id || '').trim().toLowerCase();
       if (!term || term.length < 2) return;
-      const lower = term.toLowerCase();
-      if (!mergedSearchMap[lower]) {
-        mergedSearchMap[lower] = { count: 0, lastSeen: item.lastSeen };
+      if (!mergedSearchMap[term]) {
+        mergedSearchMap[term] = { count: 0, lastSeen: item.lastSeen || new Date() };
       }
-      mergedSearchMap[lower].count += (item.count || 1);
-      if (item.lastSeen && (!mergedSearchMap[lower].lastSeen || new Date(item.lastSeen) > new Date(mergedSearchMap[lower].lastSeen))) {
-        mergedSearchMap[lower].lastSeen = item.lastSeen;
+      mergedSearchMap[term].count += (item.count || 1);
+      if (item.lastSeen && item.lastSeen > mergedSearchMap[term].lastSeen) {
+        mergedSearchMap[term].lastSeen = item.lastSeen;
       }
     });
 
-    const searchTerms = Object.entries(mergedSearchMap)
-      .map(([term, data]) => ({ _id: term, count: data.count, lastSeen: data.lastSeen }))
+    const searchKeywordsList = Object.entries(mergedSearchMap)
+      .map(([keyword, data]) => ({
+        keyword,
+        count: data.count,
+        lastSeen: data.lastSeen,
+      }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 20);
+      .slice(0, 30);
+
+    const searchTerms = searchKeywordsList;
 
     const eventCounts: Record<string, number> = {};
     eventStats.forEach((e: any) => {
@@ -284,6 +291,7 @@ export async function GET(req: Request) {
       if (!visitorStatsByPath[cleanPath]) {
         visitorStatsByPath[cleanPath] = {
           periodViews: 0,
+          uniqueVisitors: new Set<string>(),
           uniqueVisitorsCount: 0,
           referrers: { google: 0, yandex: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
           rawReferrers: [],
@@ -291,7 +299,8 @@ export async function GET(req: Request) {
         };
       }
       visitorStatsByPath[cleanPath].periodViews += (item.periodViews || 0);
-      visitorStatsByPath[cleanPath].uniqueVisitorsCount += (item.uniqueVisitors || []).length;
+      (item.uniqueVisitors || []).forEach((v: string) => visitorStatsByPath[cleanPath].uniqueVisitors.add(v));
+      visitorStatsByPath[cleanPath].uniqueVisitorsCount = visitorStatsByPath[cleanPath].uniqueVisitors.size;
       visitorStatsByPath[cleanPath].referrers.google += (item.googleReferrals || 0);
       visitorStatsByPath[cleanPath].referrers.yandex += (item.yandexReferrals || 0);
       visitorStatsByPath[cleanPath].referrers.facebook += (item.facebookReferrals || 0);
@@ -314,33 +323,41 @@ export async function GET(req: Request) {
       }
     });
 
-    // İlan bazlı etkinlik haritası (ID, Yol ve Başlık bazında çoklu eşleştirme)
-    const eventStatsById: Record<string, { whatsappClicks: number; shares: number }> = {};
-    const eventStatsByPath: Record<string, { whatsappClicks: number; shares: number }> = {};
-    const eventStatsByTitle: Record<string, { whatsappClicks: number; shares: number }> = {};
+    // İlan bazlı etkinlik ve gösterim haritası (ID, Yol ve Başlık bazında çoklu eşleştirme)
+    const eventStatsById: Record<string, { impressions: number; uniqueVisitors: Set<string>; whatsappClicks: number; shares: number }> = {};
+    const eventStatsByPath: Record<string, { impressions: number; uniqueVisitors: Set<string>; whatsappClicks: number; shares: number }> = {};
+    const eventStatsByTitle: Record<string, { impressions: number; uniqueVisitors: Set<string>; whatsappClicks: number; shares: number }> = {};
 
     listingEventsAgg.forEach((item: any) => {
       const g = item._id || {};
       const targetId = g.targetId ? g.targetId.toString() : '';
       const path = (g.path || '').trim().toLowerCase().replace(/\/$/, '');
       const title = (g.targetTitle || '').trim().toLowerCase();
+      const impressions = item.impressions || 0;
       const clicks = item.whatsappClicks || 0;
       const shares = item.shares || 0;
+      const uVisitors: string[] = item.uniqueImpressionVisitors || [];
 
       if (targetId) {
-        if (!eventStatsById[targetId]) eventStatsById[targetId] = { whatsappClicks: 0, shares: 0 };
+        if (!eventStatsById[targetId]) eventStatsById[targetId] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
+        eventStatsById[targetId].impressions += impressions;
         eventStatsById[targetId].whatsappClicks += clicks;
         eventStatsById[targetId].shares += shares;
+        uVisitors.forEach((v) => eventStatsById[targetId].uniqueVisitors.add(v));
       }
       if (path && path.startsWith('/ilan/')) {
-        if (!eventStatsByPath[path]) eventStatsByPath[path] = { whatsappClicks: 0, shares: 0 };
+        if (!eventStatsByPath[path]) eventStatsByPath[path] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
+        eventStatsByPath[path].impressions += impressions;
         eventStatsByPath[path].whatsappClicks += clicks;
         eventStatsByPath[path].shares += shares;
+        uVisitors.forEach((v) => eventStatsByPath[path].uniqueVisitors.add(v));
       }
       if (title) {
-        if (!eventStatsByTitle[title]) eventStatsByTitle[title] = { whatsappClicks: 0, shares: 0 };
+        if (!eventStatsByTitle[title]) eventStatsByTitle[title] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
+        eventStatsByTitle[title].impressions += impressions;
         eventStatsByTitle[title].whatsappClicks += clicks;
         eventStatsByTitle[title].shares += shares;
+        uVisitors.forEach((v) => eventStatsByTitle[title].uniqueVisitors.add(v));
       }
     });
 
@@ -354,28 +371,33 @@ export async function GET(req: Request) {
 
       const vStats = visitorStatsByPath[ilanPath] || {
         periodViews: 0,
+        uniqueVisitors: new Set(),
         uniqueVisitorsCount: 0,
         referrers: { google: 0, yandex: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
         rawReferrers: [],
         lastVisitedAt: null,
       };
 
-      // Hem doğrudan ID'siyle hem sayfa yoluyla hem başlığıyla eşleşen tüm WhatsApp/Paylaşım verilerini topla
+      // Hem doğrudan ID'siyle hem sayfa yoluyla hem başlığıyla eşleşen tüm Gösterim/WhatsApp/Paylaşım verilerini topla
       const eStats = (idStr && eventStatsById[idStr])
         || eventStatsByPath[ilanPath]
         || (titleStr && eventStatsByTitle[titleStr])
-        || { whatsappClicks: 0, shares: 0 };
+        || { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
 
-      const periodViews = vStats.periodViews || 0;
+      // Toplam Dönem Gösterimi = Detay Sayfası Ziyaretleri + Anasayfa/Şehir/Arama Liste Gösterimleri
+      const periodViews = (vStats.periodViews || 0) + (eStats.impressions || 0);
       const periodWhatsapp = eStats.whatsappClicks || 0;
       const periodShares = eStats.shares || 0;
+
+      // Tekil Ziyaretçi: Hem detay sayfasını hem listelerde ilanı gören tekil kullanıcılar
+      const allUniqueVisitors = new Set([...vStats.uniqueVisitors, ...eStats.uniqueVisitors]);
+      const uniqueVisitorsCount = allUniqueVisitors.size > 0 ? allUniqueVisitors.size : (vStats.uniqueVisitorsCount || 0);
 
       const lifetimeViews = l.goruntulenmeSayisi || 0;
       const lifetimeWhatsapp = l.whatsappTiklamaSayisi || 0;
       const lifetimeShares = l.paylasimSayisi || 0;
 
       // Seçilen filtreye göre net rakamlar:
-      // 'all' seçiliyse tüm zamanlar; 'today', 'yesterday', 'week', 'month' ise dönemin net analitik rakamları
       const totalViews = isAllTime ? Math.max(lifetimeViews, periodViews) : periodViews;
       const totalWhatsapp = isAllTime ? Math.max(lifetimeWhatsapp, periodWhatsapp) : periodWhatsapp;
       const totalListingShares = isAllTime ? Math.max(lifetimeShares, periodShares) : periodShares;
@@ -395,7 +417,7 @@ export async function GET(req: Request) {
         totalViews,
         periodViews,
         lifetimeViews,
-        uniqueVisitors: vStats.uniqueVisitorsCount,
+        uniqueVisitors: uniqueVisitorsCount,
         whatsappClicks: totalWhatsapp,
         periodWhatsappClicks: periodWhatsapp,
         lifetimeWhatsapp,

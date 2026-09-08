@@ -27,6 +27,19 @@ export default function ListingCard({ listing }: ListingCardProps) {
   const isVip = listing.rozet === 'vip';
   const isGold = listing.rozet === 'gold';
 
+  // Otomatik Görüntülenme / Gösterim (Impression) Takibi
+  React.useEffect(() => {
+    if (!listing || !listing._id) return;
+    if (typeof window !== 'undefined' && (window as any).trackListingImpression) {
+      (window as any).trackListingImpression({
+        listingId: listing._id,
+        slug: listing.slug,
+        title: listing.baslik,
+        city: `${listing.ilSlug || ''}/${listing.ilceSlug || ''}`,
+      });
+    }
+  }, [listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
+
   const allImages = listing.fotograflar && listing.fotograflar.length > 0
     ? listing.fotograflar
     : [listing.anaFotograf || { url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800' }];

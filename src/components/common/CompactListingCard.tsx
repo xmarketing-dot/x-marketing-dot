@@ -52,6 +52,19 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
 
+  // Otomatik Görüntülenme / Gösterim (Impression) Takibi (Anasayfa, İl, İlçe, Kategori, Arama)
+  useEffect(() => {
+    if (!listing || !listing._id) return;
+    if (typeof window !== 'undefined' && window.trackListingImpression) {
+      window.trackListingImpression({
+        listingId: listing._id,
+        slug: listing.slug,
+        title: listing.baslik,
+        city: `${listing.ilSlug || ''}/${listing.ilceSlug || ''}`,
+      });
+    }
+  }, [listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
+
   // Auto-slide images periodically if multiple images exist
   useEffect(() => {
     if (!allImages || allImages.length <= 1) return;

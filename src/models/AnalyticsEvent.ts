@@ -6,6 +6,7 @@ export interface IAnalyticsEvent extends Document {
   eventType: 
     | 'whatsapp_click' 
     | 'share_listing' 
+    | 'listing_impression'
     | 'category_click' 
     | 'city_filter' 
     | 'search' 
@@ -34,6 +35,7 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
       enum: [
         'whatsapp_click', 
         'share_listing', 
+        'listing_impression',
         'category_click', 
         'city_filter', 
         'search', 

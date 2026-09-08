@@ -43,7 +43,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { threadId, gonderenTipi, mesaj } = await req.json();
+    const body = await req.json();
+    const { threadId, gonderenTipi, mesaj, kullaniciAdi, kullaniciTelefon } = body;
 
     if (!threadId || !mesaj) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -87,13 +88,21 @@ export async function POST(req: NextRequest) {
 
     const updateField = sender === 'user' ? { $inc: { okunmadiAdminSayisi: 1 } } : { $inc: { okunmadiKullaniciSayisi: 1 } };
 
+    const rawUserPhone = (kullaniciTelefon || body.kullaniciTelefon || '').toString().trim();
+    const rawUserName = (kullaniciAdi || body.kullaniciAdi || '').toString().trim();
+
+    const threadUpdate: any = {
+      sonMesajOzeti: mesaj,
+      updatedAt: new Date(),
+      ...updateField,
+    };
+
+    if (rawUserName) threadUpdate.kullaniciAdi = rawUserName;
+    if (rawUserPhone) threadUpdate.kullaniciTelefon = rawUserPhone;
+
     const updatedThread = await ChatThreadModel.findByIdAndUpdate(
       threadId,
-      {
-        sonMesajOzeti: mesaj,
-        updatedAt: new Date(),
-        ...updateField,
-      },
+      threadUpdate,
       { returnDocument: 'after' }
     ).lean();
 
@@ -107,8 +116,12 @@ export async function POST(req: NextRequest) {
     // Telegram bildirimi — sadece kullanıcı mesajında (admin mesajlarında değil)
     if (sender === 'user') {
       const forwardedFor = req.headers.get('x-forwarded-for');
-      const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
+      const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : (updatedThread?.ip || '');
       const nowStr = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+      const userName = updatedThread?.kullaniciAdi || 'Ziyaretçi';
+      const userPhone = updatedThread?.kullaniciTelefon || '';
+      const listingTitle = updatedThread?.listingBaslik || '';
 
       // HTML kaçış (özel karakterler Telegram mesajını bozmasın)
       const cleanMsg = String(mesaj)
@@ -118,20 +131,22 @@ export async function POST(req: NextRequest) {
 
       const notifText = [
         `💬 <b>MÜŞTERİ MESAJI</b> (${nowStr})`,
+        `👤 <b>Gönderen:</b> <b>${userName}</b>${userPhone ? ` (<code>${userPhone}</code>)` : ''}`,
+        listingTitle ? `👑 <b>İlanı:</b> <code>${listingTitle}</code>` : '',
         clientIp ? `📍 IP: <code>${clientIp}</code>` : '',
         ``,
         `<blockquote>${cleanMsg}</blockquote>`,
         ``,
-        `👉 <i>Bu mesaja Telegram'dan Yanıtla (Reply) diyerek doğrudan cevap verebilirsin.</i>`,
+
       ].filter(Boolean).join('\n');
 
       sendTelegramNotification(notifText).then((tgRes) => {
         if (tgRes && tgRes.message_id) {
           ChatMessageModel.findByIdAndUpdate(newMsg._id, {
             telegramMessageId: tgRes.message_id,
-          }).catch(() => {});
+          }).catch(() => { });
         }
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     return NextResponse.json({ success: true, message: serializedMsg });

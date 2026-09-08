@@ -7,6 +7,8 @@ import { usePathname } from 'next/navigation';
 declare global {
   interface Window {
     trackEvent?: (eventType: string, payload?: Record<string, any>) => void;
+    trackListingImpression?: (item: { listingId: string; slug?: string; title?: string; city?: string }) => void;
+    trackListingImpressions?: (items: Array<{ listingId: string; slug?: string; title?: string; city?: string }>) => void;
   }
 }
 
@@ -60,8 +62,74 @@ export default function AnalyticsTracker() {
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const activeRecordIdRef = useRef<string | null>(null);
 
-  // Global event tracker function attached to window
+  // Gösterim (Impression) Takipçisi İçin Kuyruk ve Mükerrer Kontrolü
+  const trackedListingsInPageRef = useRef<Set<string>>(new Set());
+  const pendingImpressionsRef = useRef<Array<{ listingId: string; slug?: string; title?: string; city?: string }>>([]);
+  const impressionBatchTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sayfa değiştiğinde mükerrer gösterim setini sıfırla
   useEffect(() => {
+    trackedListingsInPageRef.current = new Set();
+  }, [pathname]);
+
+  // Global event & impression tracker function attached to window
+  useEffect(() => {
+    const flushImpressions = () => {
+      if (pendingImpressionsRef.current.length === 0) return;
+      const toSend = [...pendingImpressionsRef.current];
+      pendingImpressionsRef.current = [];
+
+      try {
+        const vid = getOrSetVisitorId();
+        const sid = getOrSetSessionId();
+
+        fetch('/api/analytics/impressions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            visitorId: vid,
+            sessionId: sid,
+            path: window.location.pathname,
+            impressions: toSend,
+          }),
+        }).catch(() => {});
+      } catch (e) {}
+    };
+
+    window.trackListingImpression = (item) => {
+      if (!item || !item.listingId) return;
+      // Admin sayfalarında impression sayma
+      if (window.location.pathname.startsWith('/bms-secure-portal') || window.location.pathname.startsWith('/admin')) {
+        return;
+      }
+      if (trackedListingsInPageRef.current.has(item.listingId)) return;
+      trackedListingsInPageRef.current.add(item.listingId);
+      pendingImpressionsRef.current.push(item);
+
+      if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
+      impressionBatchTimerRef.current = setTimeout(flushImpressions, 400);
+    };
+
+    window.trackListingImpressions = (items) => {
+      if (!Array.isArray(items) || items.length === 0) return;
+      if (window.location.pathname.startsWith('/bms-secure-portal') || window.location.pathname.startsWith('/admin')) {
+        return;
+      }
+      let added = false;
+      for (const item of items) {
+        if (!item || !item.listingId) continue;
+        if (trackedListingsInPageRef.current.has(item.listingId)) continue;
+        trackedListingsInPageRef.current.add(item.listingId);
+        pendingImpressionsRef.current.push(item);
+        added = true;
+      }
+
+      if (added) {
+        if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
+        impressionBatchTimerRef.current = setTimeout(flushImpressions, 400);
+      }
+    };
+
     window.trackEvent = (eventType: string, payload: Record<string, any> = {}) => {
       try {
         const vid = getOrSetVisitorId();
@@ -84,6 +152,10 @@ export default function AnalyticsTracker() {
           }),
         }).catch(() => {});
       } catch (e) {}
+    };
+
+    return () => {
+      if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
     };
   }, []);
 

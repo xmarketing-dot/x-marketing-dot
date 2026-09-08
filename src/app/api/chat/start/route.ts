@@ -3,12 +3,16 @@ import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/mongodb';
 import ChatThreadModel from '@/models/ChatThread';
 import ChatMessageModel from '@/models/ChatMessage';
+import ListingModel from '@/models/Listing';
+import UserModel from '@/models/User';
 import BanModel from '@/models/Ban';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { threadId, kullaniciAdi, createIfNotFound } = body;
+    const { threadId, kullaniciAdi, kullaniciTelefon, createIfNotFound } = body;
     await connectToDatabase();
 
     // Resolve client IP
@@ -36,8 +40,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Telefon ve Kullanıcı kontrolü
+    const rawPhone = (kullaniciTelefon || '').toString().trim();
+    const cleanPhone = rawPhone.replace(/[\s\-\(\)]/g, '');
+
+    let matchedListing: any = null;
+    let matchedUser: any = null;
+
+    if (cleanPhone) {
+      matchedListing = await ListingModel.findOne({
+        $or: [
+          { whatsappNumara: rawPhone },
+          { whatsappNumara: cleanPhone },
+          { whatsappNumara: { $regex: cleanPhone.slice(-10) } },
+        ],
+      }).lean();
+
+      matchedUser = await UserModel.findOne({
+        $or: [
+          { telefon: rawPhone },
+          { telefon: cleanPhone },
+        ],
+      }).lean();
+    }
+
+    let finalName = kullaniciAdi || (matchedUser ? `Üye: ${matchedUser.ad}` : (matchedListing ? `İlan Sahibi: ${matchedListing.tamAd || matchedListing.baslik}` : null));
+    let finalPhone = rawPhone || matchedListing?.whatsappNumara || matchedUser?.telefon || '';
+    let finalListingBaslik = matchedListing ? `${matchedListing.baslik} (${matchedListing.ilSlug?.toUpperCase() || ''})` : null;
+    let finalListingId = matchedListing?._id?.toString() || null;
+    let finalListingSlug = matchedListing?.slug || null;
+
     if (threadId && mongoose.Types.ObjectId.isValid(threadId)) {
-      const existing = await ChatThreadModel.findById(threadId).lean();
+      const existing = await ChatThreadModel.findById(threadId);
       if (existing) {
         if (existing.isBanned) {
           return NextResponse.json(
@@ -50,6 +84,28 @@ export async function POST(req: NextRequest) {
             { status: 403 }
           );
         }
+
+        // Eğer kullanıcı bilgileri yeni geldiyse thread'i zenginleştir
+        let hasUpdate = false;
+        if (finalName && (!existing.kullaniciAdi || existing.kullaniciAdi.startsWith('Müşteri #') || existing.kullaniciAdi === 'Ziyaretçi')) {
+          existing.kullaniciAdi = finalName;
+          hasUpdate = true;
+        }
+        if (finalPhone && !existing.kullaniciTelefon) {
+          existing.kullaniciTelefon = finalPhone;
+          hasUpdate = true;
+        }
+        if (finalListingBaslik && !existing.listingBaslik) {
+          existing.listingBaslik = finalListingBaslik;
+          existing.listingId = finalListingId;
+          existing.listingSlug = finalListingSlug;
+          hasUpdate = true;
+        }
+
+        if (hasUpdate) {
+          await existing.save();
+        }
+
         const messages = await ChatMessageModel.find({ threadId: existing._id })
           .select('_id threadId gonderenTipi mesaj okundu createdAt')
           .sort({ createdAt: 1 })
@@ -64,13 +120,17 @@ export async function POST(req: NextRequest) {
     }
 
     // If client is just checking or visiting without writing a message, do not create empty thread in DB
-    if (!createIfNotFound && !kullaniciAdi?.startsWith('İlan Sahibi:')) {
+    if (!createIfNotFound && !finalName?.startsWith('İlan Sahibi:') && !finalName?.startsWith('Üye:')) {
       return NextResponse.json({ thread: null, messages: [] });
     }
 
-    const name = kullaniciAdi || `Müşteri #${Math.floor(1000 + Math.random() * 9000)}`;
+    const name = finalName || `Müşteri #${Math.floor(1000 + Math.random() * 9000)}`;
     const newThread = await ChatThreadModel.create({
       kullaniciAdi: name,
+      kullaniciTelefon: finalPhone || undefined,
+      listingId: finalListingId || undefined,
+      listingBaslik: finalListingBaslik || undefined,
+      listingSlug: finalListingSlug || undefined,
       ip: clientIp,
       sonMesajOzeti: '',
       okunmadiAdminSayisi: 0,

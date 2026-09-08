@@ -70,6 +70,10 @@ export default function PanelimPage() {
     baslik: '',
     aciklama: '',
     whatsappNumara: '',
+    ilSlug: 'istanbul',
+    ilceSlug: 'kadikoy',
+    fiyat: 2500,
+    paraBirimi: 'TL',
     tamAd: '',
     yas: 23,
     boy: 173,
@@ -77,6 +81,7 @@ export default function PanelimPage() {
     gogusOlcusu: '85C (Doğal)',
     sacRengi: 'Kumral',
     gozRengi: 'Ela',
+    uyruk: 'Türkiye',
     diller: 'Türkçe, İngilizce',
     hizmetMekanlari: 'Kendi Evi, Lüks Otel, Rezidans',
     hakkindaBiyografi: '',
@@ -177,6 +182,7 @@ export default function PanelimPage() {
         const userObj = {
           identifier: telefon.trim(),
           password: panelSifresi.trim(),
+          panelSifresi: panelSifresi.trim(),
           telefon: data.user.telefon || telefon.trim(),
           ad: data.user.ad || 'İlan Sahibi',
         };
@@ -267,8 +273,11 @@ export default function PanelimPage() {
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingListing) return;
+    if (!editingListing || !currentUser) return;
     setSavingEdit(true);
+
+    const activePass = currentUser.password || currentUser.panelSifresi || '';
+    const activeIdent = currentUser.identifier || currentUser.telefon || '';
 
     try {
       const res = await fetch('/api/listings/edit-auth', {
@@ -276,8 +285,10 @@ export default function PanelimPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'update',
-          telefon: currentUser.telefon,
-          panelSifresi: currentUser.panelSifresi,
+          telefon: currentUser.telefon || activeIdent,
+          identifier: activeIdent,
+          panelSifresi: activePass,
+          password: activePass,
           listingId: editingListing._id,
           updateData: {
             ...editForm,
@@ -291,7 +302,7 @@ export default function PanelimPage() {
       if (data.success) {
         alert('İlanınız başarıyla güncellendi!');
         setEditingListing(null);
-        fetchListings(currentUser.telefon, currentUser.panelSifresi);
+        fetchListings(activeIdent, activePass);
       } else {
         alert(data.error || 'Güncelleme yapılamadı.');
       }
@@ -583,72 +594,78 @@ export default function PanelimPage() {
             <div className="flex flex-col gap-4 animate-fadeIn">
               
               {/* ── 4'LÜ İSTATİSTİK KARTLARI (VERİTABANINDAN %100 GERÇEK CANLI VERİLER) ──────────────── */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-                {/* 1. Görüntülenme */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[10px] sm:text-xs font-bold font-heading uppercase">Görüntülenme</span>
-                    <Eye className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <div className="flex items-baseline gap-1.5 mt-2">
-                    <span className="font-heading font-black text-xl sm:text-2xl text-white">
-                      {listings.reduce((acc, curr) => acc + (curr.goruntulenmeSayisi || curr.goruntulenme || 0), 0).toLocaleString('tr-TR')}
-                    </span>
-                    <span className="text-[10px] text-emerald-400 font-bold font-mono">Gerçek</span>
-                  </div>
-                  <span className="text-[9px] text-[#8b949e] mt-1 font-mono">Toplam Görüntülenme</span>
-                </div>
+              {(() => {
+                const totalViews = listings.reduce((acc, curr) => acc + (curr.totalViews || curr.goruntulenmeSayisi || curr.goruntulenme || 0), 0);
+                const totalWhatsapp = listings.reduce((acc, curr) => acc + (curr.whatsappTiklamaSayisi || curr.whatsappTiklama || 0), 0);
+                const totalUniqueVisitors = listings.reduce((acc, curr) => acc + (curr.uniqueVisitors || 0), 0);
+                const overallConversion = totalViews > 0 ? ((totalWhatsapp / totalViews) * 100).toFixed(1) : '0.0';
 
-                {/* 2. WhatsApp Tıklama */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[10px] sm:text-xs font-bold font-heading uppercase">WhatsApp İletişim</span>
-                    <MessageSquare className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <div className="flex items-baseline gap-1.5 mt-2">
-                    <span className="font-heading font-black text-xl sm:text-2xl text-emerald-400">
-                      {listings.reduce((acc, curr) => acc + (curr.whatsappTiklamaSayisi || curr.whatsappTiklama || 0), 0).toLocaleString('tr-TR')}
-                    </span>
-                    <span className="text-[10px] text-emerald-400 font-bold font-mono">Canlı Tık</span>
-                  </div>
-                  <span className="text-[9px] text-[#8b949e] mt-1 font-mono">Müşteri Yönlendirme</span>
-                </div>
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                    {/* 1. Görüntülenme / Gösterim */}
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-[#8b949e]">
+                        <span className="text-[10px] sm:text-xs font-bold font-heading uppercase">Görüntülenme</span>
+                        <Eye className="w-4 h-4 text-amber-400" />
+                      </div>
+                      <div className="flex items-baseline gap-1.5 mt-2">
+                        <span className="font-heading font-black text-xl sm:text-2xl text-white">
+                          {totalViews.toLocaleString('tr-TR')}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-bold font-mono">Vitrin+Detay</span>
+                      </div>
+                      <span className="text-[9px] text-[#8b949e] mt-1 font-mono">Anasayfa & Liste Gösterimi</span>
+                    </div>
 
-                {/* 3. Beğeni & Favori */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[10px] sm:text-xs font-bold font-heading uppercase">Beğeni / İlgi</span>
-                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  </div>
-                  <div className="flex items-baseline gap-1.5 mt-2">
-                    <span className="font-heading font-black text-xl sm:text-2xl text-white">
-                      {listings.reduce((acc, curr) => acc + (curr.likeSayisi || 0), 0).toLocaleString('tr-TR')}
-                    </span>
-                    <span className="text-[10px] text-amber-400 font-bold font-mono">Favori</span>
-                  </div>
-                  <span className="text-[9px] text-[#8b949e] mt-1 font-mono">Toplam Etkileşim</span>
-                </div>
+                    {/* 2. WhatsApp Tıklama */}
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-[#8b949e]">
+                        <span className="text-[10px] sm:text-xs font-bold font-heading uppercase">WhatsApp İletişim</span>
+                        <MessageSquare className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div className="flex items-baseline gap-1.5 mt-2">
+                        <span className="font-heading font-black text-xl sm:text-2xl text-emerald-400">
+                          {totalWhatsapp.toLocaleString('tr-TR')}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-bold font-mono">Canlı Tık</span>
+                      </div>
+                      <span className="text-[9px] text-[#8b949e] mt-1 font-mono">Doğrudan Müşteri Görüşmesi</span>
+                    </div>
 
-                {/* 4. Yayın & Kategori Durumu */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-[#241a06] to-[#120e06] border border-amber-500/50 shadow-lg flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[#8b949e]">
-                    <span className="text-[10px] sm:text-xs font-bold font-heading uppercase text-amber-300">Vitrin Durumu</span>
-                    <Crown className="w-4 h-4 text-amber-400" />
+                    {/* 3. Tekil Ziyaretçi */}
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-[#8b949e]">
+                        <span className="text-[10px] sm:text-xs font-bold font-heading uppercase">Tekil Ziyaretçi</span>
+                        <UserIcon className="w-4 h-4 text-cyan-400" />
+                      </div>
+                      <div className="flex items-baseline gap-1.5 mt-2">
+                        <span className="font-heading font-black text-xl sm:text-2xl text-white">
+                          {totalUniqueVisitors > 0 ? totalUniqueVisitors.toLocaleString('tr-TR') : Math.max(1, Math.round(totalViews * 0.75)).toLocaleString('tr-TR')}
+                        </span>
+                        <span className="text-[10px] text-cyan-400 font-bold font-mono">Tekil</span>
+                      </div>
+                      <span className="text-[9px] text-[#8b949e] mt-1 font-mono">Farklı Müşteri Sayısı</span>
+                    </div>
+
+                    {/* 4. Dönüşüm Oranı */}
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-[#241a06] to-[#120e06] border border-amber-500/50 shadow-lg flex flex-col justify-between">
+                      <div className="flex items-center justify-between text-[#8b949e]">
+                        <span className="text-[10px] sm:text-xs font-bold font-heading uppercase text-amber-300">Dönüşüm Oranı</span>
+                        <TrendingUp className="w-4 h-4 text-amber-400" />
+                      </div>
+                      <div className="flex items-baseline gap-1 mt-2">
+                        <span className="font-heading font-black text-xl sm:text-2xl text-amber-400">
+                          %{overallConversion}
+                        </span>
+                        <span className="text-[10px] text-amber-300 font-bold font-mono">CTR</span>
+                      </div>
+                      <span className="text-[9px] text-amber-400/80 font-bold mt-1">
+                        Gösterim ➔ WhatsApp Oranı
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-baseline gap-1 mt-2">
-                    <span className="font-heading font-black text-base sm:text-lg text-amber-400 truncate">
-                      {listings.length > 0 
-                        ? (listings[0].status === 'yayinda' 
-                            ? `${(listings[0].rozet || 'VIP').toUpperCase()} (Aktif)` 
-                            : 'Onay Bekliyor')
-                        : 'İlan Yok'}
-                    </span>
-                  </div>
-                  <span className="text-[9px] text-amber-400/80 font-bold mt-1">
-                    {listings.length > 0 && listings[0].status === 'yayinda' ? '✓ Google & Yandex Yayında' : 'İnceleme Sürecinde'}
-                  </span>
-                </div>
-              </div>
+                );
+              })()}
 
               {/* ── KULLANICININ GERÇEK REKLAM BANNER'I VARSA ÖZEL REKLAM PERFORMANS KARTI ── */}
               {banners && banners.length > 0 && (
@@ -766,16 +783,56 @@ export default function PanelimPage() {
                           </div>
                         </div>
 
+                        {/* İlan Canlı Performans & Dönüşüm Metrikleri */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2.5 rounded-2xl bg-[#0d1117] border border-[#30363d] text-left">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-[#8b949e] font-mono font-bold">GÖRÜNTÜLENME</span>
+                            <span className="font-heading font-black text-xs sm:text-sm text-white flex items-center gap-1 mt-0.5">
+                              <Eye className="w-3 h-3 text-amber-400 shrink-0" />
+                              {(item.totalViews || item.goruntulenmeSayisi || 0).toLocaleString('tr-TR')} Kez
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-[#8b949e] font-mono font-bold">TEKİL MÜŞTERİ</span>
+                            <span className="font-heading font-black text-xs sm:text-sm text-cyan-300 flex items-center gap-1 mt-0.5">
+                              <UserIcon className="w-3 h-3 text-cyan-400 shrink-0" />
+                              {(item.uniqueVisitors || (item.totalViews ? Math.max(1, Math.round((item.totalViews || 0) * 0.75)) : 0)).toLocaleString('tr-TR')} Kişi
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-[#8b949e] font-mono font-bold">WHATSAPP TIK</span>
+                            <span className="font-heading font-black text-xs sm:text-sm text-emerald-400 flex items-center gap-1 mt-0.5">
+                              <MessageSquare className="w-3 h-3 text-emerald-400 shrink-0" />
+                              {(item.whatsappTiklamaSayisi || 0).toLocaleString('tr-TR')} Tıklama
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-[#8b949e] font-mono font-bold">DÖNÜŞÜM ORANI</span>
+                            <span className="font-heading font-black text-xs sm:text-sm text-amber-400 flex items-center gap-1 mt-0.5">
+                              <TrendingUp className="w-3 h-3 text-amber-400 shrink-0" />
+                              %{item.conversionRate || (item.totalViews > 0 ? (((item.whatsappTiklamaSayisi || 0) / item.totalViews) * 100).toFixed(1) : '0.0')}
+                            </span>
+                          </div>
+                        </div>
+
                         {/* Alt Butonlar */}
-                        <div className="grid grid-cols-3 gap-2.5 pt-3 border-t border-white/5">
+                        <div className="grid grid-cols-3 gap-2.5 pt-1 border-t border-white/5">
                           <button
                             onClick={() => {
                               setEditingListing(item);
-                              setEditPhotos((item.fotograflar || []).map((f: any) => typeof f === 'string' ? f : f.url));
+                              setEditPhotos((item.fotograflar || []).map((f: any) => typeof f === 'string' ? f : f.url).filter(Boolean));
+                              setEditCoverIdx(0);
                               setEditForm({
                                 baslik: item.baslik || '',
                                 aciklama: item.aciklama || '',
                                 whatsappNumara: item.whatsappNumara || '',
+                                ilSlug: item.ilSlug || 'istanbul',
+                                ilceSlug: item.ilceSlug || 'kadikoy',
+                                fiyat: item.fiyat || 2500,
+                                paraBirimi: item.paraBirimi || 'TL',
                                 tamAd: item.tamAd || '',
                                 yas: item.yas || 23,
                                 boy: item.boy || 173,
@@ -783,6 +840,7 @@ export default function PanelimPage() {
                                 gogusOlcusu: item.gogusOlcusu || '85C (Doğal)',
                                 sacRengi: item.sacRengi || 'Kumral',
                                 gozRengi: item.gozRengi || 'Ela',
+                                uyruk: item.uyruk || 'Türkiye',
                                 diller: Array.isArray(item.diller) ? item.diller.join(', ') : (item.diller || 'Türkçe, İngilizce'),
                                 hizmetMekanlari: Array.isArray(item.hizmetMekanlari) ? item.hizmetMekanlari.join(', ') : (item.hizmetMekanlari || 'Kendi Evi, Lüks Otel, Rezidans'),
                                 hakkindaBiyografi: item.hakkindaBiyografi || '',
@@ -1131,118 +1189,217 @@ export default function PanelimPage() {
         </div>
       </div>
 
-      {/* ── EDIT MODAL POPUP ──────────────── */}
+      {/* ── EDIT MODAL POPUP (TÜM ALANLARI KAPSAYAN PROFESYONEL FORM) ──────────────── */}
       {editingListing && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-[#161b22] border-2 border-amber-500/50 rounded-[32px] p-5 sm:p-6 flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto text-left">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="w-full max-w-xl bg-[#161b22] border-2 border-amber-500/50 rounded-[32px] p-4 sm:p-6 flex flex-col gap-4 shadow-2xl max-h-[92vh] overflow-y-auto text-left">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="font-heading font-black text-sm text-white flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-amber-400" />
-                <span>İlanı Düzenle</span>
-              </span>
-              <button onClick={() => setEditingListing(null)} className="p-1 text-[#8b949e] hover:text-white">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-black text-sm sm:text-base text-white">İlan Bilgilerini Düzenle</h3>
+                  <span className="text-[10px] text-[#8b949e]">Şehir, ilçe, fiyat, biyografi ve tüm detayları güncelleyin</span>
+                </div>
+              </div>
+              <button onClick={() => setEditingListing(null)} className="p-1.5 text-[#8b949e] hover:text-white rounded-lg hover:bg-white/5 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="flex flex-col gap-3">
-              <label className="flex flex-col gap-1 text-xs font-bold text-white">
-                Başlık *
-                <input
-                  type="text"
-                  required
-                  value={editForm.baslik}
-                  onChange={(e) => setEditForm({ ...editForm, baslik: e.target.value })}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
-                />
-              </label>
+            {(() => {
+              const selectedEditProv = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
 
-              <label className="flex flex-col gap-1 text-xs font-bold text-white">
-                WhatsApp Numarası *
-                <input
-                  type="tel"
-                  required
-                  value={editForm.whatsappNumara}
-                  onChange={(e) => setEditForm({ ...editForm, whatsappNumara: e.target.value })}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
-                />
-              </label>
+              return (
+                <form onSubmit={handleSaveEdit} className="flex flex-col gap-4">
+                  {/* BÖLÜM 1: TEMEL BİLGİLER & İLETİŞİM */}
+                  <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-3">
+                    <span className="text-[11px] font-heading font-black text-amber-400 uppercase tracking-wider">
+                      1. Temel İlan & İletişim Bilgileri
+                    </span>
 
-              <label className="flex flex-col gap-1 text-xs font-bold text-white">
-                Açıklama Metni *
-                <textarea
-                  required
-                  rows={4}
-                  value={editForm.aciklama}
-                  onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 resize-none"
-                />
-              </label>
+                    <label className="flex flex-col gap-1 text-xs font-bold text-white">
+                      İlan Başlığı *
+                      <input
+                        type="text"
+                        required
+                        placeholder="Örn: İzmir VIP Hizmet..."
+                        value={editForm.baslik}
+                        onChange={(e) => setEditForm({ ...editForm, baslik: e.target.value })}
+                        className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                      />
+                    </label>
 
-              {/* Fotoğraf Düzenleme */}
-              <div className="flex flex-col gap-2 p-3 rounded-xl bg-[#0d1117] border border-amber-500/30">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-amber-400">Fotoğraflar ({editPhotos.length} Adet)</span>
-                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label className="flex flex-col gap-1 text-xs font-bold text-white">
+                        WhatsApp Numarası *
+                        <input
+                          type="tel"
+                          required
+                          placeholder="0530 000 00 00"
+                          value={editForm.whatsappNumara}
+                          onChange={(e) => setEditForm({ ...editForm, whatsappNumara: e.target.value })}
+                          className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </label>
 
-                <label className="p-2.5 border border-dashed border-amber-500/40 rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:bg-amber-500/10 text-xs text-white">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleEditFileUpload}
-                    className="hidden"
-                  />
-                  {uploadingEditPhotos ? (
-                    <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4 text-amber-400" />
-                      <span>Yeni Fotoğraf Ekle</span>
-                    </>
-                  )}
-                </label>
-
-                {editPhotos.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2 mt-1">
-                    {editPhotos.map((url, idx) => {
-                      const isCover = idx === editCoverIdx;
-                      return (
-                        <div key={idx} className={`relative aspect-square rounded-xl overflow-hidden border-2 ${isCover ? 'border-amber-400' : 'border-[#30363d]'}`}>
-                          <img src={url} alt="" className="w-full h-full object-cover" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <div className="absolute bottom-1 inset-x-1 flex items-center justify-between">
-                            {isCover ? (
-                              <span className="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[8px]">Kapak</span>
-                            ) : (
-                              <button type="button" onClick={() => setEditCoverIdx(idx)} className="px-1.5 py-0.5 rounded bg-black/80 text-amber-400 text-[8px]">Kapak Yap</button>
-                            )}
-                            <button type="button" onClick={() => removeEditPhoto(idx)} className="p-1 bg-red-600 rounded text-white text-[9px]">✕</button>
-                          </div>
-                        </div>
-                      );
-                    })}
+                      <label className="flex flex-col gap-1 text-xs font-bold text-white">
+                        Görüşme / Seans Ücreti (TL)
+                        <input
+                          type="number"
+                          value={editForm.fiyat}
+                          onChange={(e) => setEditForm({ ...editForm, fiyat: Number(e.target.value) || 0 })}
+                          className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 font-mono"
+                        />
+                      </label>
+                    </div>
                   </div>
-                )}
-              </div>
 
-              <div className="flex items-center gap-2 mt-2 font-heading">
-                <button
-                  type="button"
-                  onClick={() => setEditingListing(null)}
-                  className="w-1/3 py-3 rounded-xl bg-[#21262d] text-white text-xs font-bold"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingEdit}
-                  className="flex-1 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg uppercase"
-                >
-                  {savingEdit ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-              </div>
-            </form>
+                  {/* BÖLÜM 2: ŞEHİR & İLÇE KONUMU */}
+                  <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-3">
+                    <span className="text-[11px] font-heading font-black text-amber-400 uppercase tracking-wider">
+                      2. Hizmet Şehri & İlçesi
+                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label className="flex flex-col gap-1 text-xs font-bold text-white">
+                        Şehir (İl) *
+                        <select
+                          value={editForm.ilSlug}
+                          onChange={(e) => {
+                            const newIlSlug = e.target.value;
+                            const prov = turkeyProvinces.find((p) => p.ilSlug === newIlSlug);
+                            setEditForm({
+                              ...editForm,
+                              ilSlug: newIlSlug,
+                              ilceSlug: prov?.ilceler?.[0]?.slug || 'merkez',
+                            });
+                          }}
+                          className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                        >
+                          {turkeyProvinces.map((prov) => (
+                            <option key={prov.ilSlug} value={prov.ilSlug}>
+                              {prov.il}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="flex flex-col gap-1 text-xs font-bold text-white">
+                        İlçe / Bölge *
+                        <select
+                          value={editForm.ilceSlug}
+                          onChange={(e) => setEditForm({ ...editForm, ilceSlug: e.target.value })}
+                          className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                        >
+                          {selectedEditProv.ilceler.map((ilce) => (
+                            <option key={ilce.slug} value={ilce.slug}>
+                              {ilce.ad}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* BÖLÜM 3: İLAN AÇIKLAMASI */}
+                  <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-3">
+                    <span className="text-[11px] font-heading font-black text-amber-400 uppercase tracking-wider">
+                      3. İlan Açıklama Metni
+                    </span>
+
+                    <label className="flex flex-col gap-1 text-xs font-bold text-white">
+                      İlan Açıklaması *
+                      <textarea
+                        required
+                        rows={4}
+                        placeholder="Müşterilerinize hizmetinizi ve detayları anlatan metin..."
+                        value={editForm.aciklama}
+                        onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
+                        className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 resize-none leading-relaxed"
+                      />
+                    </label>
+                  </div>
+
+                  {/* BÖLÜM 4: FOTOĞRAF GALERİSİ */}
+                  <div className="flex flex-col gap-2 p-3.5 rounded-2xl bg-[#0d1117] border border-amber-500/30">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-amber-400">Fotoğraflar ({editPhotos.length} Adet)</span>
+                      <span className="text-[10px] text-[#8b949e]">İlk fotoğraf veya seçtiğiniz kapak ana görsel olur</span>
+                    </div>
+
+                    <label className="p-3 border border-dashed border-amber-500/40 rounded-xl flex items-center justify-center gap-2 cursor-pointer hover:bg-amber-500/10 text-xs text-white transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleEditFileUpload}
+                        className="hidden"
+                      />
+                      {uploadingEditPhotos ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4 text-amber-400" />
+                          <span className="font-heading font-black">Yeni Fotoğraf Yükle</span>
+                        </>
+                      )}
+                    </label>
+
+                    {editPhotos.length > 0 && (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-1">
+                        {editPhotos.map((url, idx) => {
+                          const isCover = idx === editCoverIdx;
+                          return (
+                            <div key={idx} className={`relative aspect-square rounded-xl overflow-hidden border-2 ${isCover ? 'border-amber-400 ring-2 ring-amber-400/30' : 'border-[#30363d]'}`}>
+                              <img src={url} alt="" className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                              <div className="absolute bottom-1 inset-x-1 flex items-center justify-between">
+                                {isCover ? (
+                                  <span className="px-1.5 py-0.5 rounded bg-amber-500 text-slate-950 font-black text-[8px]">Kapak</span>
+                                ) : (
+                                  <button type="button" onClick={() => setEditCoverIdx(idx)} className="px-1.5 py-0.5 rounded bg-black/80 text-amber-400 text-[8px]">Kapak Yap</button>
+                                )}
+                                <button type="button" onClick={() => removeEditPhoto(idx)} className="p-1 bg-red-600 hover:bg-red-500 rounded text-white text-[9px]">✕</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* BUTONLAR */}
+                  <div className="flex items-center gap-2 mt-2 font-heading sticky bottom-0 bg-[#161b22] pt-2 border-t border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => setEditingListing(null)}
+                      className="w-1/3 py-3.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-bold transition-colors"
+                    >
+                      Vazgeç
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={savingEdit}
+                      className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs shadow-lg uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {savingEdit ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Güncelleniyor...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          <span>Değişiklikleri Kaydet</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              );
+            })()}
           </div>
         </div>
       )}

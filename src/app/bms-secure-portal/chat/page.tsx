@@ -26,6 +26,7 @@ import { useSearchParams } from 'next/navigation';
 interface Thread {
   _id: string;
   kullaniciAdi: string;
+  kullaniciTelefon?: string;
   ip?: string;
   isBanned?: boolean;
   banTuru?: 'tam_ban' | 'chat_ban';
@@ -503,6 +504,18 @@ export default function AdminChatPage() {
                       <span className="font-extrabold text-xs sm:text-sm text-white font-heading truncate">
                         {selectedThread.kullaniciAdi}
                       </span>
+
+                      {selectedThread.kullaniciTelefon && (
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/30">
+                          📞 {selectedThread.kullaniciTelefon}
+                        </span>
+                      )}
+
+                      {selectedThread.listingBaslik && (
+                        <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/30 truncate max-w-[180px]">
+                          👑 {selectedThread.listingBaslik}
+                        </span>
+                      )}
 
                       {selectedThread.isBanned && (
                         <span className="px-1.5 py-0.2 rounded-md bg-red-500/20 text-red-400 text-[9px] font-black uppercase border border-red-500/40">
