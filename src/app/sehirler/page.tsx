@@ -5,7 +5,6 @@ import { Globe, MapPin, Sparkles, ShieldCheck } from 'lucide-react';
 import { getAllLocations, getListings, getActiveBanner } from '@/lib/data';
 import CityExplorer from '@/components/locations/CityExplorer';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
-import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,9 +86,6 @@ export default async function SehirlerPage() {
         cityListingCounts={cityListingCounts} 
         totalListingsCount={allListings.length} 
       />
-
-      {/* ── 2.5 SPONSORLU NATIVE VİTRİN ──────────────── */}
-      <AdsterraNativeBanner />
 
       {/* ── 3. GÜVEN BİLGİLENDİRME PANELİ ──────────────── */}
       <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-4 shadow-xl mt-2">

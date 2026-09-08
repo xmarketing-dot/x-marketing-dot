@@ -6,6 +6,7 @@ import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
 import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
 import AdsterraSocialBar from '@/components/ads/AdsterraSocialBar';
+import AdsterraPopunder from '@/components/ads/AdsterraPopunder';
 import { Analytics } from '@vercel/analytics/next';
 import React, { Suspense } from 'react';
 
@@ -190,6 +191,7 @@ export default function RootLayout({
           <AnalyticsTracker />
           <RouteTransitionLoader />
           <AdsterraSocialBar />
+          <AdsterraPopunder />
         </Suspense>
         <MobileShell>{children}</MobileShell>
         <Analytics />

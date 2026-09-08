@@ -26,7 +26,6 @@ import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
-import AdsterraBanner320x50 from '@/components/ads/AdsterraBanner320x50';
 
 export const dynamic = 'force-dynamic';
 
@@ -307,11 +306,6 @@ export default async function HomePage() {
         />
       </section>
 
-      {/* 3.5 SPONSORLU MOBİL BANNER */}
-      <div className="px-4">
-        <AdsterraBanner320x50 />
-      </div>
-
       {/* 4. TÜM İLANLAR GRID LİSTESİ */}
       <section className="px-4 flex flex-col gap-3 pt-1">
         <div className="flex items-center justify-between pb-1 border-b border-[#30363d]">
@@ -330,15 +324,7 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-2 gap-3">
           {gridListings.map((listing: any, index: number) => (
-            <React.Fragment key={listing._id || index}>
-              <CompactListingCard listing={listing} />
-              {/* 3 satırdan (6 ilandan) sonra araya tam genişlikli reklam sok */}
-              {index === 5 && (
-                <div className="col-span-2 my-1.5">
-                  <AdsterraBanner320x50 />
-                </div>
-              )}
-            </React.Fragment>
+            <CompactListingCard key={listing._id || index} listing={listing} />
           ))}
         </div>
       </section>

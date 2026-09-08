@@ -7,8 +7,6 @@ import { MapPin, Sparkles, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
-import AdsterraBanner320x50 from '@/components/ads/AdsterraBanner320x50';
-import AdsterraNativeBanner from '@/components/ads/AdsterraNativeBanner';
 import FaqAccordion from '@/components/seo/FaqAccordion';
 import { generateLocationFaq, generateCombinedSeoGraph, generateLocationGuide } from '@/lib/seoData';
 import { getActiveBanner } from '@/lib/data';
@@ -294,11 +292,6 @@ export default async function CityPage({ params }: Props) {
         <SponsorBannerArea konum="her_ikisi" initialBanner={activeBanner} />
       </div>
 
-      {/* ── 1.5 BAŞLIK ALTI SPONSORLU MOBİL BANNER ──────────────── */}
-      <div className="w-full">
-        <AdsterraBanner320x50 />
-      </div>
-
       {/* ── 2. İLAN LİSTESİ VEYA TEKLİ VİTRİN ──────────────── */}
       {listings.length === 0 ? (
         <div className="p-12 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3">
@@ -330,20 +323,10 @@ export default async function CityPage({ params }: Props) {
         /* ÇOKLU İLAN VARSA: 2/3 SÜTUNLU GRID LİSTESİ */
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {listings.map((item: any, index: number) => (
-            <React.Fragment key={item._id || index}>
-              <CompactListingCard listing={item} />
-              {index === 5 && (
-                <div className="col-span-2 sm:col-span-3 my-1.5">
-                  <AdsterraBanner320x50 />
-                </div>
-              )}
-            </React.Fragment>
+            <CompactListingCard key={item._id || index} listing={item} />
           ))}
         </div>
       )}
-
-      {/* ── 2.5 SPONSORLU NATIVE 4:1 VİTRİN ──────────────── */}
-      <AdsterraNativeBanner />
 
       {/* ── 3. GOOGLE RICH SNIPPET FAQ ACCORDION ──────────────── */}
       <FaqAccordion
