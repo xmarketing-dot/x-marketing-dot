@@ -18,6 +18,12 @@ export async function GET(req: NextRequest) {
 
     const now = new Date();
 
+    // Süresi dolan yayındaki banner'ları anında pasife al
+    BannerAdModel.updateMany(
+      { durum: 'yayinda', bitisTarihi: { $lt: now } },
+      { $set: { durum: 'suresi_doldu' } }
+    ).catch(() => {});
+
     const targetKonum = (konum === 'ilan_detay' ? 'ilan_detay' : 'anasayfa') as 'anasayfa' | 'ilan_detay';
 
     const banner = await BannerAdModel.findOne({

@@ -12,6 +12,14 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     await connectToDatabase();
+    const now = new Date();
+
+    // Süresi dolan yayındaki banner'ları anında pasife al
+    await BannerAdModel.updateMany(
+      { durum: 'yayinda', bitisTarihi: { $lt: now } },
+      { $set: { durum: 'suresi_doldu' } }
+    ).catch(() => {});
+
     const [banners, emptyClicks] = await Promise.all([
       BannerAdModel.find().sort({ createdAt: -1 }).lean(),
       (await import('@/models/AnalyticsEvent')).default.countDocuments({ eventType: 'bos_banner_reklam_tiklama' }),

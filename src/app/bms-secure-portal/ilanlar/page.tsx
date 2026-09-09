@@ -672,8 +672,8 @@ export default function AdminListingsPage() {
         </button>
       </div>
 
-      {/* ── 3. LISTINGS LIST (MOBİL İÇİN OPTİMİZE EDİLMİŞ NATIVE KARTLAR) ──────────────── */}
-      <div className="flex flex-col gap-3">
+      {/* ── 3. LISTINGS DISPLAY (MASAÜSTÜ İÇİN TABLO & MOBİL İÇİN NATIVE KARTLAR) ──────────────── */}
+      <div>
         {loading ? (
           <div className="p-12 text-center flex flex-col items-center justify-center gap-2 bg-[#161b22] rounded-2xl border border-[#30363d]">
             <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
@@ -684,203 +684,442 @@ export default function AdminListingsPage() {
             Bu filtreye uygun ilan bulunamadı.
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {filteredListings.map((item) => {
-              const remaining = getRemainingTime(item.paketBitisTarihi, item.status);
-              const isPending = item.status === 'onay_bekliyor';
-              const isLive = item.status === 'yayinda';
+          <>
+            {/* ── MASAÜSTÜ PROFESYONEL VERİ TABLOSU (DESKTOP DATA TABLE - md & üstü) ──────────────── */}
+            <div className="hidden md:block w-full overflow-hidden rounded-2xl bg-[#161b22] border border-[#30363d] shadow-2xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-[#1a202c] border-b border-[#30363d] text-[11px] font-black uppercase text-[#8b949e] font-heading tracking-wider">
+                      <th className="py-3.5 px-4">İlan / Model</th>
+                      <th className="py-3.5 px-3">Konum &amp; Bölge</th>
+                      <th className="py-3.5 px-3">Rozet &amp; Durum</th>
+                      <th className="py-3.5 px-3">Yayın Süresi</th>
+                      <th className="py-3.5 px-3">İletişim &amp; Şifre</th>
+                      <th className="py-3.5 px-3 text-center">Hit &amp; Like</th>
+                      <th className="py-3.5 px-4 text-right">Yönetim &amp; Aksiyonlar</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#30363d]/50 text-xs">
+                    {filteredListings.map((item) => {
+                      const remaining = getRemainingTime(item.paketBitisTarihi, item.status);
+                      const isPending = item.status === 'onay_bekliyor';
+                      const isLive = item.status === 'yayinda';
 
-              return (
-                <div
-                  key={item._id}
-                  className={`p-3 sm:p-4 rounded-2xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg ${
-                    isPending
-                      ? 'border-amber-500/60 shadow-amber-500/5 bg-gradient-to-b from-[#1c1811] to-[#161b22]'
-                      : 'border-[#30363d] hover:border-[#3d444d]'
-                  }`}
-                >
-                  {/* ── KART ÜST BİLGİ ALANI ──────────────── */}
-                  <div className="flex items-start gap-3 w-full">
-                    {/* Thumbnail */}
-                    <div 
-                      onClick={() => handleOpenInspect(item)}
-                      className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117] cursor-pointer group shadow-md"
-                      title="Büyük boyutta incele"
-                    >
-                      <Image
-                        src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=200'}
-                        alt={item.baslik}
-                        fill
-                        sizes="80px"
-                        className="object-cover group-hover:scale-105 transition-transform"
-                      />
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
-                      <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/85 text-amber-400 text-[8px] font-bold backdrop-blur-sm">
-                        {item.fotograflar?.length || 1} Foto
-                      </span>
-                    </div>
-
-                    {/* Meta Bilgileri */}
-                    <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <h3 
-                          onClick={() => handleOpenInspect(item)}
-                          className="font-heading font-black text-sm sm:text-base text-white truncate max-w-[200px] sm:max-w-md cursor-pointer hover:text-amber-400 transition-colors"
+                      return (
+                        <tr
+                          key={item._id}
+                          className={`hover:bg-[#1c232d] transition-colors group ${
+                            isPending ? 'bg-amber-500/[0.04]' : ''
+                          }`}
                         >
-                          {item.baslik}
-                        </h3>
+                          {/* İlan & Thumbnail */}
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <div
+                                onClick={() => handleOpenInspect(item)}
+                                className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117] cursor-pointer group/thumb shadow-sm"
+                                title="Büyük boyutta incele"
+                              >
+                                <Image
+                                  src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=150'}
+                                  alt={item.baslik}
+                                  fill
+                                  sizes="50px"
+                                  className="object-cover group-hover/thumb:scale-110 transition-transform"
+                                />
+                                <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-black/80 text-amber-400 text-[8px] font-bold">
+                                  {item.fotograflar?.length || 1}
+                                </span>
+                              </div>
 
-                        <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase font-heading ${
-                          isLive
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-                        }`}>
-                          {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
-                        </span>
+                              <div className="flex flex-col min-w-0 max-w-[220px] lg:max-w-xs">
+                                <span
+                                  onClick={() => handleOpenInspect(item)}
+                                  className="font-heading font-black text-sm text-white truncate cursor-pointer hover:text-amber-400 transition-colors"
+                                  title={item.baslik}
+                                >
+                                  {item.baslik}
+                                </span>
+                                <div className="flex items-center gap-1.5 text-[10px] text-[#8b949e] font-mono mt-0.5">
+                                  <span>#{item._id.slice(-6)}</span>
+                                  {item.createdAt && (
+                                    <>
+                                      <span>&bull;</span>
+                                      <span>{new Date(item.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
 
-                        <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          {item.rozet || 'vip'}
-                        </span>
-                      </div>
+                          {/* Konum */}
+                          <td className="py-3 px-3">
+                            <div className="flex items-center gap-1 text-amber-300 font-bold capitalize text-xs">
+                              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                              <span className="truncate">{item.ilSlug} / {item.ilceSlug}</span>
+                            </div>
+                          </td>
 
-                      {/* Konum & Süre */}
-                      <div className="flex items-center gap-2 text-[11px] text-amber-400 font-bold capitalize flex-wrap">
-                        <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3 shrink-0" />
-                          <span>{item.ilSlug} / {item.ilceSlug}</span>
-                        </span>
-                        <span className="text-[#8b949e]">•</span>
-                        <span className="text-emerald-400 font-mono flex items-center gap-1">
-                          <Clock className="w-3 h-3 shrink-0" />
-                          <span>{remaining.text}</span>
-                        </span>
-                      </div>
+                          {/* Rozet & Durum */}
+                          <td className="py-3 px-3">
+                            <div className="flex flex-col gap-1 items-start">
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading ${
+                                isLive
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
+                              }`}>
+                                {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-black uppercase">
+                                👑 {item.rozet || 'vip'}
+                              </span>
+                            </div>
+                          </td>
 
-                      {/* İletişim, Tarih & Şifre Çipleri */}
-                      <div className="flex items-center gap-2 text-[11px] text-[#8b949e] flex-wrap mt-0.5">
-                        <span className="text-white font-mono font-bold flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-emerald-400" />
-                          <span>{item.whatsappNumara}</span>
-                        </span>
-                        {item.createdAt && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-slate-300 font-mono text-[10px] border border-[#30363d] flex items-center gap-1">
-                            <Calendar className="w-2.5 h-2.5 text-blue-400" />
-                            <span>Ekleme: {new Date(item.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                          </span>
-                        )}
-                        {item.panelSifresi && (
-                          <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-amber-300 font-mono font-bold border border-amber-500/30 flex items-center gap-1">
-                            <KeyRound className="w-2.5 h-2.5 text-amber-400" />
-                            <span>Şifre: {item.panelSifresi}</span>
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                          {/* Kalan Süre */}
+                          <td className="py-3 px-3">
+                            <div className="flex flex-col gap-1">
+                              <span className={`font-mono text-xs font-bold flex items-center gap-1 ${
+                                remaining.isExpired ? 'text-rose-400' : 'text-emerald-400'
+                              }`}>
+                                <Clock className="w-3.5 h-3.5 shrink-0" />
+                                <span>{remaining.text}</span>
+                              </span>
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleExtendDuration(item._id, 7)}
+                                  className="px-2 py-0.5 rounded bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[10px] font-mono font-bold transition-all border border-amber-500/30"
+                                  title="+7 Gün Süre Ekle"
+                                >
+                                  +7G
+                                </button>
+                                <button
+                                  onClick={() => handleExtendDuration(item._id, 30)}
+                                  className="px-2 py-0.5 rounded bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[10px] font-mono font-bold transition-all border border-amber-500/30"
+                                  title="+30 Gün Süre Ekle"
+                                >
+                                  +30G
+                                </button>
+                              </div>
+                            </div>
+                          </td>
 
-                  {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (2 SATIRLI DÜZEN) ──────────────── */}
-                  <div className="flex flex-col gap-1.5 border-t border-[#30363d]/60 pt-2.5">
-                    {/* Satır 1: Ana Operasyon Butonları */}
-                    <div className="flex items-center gap-1.5">
-                      {/* Onayla / Beklemeye Al */}
-                      {isPending ? (
-                        <button
-                          onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
-                          className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
-                        >
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
-                          <span>Hemen Onayla</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                          className="py-2 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 font-bold text-xs border border-[#30363d] transition-colors"
-                          title="İlanı beklemeye al"
-                        >
-                          <span>Durdur</span>
-                        </button>
-                      )}
+                          {/* İletişim & Şifre */}
+                          <td className="py-3 px-3">
+                            <div className="flex flex-col gap-1 text-[11px]">
+                              <span className="text-white font-mono font-bold flex items-center gap-1">
+                                <Phone className="w-3 h-3 text-emerald-400" />
+                                <span>{item.whatsappNumara}</span>
+                              </span>
+                              {item.panelSifresi && (
+                                <span className="px-1.5 py-0.2 rounded bg-[#0d1117] text-amber-300 font-mono font-bold border border-amber-500/30 w-fit text-[10px]">
+                                  🔑 {item.panelSifresi}
+                                </span>
+                              )}
+                            </div>
+                          </td>
 
-                      {/* Detaylı İncele */}
-                      <button
+                          {/* Hit & Like */}
+                          <td className="py-3 px-3 text-center">
+                            <div className="flex items-center justify-center gap-2 font-mono text-[11px]">
+                              <span className="text-[#8b949e] flex items-center gap-0.5" title="Görüntülenme">
+                                <Eye className="w-3 h-3" />
+                                <span>{item.goruntulenmeSayisi || 0}</span>
+                              </span>
+                              <span className="text-emerald-400 font-bold flex items-center gap-0.5" title="WhatsApp Tıklaması">
+                                <Phone className="w-3 h-3" />
+                                <span>{item.whatsappTiklamaSayisi || 0}</span>
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Yönetim & Aksiyonlar */}
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {/* Onayla / Durdur */}
+                              {isPending ? (
+                                <button
+                                  onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
+                                  className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95"
+                                  title="Hemen Onayla & Yayına Al"
+                                >
+                                  <Check className="w-4 h-4 stroke-[3]" />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
+                                  className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 border border-[#30363d] text-xs transition-all"
+                                  title="İlanı Durdur / Beklemeye Al"
+                                >
+                                  <Clock className="w-4 h-4" />
+                                </button>
+                              )}
+
+                              {/* İncele */}
+                              <button
+                                onClick={() => handleOpenInspect(item)}
+                                className="p-2 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-[#30363d] transition-all"
+                                title="Detaylı Önizleme & İnceleme"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+
+                              {/* Düzenle */}
+                              <button
+                                onClick={() => handleOpenEdit(item)}
+                                className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 border border-[#30363d] transition-all"
+                                title="İlanı Düzenle"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+
+                              {/* Chate At */}
+                              <button
+                                onClick={() => handleSendApprovalChat(item._id)}
+                                className="p-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500 hover:text-slate-950 text-cyan-300 border border-cyan-500/30 transition-all"
+                                title="Müşteri Sohbetine Onay Linki Gönder"
+                              >
+                                <MessageSquare className="w-4 h-4" />
+                              </button>
+
+                              {/* Hesap Ata */}
+                              <button
+                                onClick={() => handleOpenAssignModal(item)}
+                                className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-amber-500/30 transition-all"
+                                title="Kullanıcı Hesabı Oluştur / Ata"
+                              >
+                                <KeyRound className="w-4 h-4" />
+                              </button>
+
+                              {/* Sitede Aç */}
+                              <Link
+                                href={`/ilan/${item.slug}`}
+                                target="_blank"
+                                className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-all"
+                                title="Canlı İlan Sayfasını Aç"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                              </Link>
+
+                              {/* Sil */}
+                              <button
+                                onClick={() => handleDelete(item._id)}
+                                className="p-2 rounded-xl bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 transition-all"
+                                title="İlanı Kalıcı Olarak Sil"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* ── MOBİL NATIVE KARTLAR LİSTESİ (MOBILE CARDS - md altında 100% korunan düzen) ──────────────── */}
+            <div className="md:hidden flex flex-col gap-3">
+              {filteredListings.map((item) => {
+                const remaining = getRemainingTime(item.paketBitisTarihi, item.status);
+                const isPending = item.status === 'onay_bekliyor';
+                const isLive = item.status === 'yayinda';
+
+                return (
+                  <div
+                    key={item._id}
+                    className={`p-3 sm:p-4 rounded-2xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg ${
+                      isPending
+                        ? 'border-amber-500/60 shadow-amber-500/5 bg-gradient-to-b from-[#1c1811] to-[#161b22]'
+                        : 'border-[#30363d] hover:border-[#3d444d]'
+                    }`}
+                  >
+                    {/* ── KART ÜST BİLGİ ALANI ──────────────── */}
+                    <div className="flex items-start gap-3 w-full">
+                      {/* Thumbnail */}
+                      <div 
                         onClick={() => handleOpenInspect(item)}
-                        className={`py-2 px-3 rounded-xl text-xs font-heading font-black border flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-                          isPending
-                            ? 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border-[#30363d]'
-                            : 'flex-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30'
-                        }`}
+                        className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117] cursor-pointer group shadow-md"
+                        title="Büyük boyutta incele"
                       >
-                        <Eye className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Detaylı İncele</span>
-                      </button>
+                        <Image
+                          src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=200'}
+                          alt={item.baslik}
+                          fill
+                          sizes="80px"
+                          className="object-cover group-hover:scale-105 transition-transform"
+                        />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                        <span className="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/85 text-amber-400 text-[8px] font-bold backdrop-blur-sm">
+                          {item.fotograflar?.length || 1} Foto
+                        </span>
+                      </div>
 
-                      {/* Düzenle */}
-                      <button
-                        onClick={() => handleOpenEdit(item)}
-                        className="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 border border-[#30363d] text-xs font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">Düzenle</span>
-                      </button>
+                      {/* Meta Bilgileri */}
+                      <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <h3 
+                            onClick={() => handleOpenInspect(item)}
+                            className="font-heading font-black text-sm sm:text-base text-white truncate max-w-[200px] sm:max-w-md cursor-pointer hover:text-amber-400 transition-colors"
+                          >
+                            {item.baslik}
+                          </h3>
 
-                      {/* +7 Gün Uzat */}
-                      <button
-                        onClick={() => handleExtendDuration(item._id, 7)}
-                        className="py-2 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-mono font-bold text-xs border border-amber-500/30 transition-all shrink-0 active:scale-95"
-                        title="Yayın Süresine +7 Gün Ekle"
-                      >
-                        +7G
-                      </button>
+                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase font-heading ${
+                            isLive
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
+                          }`}>
+                            {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
+                          </span>
+
+                          <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            {item.rozet || 'vip'}
+                          </span>
+                        </div>
+
+                        {/* Konum & Süre */}
+                        <div className="flex items-center gap-2 text-[11px] text-amber-400 font-bold capitalize flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3 shrink-0" />
+                            <span>{item.ilSlug} / {item.ilceSlug}</span>
+                          </span>
+                          <span className="text-[#8b949e]">•</span>
+                          <span className="text-emerald-400 font-mono flex items-center gap-1">
+                            <Clock className="w-3 h-3 shrink-0" />
+                            <span>{remaining.text}</span>
+                          </span>
+                        </div>
+
+                        {/* İletişim, Tarih & Şifre Çipleri */}
+                        <div className="flex items-center gap-2 text-[11px] text-[#8b949e] flex-wrap mt-0.5">
+                          <span className="text-white font-mono font-bold flex items-center gap-1">
+                            <Phone className="w-3 h-3 text-emerald-400" />
+                            <span>{item.whatsappNumara}</span>
+                          </span>
+                          {item.createdAt && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-slate-300 font-mono text-[10px] border border-[#30363d] flex items-center gap-1">
+                              <Calendar className="w-2.5 h-2.5 text-blue-400" />
+                              <span>Ekleme: {new Date(item.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                            </span>
+                          )}
+                          {item.panelSifresi && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-amber-300 font-mono font-bold border border-amber-500/30 flex items-center gap-1">
+                              <KeyRound className="w-2.5 h-2.5 text-amber-400" />
+                              <span>Şifre: {item.panelSifresi}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Satır 2: Hızlı Araç Butonları (Chate At, Hesap, Sitede Aç, Sil) */}
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {/* Chate Link At */}
-                      <button
-                        onClick={() => handleSendApprovalChat(item._id)}
-                        className="py-1.5 px-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
-                        title="Müşteri chatine onay ve link ilet"
-                      >
-                        <MessageSquare className="w-3 h-3 text-cyan-400 shrink-0" />
-                        <span className="truncate">Chate At</span>
-                      </button>
+                    {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (2 SATIRLI DÜZEN) ──────────────── */}
+                    <div className="flex flex-col gap-1.5 border-t border-[#30363d]/60 pt-2.5">
+                      {/* Satır 1: Ana Operasyon Butonları */}
+                      <div className="flex items-center gap-1.5">
+                        {/* Onayla / Beklemeye Al */}
+                        {isPending ? (
+                          <button
+                            onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
+                            className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                          >
+                            <Check className="w-3.5 h-3.5 stroke-[3]" />
+                            <span>Hemen Onayla</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
+                            className="py-2 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 font-bold text-xs border border-[#30363d] transition-colors"
+                            title="İlanı beklemeye al"
+                          >
+                            <span>Durdur</span>
+                          </button>
+                        )}
 
-                      {/* Hesap Tanımla */}
-                      <button
-                        onClick={() => handleOpenAssignModal(item)}
-                        className="py-1.5 px-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
-                        title="Bu ilana kullanıcı hesabı oluştur ve şifre ver"
-                      >
-                        <KeyRound className="w-3 h-3 text-amber-400 shrink-0" />
-                        <span className="truncate">Hesap</span>
-                      </button>
+                        {/* Detaylı İncele */}
+                        <button
+                          onClick={() => handleOpenInspect(item)}
+                          className={`py-2 px-3 rounded-xl text-xs font-heading font-black border flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+                            isPending
+                              ? 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border-[#30363d]'
+                              : 'flex-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30'
+                          }`}
+                        >
+                          <Eye className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Detaylı İncele</span>
+                        </button>
 
-                      {/* Sitede Aç */}
-                      <Link
-                        href={`/ilan/${item.slug}`}
-                        target="_blank"
-                        className="py-1.5 px-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-cyan-400 border border-[#30363d] text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
-                        title="Canlı İlan Sayfasını Aç"
-                      >
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                        <span className="truncate">Sitede Gör</span>
-                      </Link>
+                        {/* Düzenle */}
+                        <button
+                          onClick={() => handleOpenEdit(item)}
+                          className="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 border border-[#30363d] text-xs font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Düzenle</span>
+                        </button>
 
-                      {/* Sil */}
-                      <button
-                        onClick={() => handleDelete(item._id)}
-                        className="py-1.5 px-1.5 rounded-xl bg-[#21262d] hover:bg-red-500/20 text-[#8b949e] hover:text-red-400 border border-[#30363d] hover:border-red-500/40 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
-                        title="İlanı Sil"
-                      >
-                        <Trash2 className="w-3 h-3 shrink-0" />
-                        <span>Sil</span>
-                      </button>
+                        {/* +7 Gün Uzat */}
+                        <button
+                          onClick={() => handleExtendDuration(item._id, 7)}
+                          className="py-2 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-mono font-bold text-xs border border-amber-500/30 transition-all shrink-0 active:scale-95"
+                          title="Yayın Süresine +7 Gün Ekle"
+                        >
+                          +7G
+                        </button>
+                      </div>
+
+                      {/* Satır 2: Hızlı Araç Butonları (Chate At, Hesap, Sitede Aç, Sil) */}
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {/* Chate Link At */}
+                        <button
+                          onClick={() => handleSendApprovalChat(item._id)}
+                          className="py-1.5 px-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          title="Müşteri chatine onay ve link ilet"
+                        >
+                          <MessageSquare className="w-3 h-3 text-cyan-400 shrink-0" />
+                          <span className="truncate">Chate At</span>
+                        </button>
+
+                        {/* Hesap Tanımla */}
+                        <button
+                          onClick={() => handleOpenAssignModal(item)}
+                          className="py-1.5 px-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          title="Bu ilana kullanıcı hesabı oluştur ve şifre ver"
+                        >
+                          <KeyRound className="w-3 h-3 text-amber-400 shrink-0" />
+                          <span className="truncate">Hesap</span>
+                        </button>
+
+                        {/* Sitede Aç */}
+                        <Link
+                          href={`/ilan/${item.slug}`}
+                          target="_blank"
+                          className="py-1.5 px-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-cyan-400 border border-[#30363d] text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          title="Canlı İlan Sayfasını Aç"
+                        >
+                          <ExternalLink className="w-3 h-3 shrink-0" />
+                          <span className="truncate">Sitede Gör</span>
+                        </Link>
+
+                        {/* Sil */}
+                        <button
+                          onClick={() => handleDelete(item._id)}
+                          className="py-1.5 px-1.5 rounded-xl bg-[#21262d] hover:bg-red-500/20 text-[#8b949e] hover:text-red-400 border border-[#30363d] hover:border-red-500/40 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          title="İlanı Sil"
+                        >
+                          <Trash2 className="w-3 h-3 shrink-0" />
+                          <span>Sil</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 

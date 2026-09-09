@@ -396,6 +396,18 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         </Link>
 
         <Link
+          href="/bms-secure-portal/kullanicilar"
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
+            pathname === '/bms-secure-portal/kullanicilar'
+              ? 'text-amber-400 font-black'
+              : 'text-[#8b949e] hover:text-white font-medium'
+          }`}
+        >
+          <Users className="w-5 h-5" />
+          <span className="text-[10px] font-heading">Kullanıcılar</span>
+        </Link>
+
+        <Link
           href="/bms-secure-portal/chat"
           className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
             pathname === '/bms-secure-portal/chat'
@@ -420,18 +432,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         >
           <BarChart3 className="w-5 h-5" />
           <span className="text-[10px] font-heading">Analiz</span>
-        </Link>
-
-        <Link
-          href="/bms-secure-portal/banners"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
-            pathname === '/bms-secure-portal/banners'
-              ? 'text-amber-400 font-black'
-              : 'text-[#8b949e] hover:text-white font-medium'
-          }`}
-        >
-          <Megaphone className="w-5 h-5" />
-          <span className="text-[10px] font-heading">Bannerlar</span>
         </Link>
 
         <button

@@ -24,6 +24,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ listings: adminListingsCache });
     }
 
+    const nowDate = new Date();
+    // Süresi dolan ilanları otomatik 'suresi_doldu' yap
+    await ListingModel.updateMany(
+      { status: 'yayinda', paketBitisTarihi: { $lt: nowDate } },
+      { $set: { status: 'suresi_doldu' } }
+    ).catch(() => {});
+
     // fotograflar dizisi devasa base64 veriler içerebildiği için liste çekerken hariç tutuyoruz
     const listings = await ListingModel.find({})
       .select('-fotograflar')

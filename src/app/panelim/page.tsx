@@ -669,40 +669,132 @@ export default function PanelimPage() {
                 );
               })()}
 
-              {/* ── KULLANICININ GERÇEK REKLAM BANNER'I VARSA ÖZEL REKLAM PERFORMANS KARTI ── */}
+              {/* ── KULLANICININ GERÇEK REKLAM BANNER'LARI VARSA TAM ZENGİN REKLAM KARTLARI ── */}
               {banners && banners.length > 0 && (
-                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#2a1d06] via-[#1a1408] to-[#0d1117] border-2 border-amber-500/70 flex flex-col gap-3 shadow-xl">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-heading font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="font-heading font-black text-xs sm:text-sm text-amber-400 uppercase tracking-wider flex items-center gap-2">
                       <Flame className="w-4 h-4 fill-amber-400" />
-                      <span>Aktif Sponsorlu Reklam Performansınız ({banners.length} Banner)</span>
+                      <span>Sponsorlu Reklam &amp; Banner Performansınız ({banners.length} Reklam)</span>
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-black border border-emerald-500/30">
-                      ● Reklamınız Yayında
+                    <span className="text-[10px] text-[#8b949e] font-mono">
+                      Toplam: {banners.reduce((acc, b) => acc + (b.goruntulenmeSayisi || 0), 0).toLocaleString('tr-TR')} Gösterim
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 text-left">
-                    <div className="p-3 rounded-xl bg-black/50 border border-white/5 flex flex-col">
-                      <span className="text-[10px] text-[#8b949e]">Banner Görüntülenme</span>
-                      <span className="font-heading font-black text-base sm:text-lg text-white mt-1">
-                        {banners.reduce((acc, b) => acc + (b.goruntulenmeSayisi || 0), 0).toLocaleString('tr-TR')}
-                      </span>
-                    </div>
+                  <div className="grid grid-cols-1 gap-3.5">
+                    {banners.map((b: any) => {
+                      const timeInfo = calculateLiveCountdown(b.bitisTarihi, b.durum);
+                      const ctr = (b.goruntulenmeSayisi || 0) > 0 
+                        ? (((b.tiklamaSayisi || 0) / b.goruntulenmeSayisi) * 100).toFixed(1) 
+                        : '0.0';
 
-                    <div className="p-3 rounded-xl bg-black/50 border border-white/5 flex flex-col">
-                      <span className="text-[10px] text-[#8b949e]">Doğrudan Reklam Tıklaması</span>
-                      <span className="font-heading font-black text-base sm:text-lg text-amber-400 mt-1">
-                        {banners.reduce((acc, b) => acc + (b.tiklamaSayisi || 0), 0).toLocaleString('tr-TR')}
-                      </span>
-                    </div>
+                      return (
+                        <div 
+                          key={b._id}
+                          className={`p-4 sm:p-5 rounded-3xl bg-gradient-to-b from-[#1c1810] via-[#161b22] to-[#0d1117] border-2 transition-all flex flex-col gap-3.5 shadow-xl ${
+                            b.durum === 'yayinda'
+                              ? 'border-amber-500/60 shadow-amber-500/10'
+                              : b.durum === 'onay_bekliyor'
+                              ? 'border-yellow-500/50'
+                              : 'border-[#30363d] opacity-85'
+                          }`}
+                        >
+                          {/* Üst Başlık & Rozetler */}
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2.5 py-1 rounded-full text-[10px] font-heading font-black uppercase flex items-center gap-1 ${
+                                b.durum === 'yayinda'
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                  : b.durum === 'onay_bekliyor'
+                                  ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/40'
+                                  : 'bg-red-500/20 text-red-400 border border-red-500/40'
+                              }`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${
+                                  b.durum === 'yayinda' ? 'bg-emerald-400 animate-pulse' : b.durum === 'onay_bekliyor' ? 'bg-yellow-400' : 'bg-red-400'
+                                }`}></span>
+                                <span>{b.durum === 'yayinda' ? 'YAYINDA' : b.durum === 'onay_bekliyor' ? 'ONAY BEKLİYOR' : 'SÜRESİ DOLDU'}</span>
+                              </span>
 
-                    <div className="col-span-2 sm:col-span-1 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col justify-center">
-                      <span className="text-[10px] text-amber-300 font-bold">Reklam Konumu</span>
-                      <span className="font-heading font-black text-xs text-white uppercase mt-0.5">
-                        {banners[0]?.konum === 'her_ikisi' ? 'Anasayfa + Detaylar' : banners[0]?.konum?.toUpperCase() || 'ANASAYFA'}
-                      </span>
-                    </div>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-[#21262d] text-amber-300 border border-white/5">
+                                {b.konum === 'her_ikisi' ? '👑 Anasayfa + Detay Vitrini' : b.konum === 'ilan_detay' ? '📍 İlan Detay Vitrini' : '🌟 Anasayfa Sabit Vitrin'}
+                              </span>
+                            </div>
+
+                            <span className={`px-3 py-1 rounded-xl text-xs font-mono font-black border border-current/20 ${timeInfo.color} ${timeInfo.bg}`}>
+                              ⏱ {timeInfo.text}
+                            </span>
+                          </div>
+
+                          {/* Banner Görseli & Başlık Bilgisi */}
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5">
+                            {b.gorselUrl && (
+                              <div className="relative w-full sm:w-48 h-20 rounded-xl overflow-hidden bg-[#0d1117] border border-[#30363d] shrink-0">
+                                <img src={b.gorselUrl} alt={b.baslik} className="w-full h-full object-cover" />
+                              </div>
+                            )}
+
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <h4 className="font-heading font-black text-sm sm:text-base text-white truncate">
+                                {b.baslik}
+                              </h4>
+                              <span className="text-[11px] text-[#8b949e] font-mono mt-0.5 truncate">
+                                🔗 Hedef: <strong className="text-blue-400">{b.hedefUrl}</strong>
+                              </span>
+                              {b.sureGun && (
+                                <span className="text-[10px] text-amber-300/80 font-mono mt-0.5">
+                                  Paket: {b.sureGun} Günlük Sponsorluk
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 3'lü Canlı İstatistik Masası */}
+                          <div className="grid grid-cols-3 gap-2 p-2.5 rounded-2xl bg-[#0d1117] border border-[#30363d] text-center">
+                            <div className="flex flex-col">
+                              <span className="text-[9px] text-[#8b949e] uppercase font-bold">Banner Gösterim</span>
+                              <span className="font-mono font-black text-sm sm:text-base text-white mt-0.5">
+                                {(b.goruntulenmeSayisi || 0).toLocaleString('tr-TR')}
+                              </span>
+                            </div>
+                            <div className="flex flex-col border-x border-[#21262d]">
+                              <span className="text-[9px] text-amber-400 uppercase font-bold">Direkt Tıklama</span>
+                              <span className="font-mono font-black text-sm sm:text-base text-amber-400 mt-0.5">
+                                {(b.tiklamaSayisi || 0).toLocaleString('tr-TR')}
+                              </span>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[9px] text-emerald-400 uppercase font-bold">Tıklama Oranı (CTR)</span>
+                              <span className="font-mono font-black text-sm sm:text-base text-emerald-400 mt-0.5">
+                                %{ctr}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Alt Aksiyon Butonları */}
+                          <div className="flex items-center justify-between pt-1 border-t border-[#30363d]/60 text-xs">
+                            <a
+                              href={b.hedefUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[#8b949e] hover:text-white flex items-center gap-1 font-bold transition-colors"
+                            >
+                              <span>Hedef Sayfayı Aç</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+
+                            <button
+                              onClick={() => setActiveTab('chat')}
+                              className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-heading font-black text-[11px] flex items-center gap-1 border border-amber-500/40 transition-all"
+                            >
+                              <Headphones className="w-3 h-3" />
+                              <span>{b.durum === 'suresi_doldu' ? 'Süreyi Yeniden Uzat ➔' : 'Bannerı Güncelle / Destek ➔'}</span>
+                            </button>
+                          </div>
+
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

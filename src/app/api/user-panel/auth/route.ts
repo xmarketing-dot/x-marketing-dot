@@ -27,6 +27,14 @@ export async function POST(req: NextRequest) {
     const cleanPhone = rawIdent.replace(/[\s\-\(\)]/g, '');
     const cleanPass = password.toString().trim();
 
+    const now = new Date();
+
+    // Süresi dolan yayındaki banner'ları anında pasife al
+    await BannerAdModel.updateMany(
+      { durum: 'yayinda', bitisTarihi: { $lt: now } },
+      { $set: { durum: 'suresi_doldu' } }
+    ).catch(() => {});
+
     // 1. Önce UserModel'de ara (Kullanıcı Adı, Telefon, Email)
     const user = await UserModel.findOne({
       $or: [
@@ -57,16 +65,27 @@ export async function POST(req: NextRequest) {
         ],
       }).sort({ createdAt: -1 });
 
+      // İlanlardaki telefon numaralarını da topla
+      const listingPhones = Array.from(new Set(userListings.map((l) => l.whatsappNumara).filter(Boolean)));
+
       // Kullanıcının reklam banner'larını çek
+      const phoneQueries: any[] = [];
+      if (user.telefon) {
+        phoneQueries.push({ musteriIletisim: user.telefon });
+        phoneQueries.push({ musteriIletisim: cleanPhone });
+        if (cleanPhone.length >= 10) phoneQueries.push({ musteriIletisim: { $regex: cleanPhone.slice(-10) } });
+      }
+      listingPhones.forEach((p) => {
+        const cP = p.replace(/\D/g, '');
+        phoneQueries.push({ musteriIletisim: p });
+        if (cP.length >= 10) phoneQueries.push({ musteriIletisim: { $regex: cP.slice(-10) } });
+      });
+
       const userBanners = await BannerAdModel.find({
         $or: [
-          ...(user.telefon ? [
-            { musteriIletisim: user.telefon },
-            { musteriIletisim: cleanPhone },
-            ...(cleanPhone.length >= 10 ? [{ musteriIletisim: { $regex: cleanPhone.slice(-10) } }] : [])
-          ] : [
-            { musteriIletisim: rawIdent }
-          ])
+          ...(phoneQueries.length > 0 ? phoneQueries : [{ musteriIletisim: rawIdent }]),
+          { musteriIletisim: cleanIdent },
+          { musteriIletisim: rawIdent }
         ],
       }).sort({ createdAt: -1 });
 

@@ -291,7 +291,7 @@ export default function AdminBannerManagementPage() {
           <p className="text-[11px] text-[#8b949e]">Yeni bir sponsor banner ekleyebilir veya diğer sekmeleri kontrol edebilirsiniz.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3.5 sm:gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3.5 sm:gap-4">
           {filteredBanners.map((b) => {
             const timeInfo = getRemainingTime(b);
             const ctr = b.goruntulenmeSayisi > 0 ? ((b.tiklamaSayisi / b.goruntulenmeSayisi) * 100).toFixed(1) : '0.0';

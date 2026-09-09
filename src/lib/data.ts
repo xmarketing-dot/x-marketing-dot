@@ -111,7 +111,7 @@ export async function getListings({
   await connectToDatabase();
 
   const nowDate = new Date();
-  const query: any = { 
+  const query: any = {
     status: 'yayinda',
     $or: [
       { paketBitisTarihi: { $exists: false } },
@@ -148,8 +148,8 @@ export const getListingBySlug = cache(async (slug: string) => {
   await connectToDatabase();
 
   const now = new Date();
-  const listing = await ListingModel.findOne({ 
-    slug, 
+  const listing = await ListingModel.findOne({
+    slug,
     status: 'yayinda',
     $or: [
       { paketBitisTarihi: { $exists: false } },
@@ -171,6 +171,12 @@ export const getActiveBanner = cache(async (konum: 'anasayfa' | 'ilan_detay' | s
     await connectToDatabase();
     const now = new Date();
     const targetKonum = konum === 'ilan_detay' ? 'ilan_detay' : 'anasayfa';
+
+    // Süresi dolan yayındaki banner'ları anında otomatik pasife al
+    BannerAdModel.updateMany(
+      { durum: 'yayinda', bitisTarihi: { $lt: now } },
+      { $set: { durum: 'suresi_doldu' } }
+    ).catch(() => {});
 
     const banner = await BannerAdModel.findOne({
       durum: 'yayinda',
