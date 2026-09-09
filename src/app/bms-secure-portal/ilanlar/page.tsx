@@ -756,12 +756,18 @@ export default function AdminListingsPage() {
                         </span>
                       </div>
 
-                      {/* İletişim & Şifre Çipleri */}
+                      {/* İletişim, Tarih & Şifre Çipleri */}
                       <div className="flex items-center gap-2 text-[11px] text-[#8b949e] flex-wrap mt-0.5">
                         <span className="text-white font-mono font-bold flex items-center gap-1">
                           <Phone className="w-3 h-3 text-emerald-400" />
                           <span>{item.whatsappNumara}</span>
                         </span>
+                        {item.createdAt && (
+                          <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-slate-300 font-mono text-[10px] border border-[#30363d] flex items-center gap-1">
+                            <Calendar className="w-2.5 h-2.5 text-blue-400" />
+                            <span>Ekleme: {new Date(item.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          </span>
+                        )}
                         {item.panelSifresi && (
                           <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-amber-300 font-mono font-bold border border-amber-500/30 flex items-center gap-1">
                             <KeyRound className="w-2.5 h-2.5 text-amber-400" />

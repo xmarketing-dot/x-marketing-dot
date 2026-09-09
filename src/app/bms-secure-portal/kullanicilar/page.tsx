@@ -422,6 +422,11 @@ export default function AdminUsersPage() {
                                     }`}>
                                       {item.status === 'yayinda' ? 'YAYINDA' : item.status}
                                     </span>
+                                    {item.createdAt && (
+                                      <span className="text-[9px] text-[#8b949e] font-mono">
+                                        • {new Date(item.createdAt).toLocaleDateString('tr-TR')}
+                                      </span>
+                                    )}
                                   </div>
                                 </div>
                               </div>
