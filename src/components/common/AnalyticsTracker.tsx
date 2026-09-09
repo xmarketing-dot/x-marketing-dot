@@ -262,7 +262,7 @@ export default function AnalyticsTracker() {
       }
 
       if (activeRecordIdRef.current) {
-        fetch('/api/analytics/ping', {
+        fetch('/api/analytics/heartbeat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
