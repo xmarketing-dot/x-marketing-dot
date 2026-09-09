@@ -24,7 +24,7 @@ import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
 import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
-import CompactListingCard from '@/components/common/CompactListingCard';
+import CategorizedListingsSection from '@/components/home/CategorizedListingsSection';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 
 export const dynamic = 'force-dynamic';
@@ -84,7 +84,7 @@ export default async function HomePage() {
 
   const [locations, rawListings, homepageConfig, activeBanner] = await Promise.all([
     getAllLocations(),
-    getListings({ limit: 60 }),
+    getListings({ limit: 500 }),
     getHomepageConfig(),
     getActiveBanner('anasayfa'),
   ]);
@@ -306,28 +306,13 @@ export default async function HomePage() {
         />
       </section>
 
-      {/* 4. TÜM İLANLAR GRID LİSTESİ */}
-      <section className="px-2 sm:px-4 flex flex-col gap-2.5 pt-1">
-        <div className="flex items-center justify-between pb-1 border-b border-[#30363d]">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center font-black shadow-md">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <h2 className="font-black text-sm text-white uppercase tracking-wider font-heading">
-              Günün Öne Çıkan Güncel İlanları
-            </h2>
-          </div>
-          <span className="text-xs text-[#8b949e] font-mono">
-            {gridListings.length} İlan
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          {gridListings.map((listing: any, index: number) => (
-            <CompactListingCard key={listing._id || index} listing={listing} />
-          ))}
-        </div>
-      </section>
+      {/* 4. KATEGORİLERE GÖRE AYRILMIŞ İLAN LİSTELERİ (VIP EN ÜSTTE, GOLD ORTADA, SILVER EN ALTTA + DAHA FAZLA GÖSTER) */}
+      <CategorizedListingsSection
+        vipListings={vipListings}
+        goldListings={goldListings}
+        silverListings={silverListings}
+        allListings={allSortedListings}
+      />
 
       {/* ── 5. GÜVEN & DOĞRULAMA BİLGİ KUTUSU ──────────────── */}
       <div className="px-2 sm:px-4 mt-2">
