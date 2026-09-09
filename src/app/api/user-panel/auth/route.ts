@@ -44,21 +44,30 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Şifreniz hatalı! Lütfen kontrol ediniz.' }, { status: 401 });
       }
 
-      // Kullanıcının ilanlarını çek
+      // Kullanıcının ilanlarını çoklu kriterle (ID, telefon varyasyonları, şifre) eksiksiz çek
       const userListings = await ListingModel.find({
         $or: [
+          { kullaniciId: user._id },
           { kullaniciId: user._id.toString() },
-          { whatsappNumara: user.telefon },
-          { whatsappNumara: user.telefon?.replace(/[\s\-\(\)]/g, '') },
+          ...(user.sifreHash ? [{ panelSifresi: user.sifreHash }] : []),
+          ...(user.telefon ? [
+            { whatsappNumara: user.telefon },
+            { whatsappNumara: user.telefon.replace(/[\s\-\(\)]/g, '') },
+            ...(user.telefon.replace(/\D/g, '').length >= 10 ? [{ whatsappNumara: { $regex: user.telefon.replace(/\D/g, '').slice(-10) } }] : [])
+          ] : [])
         ],
       }).sort({ createdAt: -1 });
 
       // Kullanıcının reklam banner'larını çek
       const userBanners = await BannerAdModel.find({
         $or: [
-          { musteriIletisim: user.telefon },
-          { musteriIletisim: cleanPhone },
-          { musteriIletisim: { $regex: cleanPhone.slice(-10) } },
+          ...(user.telefon ? [
+            { musteriIletisim: user.telefon },
+            { musteriIletisim: cleanPhone },
+            ...(cleanPhone.length >= 10 ? [{ musteriIletisim: { $regex: cleanPhone.slice(-10) } }] : [])
+          ] : [
+            { musteriIletisim: rawIdent }
+          ])
         ],
       }).sort({ createdAt: -1 });
 
@@ -102,9 +111,10 @@ export async function POST(req: NextRequest) {
         success: true,
         user: {
           _id: user._id,
+          kullaniciAdi: user.kullaniciAdi,
           ad: user.ad || user.kullaniciAdi,
-          identifier: rawIdent,
-          telefon: user.telefon || rawIdent,
+          identifier: user.kullaniciAdi || rawIdent,
+          telefon: user.telefon || '',
           type: 'user',
         },
         listings: JSON.parse(JSON.stringify(enrichedListings)),

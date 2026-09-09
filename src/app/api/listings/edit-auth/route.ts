@@ -17,13 +17,13 @@ export async function POST(req: NextRequest) {
     const rawPass = panelSifresi || password || '';
     const rawIdent = telefon || identifier || '';
 
-    if (!rawIdent && !listingId) {
-      return NextResponse.json({ error: 'WhatsApp numarası ve İlan Şifresi zorunludur.' }, { status: 400 });
+    if (!rawIdent && !listingId && !rawPass) {
+      return NextResponse.json({ error: 'Bilgiler eksik. Lütfen tekrar deneyiniz.' }, { status: 400 });
     }
 
     await connectToDatabase();
 
-    const cleanPhone = rawIdent.toString().replace(/[\s\-\(\)]/g, '');
+    const cleanPhone = rawIdent ? rawIdent.toString().replace(/[\s\-\(\)]/g, '') : '';
     const cleanPass = rawPass.toString().trim();
 
     let listing: any = null;
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
         $or: [
           { whatsappNumara: rawIdent },
           { whatsappNumara: cleanPhone },
-          { whatsappNumara: { $regex: cleanPhone.slice(-10) } },
+          ...(cleanPhone.length >= 10 ? [{ whatsappNumara: { $regex: cleanPhone.slice(-10) } }] : []),
         ],
         ...(cleanPass ? { panelSifresi: cleanPass } : {}),
       });

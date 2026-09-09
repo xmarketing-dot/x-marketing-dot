@@ -180,11 +180,13 @@ export default function PanelimPage() {
 
       if (data.success && data.user) {
         const userObj = {
-          identifier: telefon.trim(),
+          identifier: data.user.identifier || telefon.trim(),
           password: panelSifresi.trim(),
           panelSifresi: panelSifresi.trim(),
-          telefon: data.user.telefon || telefon.trim(),
-          ad: data.user.ad || 'İlan Sahibi',
+          kullaniciAdi: data.user.kullaniciAdi || data.user.ad || telefon.trim(),
+          telefon: data.user.telefon || telefon.trim() || '',
+          ad: data.user.ad || data.user.kullaniciAdi || 'İlan Sahibi',
+          type: data.user.type || 'user'
         };
         localStorage.setItem('panel_user_session', JSON.stringify(userObj));
         setCurrentUser(userObj);
@@ -287,7 +289,7 @@ export default function PanelimPage() {
           action: 'update',
           telefon: currentUser.telefon || activeIdent,
           identifier: activeIdent,
-          panelSifresi: activePass,
+          panelSifresi: activePass || editingListing.panelSifresi,
           password: activePass,
           listingId: editingListing._id,
           updateData: {
@@ -393,7 +395,7 @@ export default function PanelimPage() {
             <div>
               <h1 className="font-black text-2xl text-white font-heading">İlan Sahibi Paneli</h1>
               <p className="text-xs sm:text-sm text-[#8b949e] mt-1 font-medium">
-                İlan verirken belirlediğiniz WhatsApp Numaranız ve İlan Şifreniz ile giriş yapın.
+                Kullanıcı Adınız ve Şifreniz ile giriş yapın.
               </p>
             </div>
           </div>
@@ -407,22 +409,22 @@ export default function PanelimPage() {
 
           <form onSubmit={handleLogin} className="flex flex-col gap-4 text-left">
             <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
-              WhatsApp Numaranız *
+              Kullanıcı Adınız (veya Telefon) *
               <div className="relative">
                 <input
-                  type="tel"
+                  type="text"
                   required
-                  placeholder="0530 000 00 00"
+                  placeholder="Kullanıcı adınız..."
                   value={telefon}
                   onChange={(e) => setTelefon(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-[#21262d] border border-[#363b42] text-white text-xs sm:text-sm focus:outline-none focus:border-amber-400 transition-colors font-mono font-medium"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-[#21262d] border border-[#363b42] text-white text-xs sm:text-sm focus:outline-none focus:border-amber-400 transition-colors font-medium"
                 />
-                <Phone className="w-4 h-4 text-amber-400 absolute left-3.5 top-4" />
+                <UserIcon className="w-4 h-4 text-amber-400 absolute left-3.5 top-4" />
               </div>
             </label>
 
             <label className="flex flex-col gap-1.5 text-xs font-extrabold text-[#f0f6fc]">
-              İlan Şifreniz *
+              Şifreniz *
               <div className="relative">
                 <input
                   type="password"
@@ -458,10 +460,10 @@ export default function PanelimPage() {
           <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] text-left flex flex-col gap-1.5">
             <span className="text-[11px] font-bold text-amber-400 flex items-center gap-1.5 font-heading">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Şifrenizi mi Unuttunuz?</span>
+              <span>Giriş Yapamıyor musunuz?</span>
             </span>
             <p className="text-[11px] text-[#8b949e] leading-relaxed">
-              İlan şifrenizi hatırlamıyorsanız canlı destek üzerinden numaranızı teyit ederek şifrenizi anında sıfırlayabilirsiniz.
+              Kullanıcı adı veya şifrenizi hatırlamıyorsanız 7/24 canlı destek üzerinden anında yardım alabilirsiniz.
             </p>
             <Link
               href="/chat"
@@ -500,7 +502,7 @@ export default function PanelimPage() {
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <h1 className="font-black text-base sm:text-xl text-white font-heading">
-                {currentUser.ad}
+                {currentUser.kullaniciAdi || currentUser.ad}
               </h1>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold border border-emerald-500/30 flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3" />
@@ -508,7 +510,7 @@ export default function PanelimPage() {
               </span>
             </div>
             <span className="text-xs text-amber-400 font-bold font-mono mt-0.5">
-              📱 {currentUser.telefon} • {listings.length} Aktif İlan Yayında
+              {currentUser.kullaniciAdi ? `@${currentUser.kullaniciAdi}` : ''} {currentUser.telefon ? `• 📱 ${currentUser.telefon}` : ''} • {listings.length} İlan Yayında
             </span>
           </div>
         </div>
@@ -770,16 +772,30 @@ export default function PanelimPage() {
                             alt={item.baslik}
                             className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border border-[#30363d] shrink-0 shadow-md"
                           />
-                          <div className="flex flex-col min-w-0">
+                          <div className="flex flex-col min-w-0 flex-1">
                             <h3 className="font-heading font-black text-base sm:text-lg text-white truncate">
                               {item.baslik}
                             </h3>
                             <span className="text-xs text-[#8b949e] mt-0.5 font-medium">
                               📍 {item.ilSlug?.toUpperCase()} / {item.ilceSlug?.toUpperCase()}
                             </span>
-                            <span className="text-xs text-emerald-400 font-mono font-bold mt-1">
+                            <span className="text-xs text-emerald-400 font-mono font-bold mt-0.5">
                               💬 WhatsApp: {item.whatsappNumara}
                             </span>
+                            <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-[#30363d]/60 text-[11px] font-mono">
+                              <span className="flex items-center gap-1 text-amber-300 font-bold bg-[#0d1117] px-2 py-0.5 rounded-lg border border-[#30363d]">
+                                <Eye className="w-3 h-3 text-amber-400" />
+                                <span>{(item.goruntulenmeSayisi || item.goruntulenme || 0).toLocaleString('tr-TR')} Görüntülenme</span>
+                              </span>
+                              <span className="flex items-center gap-1 text-emerald-400 font-bold bg-[#0d1117] px-2 py-0.5 rounded-lg border border-[#30363d]">
+                                <MessageSquare className="w-3 h-3 text-emerald-400" />
+                                <span>{(item.whatsappTiklamaSayisi || item.whatsappTiklama || 0).toLocaleString('tr-TR')} WhatsApp Tık</span>
+                              </span>
+                              <span className="flex items-center gap-1 text-pink-400 font-bold bg-[#0d1117] px-2 py-0.5 rounded-lg border border-[#30363d]">
+                                <Star className="w-3 h-3 text-pink-400 fill-pink-400" />
+                                <span>{(item.likeSayisi || 0).toLocaleString('tr-TR')} Beğeni</span>
+                              </span>
+                            </div>
                           </div>
                         </div>
 
