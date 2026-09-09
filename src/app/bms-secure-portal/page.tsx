@@ -691,73 +691,107 @@ export default function BmsSecurePortalDashboard() {
             </span>
           </div>
 
-          {/* 4 Ana Metrik Kartı — Mobilde 2x2 4'lü Kompakt Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+          {/* 6 Ana Metrik Kartı — Mobilde 2x3, Masaüstünde 6'lı Grid (Vercel + Google Analytics Seviyesi) */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
             {/* 1. Tekil Ziyaretçi */}
-            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-amber-500/50 transition-colors">
+            <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-amber-500/50 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">Tekil Ziyaret</span>
-                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                  <Globe className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                  <Globe className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5 flex-wrap">
-                <span className="font-black text-xl sm:text-3xl text-white font-heading">{uniqueVisitors.toLocaleString()}</span>
+                <span className="font-black text-xl sm:text-2xl text-white font-heading">{uniqueVisitors.toLocaleString()}</span>
                 <span className="text-[10px] sm:text-xs text-amber-400 font-bold">Kişi</span>
               </div>
-              <span className="text-[10px] sm:text-[11px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
-                {totalPageviews.toLocaleString()} sayfa gösterimi
+              <span className="text-[10px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                Organik Tekil
               </span>
             </div>
 
-            {/* 2. WhatsApp İletişim Tıklamaları */}
-            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-emerald-500/50 transition-colors">
+            {/* 2. Toplam Sayfa Gösterimi (Pageviews) */}
+            <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-cyan-500/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">Pageviews</span>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                  <Eye className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="font-black text-xl sm:text-2xl text-cyan-300 font-heading">{totalPageviews.toLocaleString()}</span>
+                <span className="text-[10px] sm:text-xs text-cyan-400 font-bold">Hit</span>
+              </div>
+              <span className="text-[10px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                Ort. {uniqueVisitors > 0 ? (totalPageviews / uniqueVisitors).toFixed(1) : '1.0'} Sayfa/Kişi
+              </span>
+            </div>
+
+            {/* 3. WhatsApp İletişim Tıklamaları */}
+            <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-emerald-500/50 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">WhatsApp Hit</span>
-                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center shrink-0">
-                  <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-[#25D366]" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center shrink-0">
+                  <OfficialWhatsAppIcon className="w-4 h-4 fill-[#25D366]" />
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5 flex-wrap">
-                <span className="font-black text-xl sm:text-3xl text-[#25D366] font-heading">{eventCounts.whatsappClicks.toLocaleString()}</span>
+                <span className="font-black text-xl sm:text-2xl text-[#25D366] font-heading">{eventCounts.whatsappClicks.toLocaleString()}</span>
                 <span className="text-[10px] sm:text-xs text-emerald-400 font-bold">Dönüşüm</span>
               </div>
-              <span className="text-[10px] sm:text-[11px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
-                Genel: {totalWhatsappClicks.toLocaleString()} iletişim
+              <span className="text-[10px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                CTR: %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
               </span>
             </div>
 
-            {/* 3. Google Organik Arama Trafiği */}
-            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-blue-500/50 transition-colors">
+            {/* 4. Google Organik Arama Trafiği */}
+            <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-blue-500/50 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">Google Arama</span>
-                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                  <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                  <Search className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5 flex-wrap">
-                <span className="font-black text-xl sm:text-3xl text-blue-400 font-heading">{sources.google.toLocaleString()}</span>
+                <span className="font-black text-xl sm:text-2xl text-blue-400 font-heading">{sources.google.toLocaleString()}</span>
                 <span className="text-[10px] sm:text-xs text-blue-300 font-bold">Hit</span>
               </div>
-              <span className="text-[10px] sm:text-[11px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
-                {searchTerms.length} anahtar kelime
+              <span className="text-[10px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                {searchTerms.length} Arama Terimi
               </span>
             </div>
 
-            {/* 4. Yandex Arama Trafiği */}
-            <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-red-500/50 transition-colors">
+            {/* 5. Yandex Arama Trafiği */}
+            <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-red-500/50 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">Yandex Arama</span>
-                <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-4 h-4" />
                 </div>
               </div>
               <div className="flex items-baseline gap-1.5 flex-wrap">
-                <span className="font-black text-xl sm:text-3xl text-red-400 font-heading">{sources.yandex.toLocaleString()}</span>
+                <span className="font-black text-xl sm:text-2xl text-red-400 font-heading">{sources.yandex.toLocaleString()}</span>
                 <span className="text-[10px] sm:text-xs text-red-300 font-bold">Hit</span>
               </div>
-              <span className="text-[10px] sm:text-[11px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+              <span className="text-[10px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
                 Yandex Organik 🇷🇺
+              </span>
+            </div>
+
+            {/* 6. Mobil / Masaüstü Oranı */}
+            <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-purple-500/50 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">Mobil Cihaz</span>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+                  <Smartphone className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="font-black text-xl sm:text-2xl text-purple-300 font-heading">%{mobilePercentage}</span>
+                <span className="text-[10px] sm:text-xs text-purple-400 font-bold">Mobil</span>
+              </div>
+              <span className="text-[10px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
+                {mobileCount.toLocaleString()} Mobil İstek
               </span>
             </div>
           </div>

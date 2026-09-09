@@ -68,10 +68,12 @@ export default function CategorizedListingsSection({
           {vipListings.length > vipLimit && (
             <button
               onClick={() => setVipLimit((prev) => prev + 12)}
-              className="mt-2 w-full py-3 rounded-2xl bg-[#161b22] hover:bg-[#21262d] border border-amber-500/40 text-amber-400 font-heading font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-[0.99]"
+              className="mt-3 w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#2b210a] via-[#3d2e0f] to-[#2b210a] hover:from-[#3d2e0f] hover:to-[#4e3b14] border-2 border-amber-400/80 text-amber-300 font-heading font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-amber-500/20 active:scale-95 group relative overflow-hidden"
             >
-              <span>Daha Fazla VIP İlan Göster ({vipListings.length - vipLimit} Kalan)</span>
-              <ChevronDown className="w-4 h-4 stroke-[3]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-amber-400/20 to-amber-500/10 opacity-50 group-hover:opacity-100 transition-opacity" />
+              <Crown className="w-4 h-4 text-amber-400 fill-amber-400/30 group-hover:scale-110 transition-transform relative z-10" />
+              <span className="relative z-10">Daha Fazla VIP İlan Göster ({vipListings.length - vipLimit} İlan Kaldı)</span>
+              <ChevronDown className="w-4 h-4 text-amber-400 stroke-[3] group-hover:translate-y-0.5 transition-transform relative z-10 animate-bounce" />
             </button>
           )}
         </section>
@@ -107,10 +109,12 @@ export default function CategorizedListingsSection({
           {goldListings.length > goldLimit && (
             <button
               onClick={() => setGoldLimit((prev) => prev + 12)}
-              className="mt-2 w-full py-3 rounded-2xl bg-[#161b22] hover:bg-[#21262d] border border-yellow-500/40 text-yellow-300 font-heading font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-[0.99]"
+              className="mt-3 w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#241c09] via-[#33270d] to-[#241c09] hover:from-[#33270d] hover:to-[#453412] border-2 border-yellow-500/80 text-yellow-300 font-heading font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-yellow-500/20 active:scale-95 group relative overflow-hidden"
             >
-              <span>Daha Fazla Gold İlan Göster ({goldListings.length - goldLimit} Kalan)</span>
-              <ChevronDown className="w-4 h-4 stroke-[3]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 via-yellow-400/20 to-yellow-500/10 opacity-50 group-hover:opacity-100 transition-opacity" />
+              <Award className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform relative z-10" />
+              <span className="relative z-10">Daha Fazla Gold İlan Göster ({goldListings.length - goldLimit} İlan Kaldı)</span>
+              <ChevronDown className="w-4 h-4 text-yellow-400 stroke-[3] group-hover:translate-y-0.5 transition-transform relative z-10 animate-bounce" />
             </button>
           )}
         </section>
@@ -146,10 +150,12 @@ export default function CategorizedListingsSection({
           {silverListings.length > silverLimit && (
             <button
               onClick={() => setSilverLimit((prev) => prev + 12)}
-              className="mt-2 w-full py-3 rounded-2xl bg-[#161b22] hover:bg-[#21262d] border border-slate-600/50 text-slate-200 font-heading font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-[0.99]"
+              className="mt-3 w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-[#1c222b] via-[#262f3c] to-[#1c222b] hover:from-[#262f3c] hover:to-[#313d4e] border-2 border-slate-400/80 text-slate-100 font-heading font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-slate-900/40 active:scale-95 group relative overflow-hidden"
             >
-              <span>Daha Fazla Silver İlan Göster ({silverListings.length - silverLimit} Kalan)</span>
-              <ChevronDown className="w-4 h-4 stroke-[3]" />
+              <div className="absolute inset-0 bg-gradient-to-r from-slate-400/10 via-slate-300/20 to-slate-400/10 opacity-50 group-hover:opacity-100 transition-opacity" />
+              <Medal className="w-4 h-4 text-slate-300 group-hover:scale-110 transition-transform relative z-10" />
+              <span className="relative z-10">Daha Fazla Silver İlan Göster ({silverListings.length - silverLimit} İlan Kaldı)</span>
+              <ChevronDown className="w-4 h-4 text-slate-300 stroke-[3] group-hover:translate-y-0.5 transition-transform relative z-10 animate-bounce" />
             </button>
           )}
         </section>
@@ -181,10 +187,11 @@ export default function CategorizedListingsSection({
           {allListings.length > allLimit && (
             <button
               onClick={() => setAllLimit((prev) => prev + 16)}
-              className="mt-2 w-full py-3 rounded-2xl bg-[#161b22] hover:bg-[#21262d] border border-amber-500/40 text-amber-400 font-heading font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-[0.99]"
+              className="mt-3 w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs sm:text-sm uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-amber-500/30 active:scale-95 group"
             >
-              <span>Daha Fazla İlan Göster ({allListings.length - allLimit} Kalan)</span>
-              <ChevronDown className="w-4 h-4 stroke-[3]" />
+              <Sparkles className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <span>Daha Fazla İlan Göster ({allListings.length - allLimit} İlan Kaldı)</span>
+              <ChevronDown className="w-4 h-4 stroke-[3] group-hover:translate-y-0.5 transition-transform animate-bounce" />
             </button>
           )}
         </section>
