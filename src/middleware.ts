@@ -120,6 +120,23 @@ export function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(`https://besteskort.devs.surf${pathname}${url.search}`), 301);
   }
 
+  // ── ESKİ / FAZLADAN SEGMENT İÇEREN URL'LERİ (ÖRN: /sanliurfa/siverek/emlak) DÜZELT ──
+  // Kullanıcı veya Google botu /il/ilce/ekstra bir yola gelirse 404 düşürme, doğrudan /il/ilce sayfasına 301 yönlendir!
+  const pathParts = pathname.split('/').filter(Boolean);
+  if (
+    pathParts.length >= 3 &&
+    !pathname.startsWith('/api') &&
+    !pathname.startsWith('/bms-secure-portal') &&
+    !pathname.startsWith('/ilan') &&
+    !pathname.startsWith('/kategori') &&
+    !pathname.startsWith('/_next')
+  ) {
+    const il = pathParts[0].toLowerCase();
+    const ilce = pathParts[1].toLowerCase();
+    // /il/ilce/emlak vb. -> /il/ilce adresine 301 kalıcı yönlendirme yap
+    return NextResponse.redirect(new URL(`/${il}/${ilce}${url.search}`, req.url), 301);
+  }
+
   const targetLoc = resolveTargetFromHost(hostname);
 
   // Eğer bu domain belirli bir il veya ilçeye bağlıysa ve anasayfaya (/) geldiyse:
