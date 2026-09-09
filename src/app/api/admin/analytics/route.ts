@@ -434,29 +434,54 @@ export async function GET(req: Request) {
     const totalShares = detailedListingReports.reduce((acc: number, item: any) => acc + item.shares, 0);
 
     const googleVisitors = summary.googleCount || 0;
-    const googleWhatsappClicks = detailedListingReports.reduce((acc: number, item: any) => {
+    const yandexVisitors = summary.yandexCount || 0;
+    const totalOrganicVisitors = googleVisitors + yandexVisitors;
+
+    // Arama motorlarından (Google & Yandex) gelen sayfaların WhatsApp dönüşümleri
+    const organicListings = detailedListingReports.filter((l: any) => {
+      const gViews = l.referrers?.google || 0;
+      const yViews = l.referrers?.yandex || 0;
+      return (gViews + yViews) > 0;
+    });
+
+    const googleWhatsappClicks = organicListings.reduce((acc: number, item: any) => {
       const gViews = item.referrers?.google || 0;
-      if (gViews > 0 && item.periodViews > 0) {
-        const ratio = gViews / item.periodViews;
-        return acc + Math.round((item.periodWhatsappClicks || 0) * ratio);
+      const yViews = item.referrers?.yandex || 0;
+      const totalOrgHits = gViews + yViews;
+      const periodClicks = item.periodWhatsappClicks || item.whatsappClicks || 0;
+      
+      if (totalOrgHits > 0 && periodClicks > 0) {
+        // Eğer ilanın direkt period WhatsApp tıklaması varsa, organik payına göre hesapla (en az 1 say)
+        const estClicks = Math.max(1, Math.min(periodClicks, totalOrgHits));
+        return acc + estClicks;
       }
       return acc;
     }, 0);
-    const googleConversionRate = googleVisitors > 0 ? ((googleWhatsappClicks / googleVisitors) * 100).toFixed(1) : '0.0';
 
-    const topGoogleDistricts = detailedListingReports
-      .filter((l: any) => (l.referrers?.google || 0) > 0)
-      .sort((a: any, b: any) => (b.referrers?.google || 0) - (a.referrers?.google || 0))
+    const googleConversionRate = totalOrganicVisitors > 0 
+      ? ((googleWhatsappClicks / totalOrganicVisitors) * 100).toFixed(1) 
+      : '0.0';
+
+    const topGoogleDistricts = organicListings
+      .sort((a: any, b: any) => {
+        const orgA = (a.referrers?.google || 0) + (a.referrers?.yandex || 0);
+        const orgB = (b.referrers?.google || 0) + (b.referrers?.yandex || 0);
+        return orgB - orgA;
+      })
       .slice(0, 6)
-      .map((l: any) => ({
-        id: l.id,
-        baslik: l.baslik,
-        ilSlug: l.ilSlug,
-        ilceSlug: l.ilceSlug,
-        googleViews: l.referrers?.google || 0,
-        whatsappClicks: l.whatsappClicks || 0,
-        conversionRate: l.conversionRate,
-      }));
+      .map((l: any) => {
+        const gViews = l.referrers?.google || 0;
+        const yViews = l.referrers?.yandex || 0;
+        return {
+          id: l.id,
+          baslik: l.baslik,
+          ilSlug: l.ilSlug,
+          ilceSlug: l.ilceSlug,
+          googleViews: gViews + yViews,
+          whatsappClicks: l.periodWhatsappClicks || l.whatsappClicks || 0,
+          conversionRate: l.conversionRate,
+        };
+      });
 
     // ── 14. Domain Bazlı İstatistik Haritası (Çoklu Domain Gateway İstihbaratı) ──
     const defaultGatewayDomains = [
