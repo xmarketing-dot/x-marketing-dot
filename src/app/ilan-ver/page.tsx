@@ -215,33 +215,10 @@ export default function CreateListingPage() {
           localStorage.setItem('my_listing_panel_password', data.panelSifresi);
         }
 
-        try {
-          const chatRes = await fetch('/api/chat/start', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              threadId: savedThreadId,
-              kullaniciAdi: `İlan Sahibi: ${formData.baslik}`
-            }),
-          });
-          const chatData = await chatRes.json();
-          if (chatData.thread?._id) {
-            localStorage.setItem('best_eskort_chat_thread_id', chatData.thread._id);
-            localStorage.setItem('last_created_listing_id', data.listing?._id || 'true');
-            window.dispatchEvent(new Event('storage'));
-
-            await fetch('/api/chat/messages', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                threadId: chatData.thread._id,
-                gonderenTipi: 'user',
-                mesaj: `Merhaba yönetici, "${formData.baslik}" başlıklı ${formData.rozet.toUpperCase()} ilanımı oluşturdum. Panel Şifrem: ${data.panelSifresi || 'Talepli'}. Ödeme yöntemleri için bilgi bekliyorum.`,
-              }),
-            });
-          }
-        } catch (err) {
-          // Silent
+        if (data.chatThreadId) {
+          localStorage.setItem('best_eskort_chat_thread_id', data.chatThreadId);
+          localStorage.setItem('last_created_listing_id', data.listing?._id || 'true');
+          window.dispatchEvent(new Event('storage'));
         }
       } else {
         alert('İlan eklenirken bir hata oluştu.');

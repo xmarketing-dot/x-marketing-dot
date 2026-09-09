@@ -29,10 +29,19 @@ export async function GET() {
 
     const enrichedUsers = users.map((user: any) => {
       const userListings = allListings.filter((l: any) => {
-        const matchesId = l.kullaniciId && l.kullaniciId.toString() === user._id.toString();
-        const matchesPwd = user.sifreHash && l.panelSifresi === user.sifreHash;
-        const matchesPhone = user.telefon && l.whatsappNumara && l.whatsappNumara.replace(/\D/g, '') === user.telefon.replace(/\D/g, '');
-        return matchesId || matchesPwd || matchesPhone;
+        // 1. Doğrudan kullanıcı ID eşleşmesi (Birincil ve Kesin Sahiplik)
+        if (l.kullaniciId && l.kullaniciId.toString() === user._id.toString()) {
+          return true;
+        }
+        // 2. Eğer ilanın kullaniciId'si boşsa, tam telefon numarası ile eşleşme
+        if (!l.kullaniciId && user.telefon && l.whatsappNumara) {
+          const cleanUserPhone = user.telefon.replace(/\D/g, '');
+          const cleanListingPhone = l.whatsappNumara.replace(/\D/g, '');
+          if (cleanUserPhone && cleanListingPhone && cleanUserPhone === cleanListingPhone) {
+            return true;
+          }
+        }
+        return false;
       });
 
       const totalViews = userListings.reduce((acc: number, l: any) => acc + (l.goruntulenmeSayisi || 0), 0);

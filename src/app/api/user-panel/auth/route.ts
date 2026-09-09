@@ -44,16 +44,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Şifreniz hatalı! Lütfen kontrol ediniz.' }, { status: 401 });
       }
 
-      // Kullanıcının ilanlarını çoklu kriterle (ID, telefon varyasyonları, şifre) eksiksiz çek
+      // Kullanıcının ilanlarını kesin sahiplikle (kullaniciId veya sahipsizse telefon) çek
       const userListings = await ListingModel.find({
         $or: [
           { kullaniciId: user._id },
           { kullaniciId: user._id.toString() },
-          ...(user.sifreHash ? [{ panelSifresi: user.sifreHash }] : []),
           ...(user.telefon ? [
-            { whatsappNumara: user.telefon },
-            { whatsappNumara: user.telefon.replace(/[\s\-\(\)]/g, '') },
-            ...(user.telefon.replace(/\D/g, '').length >= 10 ? [{ whatsappNumara: { $regex: user.telefon.replace(/\D/g, '').slice(-10) } }] : [])
+            { whatsappNumara: user.telefon, kullaniciId: { $in: [null, undefined] } },
+            { whatsappNumara: user.telefon.replace(/[\s\-\(\)]/g, ''), kullaniciId: { $in: [null, undefined] } },
+            ...(user.telefon.replace(/\D/g, '').length >= 10 ? [{ whatsappNumara: { $regex: user.telefon.replace(/\D/g, '').slice(-10) }, kullaniciId: { $in: [null, undefined] } }] : [])
           ] : [])
         ],
       }).sort({ createdAt: -1 });

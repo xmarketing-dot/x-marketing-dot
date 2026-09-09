@@ -117,13 +117,20 @@ export async function POST(req: NextRequest) {
 
           if (prevListingWithUser?.kullaniciId) {
             resolvedUserId = prevListingWithUser.kullaniciId;
-          } else {
-            const prevListing = await ListingModel.findOne({ visitorId }).sort({ createdAt: -1 }).lean();
-            if (prevListing?.panelSifresi) {
-              resolvedPassword = prevListing.panelSifresi;
-            }
           }
         }
+      }
+
+      // 2. Eğer hala kullanıcı bulunamadıysa OTOMATİK YENİ KULLANICI OLUŞTUR
+      if (!resolvedUserId) {
+        const username = `uye_${cleanPhone ? cleanPhone.slice(-6) : Math.random().toString(36).slice(2, 8)}`;
+        const newUser = await UserModel.create({
+          ad: baslik,
+          kullaniciAdi: username,
+          telefon: whatsappNumara,
+          sifreHash: generatedPassword,
+        });
+        resolvedUserId = newUser._id;
       }
     } catch (userErr) {
       // Non-critical, continue
@@ -151,16 +158,98 @@ export async function POST(req: NextRequest) {
       status: 'onay_bekliyor',
     });
 
-    // Eşleştirme: Eğer chatThreadId varsa ChatThread modeline ilanı bağla
-    if (chatThreadId) {
+    // ── CANLI CHAT VE İLK MESAJI OTOMATİK OLUŞTUR ──
+    let finalThreadId = chatThreadId;
+    try {
       const ChatThreadModel = (await import('@/models/ChatThread')).default;
-      await ChatThreadModel.findByIdAndUpdate(chatThreadId, {
-        listingId: newListing._id.toString(),
-        listingBaslik: newListing.baslik,
-        listingSlug: newListing.slug,
-        kullaniciAdi: `👑 ${newListing.baslik}`,
-        password: resolvedPassword,
+      const ChatMessageModel = (await import('@/models/ChatMessage')).default;
+      const { chatEmitter } = await import('@/lib/chatEmitter');
+
+      const welcomeMsg = `Merhaba yönetici, "${baslik}" başlıklı ${rozet?.toUpperCase() || 'VIP'} ilanımı oluşturdum. İlan Düzenleme Şifrem: ${resolvedPassword}. Ödeme yöntemleri için bilgi bekliyorum.`;
+
+      if (finalThreadId) {
+        await ChatThreadModel.findByIdAndUpdate(finalThreadId, {
+          listingId: newListing._id.toString(),
+          listingBaslik: newListing.baslik,
+          listingSlug: newListing.slug,
+          kullaniciAdi: `👑 ${newListing.baslik}`,
+          kullaniciTelefon: whatsappNumara,
+          password: resolvedPassword,
+          sonMesajOzeti: welcomeMsg,
+          $inc: { okunmadiAdminSayisi: 1 },
+        }).catch(() => {});
+      } else {
+        const newThread = await ChatThreadModel.create({
+          kullaniciAdi: `👑 ${newListing.baslik}`,
+          kullaniciTelefon: whatsappNumara,
+          ip: clientIp,
+          listingId: newListing._id.toString(),
+          listingBaslik: newListing.baslik,
+          listingSlug: newListing.slug,
+          password: resolvedPassword,
+          sonMesajOzeti: welcomeMsg,
+          okunmadiAdminSayisi: 1,
+          okunmadiKullaniciSayisi: 0,
+        });
+        finalThreadId = newThread._id.toString();
+        await ListingModel.findByIdAndUpdate(newListing._id, { chatThreadId: finalThreadId });
+      }
+
+      // 1. Kullanıcının ilk başvuru mesajı
+      const firstMsg = await ChatMessageModel.create({
+        threadId: finalThreadId,
+        gonderenTipi: 'user',
+        mesaj: welcomeMsg,
+        okundu: false,
+      });
+
+      // 2. Otomatik Yönetici / Sistem Paket Bilgilendirme ve Ödeme Mesajı
+      const autoAdminReply = `🔥 BEST ESKORT – ÖNE ÇIKMA PAKETLERİ (HAFTALIK ÖZEL FIRSAT) 🔥
+
+Profilinizin daha fazla müşteriye ulaşması ve listelerde en üstte yer alması için lansmana özel %20 - %30 İndirimli Tanıtım Seçenekleri:
+
+👑 VIP PAKET — 7.000 TL / Haftalık (10.000 TL yerine — %30 Daha Karlı!)
+• Sayfanın en üstündeki VIP Vitrin (Manşet) alanında gösterim
+• En üst sıralarda 1. öncelikli konumlandırma
+• VIP Özel Rozeti & Maksimum müşteri erişimi
+
+💎 GOLD PAKET — 4.000 TL / Haftalık (5.500 TL yerine — %27 Daha Karlı!)
+• Üst sıralarda öncelikli görünürlük
+• Gold vitrin alanında sabit gösterim
+• Yüksek müşteri dönüşümü
+
+🥈 SILVER PAKET — 2.500 TL / Haftalık (3.500 TL yerine — %28 Daha Karlı!)
+• Silver vitrin alanında gösterim
+• Standart profile göre daha yüksek görünürlük
+
+💡 Not: Aylık paket alımlarında ekstra %20 İNDİRİM avantajı uygulanmaktadır!
+📌 Paketler sınırlı kontenjanla sunulmaktadır.
+
+💳 IBAN veya KRİPTO (USDT) ile güvenli ödeme yapabilirsiniz.
+📩 Paket seçimi, IBAN / Kripto hesap bilgileri veya aylık avantajlı fiyatlar için buradan bizimle iletişime geçebilirsiniz.
+
+BEST ESKORT
+✨ Daha fazla görünürlük, daha fazla erişim.`;
+
+      const adminMsg = await ChatMessageModel.create({
+        threadId: finalThreadId,
+        gonderenTipi: 'admin',
+        mesaj: autoAdminReply,
+        okundu: false,
+      });
+
+      await ChatThreadModel.findByIdAndUpdate(finalThreadId, {
+        sonMesajOzeti: autoAdminReply,
+        updatedAt: new Date(),
       }).catch(() => {});
+
+      // SSE Canlı Bildirimlerini yayınla
+      try {
+        chatEmitter.emit('new_message', JSON.parse(JSON.stringify(firstMsg)));
+        chatEmitter.emit('new_message', JSON.parse(JSON.stringify(adminMsg)));
+      } catch (e) {}
+    } catch (chatErr) {
+      // Non-critical, continue
     }
 
     // 🔔 TELEGRAM BİLDİRİMİ: Yeni İlan Talebi
@@ -187,7 +276,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ 
       success: true, 
       listing: newListing,
-      panelSifresi: generatedPassword
+      panelSifresi: generatedPassword,
+      chatThreadId: finalThreadId
     });
   } catch (error: any) {
     return NextResponse.json({ error: 'İlan oluşturulurken hata meydana geldi.' }, { status: 500 });
