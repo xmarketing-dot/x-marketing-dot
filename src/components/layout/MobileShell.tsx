@@ -101,7 +101,6 @@ export default function MobileShell({ children }: MobileShellProps) {
       {/* ── 1. DESKTOP KURUMSAL YAZILIM, SEO & BÖLGESEL DİJİTAL AJANS GÖRÜNÜMÜ (LIGHT MODE, 100% AYRI) ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
         <CorporateWebHome />
-        <SeoBacklinkFooter />
       </div>
 
       {/* ── 2. MOBİL UYGULAMA GÖRÜNÜMÜ (MOBILE-FIRST APP SHELL) ──────────────── */}
@@ -164,10 +163,10 @@ export default function MobileShell({ children }: MobileShellProps) {
 
         {/* Mobile-Only Sponsored VIP Ad Popup */}
         <SpecialAdPopup />
+        
+        {/* Global Real-Time Chat Notifications (Sadece Mobil Uygulama Görünümünde) */}
+        <GlobalChatNotification />
       </div>
-
-      {/* Global Real-Time Chat Notifications */}
-      <GlobalChatNotification />
 
     </div>
   );

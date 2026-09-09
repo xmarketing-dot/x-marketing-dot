@@ -136,17 +136,11 @@ export default function CorporateWebHome() {
 
           {/* Sağ: CTA Butonları */}
           <div className="flex items-center gap-3.5">
-            <Link
-              href="/panelim"
-              className="px-4 py-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 font-bold text-xs uppercase tracking-wider transition-all border border-slate-200"
-            >
-              Müşteri Paneli
-            </Link>
             <a
               href="#iletisim"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-blue-600/20 active:scale-95 transition-all flex items-center gap-1.5"
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-md shadow-blue-600/20 active:scale-95 transition-all flex items-center gap-1.5"
             >
-              <span>Teklif Alın</span>
+              <span>Ücretsiz Teklif Alın</span>
               <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
             </a>
           </div>
@@ -541,13 +535,13 @@ export default function CorporateWebHome() {
               </p>
 
               <div className="flex flex-wrap items-center gap-4 pt-2">
-                <Link
-                  href="/panelim"
+                <a
+                  href="#iletisim"
                   className="px-8 py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm tracking-wide shadow-xl shadow-blue-600/30 active:scale-95 transition-all flex items-center gap-2"
                 >
-                  <span>Müşteri Paneline Git</span>
+                  <span>Projenizi Başlatın</span>
                   <ArrowRight className="w-4 h-4" />
-                </Link>
+                </a>
 
                 <div className="text-xs text-slate-400 flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-emerald-400" />
@@ -619,7 +613,7 @@ export default function CorporateWebHome() {
             <a href="#hizmetler" className="hover:text-white transition-colors">Hizmetler</a>
             <a href="#teknolojiler" className="hover:text-white transition-colors">Teknolojiler</a>
             <a href="#metrikler" className="hover:text-white transition-colors">Ağ Durumu</a>
-            <Link href="/panelim" className="hover:text-white transition-colors">Müşteri Girişi</Link>
+            <a href="#iletisim" className="hover:text-white transition-colors">İletişim &amp; Teklif</a>
           </div>
 
           <span className="text-slate-500">
