@@ -18,39 +18,31 @@ export async function GET() {
 
     const [
       pendingListings,
-      vitrinRequests,
       unreadChatThreads,
       pendingBanners,
-      activeBans,
-      recentUsers,
-      activeBacklinks,
     ] = await Promise.all([
       ListingModel.countDocuments({ status: 'onay_bekliyor' }).catch(() => 0),
-      ListingModel.countDocuments({ vitrinIstegi: true }).catch(() => 0),
       ChatThreadModel.countDocuments({ okunmadiAdminSayisi: { $gt: 0 } }).catch(() => 0),
       BannerAdModel.countDocuments({ durum: 'onay_bekliyor' }).catch(() => 0),
-      BanModel.countDocuments({ aktif: true }).catch(() => 0),
-      UserModel.countDocuments({ createdAt: { $gte: oneDayAgo } }).catch(() => 0),
-      BacklinkModel.countDocuments({ aktif: true }).catch(() => 0),
     ]);
 
     return NextResponse.json({
       success: true,
       counts: {
         pendingListings,
-        vitrinRequests,
+        vitrinRequests: 0,
         unreadChats: unreadChatThreads,
         pendingBanners,
-        activeBans,
-        recentUsers,
-        activeBacklinks,
-        // Menu item badges:
-        ilanlarBadge: pendingListings + vitrinRequests,
-        anasayfaBadge: vitrinRequests,
+        activeBans: 0,
+        recentUsers: 0,
+        activeBacklinks: 0,
+        // Menu item badges (Sadece gerçekten aksiyon/onay bekleyen bildirimler):
+        ilanlarBadge: pendingListings,
+        anasayfaBadge: 0,
         chatBadge: unreadChatThreads,
         bannersBadge: pendingBanners,
-        guvenlikBadge: activeBans,
-        kullanicilarBadge: recentUsers,
+        guvenlikBadge: 0,
+        kullanicilarBadge: 0,
       },
       timestamp: new Date().toISOString(),
     });

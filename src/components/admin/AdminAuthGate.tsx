@@ -428,11 +428,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <Link2 className="w-4 h-4 text-blue-400" />
                 <span>SEO Backlink Ağı</span>
               </div>
-              {badgeCounts.activeBacklinks > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 shrink-0">
-                  {badgeCounts.activeBacklinks}
-                </span>
-              )}
             </Link>
 
             <Link
@@ -448,11 +443,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <ShieldAlert className="w-4 h-4 text-red-400" />
                 <span>Güvenlik &amp; IP Ban</span>
               </div>
-              {badgeCounts.guvenlikBadge > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-500/20 text-red-400 border border-red-500/40 shrink-0">
-                  {badgeCounts.guvenlikBadge} Ban
-                </span>
-              )}
             </Link>
           </nav>
         </div>
@@ -697,11 +687,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               >
                 <div className="flex items-center justify-between">
                   <Link2 className="w-5 h-5 text-blue-400" />
-                  {badgeCounts.activeBacklinks > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[9px] font-bold">
-                      {badgeCounts.activeBacklinks}
-                    </span>
-                  )}
                 </div>
                 <span>7. SEO Backlink Ağı</span>
               </Link>
@@ -713,11 +698,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               >
                 <div className="flex items-center justify-between">
                   <ShieldAlert className="w-5 h-5 text-red-400" />
-                  {badgeCounts.guvenlikBadge > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-red-500/30 text-red-300 text-[9px] font-bold">
-                      {badgeCounts.guvenlikBadge}
-                    </span>
-                  )}
                 </div>
                 <span>8. Güvenlik &amp; IP Ban</span>
               </Link>
