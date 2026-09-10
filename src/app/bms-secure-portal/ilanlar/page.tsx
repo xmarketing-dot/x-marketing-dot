@@ -42,7 +42,7 @@ import { turkeyProvinces } from '@/data/turkeyLocations';
 export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'vitrin'>('all');
+  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda'>('all');
 
   // Detaylı İnceleme Modalı (Full Inspection Modal)
   const [inspectItem, setInspectItem] = useState<any | null>(null);
@@ -607,12 +607,10 @@ export default function AdminListingsPage() {
 
   const selectedProvince = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
 
-  const vitrinCount = listings.filter((l) => Boolean(l.vitrinIstegi)).length;
   const pendingCount = listings.filter((l) => l.status === 'onay_bekliyor').length;
 
   const filteredListings = listings.filter((l) => {
     if (filter === 'all') return true;
-    if (filter === 'vitrin') return Boolean(l.vitrinIstegi);
     return l.status === filter;
   });
 
@@ -633,13 +631,8 @@ export default function AdminListingsPage() {
                   {pendingCount} Bekliyor
                 </span>
               )}
-              {vitrinCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-300 text-slate-950 text-[10px] font-black animate-pulse shrink-0">
-                  🔥 {vitrinCount} Vitrin Talebi
-                </span>
-              )}
             </h1>
-            <p className="text-[11px] text-[#8b949e] truncate">Gelen ilanları onaylayın, vitrin taleplerini yönetin, süreleri ve hesapları düzenleyin.</p>
+            <p className="text-[11px] text-[#8b949e] truncate">Gelen ilanları onaylayın, süreleri ve hesapları düzenleyin.</p>
           </div>
         </div>
 
@@ -673,19 +666,6 @@ export default function AdminListingsPage() {
           <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-amber-400'}`}>
             {listings.length}
           </span>
-        </button>
-
-        <button
-          onClick={() => setFilter('vitrin')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'vitrin' ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-slate-950 shadow-md shadow-amber-500/20 font-black' : 'text-amber-400 hover:text-white hover:bg-[#21262d]'
-            }`}
-        >
-          <span>🔥 Vitrin Talepleri</span>
-          {vitrinCount > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse">
-              {vitrinCount}
-            </span>
-          )}
         </button>
 
         <button
@@ -815,17 +795,6 @@ export default function AdminListingsPage() {
                                 <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-black uppercase">
                                   👑 {item.rozet || 'vip'}
                                 </span>
-                                {item.vitrinIstegi && (
-                                  item.vitrinPaketi === 'haftalik' ? (
-                                    <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white font-black text-[9px] uppercase shadow-sm animate-pulse">
-                                      👑 HAFTALIK VİTRİN (6.000 ₺)
-                                    </span>
-                                  ) : (
-                                    <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-300 text-slate-950 font-black text-[9px] uppercase shadow-sm animate-pulse">
-                                      ⚡ GÜNLÜK VİTRİN (2.000 ₺)
-                                    </span>
-                                  )
-                                )}
                               </div>
                             </div>
                           </td>
@@ -897,21 +866,6 @@ export default function AdminListingsPage() {
                           {/* Yönetim & Aksiyonlar */}
                           <td className="py-3 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                              {/* Vitrin Talebini Onayla Butonu */}
-                              {item.vitrinIstegi && (
-                                <button
-                                  onClick={() => handleApproveVitrin(item._id, item.vitrinPaketi === 'haftalik' ? 7 : 1, item.vitrinPaketi || 'gunluk')}
-                                  className={`px-3 py-1.5 rounded-xl font-black text-[11px] font-heading shadow-md active:scale-95 transition-all flex items-center gap-1 shrink-0 ${item.vitrinPaketi === 'haftalik'
-                                      ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white shadow-purple-500/30'
-                                      : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-slate-950 shadow-amber-500/20'
-                                    }`}
-                                  title={`Vitrin Talebini Onayla (${item.vitrinPaketi === 'haftalik' ? '7 Günlük 6.000 ₺' : '1 Günlük 2.000 ₺'})`}
-                                >
-                                  <Crown className="w-3.5 h-3.5 fill-current" />
-                                  <span>{item.vitrinPaketi === 'haftalik' ? '👑 Haftalık Onayla (6K)' : '⚡ Günlük Onayla (2K)'}</span>
-                                </button>
-                              )}
-
                               {/* Onayla / Durdur */}
                               {isPending ? (
                                 <button
@@ -1051,12 +1005,6 @@ export default function AdminListingsPage() {
                           <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             {item.rozet || 'vip'}
                           </span>
-
-                          {item.vitrinIstegi && (
-                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase bg-gradient-to-r from-amber-500 to-yellow-300 text-slate-950 shadow-sm animate-pulse">
-                              🔥 VİTRİN TALEBİ (+2.000 ₺)
-                            </span>
-                          )}
                         </div>
 
                         {/* Konum & Süre */}
@@ -1102,23 +1050,6 @@ export default function AdminListingsPage() {
 
                     {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (2 SATIRLI DÜZEN) ──────────────── */}
                     <div className="flex flex-col gap-1.5 border-t border-[#30363d]/60 pt-2.5">
-                      {/* Vitrin Talebi Onay Barı (Eğer varsa) */}
-                      {item.vitrinIstegi && (
-                        <div className="flex items-center justify-between p-2 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 border border-amber-400/50 mb-1">
-                          <span className="text-[11px] font-black text-amber-300 flex items-center gap-1 font-heading">
-                            <Crown className="w-3.5 h-3.5 fill-amber-300" />
-                            <span>Vitrin Talebi ({item.vitrinPaketi === 'haftalik' ? '7 Günlük 6K' : '1 Günlük 2K'})</span>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleApproveVitrin(item._id, item.vitrinPaketi === 'haftalik' ? 7 : 1, item.vitrinPaketi || 'gunluk')}
-                            className="px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-300 text-slate-950 font-black text-xs font-heading shadow-md active:scale-95 transition-all"
-                          >
-                            Hemen Onayla ➔
-                          </button>
-                        </div>
-                      )}
-
                       {/* Satır 1: Ana Operasyon Butonları */}
                       <div className="flex items-center gap-1.5">
                         {/* Onayla / Beklemeye Al */}

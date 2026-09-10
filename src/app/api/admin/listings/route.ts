@@ -6,6 +6,8 @@ import ChatThreadModel from '@/models/ChatThread';
 import { chatEmitter } from '@/lib/chatEmitter';
 
 import UserModel from '@/models/User';
+import { submitToIndexNow } from '@/lib/indexnow';
+import { getSiteUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 
@@ -243,6 +245,13 @@ Bol kazançlar ve bol müşteriler dileriz! 🚀💎`;
       } catch (chatErr) {
         // Silent
       }
+    }
+
+    // ── OTOMATİK INDEXNOW BİLDİRİMİ (Yandex & Bing'e Anında İndeks İsteği) ──
+    if (updatedListing.status === 'yayinda' && updatedListing.slug) {
+      const siteUrl = getSiteUrl();
+      const listingUrl = `${siteUrl}/ilan/${updatedListing.slug}`;
+      submitToIndexNow([listingUrl]).catch(() => {});
     }
 
     adminListingsCache = null;
