@@ -39,6 +39,12 @@ export interface IListing extends Document {
   goruntulenmeSayisi: number;
   whatsappTiklamaSayisi: number;
   likeSayisi: number;
+  vitrinIstegi: boolean;
+  isVitrin?: boolean;
+  vitrinPaketi?: 'gunluk' | 'haftalik';
+  vitrinBaslangicTarihi?: Date;
+  vitrinBitisTarihi?: Date;
+  vitrinSuresiDolduBildirildi?: boolean;
   
   // %100 Doğrulanmış Özel Profil Alanları
   isVerifiedProfile: boolean;
@@ -112,6 +118,12 @@ const ListingSchema = new Schema<IListing>(
     goruntulenmeSayisi: { type: Number, default: 0 },
     whatsappTiklamaSayisi: { type: Number, default: 0 },
     likeSayisi: { type: Number, default: 0, index: true },
+    vitrinIstegi: { type: Boolean, default: false, index: true },
+    isVitrin: { type: Boolean, default: false, index: true },
+    vitrinPaketi: { type: String, enum: ['gunluk', 'haftalik'], default: 'gunluk' },
+    vitrinBaslangicTarihi: { type: Date },
+    vitrinBitisTarihi: { type: Date, index: true },
+    vitrinSuresiDolduBildirildi: { type: Boolean, default: false },
 
     // Özel Profil ve Yorum Sistemi
     isVerifiedProfile: { type: Boolean, default: false, index: true },
@@ -136,8 +148,13 @@ const ListingSchema = new Schema<IListing>(
   {
     timestamps: true,
     autoIndex: false,
+    strict: false,
   }
 );
+
+if (process.env.NODE_ENV !== 'production' && mongoose.models && mongoose.models.Listing) {
+  delete (mongoose.models as any).Listing;
+}
 
 const ListingModel: Model<IListing> =
   mongoose.models.Listing || mongoose.model<IListing>('Listing', ListingSchema);

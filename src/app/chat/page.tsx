@@ -20,6 +20,8 @@ import {
   Loader2
 } from 'lucide-react';
 import CryptoPaymentCard from '@/components/common/CryptoPaymentCard';
+import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
 
 interface Message {
   _id: string;
@@ -315,12 +317,25 @@ export default function ChatPage() {
           </div>
         </div>
 
-        <Link
-          href="/"
-          className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-xs text-[#8b949e] hover:text-white font-bold transition-colors border border-[#30363d]"
-        >
-          Ana Sayfa
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href={getAdminWhatsAppUrl('Merhaba, Best VIP Canlı Destek üzerinden yazıyorum. İlan/Vitrin/Reklam hakkında bilgi almak istiyorum.')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2.5 py-1.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white text-[11px] font-bold flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+            title="WhatsApp Destek Hattı"
+          >
+            <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-white shrink-0" />
+            <span className="hidden sm:inline">WhatsApp</span>
+          </a>
+
+          <Link
+            href="/"
+            className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-xs text-[#8b949e] hover:text-white font-bold transition-colors border border-[#30363d]"
+          >
+            Ana Sayfa
+          </Link>
+        </div>
       </header>
 
       {/* ── 2. SCROLLABLE MESSAGE AREA OR BANNED SCREEN ──────────────── */}

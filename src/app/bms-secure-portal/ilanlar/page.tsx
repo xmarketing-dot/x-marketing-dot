@@ -34,14 +34,15 @@ import {
   Search,
   ZoomIn,
   Calendar,
-  Globe
+  Globe,
+  AtSign
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 
 export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda'>('all');
+  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'vitrin'>('all');
 
   // Detaylı İnceleme Modalı (Full Inspection Modal)
   const [inspectItem, setInspectItem] = useState<any | null>(null);
@@ -122,8 +123,12 @@ export default function AdminListingsPage() {
   const [copiedCreds, setCopiedCreds] = useState(false);
 
   useEffect(() => {
-    fetchListings();
+    fetchListings(true);
     fetchSystemUsers();
+    const interval = setInterval(() => {
+      fetchListings(false);
+    }, 8000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchSystemUsers = async () => {
@@ -143,10 +148,13 @@ export default function AdminListingsPage() {
     }
   };
 
-  const fetchListings = async () => {
-    setLoading(true);
+  const fetchListings = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
-      const res = await fetch('/api/admin/listings');
+      const res = await fetch(`/api/admin/listings?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       const data = await res.json();
       if (data.listings) {
         setListings(data.listings);
@@ -154,7 +162,23 @@ export default function AdminListingsPage() {
     } catch (e) {
       console.error(e);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  // One-Click Vitrin Approval from Listings Page
+  const handleApproveVitrin = async (listingId: string, days = 1, paketi = 'gunluk') => {
+    try {
+      await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assignVitrinDuration: { listingId, days, paketi },
+        }),
+      });
+      fetchListings(false);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -226,7 +250,7 @@ export default function AdminListingsPage() {
             setCoverPhotoIdx(freshCoverIdx >= 0 ? freshCoverIdx : 0);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   };
 
@@ -583,12 +607,14 @@ export default function AdminListingsPage() {
 
   const selectedProvince = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
 
+  const vitrinCount = listings.filter((l) => Boolean(l.vitrinIstegi)).length;
+  const pendingCount = listings.filter((l) => l.status === 'onay_bekliyor').length;
+
   const filteredListings = listings.filter((l) => {
     if (filter === 'all') return true;
+    if (filter === 'vitrin') return Boolean(l.vitrinIstegi);
     return l.status === filter;
   });
-
-  const pendingCount = listings.filter((l) => l.status === 'onay_bekliyor').length;
 
   return (
     <div className="flex flex-col gap-3 sm:gap-6 w-full max-w-full px-1 sm:px-0 pb-24 sm:pb-8">
@@ -607,8 +633,13 @@ export default function AdminListingsPage() {
                   {pendingCount} Bekliyor
                 </span>
               )}
+              {vitrinCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-300 text-slate-950 text-[10px] font-black animate-pulse shrink-0">
+                  🔥 {vitrinCount} Vitrin Talebi
+                </span>
+              )}
             </h1>
-            <p className="text-[11px] text-[#8b949e] truncate">Gelen ilanları onaylayın, düzenleyin, süreleri ve hesapları yönetin.</p>
+            <p className="text-[11px] text-[#8b949e] truncate">Gelen ilanları onaylayın, vitrin taleplerini yönetin, süreleri ve hesapları düzenleyin.</p>
           </div>
         </div>
 
@@ -622,7 +653,7 @@ export default function AdminListingsPage() {
           </button>
 
           <button
-            onClick={fetchListings}
+            onClick={() => fetchListings(true)}
             className="p-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 hover:text-white border border-[#30363d] transition-all active:scale-95 shrink-0"
             title="İlanları Yenile"
           >
@@ -635,9 +666,8 @@ export default function AdminListingsPage() {
       <div className="p-1 rounded-xl bg-[#161b22] border border-[#30363d] flex items-center gap-1 overflow-x-auto no-scrollbar shadow-md">
         <button
           onClick={() => setFilter('all')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
-            filter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-          }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+            }`}
         >
           <span>Tüm İlanlar</span>
           <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-amber-400'}`}>
@@ -646,10 +676,22 @@ export default function AdminListingsPage() {
         </button>
 
         <button
+          onClick={() => setFilter('vitrin')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'vitrin' ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-slate-950 shadow-md shadow-amber-500/20 font-black' : 'text-amber-400 hover:text-white hover:bg-[#21262d]'
+            }`}
+        >
+          <span>🔥 Vitrin Talepleri</span>
+          {vitrinCount > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse">
+              {vitrinCount}
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => setFilter('onay_bekliyor')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
-            filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-          }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+            }`}
         >
           <span>⏳ Onay Bekleyenler</span>
           {pendingCount > 0 && (
@@ -661,9 +703,8 @@ export default function AdminListingsPage() {
 
         <button
           onClick={() => setFilter('yayinda')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${
-            filter === 'yayinda' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-          }`}
+          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'yayinda' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+            }`}
         >
           <span>🟢 Yayındakiler</span>
           <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'yayinda' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-emerald-400'}`}>
@@ -709,9 +750,8 @@ export default function AdminListingsPage() {
                       return (
                         <tr
                           key={item._id}
-                          className={`hover:bg-[#1c232d] transition-colors group ${
-                            isPending ? 'bg-amber-500/[0.04]' : ''
-                          }`}
+                          className={`hover:bg-[#1c232d] transition-colors group ${isPending ? 'bg-amber-500/[0.04]' : ''
+                            }`}
                         >
                           {/* İlan & Thumbnail */}
                           <td className="py-3 px-4">
@@ -765,25 +805,36 @@ export default function AdminListingsPage() {
                           {/* Rozet & Durum */}
                           <td className="py-3 px-3">
                             <div className="flex flex-col gap-1 items-start">
-                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading ${
-                                isLive
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading ${isLive
                                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                                   : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-                              }`}>
+                                }`}>
                                 {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
                               </span>
-                              <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-black uppercase">
-                                👑 {item.rozet || 'vip'}
-                              </span>
+                              <div className="flex items-center gap-1 flex-wrap">
+                                <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-black uppercase">
+                                  👑 {item.rozet || 'vip'}
+                                </span>
+                                {item.vitrinIstegi && (
+                                  item.vitrinPaketi === 'haftalik' ? (
+                                    <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white font-black text-[9px] uppercase shadow-sm animate-pulse">
+                                      👑 HAFTALIK VİTRİN (6.000 ₺)
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-300 text-slate-950 font-black text-[9px] uppercase shadow-sm animate-pulse">
+                                      ⚡ GÜNLÜK VİTRİN (2.000 ₺)
+                                    </span>
+                                  )
+                                )}
+                              </div>
                             </div>
                           </td>
 
                           {/* Kalan Süre */}
                           <td className="py-3 px-3">
                             <div className="flex flex-col gap-1">
-                              <span className={`font-mono text-xs font-bold flex items-center gap-1 ${
-                                remaining.isExpired ? 'text-rose-400' : 'text-emerald-400'
-                              }`}>
+                              <span className={`font-mono text-xs font-bold flex items-center gap-1 ${remaining.isExpired ? 'text-rose-400' : 'text-emerald-400'
+                                }`}>
                                 <Clock className="w-3.5 h-3.5 shrink-0" />
                                 <span>{remaining.text}</span>
                               </span>
@@ -806,9 +857,17 @@ export default function AdminListingsPage() {
                             </div>
                           </td>
 
-                          {/* İletişim & Şifre */}
+                          {/* İletişim & Şifre & Kullanıcı */}
                           <td className="py-3 px-3">
                             <div className="flex flex-col gap-1 text-[11px]">
+                              {item.kullaniciAdi ? (
+                                <span className="flex items-center gap-1 text-amber-300 font-mono font-bold bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20 w-fit" title="İlan Sahibi Kullanıcı Adı">
+                                  <AtSign className="w-3 h-3 text-amber-400" />
+                                  <span>{item.kullaniciAdi}</span>
+                                </span>
+                              ) : (
+                                <span className="text-[#8b949e] text-[10px] font-mono">@sahipsiz</span>
+                              )}
                               <span className="text-white font-mono font-bold flex items-center gap-1">
                                 <Phone className="w-3 h-3 text-emerald-400" />
                                 <span>{item.whatsappNumara}</span>
@@ -837,7 +896,22 @@ export default function AdminListingsPage() {
 
                           {/* Yönetim & Aksiyonlar */}
                           <td className="py-3 px-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
+                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              {/* Vitrin Talebini Onayla Butonu */}
+                              {item.vitrinIstegi && (
+                                <button
+                                  onClick={() => handleApproveVitrin(item._id, item.vitrinPaketi === 'haftalik' ? 7 : 1, item.vitrinPaketi || 'gunluk')}
+                                  className={`px-3 py-1.5 rounded-xl font-black text-[11px] font-heading shadow-md active:scale-95 transition-all flex items-center gap-1 shrink-0 ${item.vitrinPaketi === 'haftalik'
+                                      ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white shadow-purple-500/30'
+                                      : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-slate-950 shadow-amber-500/20'
+                                    }`}
+                                  title={`Vitrin Talebini Onayla (${item.vitrinPaketi === 'haftalik' ? '7 Günlük 6.000 ₺' : '1 Günlük 2.000 ₺'})`}
+                                >
+                                  <Crown className="w-3.5 h-3.5 fill-current" />
+                                  <span>{item.vitrinPaketi === 'haftalik' ? '👑 Haftalık Onayla (6K)' : '⚡ Günlük Onayla (2K)'}</span>
+                                </button>
+                              )}
+
                               {/* Onayla / Durdur */}
                               {isPending ? (
                                 <button
@@ -931,16 +1005,15 @@ export default function AdminListingsPage() {
                 return (
                   <div
                     key={item._id}
-                    className={`p-3 sm:p-4 rounded-2xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg ${
-                      isPending
+                    className={`p-3 sm:p-4 rounded-2xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg ${isPending
                         ? 'border-amber-500/60 shadow-amber-500/5 bg-gradient-to-b from-[#1c1811] to-[#161b22]'
                         : 'border-[#30363d] hover:border-[#3d444d]'
-                    }`}
+                      }`}
                   >
                     {/* ── KART ÜST BİLGİ ALANI ──────────────── */}
                     <div className="flex items-start gap-3 w-full">
                       {/* Thumbnail */}
-                      <div 
+                      <div
                         onClick={() => handleOpenInspect(item)}
                         className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117] cursor-pointer group shadow-md"
                         title="Büyük boyutta incele"
@@ -961,24 +1034,29 @@ export default function AdminListingsPage() {
                       {/* Meta Bilgileri */}
                       <div className="flex flex-col gap-1 flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <h3 
+                          <h3
                             onClick={() => handleOpenInspect(item)}
                             className="font-heading font-black text-sm sm:text-base text-white truncate max-w-[200px] sm:max-w-md cursor-pointer hover:text-amber-400 transition-colors"
                           >
                             {item.baslik}
                           </h3>
 
-                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase font-heading ${
-                            isLive
+                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase font-heading ${isLive
                               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                               : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-                          }`}>
+                            }`}>
                             {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
                           </span>
 
                           <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             {item.rozet || 'vip'}
                           </span>
+
+                          {item.vitrinIstegi && (
+                            <span className="px-2 py-0.5 rounded-lg text-[9px] font-black uppercase bg-gradient-to-r from-amber-500 to-yellow-300 text-slate-950 shadow-sm animate-pulse">
+                              🔥 VİTRİN TALEBİ (+2.000 ₺)
+                            </span>
+                          )}
                         </div>
 
                         {/* Konum & Süre */}
@@ -994,8 +1072,14 @@ export default function AdminListingsPage() {
                           </span>
                         </div>
 
-                        {/* İletişim, Tarih & Şifre Çipleri */}
+                        {/* İletişim, Tarih, Kullanıcı & Şifre Çipleri */}
                         <div className="flex items-center gap-2 text-[11px] text-[#8b949e] flex-wrap mt-0.5">
+                          {item.kullaniciAdi && (
+                            <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 font-mono font-bold text-[10px] border border-amber-500/30 flex items-center gap-1">
+                              <AtSign className="w-2.5 h-2.5 text-amber-400" />
+                              <span>{item.kullaniciAdi}</span>
+                            </span>
+                          )}
                           <span className="text-white font-mono font-bold flex items-center gap-1">
                             <Phone className="w-3 h-3 text-emerald-400" />
                             <span>{item.whatsappNumara}</span>
@@ -1018,6 +1102,23 @@ export default function AdminListingsPage() {
 
                     {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (2 SATIRLI DÜZEN) ──────────────── */}
                     <div className="flex flex-col gap-1.5 border-t border-[#30363d]/60 pt-2.5">
+                      {/* Vitrin Talebi Onay Barı (Eğer varsa) */}
+                      {item.vitrinIstegi && (
+                        <div className="flex items-center justify-between p-2 rounded-xl bg-gradient-to-r from-amber-500/20 via-yellow-500/20 to-amber-500/20 border border-amber-400/50 mb-1">
+                          <span className="text-[11px] font-black text-amber-300 flex items-center gap-1 font-heading">
+                            <Crown className="w-3.5 h-3.5 fill-amber-300" />
+                            <span>Vitrin Talebi ({item.vitrinPaketi === 'haftalik' ? '7 Günlük 6K' : '1 Günlük 2K'})</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleApproveVitrin(item._id, item.vitrinPaketi === 'haftalik' ? 7 : 1, item.vitrinPaketi || 'gunluk')}
+                            className="px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-300 text-slate-950 font-black text-xs font-heading shadow-md active:scale-95 transition-all"
+                          >
+                            Hemen Onayla ➔
+                          </button>
+                        </div>
+                      )}
+
                       {/* Satır 1: Ana Operasyon Butonları */}
                       <div className="flex items-center gap-1.5">
                         {/* Onayla / Beklemeye Al */}
@@ -1042,11 +1143,10 @@ export default function AdminListingsPage() {
                         {/* Detaylı İncele */}
                         <button
                           onClick={() => handleOpenInspect(item)}
-                          className={`py-2 px-3 rounded-xl text-xs font-heading font-black border flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-                            isPending
+                          className={`py-2 px-3 rounded-xl text-xs font-heading font-black border flex items-center justify-center gap-1.5 transition-all active:scale-95 ${isPending
                               ? 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border-[#30363d]'
                               : 'flex-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30'
-                          }`}
+                            }`}
                         >
                           <Eye className="w-3.5 h-3.5 text-amber-400" />
                           <span>Detaylı İncele</span>
@@ -1177,9 +1277,8 @@ export default function AdminListingsPage() {
                     return (
                       <div
                         key={idx}
-                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-28 sm:h-32 bg-[#161b22] ${
-                          isCover ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-[#30363d]'
-                        }`}
+                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-28 sm:h-32 bg-[#161b22] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-[#30363d]'
+                          }`}
                       >
                         <img src={url} alt={`Resim ${idx}`} className="absolute inset-0 w-full h-full object-cover z-0" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 z-10"></div>
@@ -1451,9 +1550,8 @@ export default function AdminListingsPage() {
                     <h2 className="font-heading font-black text-sm sm:text-lg text-white truncate max-w-[180px] sm:max-w-md">
                       {inspectItem.baslik}
                     </h2>
-                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${
-                      inspectItem.status === 'yayinda' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                    }`}>
+                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${inspectItem.status === 'yayinda' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                      }`}>
                       {inspectItem.status === 'yayinda' ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
                     </span>
                   </div>
@@ -1513,9 +1611,8 @@ export default function AdminListingsPage() {
                               <button
                                 key={idx}
                                 onClick={() => setInspectActivePhotoIdx(idx)}
-                                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                                  idx === inspectActivePhotoIdx ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30' : 'border-[#30363d] opacity-70'
-                                }`}
+                                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${idx === inspectActivePhotoIdx ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30' : 'border-[#30363d] opacity-70'
+                                  }`}
                               >
                                 <img src={url} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
                                 {idx === 0 && (
@@ -1692,9 +1789,8 @@ export default function AdminListingsPage() {
                 <button
                   type="button"
                   onClick={() => setAssignMode('select')}
-                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${
-                    assignMode === 'select' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-[#8b949e] hover:text-white'
-                  }`}
+                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'select' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-[#8b949e] hover:text-white'
+                    }`}
                 >
                   <Users className="w-3.5 h-3.5" />
                   <span>Mevcut Kullanıcı</span>
@@ -1703,9 +1799,8 @@ export default function AdminListingsPage() {
                 <button
                   type="button"
                   onClick={() => setAssignMode('create')}
-                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${
-                    assignMode === 'create' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-[#8b949e] hover:text-white'
-                  }`}
+                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'create' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-[#8b949e] hover:text-white'
+                    }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span>+ Yeni Hesap</span>
@@ -1736,9 +1831,8 @@ export default function AdminListingsPage() {
                       setCopiedCreds(true);
                       setTimeout(() => setCopiedCreds(false), 2500);
                     }}
-                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs font-heading uppercase transition-all flex items-center justify-center gap-1.5 ${
-                      copiedCreds ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
-                    }`}
+                    className={`flex-1 py-2.5 px-3 rounded-xl font-black text-xs font-heading uppercase transition-all flex items-center justify-center gap-1.5 ${copiedCreds ? 'bg-emerald-500 text-slate-950 shadow-lg' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/20'
+                      }`}
                   >
                     {copiedCreds ? (
                       <>
@@ -1798,9 +1892,8 @@ export default function AdminListingsPage() {
                         return (
                           <div
                             key={u._id}
-                            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${
-                              isCurrentLinked ? 'bg-emerald-500/10 border-emerald-500/40 text-white' : 'bg-[#0d1117] border-[#30363d] text-white'
-                            }`}
+                            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${isCurrentLinked ? 'bg-emerald-500/10 border-emerald-500/40 text-white' : 'bg-[#0d1117] border-[#30363d] text-white'
+                              }`}
                           >
                             <div className="flex flex-col min-w-0">
                               <span className="font-bold text-white flex items-center gap-1 truncate text-xs">
@@ -1820,9 +1913,8 @@ export default function AdminListingsPage() {
                               type="button"
                               onClick={() => handleAssignExistingUser(u._id)}
                               disabled={assignLoading || isCurrentLinked}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-black shrink-0 transition-all ${
-                                isCurrentLinked ? 'bg-emerald-500/20 text-emerald-400 cursor-default' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
-                              }`}
+                              className={`px-2.5 py-1 rounded-lg text-xs font-black shrink-0 transition-all ${isCurrentLinked ? 'bg-emerald-500/20 text-emerald-400 cursor-default' : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md'
+                                }`}
                             >
                               {isCurrentLinked ? 'Bağlı' : 'Ata'}
                             </button>
@@ -2089,9 +2181,8 @@ export default function AdminListingsPage() {
                       return (
                         <div
                           key={idx}
-                          className={`relative aspect-square rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1 bg-[#161b22] ${
-                            isCover ? 'border-amber-400 shadow-md shadow-amber-500/30' : 'border-[#30363d]'
-                          }`}
+                          className={`relative aspect-square rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1 bg-[#161b22] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/30' : 'border-[#30363d]'
+                            }`}
                         >
                           <img src={url} alt={`Foto ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover z-0" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-10" />

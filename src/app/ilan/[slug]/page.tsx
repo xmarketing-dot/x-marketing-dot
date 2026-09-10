@@ -386,7 +386,7 @@ export default async function ListingDetailPage({ params }: Props) {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {filteredSimilar.map((item: any) => (
               <CompactListingCard key={item._id} listing={item} />
             ))}

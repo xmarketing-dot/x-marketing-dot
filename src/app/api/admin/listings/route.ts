@@ -5,6 +5,8 @@ import ChatMessageModel from '@/models/ChatMessage';
 import ChatThreadModel from '@/models/ChatThread';
 import { chatEmitter } from '@/lib/chatEmitter';
 
+import UserModel from '@/models/User';
+
 export const dynamic = 'force-dynamic';
 
 let adminListingsCache: any[] | null = null;
@@ -19,8 +21,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ listing: single });
     }
 
+    const bypassCache = Boolean(req.nextUrl.searchParams.get('t') || req.nextUrl.searchParams.get('nocache'));
     const now = Date.now();
-    if (adminListingsCache && now - adminListingsCacheTime < 15000) {
+    if (!bypassCache && adminListingsCache && now - adminListingsCacheTime < 5000) {
       return NextResponse.json({ listings: adminListingsCache });
     }
 
@@ -29,15 +32,43 @@ export async function GET(req: NextRequest) {
     await ListingModel.updateMany(
       { status: 'yayinda', paketBitisTarihi: { $lt: nowDate } },
       { $set: { status: 'suresi_doldu' } }
-    ).catch(() => {});
+    ).catch(() => { });
 
-    // fotograflar dizisi devasa base64 veriler içerebildiği için liste çekerken hariç tutuyoruz
-    const listings = await ListingModel.find({})
-      .select('-fotograflar')
-      .sort({ createdAt: -1 })
-      .lean();
+    const [listings, users] = await Promise.all([
+      ListingModel.find({})
+        .select('-fotograflar')
+        .sort({ createdAt: -1 })
+        .lean(),
+      UserModel.find({}).select('_id kullaniciAdi telefon email ad').lean().catch(() => []),
+    ]);
 
-    adminListingsCache = JSON.parse(JSON.stringify(listings));
+    const userMapById: Record<string, any> = {};
+    const userMapByPhone: Record<string, any> = {};
+
+    users.forEach((u: any) => {
+      userMapById[u._id.toString()] = u;
+      if (u.telefon) {
+        const clean = u.telefon.replace(/\D/g, '');
+        if (clean) userMapByPhone[clean] = u;
+      }
+    });
+
+    const enrichedListings = listings.map((l: any) => {
+      let matchedUser = (l.kullaniciId && userMapById[l.kullaniciId.toString()]) || null;
+      if (!matchedUser && l.whatsappNumara) {
+        const clean = l.whatsappNumara.replace(/\D/g, '');
+        if (clean) matchedUser = userMapByPhone[clean] || null;
+      }
+
+      return {
+        ...l,
+        kullaniciAdi: matchedUser?.kullaniciAdi || (l as any).kullaniciAdi || null,
+        kullaniciTelefon: matchedUser?.telefon || l.whatsappNumara || null,
+        kullaniciObj: matchedUser || null,
+      };
+    });
+
+    adminListingsCache = JSON.parse(JSON.stringify(enrichedListings));
     adminListingsCacheTime = now;
 
     return NextResponse.json({ listings: adminListingsCache });
@@ -74,6 +105,7 @@ export async function PATCH(req: NextRequest) {
     if (status) updateFields.status = status;
     if (panelSifresi) updateFields.panelSifresi = panelSifresi.trim();
     if (body.kullaniciId !== undefined) updateFields.kullaniciId = body.kullaniciId || null;
+    if (body.vitrinIstegi !== undefined) updateFields.vitrinIstegi = Boolean(body.vitrinIstegi);
 
     // Özel VIP Model Profil ve Biyografi Alanları (Admin Tarafından)
     if (body.tamAd !== undefined) updateFields.tamAd = body.tamAd ? body.tamAd.trim() : null;
@@ -88,8 +120,8 @@ export async function PATCH(req: NextRequest) {
     if (body.hakkindaBiyografi !== undefined) updateFields.hakkindaBiyografi = body.hakkindaBiyografi;
 
     if (body.diller) {
-      updateFields.diller = Array.isArray(body.diller) 
-        ? body.diller 
+      updateFields.diller = Array.isArray(body.diller)
+        ? body.diller
         : body.diller.split(',').map((s: string) => s.trim()).filter(Boolean);
     }
 
@@ -111,7 +143,7 @@ export async function PATCH(req: NextRequest) {
     // Photos update
     if (Array.isArray(fotograflar) && fotograflar.length > 0) {
       updateFields.fotograflar = fotograflar.map((f: any) => (typeof f === 'string' ? { url: f } : f));
-      
+
       if (anaFotografUrl) {
         updateFields.anaFotograf = { url: anaFotografUrl };
       } else {
@@ -164,12 +196,12 @@ export async function PATCH(req: NextRequest) {
           const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 'https://besteskort.com';
           const liveListingUrl = `${origin}/ilan/${updatedListing.slug}`;
           const panelUrl = `${origin}/panelim`;
-          
+
           const expiryStr = calculatedExpiry ? new Date(calculatedExpiry).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '7 Gün';
           const tierStr = (updatedListing.rozet || 'ultravip').toUpperCase();
 
-          const approvalMessageText = 
-`🎉 TEBRİKLER! İLANINIZ ONAYLANDI VE YAYINA ALINDI! 👑
+          const approvalMessageText =
+            `🎉 TEBRİKLER! İLANINIZ ONAYLANDI VE YAYINA ALINDI! 👑
 
 🌟 İlan Başlığı: ${updatedListing.baslik}
 📍 Konum: ${(updatedListing.ilSlug || '').toUpperCase()} / ${(updatedListing.ilceSlug || '').toUpperCase()}

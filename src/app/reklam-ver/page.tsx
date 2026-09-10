@@ -18,6 +18,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import ImageCropModal from '@/components/common/ImageCropModal';
+import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
 
 const PRESET_TIERS = [
   {
@@ -625,17 +627,28 @@ export default function ReklamVerPage() {
             </div>
 
             <div className="flex flex-col gap-3">
+              <a
+                href={getAdminWhatsAppUrl(
+                  `Merhaba, Best Eskort için ${activeDays} Günlük (${currentPricing.fiyat.toLocaleString('tr-TR')} ₺) VIP Banner reklam başvurusu yaptım. Onay ve dekont iletmek istiyorum.`
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-green-500/20 transition-all active:scale-[0.98]"
+              >
+                <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+                <span>WhatsApp ile Dekont / Hızlı Onay Al</span>
+              </a>
               <Link
                 href="/chat"
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/25 transition-all active:scale-[0.98]"
+                className="w-full py-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-2 border border-[#30363d] transition-all active:scale-[0.98]"
               >
-                <MessageSquare className="w-4 h-4" />
-                <span>Canlı Destekten Dekont / Bilgi İlet</span>
+                <MessageSquare className="w-4 h-4 text-amber-400" />
+                <span>Site İçi Canlı Destek</span>
               </Link>
               <button
                 type="button"
                 onClick={() => setStep('success')}
-                className="w-full py-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white text-xs font-bold transition-colors"
+                className="w-full py-3 rounded-xl bg-transparent hover:bg-[#161b22] text-[#8b949e] hover:text-white text-xs font-bold transition-colors"
               >
                 Ödemeyi Yaptım, Onay Bekliyorum
               </button>

@@ -42,20 +42,75 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [badgeCounts, setBadgeCounts] = useState<{
+    pendingListings: number;
+    vitrinRequests: number;
+    unreadChats: number;
+    pendingBanners: number;
+    activeBans: number;
+    recentUsers: number;
+    activeBacklinks: number;
+    ilanlarBadge: number;
+    anasayfaBadge: number;
+    chatBadge: number;
+    bannersBadge: number;
+    guvenlikBadge: number;
+    kullanicilarBadge: number;
+  }>({
+    pendingListings: 0,
+    vitrinRequests: 0,
+    unreadChats: 0,
+    pendingBanners: 0,
+    activeBans: 0,
+    recentUsers: 0,
+    activeBacklinks: 0,
+    ilanlarBadge: 0,
+    anasayfaBadge: 0,
+    chatBadge: 0,
+    bannersBadge: 0,
+    guvenlikBadge: 0,
+    kullanicilarBadge: 0,
+  });
 
   const pathname = usePathname();
 
-  // Check existing session
+  // Fetch badge counts
+  const fetchBadges = async () => {
+    try {
+      const res = await fetch('/api/admin/badge-counts', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.counts) {
+          setBadgeCounts(data.counts);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  // Check existing session and poll badges
   useEffect(() => {
     fetch('/api/admin/auth/check')
       .then((res) => res.json())
       .then((data) => {
         setIsAuthenticated(!!data.authenticated);
+        if (data.authenticated) {
+          fetchBadges();
+        }
       })
       .catch(() => {
         setIsAuthenticated(false);
       });
   }, []);
+
+  // Poll badges periodically if authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetchBadges();
+    const interval = setInterval(fetchBadges, 6000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, pathname]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,28 +328,45 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             <Link
               href="/bms-secure-portal"
               prefetch={false}
-              className={getNavClass('/bms-secure-portal')}
+              className={`${getNavClass('/bms-secure-portal')} justify-between`}
             >
-              <BarChart3 className="w-4 h-4 text-amber-400" />
-              <span>Trafik &amp; Analizler</span>
+              <div className="flex items-center gap-2.5">
+                <BarChart3 className="w-4 h-4 text-amber-400" />
+                <span>Trafik &amp; Analizler</span>
+              </div>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Canlı İzleme Aktif" />
             </Link>
 
             <Link
               href="/bms-secure-portal/ilanlar"
               prefetch={false}
-              className={getNavClass('/bms-secure-portal/ilanlar')}
+              className={`${getNavClass('/bms-secure-portal/ilanlar')} justify-between`}
             >
-              <List className="w-4 h-4 text-amber-400" />
-              <span>İlan Moderasyonu</span>
+              <div className="flex items-center gap-2.5">
+                <List className="w-4 h-4 text-amber-400" />
+                <span>İlan Moderasyonu</span>
+              </div>
+              {badgeCounts.ilanlarBadge > 0 && (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/40 animate-pulse border border-rose-400 shrink-0">
+                  +{badgeCounts.ilanlarBadge}
+                </span>
+              )}
             </Link>
 
             <Link
               href="/bms-secure-portal/kullanicilar"
               prefetch={false}
-              className={getNavClass('/bms-secure-portal/kullanicilar')}
+              className={`${getNavClass('/bms-secure-portal/kullanicilar')} justify-between`}
             >
-              <Users className="w-4 h-4 text-amber-400" />
-              <span>Kullanıcı Hesapları</span>
+              <div className="flex items-center gap-2.5">
+                <Users className="w-4 h-4 text-amber-400" />
+                <span>Kullanıcı Hesapları</span>
+              </div>
+              {badgeCounts.kullanicilarBadge > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 shrink-0">
+                  +{badgeCounts.kullanicilarBadge} yeni
+                </span>
+              )}
             </Link>
 
             <Link
@@ -306,47 +378,81 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <MessageSquare className="w-4 h-4 text-amber-400" />
                 <span>Canlı Müşteri Chat</span>
               </div>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              {badgeCounts.chatBadge > 0 ? (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40 animate-pulse border border-emerald-300 shrink-0">
+                  +{badgeCounts.chatBadge}
+                </span>
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              )}
             </Link>
 
             <Link
               href="/bms-secure-portal/anasayfa-yonetimi"
               prefetch={false}
-              className={getNavClass('/bms-secure-portal/anasayfa-yonetimi')}
+              className={`${getNavClass('/bms-secure-portal/anasayfa-yonetimi')} justify-between`}
             >
-              <Sliders className="w-4 h-4 text-amber-400" />
-              <span>Anasayfa &amp; Banner</span>
+              <div className="flex items-center gap-2.5">
+                <Sliders className="w-4 h-4 text-amber-400" />
+                <span>Anasayfa &amp; Banner</span>
+              </div>
+              {badgeCounts.anasayfaBadge > 0 && (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-lg shadow-amber-500/40 animate-pulse border border-amber-300 shrink-0">
+                  +{badgeCounts.anasayfaBadge} Vitrin
+                </span>
+              )}
             </Link>
 
             <Link
               href="/bms-secure-portal/banners"
               prefetch={false}
-              className={getNavClass('/bms-secure-portal/banners')}
+              className={`${getNavClass('/bms-secure-portal/banners')} justify-between`}
             >
-              <Megaphone className="w-4 h-4 text-amber-400" />
-              <span>Banner &amp; Reklam Masası</span>
+              <div className="flex items-center gap-2.5">
+                <Megaphone className="w-4 h-4 text-amber-400" />
+                <span>Banner &amp; Reklam Masası</span>
+              </div>
+              {badgeCounts.bannersBadge > 0 && (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/40 animate-pulse border border-amber-300 shrink-0">
+                  +{badgeCounts.bannersBadge}
+                </span>
+              )}
             </Link>
 
             <Link
               href="/bms-secure-portal/backlinks"
               prefetch={false}
-              className={getNavClass('/bms-secure-portal/backlinks')}
+              className={`${getNavClass('/bms-secure-portal/backlinks')} justify-between`}
             >
-              <Link2 className="w-4 h-4 text-blue-400" />
-              <span>SEO Backlink Ağı</span>
+              <div className="flex items-center gap-2.5">
+                <Link2 className="w-4 h-4 text-blue-400" />
+                <span>SEO Backlink Ağı</span>
+              </div>
+              {badgeCounts.activeBacklinks > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 shrink-0">
+                  {badgeCounts.activeBacklinks}
+                </span>
+              )}
             </Link>
 
             <Link
               href="/bms-secure-portal/guvenlik"
               prefetch={false}
-              className={`flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-colors ${
+              className={`flex items-center justify-between px-3.5 py-3 rounded-xl transition-colors ${
                 pathname === '/bms-secure-portal/guvenlik'
                   ? 'bg-red-500/10 text-red-400 border border-red-500/30'
                   : 'hover:bg-red-500/5 text-red-500/70 hover:text-red-300 border border-transparent hover:border-red-500/30'
               }`}
             >
-              <ShieldAlert className="w-4 h-4 text-red-400" />
-              <span>Güvenlik &amp; IP Ban</span>
+              <div className="flex items-center gap-2.5">
+                <ShieldAlert className="w-4 h-4 text-red-400" />
+                <span>Güvenlik &amp; IP Ban</span>
+              </div>
+              {badgeCounts.guvenlikBadge > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-500/20 text-red-400 border border-red-500/40 shrink-0">
+                  {badgeCounts.guvenlikBadge} Ban
+                </span>
+              )}
             </Link>
           </nav>
         </div>
@@ -385,25 +491,39 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#161b22]/95 backdrop-blur-xl border-t border-[#30363d] px-1 py-1.5 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.6)]">
         <Link
           href="/bms-secure-portal/ilanlar"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
             pathname === '/bms-secure-portal/ilanlar'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
           }`}
         >
-          <List className="w-5 h-5" />
+          <div className="relative">
+            <List className="w-5 h-5" />
+            {badgeCounts.ilanlarBadge > 0 && (
+              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center animate-pulse border border-[#161b22]">
+                {badgeCounts.ilanlarBadge}
+              </span>
+            )}
+          </div>
           <span className="text-[10px] font-heading">İlanlar</span>
         </Link>
 
         <Link
           href="/bms-secure-portal/kullanicilar"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
             pathname === '/bms-secure-portal/kullanicilar'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
           }`}
         >
-          <Users className="w-5 h-5" />
+          <div className="relative">
+            <Users className="w-5 h-5" />
+            {badgeCounts.kullanicilarBadge > 0 && (
+              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[9px] font-black flex items-center justify-center border border-[#161b22]">
+                {badgeCounts.kullanicilarBadge}
+              </span>
+            )}
+          </div>
           <span className="text-[10px] font-heading">Kullanıcılar</span>
         </Link>
 
@@ -417,7 +537,13 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         >
           <div className="relative">
             <MessageSquare className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            {badgeCounts.chatBadge > 0 ? (
+              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-emerald-500 text-slate-950 text-[9px] font-black flex items-center justify-center animate-pulse border border-[#161b22]">
+                {badgeCounts.chatBadge}
+              </span>
+            ) : (
+              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            )}
           </div>
           <span className="text-[10px] font-heading">Chat</span>
         </Link>
@@ -437,11 +563,18 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         <button
           type="button"
           onClick={() => setIsMobileMenuOpen(true)}
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
             isMobileMenuOpen ? 'text-amber-400 font-black' : 'text-[#8b949e] hover:text-white font-medium'
           }`}
         >
-          <Sliders className="w-5 h-5" />
+          <div className="relative">
+            <Sliders className="w-5 h-5" />
+            {(badgeCounts.anasayfaBadge > 0 || badgeCounts.bannersBadge > 0) && (
+              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black flex items-center justify-center animate-pulse border border-[#161b22]">
+                {badgeCounts.anasayfaBadge + badgeCounts.bannersBadge}
+              </span>
+            )}
+          </div>
           <span className="text-[10px] font-heading">Tüm Menü</span>
         </button>
       </div>
@@ -471,7 +604,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               <Link
                 href="/bms-secure-portal"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
                 <BarChart3 className="w-5 h-5 text-amber-400" />
                 <span>1. Trafik &amp; Analiz</span>
@@ -480,63 +613,112 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               <Link
                 href="/bms-secure-portal/ilanlar"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
-                <List className="w-5 h-5 text-amber-400" />
+                <div className="flex items-center justify-between">
+                  <List className="w-5 h-5 text-amber-400" />
+                  {badgeCounts.ilanlarBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black animate-pulse">
+                      +{badgeCounts.ilanlarBadge}
+                    </span>
+                  )}
+                </div>
                 <span>2. İlan Moderasyonu</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/chat"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
-                <MessageSquare className="w-5 h-5 text-emerald-400" />
+                <div className="flex items-center justify-between">
+                  <MessageSquare className="w-5 h-5 text-emerald-400" />
+                  {badgeCounts.chatBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[9px] font-black animate-pulse">
+                      +{badgeCounts.chatBadge}
+                    </span>
+                  )}
+                </div>
                 <span>3. Canlı Müşteri Chat</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/kullanicilar"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
-                <Users className="w-5 h-5 text-amber-400" />
+                <div className="flex items-center justify-between">
+                  <Users className="w-5 h-5 text-amber-400" />
+                  {badgeCounts.kullanicilarBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-[9px] font-black">
+                      +{badgeCounts.kullanicilarBadge}
+                    </span>
+                  )}
+                </div>
                 <span>4. Kullanıcı Hesapları</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/anasayfa-yonetimi"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
-                <Sliders className="w-5 h-5 text-amber-400" />
+                <div className="flex items-center justify-between">
+                  <Sliders className="w-5 h-5 text-amber-400" />
+                  {badgeCounts.anasayfaBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black animate-pulse">
+                      +{badgeCounts.anasayfaBadge}
+                    </span>
+                  )}
+                </div>
                 <span>5. Anasayfa Yönetimi</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/banners"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
-                <Megaphone className="w-5 h-5 text-amber-400" />
+                <div className="flex items-center justify-between">
+                  <Megaphone className="w-5 h-5 text-amber-400" />
+                  {badgeCounts.bannersBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black animate-pulse">
+                      +{badgeCounts.bannersBadge}
+                    </span>
+                  )}
+                </div>
                 <span>6. Banner Masası</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/backlinks"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42]"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
-                <Link2 className="w-5 h-5 text-blue-400" />
+                <div className="flex items-center justify-between">
+                  <Link2 className="w-5 h-5 text-blue-400" />
+                  {badgeCounts.activeBacklinks > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[9px] font-bold">
+                      {badgeCounts.activeBacklinks}
+                    </span>
+                  )}
+                </div>
                 <span>7. SEO Backlink Ağı</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/guvenlik"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-300 flex flex-col gap-1 border border-red-500/30"
+                className="p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-300 flex flex-col gap-1 border border-red-500/30 relative"
               >
-                <ShieldAlert className="w-5 h-5 text-red-400" />
+                <div className="flex items-center justify-between">
+                  <ShieldAlert className="w-5 h-5 text-red-400" />
+                  {badgeCounts.guvenlikBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-red-500/30 text-red-300 text-[9px] font-bold">
+                      {badgeCounts.guvenlikBadge}
+                    </span>
+                  )}
+                </div>
                 <span>8. Güvenlik &amp; IP Ban</span>
               </Link>
             </div>

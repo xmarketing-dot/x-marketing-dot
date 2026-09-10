@@ -4,7 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
-  Flame
+  Flame,
+  Crown,
+  Award,
+  Medal,
 } from 'lucide-react';
 
 interface CategoryShowcaseProps {
@@ -31,33 +34,33 @@ export default function CategoryShowcase({
   const categories = [
     {
       id: 'gold',
-      badgeTop: 'GOLD İLAN',
+      badgeTop: 'GOLD KATEGORİ',
       title: 'GOLD',
-      subtitle: 'ESKORTLAR',
+      subtitle: 'KATEGORİ',
       count: goldCount || 0,
       href: '/kategori/gold',
       theme: 'gold', // Lüks sıcak altın/dore zemin
-      icon: '⭐',
+      icon: Award,
     },
     {
       id: 'vip',
-      badgeTop: 'VIP İLAN',
+      badgeTop: 'VIP KATEGORİ',
       title: 'VIP',
-      subtitle: 'ESKORTLAR',
+      subtitle: 'KATEGORİ',
       count: combinedVipCount,
       href: '/kategori/vip',
       theme: 'vip', // Ortada, en parlak, göz alıcı sıvı altın-kehribar kraliyet teması
-      icon: '👑',
+      icon: Crown,
     },
     {
       id: 'silver',
-      badgeTop: 'SILVER İLAN',
+      badgeTop: 'SILVER KATEGORİ',
       title: 'SILVER',
-      subtitle: 'ESKORTLAR',
+      subtitle: 'KATEGORİ',
       count: silverCount || 0,
       href: '/kategori/silver',
       theme: 'silver', // Lüks platin/çelik gümüş
-      icon: '⚡',
+      icon: Medal,
     },
   ];
 
@@ -118,8 +121,8 @@ export default function CategoryShowcase({
 
                 {/* 2. ORTA: BÜYÜK BAŞLIK & ESKORTLAR */}
                 <div className="flex flex-col items-center justify-center my-auto py-0.5">
-                  <div className={`text-base sm:text-2xl mb-0.5 group-hover:scale-125 transition-transform ${isVip ? 'drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]' : 'drop-shadow-sm'}`}>
-                    {cat.icon}
+                  <div className={`mb-1 group-hover:scale-125 transition-transform flex items-center justify-center ${isVip ? 'text-slate-950 drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]' : isGold ? 'text-amber-400' : 'text-slate-300'}`}>
+                    <cat.icon className={`w-6 h-6 sm:w-8 sm:h-8 stroke-[2.2] ${isVip ? 'fill-slate-950/20' : ''}`} />
                   </div>
 
                   {/* VIP / GOLD / SILVER */}

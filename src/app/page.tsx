@@ -22,6 +22,7 @@ import {
 import { getHomepageConfig, getAllLocations, getListings, getActiveBanner } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
+import { checkAndExpireShowcases } from '@/lib/vitrinManager';
 import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CategorizedListingsSection from '@/components/home/CategorizedListingsSection';
@@ -97,6 +98,9 @@ export default async function HomePage() {
     return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
   });
 
+  // Süresi dolmuş vitrin ilanlarını anında temizle ve kullanıcıları bilgilendir
+  await checkAndExpireShowcases().catch(() => {});
+
   // Group listings by package tier
   const vipListings = allSortedListings.filter((l: any) => l.rozet === 'vip' || l.rozet === 'ultravip');
   const goldListings = allSortedListings.filter((l: any) => l.rozet === 'gold');
@@ -105,30 +109,43 @@ export default async function HomePage() {
   // Fallback if none in specific tier, pick top available
   const displayVip = vipListings.length > 0 ? vipListings : allSortedListings.slice(0, 4);
 
-  // Dynamic Selected Showcase from Admin Homepage Config
-  const rawSliderIds = homepageConfig?.sliderIlanIds || homepageConfig?.selectedShowcaseIds || [];
+  // Dynamic Selected Showcase from Admin Homepage Config (Sadece adminin seçtiği vitrin ilanları)
+  const hasConfig = Boolean(homepageConfig && Array.isArray(homepageConfig.sliderIlanIds));
+  const rawSliderIds = homepageConfig?.sliderIlanIds || [];
   const selectedShowcaseIds: string[] = rawSliderIds.map((id: any) => (id?.toString ? id.toString() : String(id)));
 
+  const now = new Date();
   let dynamicShowcaseListings: any[] = [];
   if (selectedShowcaseIds.length > 0) {
     const missingIds = selectedShowcaseIds.filter((id) => !allSortedListings.some((l: any) => l._id.toString() === id));
     let extraListings: any[] = [];
     if (missingIds.length > 0) {
       extraListings = await ListingModel.find({ _id: { $in: missingIds }, status: 'yayinda' })
-        .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf createdAt status')
+        .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf vitrinBitisTarihi createdAt status')
         .lean();
     }
     const pool = [...allSortedListings, ...extraListings];
     dynamicShowcaseListings = selectedShowcaseIds
-      .map((id: string) => pool.find((l: any) => l._id.toString() === id))
+      .map((id: string) => pool.find((l: any) => {
+        if (!l || l._id?.toString() !== id || l.status !== 'yayinda') return false;
+        // Eğer bitiş tarihi varsa ve geçmişse vitrinde gösterme
+        if (l.vitrinBitisTarihi && new Date(l.vitrinBitisTarihi) <= now) return false;
+        return true;
+      }))
       .filter(Boolean);
+  } else if (!hasConfig) {
+    // Sadece ilk kurulumda config yoksa varsayılan vitrin taleplerini veya ilk VIP'leri al
+    const paidVitrinListings = allSortedListings.filter((l: any) => 
+      l.vitrinIstegi === true && 
+      l.status === 'yayinda' && 
+      (!l.vitrinBitisTarihi || new Date(l.vitrinBitisTarihi) > now)
+    );
+    if (paidVitrinListings.length > 0) {
+      dynamicShowcaseListings = paidVitrinListings;
+    }
   }
 
-  if (dynamicShowcaseListings.length === 0) {
-    dynamicShowcaseListings = displayVip;
-  }
-
-  const formattedShowcaseListings = dynamicShowcaseListings.map((l: any) => ({
+  const formattedShowcaseListings = dynamicShowcaseListings.slice(0, 5).map((l: any) => ({
     _id: l._id?.toString() || l.id || '',
     slug: l.slug || '',
     baslik: l.baslik || '',
@@ -140,6 +157,10 @@ export default async function HomePage() {
     },
     rozet: l.rozet === 'ultravip' ? 'vip' : (l.rozet || 'vip'),
     whatsappNumara: l.whatsappNumara || '',
+    fiyat: l.fiyat ? Number(l.fiyat) : undefined,
+    paraBirimi: l.paraBirimi || 'TL',
+    tamAd: l.tamAd || undefined,
+    yas: l.yas || undefined,
   }));
 
   // Grid listings
@@ -252,9 +273,13 @@ export default async function HomePage() {
         Best Eskort &amp; Escort Bayan Model Kataloğu — Türkiye 81 İl Doğrulanmış VIP ve Bağımsız İlanlar
       </h1>
 
-      {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları) */}
+      {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları / Yoksa VIP Reklam Alanı) */}
       <section className="w-full">
-        <HeroSlider slides={formattedShowcaseListings} />
+        <HeroSlider 
+          slides={formattedShowcaseListings} 
+          promoSlides={homepageConfig?.bosVitrinSliderlar}
+          banner={activeBanner} 
+        />
       </section>
 
       {/* 2. SPONSOR BANNER REKLAM ALANI */}

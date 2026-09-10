@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
       kullaniciId,
       tamAd,
       visitorId,
+      vitrinIstegi,
     } = body;
 
     if (!baslik || !aciklama || !ilSlug || !ilceSlug || !whatsappNumara) {
@@ -136,6 +137,8 @@ export async function POST(req: NextRequest) {
       // Non-critical, continue
     }
 
+    const hasVitrin = vitrinIstegi === true;
+
     const newListing = await ListingModel.create({
       slug,
       baslik,
@@ -155,6 +158,7 @@ export async function POST(req: NextRequest) {
       visitorId: visitorId || null,
       creatorIp: clientIp,
       panelSifresi: resolvedPassword,
+      vitrinIstegi: hasVitrin,
       status: 'onay_bekliyor',
     });
 
@@ -165,7 +169,10 @@ export async function POST(req: NextRequest) {
       const ChatMessageModel = (await import('@/models/ChatMessage')).default;
       const { chatEmitter } = await import('@/lib/chatEmitter');
 
-      const welcomeMsg = `Merhaba yönetici, "${baslik}" başlıklı ${rozet?.toUpperCase() || 'VIP'} ilanımı oluşturdum. İlan Düzenleme Şifrem: ${resolvedPassword}. Ödeme yöntemleri için bilgi bekliyorum.`;
+      const vitrinText = hasVitrin 
+        ? (body.vitrinPaketi === 'gunluk' ? ' [🔥 GÜNLÜK 2.000 TL VİTRİN DAHİL]' : ' [🔥 HAFTALIK KAMPANYALI 6.000 TL VİTRİN DAHİL]') 
+        : '';
+      const welcomeMsg = `Merhaba yönetici, "${baslik}" başlıklı ${rozet?.toUpperCase() || 'VIP'} ilanımı oluşturdum${vitrinText}. İlan Düzenleme Şifrem: ${resolvedPassword}. Ödeme yöntemleri ve onay için bilgi bekliyorum.`;
 
       if (finalThreadId) {
         await ChatThreadModel.findByIdAndUpdate(finalThreadId, {
@@ -204,32 +211,8 @@ export async function POST(req: NextRequest) {
       });
 
       // 2. Otomatik Yönetici / Sistem Paket Bilgilendirme ve Ödeme Mesajı
-      const autoAdminReply = `🔥 BEST ESKORT – ÖNE ÇIKMA PAKETLERİ (HAFTALIK ÖZEL FIRSAT) 🔥
-
-Profilinizin daha fazla müşteriye ulaşması ve listelerde en üstte yer alması için lansmana özel %20 - %30 İndirimli Tanıtım Seçenekleri:
-
-👑 VIP PAKET — 7.000 TL / Haftalık (10.000 TL yerine — %30 Daha Karlı!)
-• Sayfanın en üstündeki VIP Vitrin (Manşet) alanında gösterim
-• En üst sıralarda 1. öncelikli konumlandırma
-• VIP Özel Rozeti & Maksimum müşteri erişimi
-
-💎 GOLD PAKET — 4.000 TL / Haftalık (5.500 TL yerine — %27 Daha Karlı!)
-• Üst sıralarda öncelikli görünürlük
-• Gold vitrin alanında sabit gösterim
-• Yüksek müşteri dönüşümü
-
-🥈 SILVER PAKET — 2.500 TL / Haftalık (3.500 TL yerine — %28 Daha Karlı!)
-• Silver vitrin alanında gösterim
-• Standart profile göre daha yüksek görünürlük
-
-💡 Not: Aylık paket alımlarında ekstra %20 İNDİRİM avantajı uygulanmaktadır!
-📌 Paketler sınırlı kontenjanla sunulmaktadır.
-
-💳 IBAN veya KRİPTO (USDT) ile güvenli ödeme yapabilirsiniz.
-📩 Paket seçimi, IBAN / Kripto hesap bilgileri veya aylık avantajlı fiyatlar için buradan bizimle iletişime geçebilirsiniz.
-
-BEST ESKORT
-✨ Daha fazla görünürlük, daha fazla erişim.`;
+      const { generateAutoPackageMessage } = await import('@/lib/siteConfig');
+      const autoAdminReply = generateAutoPackageMessage(baslik, resolvedPassword);
 
       const adminMsg = await ChatMessageModel.create({
         threadId: finalThreadId,
@@ -263,6 +246,7 @@ BEST ESKORT
         `🏷️ <b>Başlık:</b> ${baslik}`,
         `📍 <b>Bölge:</b> ${ilText} / ${ilceText}`,
         `💎 <b>Paket:</b> ${rozet?.toUpperCase() || 'VIP'} (${yayinSuresi?.toUpperCase() || 'HAFTALIK'})`,
+        hasVitrin ? (body.vitrinPaketi === 'gunluk' ? `🔥 <b>ANASAYFA VİTRİN:</b> GÜNLÜK (2.000 TL)` : `🔥 <b>ANASAYFA VİTRİN:</b> HAFTALIK KAMPANYALI (6.000 TL)`) : `⚪ <b>ANASAYFA VİTRİN:</b> Yok`,
         `📱 <b>WhatsApp:</b> <code>${whatsappNumara}</code>`,
         `🔑 <b>İlan Düzenleme Şifresi:</b> <code>${generatedPassword}</code>`,
         `━━━━━━━━━━━━━━━━━━`,

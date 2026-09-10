@@ -32,6 +32,8 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
+import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
 
 export default function CreateListingPage() {
   const router = useRouter();
@@ -45,7 +47,18 @@ export default function CreateListingPage() {
     rozet: 'vip',
     yayinSuresi: 'haftalik',
     whatsappNumara: '',
+    vitrinIstegi: false,
+    vitrinPaketi: 'haftalik',
   });
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('vitrin') === '1') {
+        setFormData((prev) => ({ ...prev, vitrinIstegi: true, rozet: 'vip', vitrinPaketi: 'haftalik' }));
+      }
+    }
+  }, []);
 
   // Kullanıcının yükleyeceği gerçek fotoğraflar - Sıfırdan başlar!
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
@@ -69,18 +82,23 @@ export default function CreateListingPage() {
       id: 'gold',
       name: 'Gold Vitrin',
       icon: '⭐',
-      badge: 'GOLD İLAN',
+      badge: '100 SINIR • GOLD İLAN',
       title: 'GOLD',
       theme: 'gold',
+      limit: '100 İlan Sınırı',
+      fiyat: '4.000 ₺ / Hafta',
+      eskiFiyat: '6.000 ₺',
+      indirim: '%33 İndirim',
       cardBg: 'bg-gradient-to-b from-[#2b210a] via-[#1a1406] to-[#0f0b02] text-amber-200 border border-amber-500/50 shadow-xl',
       innerBorder: 'border-amber-400/50',
       titleColor: 'text-amber-300',
       ornamentColor: 'text-amber-400',
       subColor: 'text-amber-400/80',
-      desc: 'Şehir ve ilçe listelemelerinde öne çıkan popüler ilan vitrini.',
+      desc: 'Maksimum 100 kontenjanla sınırlandırılmış şehir ve ilçe listelemelerinde öne çıkan popüler ilan vitrini.',
       features: [
-        'Bölgesel aramalarda öne çıkma',
-        'Gold İlan rozeti ve iletişim bağlantısı',
+        'Maksimum 100 kontenjan sınırı',
+        'Bölgesel aramalarda üst sıralarda öne çıkma',
+        'Gold İlan rozeti ve doğrudan WhatsApp bağlantısı',
         'Mobil uyumlu tam sayfa detay vitrini'
       ]
     },
@@ -88,16 +106,21 @@ export default function CreateListingPage() {
       id: 'vip',
       name: 'VIP Vitrin',
       icon: '👑',
-      badge: 'VIP İLAN',
+      badge: '50 SINIR • VIP İLAN',
       title: 'VIP',
       theme: 'vip',
+      limit: '50 İlan Sınırı (Özel)',
+      fiyat: '7.000 ₺ / Hafta',
+      eskiFiyat: '10.000 ₺',
+      indirim: '%30 İndirim',
       cardBg: 'bg-gradient-to-b from-[#ffd700] via-[#f59e0b] to-[#b45309] text-slate-950 border-2 border-amber-300 shadow-2xl shadow-amber-500/30',
       innerBorder: 'border-slate-950/60',
       titleColor: 'text-slate-950',
       ornamentColor: 'text-slate-950',
       subColor: 'text-slate-950/90',
-      desc: 'Anasayfada ve tüm aramalarda en üst sırada sabit kalma garantisi.',
+      desc: 'Maksimum 50 seçkin kontenjan ile anasayfada ve tüm aramalarda en üst sırada sabit kalma garantisi.',
       features: [
+        'Maksimum 50 İlan Sınırı (Seçkin Kontenjan)',
         'Anasayfa en üst vitrinde sabit gösterim',
         '81 İl ve İlçe aramalarında #1 sırada yer alma',
         'VIP Doğrulanmış Rozet & Özel Altın Parlama Efekti',
@@ -109,16 +132,21 @@ export default function CreateListingPage() {
       id: 'silver',
       name: 'Silver Standart',
       icon: '⚡',
-      badge: 'SILVER İLAN',
+      badge: '200 SINIR • SILVER İLAN',
       title: 'SILVER',
       theme: 'silver',
+      limit: '200 İlan Sınırı',
+      fiyat: '2.500 ₺ / Hafta',
+      eskiFiyat: '3.500 ₺',
+      indirim: '%30 İndirim',
       cardBg: 'bg-gradient-to-b from-[#222a36] via-[#161c24] to-[#0d1218] text-slate-100 border border-slate-400/40 shadow-xl',
       innerBorder: 'border-slate-300/40',
       titleColor: 'text-slate-100',
       ornamentColor: 'text-slate-300',
       subColor: 'text-slate-400',
-      desc: 'Standart liste gösterimi ve doğrudan müşteri iletişimi.',
+      desc: 'Maksimum 200 kontenjanla standart liste gösterimi ve doğrudan müşteri iletişimi.',
       features: [
+        'Maksimum 200 kontenjan sınırı',
         'İlgili şehir ve ilçe listesinde standart yayın',
         'Doğrulanmış profil ve doğrudan iletişim'
       ]
@@ -255,6 +283,28 @@ export default function CreateListingPage() {
           </p>
         </div>
 
+        {/* VİTRİN TALEBİ VE ÖDENECEK TUTAR BİLGİLENDİRMESİ */}
+        {createdListing.vitrinIstegi && (
+          <div className="w-full p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-amber-400/15 to-transparent border-2 border-amber-400/80 flex items-center justify-between text-left shadow-lg">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0 shadow-md">
+                <Crown className="w-5 h-5 fill-slate-950" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-heading font-black text-xs sm:text-sm text-amber-300">
+                  👑 Anasayfa Vitrin Talebi Dahil Edildi
+                </span>
+                <span className="text-[11px] text-[#8b949e]">
+                  Ödemeniz teyit edildikten sonra ilanınız en üst vitrinde yayınlanacaktır.
+                </span>
+              </div>
+            </div>
+            <span className="px-2.5 py-1 rounded-xl bg-amber-500 text-slate-950 font-heading font-black text-xs shrink-0">
+              +2.000 ₺
+            </span>
+          </div>
+        )}
+
         {/* KRİPTO ÖDEME CÜZDAN KARTI */}
         <div className="w-full">
           <CryptoPaymentCard onChatClick={() => router.push('/chat')} />
@@ -276,19 +326,29 @@ export default function CreateListingPage() {
           </p>
         </div>
 
-        {/* CANLI DESTEK & DÜZENLEME BUTONLARI */}
+        {/* CANLI DESTEK, WHATSAPP & DÜZENLEME BUTONLARI */}
         <div className="flex flex-col gap-3 w-full font-heading mt-1">
+          <a
+            href={getAdminWhatsAppUrl(`Merhaba, "${formData.baslik}" başlıklı ilanımı oluşturdum. İlan Düzenleme Şifrem: ${generatedPassword}. İlanımın hızlı onayı ve ödeme için yazıyorum.`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-4 px-6 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-sm shadow-xl shadow-green-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+          >
+            <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+            <span>WhatsApp ile Hızlı Onay Al ➔</span>
+          </a>
+
           <button
             onClick={() => router.push('/chat')}
-            className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+            className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-amber-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
           >
-            <Headphones className="w-5 h-5 stroke-[2.5]" />
-            <span>Yönetici ile Canlı Görüş &amp; Öde ➔</span>
+            <Headphones className="w-4 h-4 stroke-[2.5]" />
+            <span>Site İçi Canlı Destek &amp; Ödeme</span>
           </button>
 
           <Link
             href="/ilan-duzenle"
-            className="w-full py-3.5 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-bold text-xs border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-bold text-xs border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <KeyRound className="w-4 h-4 text-amber-400" />
             <span>İlanımı Düzenle / Güncelle</span>
@@ -420,13 +480,23 @@ export default function CreateListingPage() {
                         {tier.icon}
                       </div>
 
-                      <span className={`font-heading font-black text-2xl sm:text-4xl tracking-wider leading-none ${tier.titleColor} ${isVip ? 'drop-shadow-md' : 'drop-shadow-sm'}`}>
+                      <span className={`font-heading font-black text-2xl sm:text-3xl tracking-wider leading-none ${tier.titleColor} ${isVip ? 'drop-shadow-md' : 'drop-shadow-sm'}`}>
                         {tier.title}
                       </span>
 
-                      <span className={`font-heading font-black text-[10px] sm:text-xs tracking-[0.2em] uppercase mt-1 ${tier.subColor}`}>
-                        VİTRİN
+                      <span className={`font-heading font-black text-[9px] sm:text-[10px] tracking-[0.2em] uppercase mt-0.5 ${tier.subColor}`}>
+                        {tier.limit}
                       </span>
+
+                      {/* Fiyat Gösterimi */}
+                      <div className="flex flex-col items-center mt-1.5 pt-1 border-t border-current/15 w-full">
+                        <span className={`text-[8px] sm:text-[9px] line-through opacity-75 font-mono ${tier.subColor}`}>
+                          {tier.eskiFiyat}
+                        </span>
+                        <span className={`font-heading font-black text-[11px] sm:text-xs tracking-tight ${tier.titleColor}`}>
+                          {tier.fiyat}
+                        </span>
+                      </div>
                     </div>
 
                     {/* 3. ALT: SEÇİM DURUMU */}
@@ -740,6 +810,107 @@ export default function CreateListingPage() {
                 <Phone className="w-4 h-4 text-[#8b949e] absolute left-3 top-3.5" />
               </div>
             </label>
+          </div>
+
+          {/* ── 🌟 ANASAYFA VIP VİTRİNİNE EKLEME OPSİYONU (GÜNLÜK 2.000 TL / HAFTALIK 6.000 TL KAMPANYA) ── */}
+          <div 
+            className={`p-4 sm:p-5 rounded-3xl border-2 transition-all flex flex-col gap-3.5 shadow-xl ${
+              formData.vitrinIstegi
+                ? 'bg-gradient-to-br from-[#2a1d06] via-[#1a1408] to-[#0d1117] border-amber-400 ring-4 ring-amber-400/20 shadow-amber-500/10'
+                : 'bg-[#161b22] border-[#30363d] hover:border-amber-500/40 opacity-90'
+            }`}
+          >
+            <div 
+              onClick={() => setFormData({ ...formData, vitrinIstegi: !formData.vitrinIstegi })}
+              className="flex items-start justify-between gap-3 cursor-pointer select-none"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center font-black shrink-0 transition-transform ${
+                  formData.vitrinIstegi 
+                    ? 'bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 scale-105 shadow-md shadow-amber-500/30' 
+                    : 'bg-[#21262d] text-[#8b949e]'
+                }`}>
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 fill-current" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-heading font-black text-sm sm:text-base text-white">
+                      👑 Anasayfa En Üst VIP Vitrine Ekle
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-heading font-black text-[9px] uppercase tracking-wider">
+                      Günlük 2.000 ₺ • Haftalık 6.000 ₺
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#8b949e] mt-0.5 leading-relaxed">
+                    İlanınız sayfanın en tepesindeki dev vitrinde dönsün, 3 kat daha fazla doğrudan müşteri kazanın.
+                  </p>
+                </div>
+              </div>
+
+              {/* Checkbox Toggle */}
+              <div className={`w-6 h-6 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${
+                formData.vitrinIstegi
+                  ? 'bg-amber-400 border-amber-400 text-slate-950'
+                  : 'border-[#363b42] bg-[#21262d]'
+              }`}>
+                {formData.vitrinIstegi && <CheckCircle2 className="w-4 h-4 stroke-[3]" />}
+              </div>
+            </div>
+
+            {/* Vitrin Paketi Seçimi (Günlük vs Haftalık Kampanya) */}
+            {formData.vitrinIstegi && (
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-amber-500/30">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, vitrinPaketi: 'gunluk' })}
+                  className={`p-3 rounded-2xl border transition-all text-left flex flex-col justify-between ${
+                    formData.vitrinPaketi === 'gunluk'
+                      ? 'bg-amber-500/20 border-amber-400 text-white'
+                      : 'bg-[#0d1117] border-[#30363d] text-[#8b949e]'
+                  }`}
+                >
+                  <span className="text-[10px] uppercase font-bold text-amber-400">1 Günlük</span>
+                  <span className="font-heading font-black text-xs sm:text-sm text-white mt-0.5">Günlük Vitrin</span>
+                  <span className="font-mono font-black text-sm text-amber-400 mt-1">+2.000 ₺</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, vitrinPaketi: 'haftalik' })}
+                  className={`p-3 rounded-2xl border transition-all text-left flex flex-col justify-between relative overflow-hidden ${
+                    formData.vitrinPaketi === 'haftalik'
+                      ? 'bg-gradient-to-br from-[#2a1d06] to-[#161b22] border-amber-400 text-white shadow-md'
+                      : 'bg-[#0d1117] border-[#30363d] text-[#8b949e]'
+                  }`}
+                >
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500 text-slate-950 font-black w-fit">
+                    %57 İNDİRİM
+                  </span>
+                  <span className="font-heading font-black text-xs sm:text-sm text-white mt-0.5 flex items-center gap-1">
+                    <span>Haftalık VIP</span>
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                  </span>
+                  <div className="flex items-baseline gap-1 mt-1">
+                    <span className="font-mono font-black text-sm text-amber-400">+6.000 ₺</span>
+                    <span className="font-mono text-[10px] text-[#8b949e] line-through">14.000 ₺</span>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {/* Fiyat ve Özet Çubuğu */}
+            <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
+              <span className="text-[#8b949e] font-mono">
+                {currentTierObj.name} ({currentTierObj.fiyat}) {formData.vitrinIstegi ? `+ Vitrin (${formData.vitrinPaketi === 'gunluk' ? '2.000 ₺' : '6.000 ₺'})` : ''}
+              </span>
+              <span className="font-heading font-black text-sm text-amber-400">
+                {formData.vitrinIstegi
+                  ? formData.vitrinPaketi === 'gunluk'
+                    ? currentTierObj.id === 'vip' ? 'Toplam: 9.000 ₺' : currentTierObj.id === 'gold' ? 'Toplam: 6.000 ₺' : 'Toplam: 4.500 ₺'
+                    : currentTierObj.id === 'vip' ? 'Toplam: 13.000 ₺' : currentTierObj.id === 'gold' ? 'Toplam: 10.000 ₺' : 'Toplam: 8.500 ₺'
+                  : `Tutar: ${currentTierObj.fiyat}`}
+              </span>
+            </div>
           </div>
 
           {/* BUTONLAR: GERİ DÖN & ONAYA GÖNDER */}

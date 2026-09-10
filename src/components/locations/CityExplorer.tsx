@@ -292,8 +292,8 @@ export default function CityExplorer({ cityListingCounts, totalListingsCount, al
                           </Link>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2">
-                          {cityListings.slice(0, 4).map((l: any) => (
+                        <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+                          {cityListings.slice(0, 6).map((l: any) => (
                             <CompactListingCard key={l._id} listing={l} />
                           ))}
                         </div>

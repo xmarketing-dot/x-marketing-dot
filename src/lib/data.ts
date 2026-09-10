@@ -69,26 +69,68 @@ export async function getAllPackages() {
   return JSON.parse(JSON.stringify(res));
 }
 
-let configCache: any = null;
-let configCacheTime = 0;
+const DEFAULT_HOMEPAGE_PROMOS = [
+  {
+    _id: 'promo-1',
+    gifUrl: 'https://media.tenor.com/vDokuclgktwAAAAd/barbara-palvin-lingerie.gif',
+    topBadge: '🔥 GÜNDE 50.000+ CANLI MÜŞTERİ',
+    trafficBadge: '💎 EN ÇOK KAZANDIRAN ALAN',
+    title: 'Zirvede Yerini Al, Telefonun Gece Gündüz Çalsın!',
+    spot: 'Türkiye\'nin en popüler eskort vitrininde dakikalar içinde öne çıkın. WhatsApp hattınıza kesintisiz elit müşteri akışı başlatın.',
+    aktif: true,
+  },
+  {
+    _id: 'promo-2',
+    gifUrl: 'https://64.media.tumblr.com/8c1cf789da9ba9a6cca6ee396f6f2dc7/0ed1f7c7e2c38e0a-dc/s500x750/6924e4454a9f477b6d1eaddaf38cb52a1917c51d.gif',
+    topBadge: '👑 VIP VİTRİN İLE KAZANCINI KATLA',
+    trafficBadge: '⚡ ANINDA MÜŞTERİ AKIŞI',
+    title: 'Günde 50.000 Canlı Ziyaretçi Doğrudan Seni Görsün!',
+    spot: 'Sayfaya giren herkesin ilk gördüğü dev vitrinde yerini ayırt. Komisyonsuz, doğrudan ve anında randevularını doldur.',
+    aktif: true,
+  },
+  {
+    _id: 'promo-3',
+    gifUrl: 'https://i.looksmax.org/attachments/2022/12/3217147_booty-bounce-2.gif',
+    topBadge: '💎 LÜKS & SEÇKİN PRESTİJ',
+    trafficBadge: '🔥 %100 GERÇEK MÜŞTERİ',
+    title: 'Bu Vitrinde Parlayın, En Çok Kazanan Siz Olun!',
+    spot: 'Rakiplerinin önüne geç, anasayfanın 1 numaralı vitrinine yerleş. Saatlerce müşteri aramak yerine müşteriler sana yazsın.',
+    aktif: true,
+  },
+  {
+    _id: 'promo-4',
+    gifUrl: 'https://media.tenor.com/7rtlPza-UqcAAAAM/asian.gif',
+    topBadge: '⚡ ANINDA RANDEVU DOLDURMA',
+    trafficBadge: '🚀 GOOGLE & ARAMA LİDERİ',
+    title: 'Vitrine Sabitlenin, Müşteri Mesajlarına Yetişemeyin!',
+    spot: 'Best Eskort VIP vitrini ile tüm şehirden gelen elit müşterilere ilk sırada ulaşın. WhatsApp randevu trafiğinizi hemen katlayın.',
+    aktif: true,
+  },
+  {
+    _id: 'promo-5',
+    gifUrl: 'https://media.tenor.com/UpyRgPYevTMAAAAM/sexy-girl.gif',
+    topBadge: '👑 SINIRSIZ GÖRÜNTÜLENME & GÜÇ',
+    trafficBadge: '🌟 VIP ÖZEL AYRICALIK',
+    title: 'İlanınızı Vitrine Taşıyın, Zirvenin Keyfini Çıkarın!',
+    spot: 'Tek tıkla vitrinde yerinizi alın, profesyonel reklam avantajıyla sınırsız kazanç ve maksimum görünürlük elde edin.',
+    aktif: true,
+  },
+];
 
 export async function getHomepageConfig() {
-  const now = Date.now();
-  if (configCache && now - configCacheTime < 60000) {
-    return configCache;
-  }
   await connectToDatabase();
   let config = await HomepageConfigModel.findOne({ key: 'singleton' }).lean();
   if (!config) {
-    const created = await HomepageConfigModel.create({ key: 'singleton' });
+    const created = await HomepageConfigModel.create({ 
+      key: 'singleton',
+      bosVitrinSliderlar: DEFAULT_HOMEPAGE_PROMOS
+    });
     config = created.toObject();
+  } else if (!config.bosVitrinSliderlar) {
+    config.bosVitrinSliderlar = DEFAULT_HOMEPAGE_PROMOS;
   }
-  configCache = JSON.parse(JSON.stringify(config));
-  configCacheTime = now;
-  return configCache;
+  return JSON.parse(JSON.stringify(config));
 }
-
-const listingsCache = new Map<string, { data: any; time: number }>();
 
 export async function getListings({
   ilSlug,
@@ -101,13 +143,6 @@ export async function getListings({
   kategoriSlug?: string;
   limit?: number;
 }) {
-  const cacheKey = `${ilSlug || ''}_${ilceSlug || ''}_${kategoriSlug || ''}_${limit}`;
-  const cached = listingsCache.get(cacheKey);
-  const now = Date.now();
-  if (cached && now - cached.time < 30000) {
-    return cached.data;
-  }
-
   await connectToDatabase();
 
   const nowDate = new Date();
@@ -139,9 +174,7 @@ export async function getListings({
     .limit(limit)
     .lean();
 
-  const cleanData = JSON.parse(JSON.stringify(listings));
-  listingsCache.set(cacheKey, { data: cleanData, time: now });
-  return cleanData;
+  return JSON.parse(JSON.stringify(listings));
 }
 
 export const getListingBySlug = cache(async (slug: string) => {

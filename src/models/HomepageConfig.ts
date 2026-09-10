@@ -17,6 +17,16 @@ export interface IOzelIlanReklam {
   rozet?: string;
 }
 
+export interface IBosVitrinSlider {
+  _id?: string;
+  gifUrl: string;
+  topBadge: string;
+  trafficBadge: string;
+  title: string;
+  spot: string;
+  aktif: boolean;
+}
+
 export interface IHomepageConfig extends Document {
   key: string;
   hero: {
@@ -33,6 +43,7 @@ export interface IHomepageConfig extends Document {
   ozelIlanReklam: IOzelIlanReklam;
   ozelIlanReklamlar: IOzelIlanReklam[];
   duyurular: ITickerItem[];
+  bosVitrinSliderlar: IBosVitrinSlider[];
   sliderIlanIds: mongoose.Types.ObjectId[];
   oneCikanKategoriler: mongoose.Types.ObjectId[];
 }
@@ -58,6 +69,19 @@ const OzelIlanReklamSchema = new Schema<IOzelIlanReklam>(
     rozet: { type: String, default: '🔥 SPONSORLU ÖZEL İLAN' },
   },
   { _id: false }
+);
+
+const BosVitrinSliderSchema = new Schema<IBosVitrinSlider>(
+  {
+    _id: { type: String },
+    gifUrl: { type: String, required: true },
+    topBadge: { type: String, default: '🔥 VİTRİNDE YERİNİZİ ALIN' },
+    trafficBadge: { type: String, default: 'Günde 50.000+ Canlı Müşteri' },
+    title: { type: String, default: 'İlanınız Bu Vitrinde Dönsün, Telefonunuz Susmasın!' },
+    spot: { type: String, default: 'Türkiye\'nin en çok ziyaret edilen VIP eskort kataloğunun zirvesinde yer alın. WhatsApp hattınıza anında kesintisiz müşteri akışı sağlayın.' },
+    aktif: { type: Boolean, default: true },
+  },
+  { _id: false, strict: false }
 );
 
 const HomepageConfigSchema = new Schema<IHomepageConfig>(
@@ -112,6 +136,56 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
           badge: '⚡ CANLI DESTEK',
           text: '%100 Güvenli & 7/24 Canlı Müşteri Desteği',
           link: '/chat',
+        },
+      ],
+    },
+    bosVitrinSliderlar: {
+      type: [BosVitrinSliderSchema],
+      default: [
+        {
+          _id: 'promo-1',
+          gifUrl: 'https://media.tenor.com/vDokuclgktwAAAAd/barbara-palvin-lingerie.gif',
+          topBadge: '🔥 GÜNDE 50.000+ CANLI MÜŞTERİ',
+          trafficBadge: '💎 EN ÇOK KAZANDIRAN ALAN',
+          title: 'Zirvede Yerini Al, Telefonun Gece Gündüz Çalsın!',
+          spot: 'Türkiye\'nin en popüler eskort vitrininde dakikalar içinde öne çıkın. WhatsApp hattınıza kesintisiz elit müşteri akışı başlatın.',
+          aktif: true,
+        },
+        {
+          _id: 'promo-2',
+          gifUrl: 'https://64.media.tumblr.com/8c1cf789da9ba9a6cca6ee396f6f2dc7/0ed1f7c7e2c38e0a-dc/s500x750/6924e4454a9f477b6d1eaddaf38cb52a1917c51d.gif',
+          topBadge: '👑 VIP VİTRİN İLE KAZANCINI KATLA',
+          trafficBadge: '⚡ ANINDA MÜŞTERİ AKIŞI',
+          title: 'Günde 50.000 Canlı Ziyaretçi Doğrudan Seni Görsün!',
+          spot: 'Sayfaya giren herkesin ilk gördüğü dev vitrinde yerini ayırt. Komisyonsuz, doğrudan ve anında randevularını doldur.',
+          aktif: true,
+        },
+        {
+          _id: 'promo-3',
+          gifUrl: 'https://i.looksmax.org/attachments/2022/12/3217147_booty-bounce-2.gif',
+          topBadge: '💎 LÜKS & SEÇKİN PRESTİJ',
+          trafficBadge: '🔥 %100 GERÇEK MÜŞTERİ',
+          title: 'Bu Vitrinde Parlayın, En Çok Kazanan Siz Olun!',
+          spot: 'Rakiplerinin önüne geç, anasayfanın 1 numaralı vitrinine yerleş. Saatlerce müşteri aramak yerine müşteriler sana yazsın.',
+          aktif: true,
+        },
+        {
+          _id: 'promo-4',
+          gifUrl: 'https://media.tenor.com/7rtlPza-UqcAAAAM/asian.gif',
+          topBadge: '⚡ ANINDA RANDEVU DOLDURMA',
+          trafficBadge: '🚀 GOOGLE & ARAMA LİDERİ',
+          title: 'Vitrine Sabitlenin, Müşteri Mesajlarına Yetişemeyin!',
+          spot: 'Best Eskort VIP vitrini ile tüm şehirden gelen elit müşterilere ilk sırada ulaşın. WhatsApp randevu trafiğinizi hemen katlayın.',
+          aktif: true,
+        },
+        {
+          _id: 'promo-5',
+          gifUrl: 'https://media.tenor.com/UpyRgPYevTMAAAAM/sexy-girl.gif',
+          topBadge: '👑 SINIRSIZ GÖRÜNTÜLENME & GÜÇ',
+          trafficBadge: '🌟 VIP ÖZEL AYRICALIK',
+          title: 'İlanınızı Vitrine Taşıyın, Zirvenin Keyfini Çıkarın!',
+          spot: 'Tek tıkla vitrinde yerinizi alın, profesyonel reklam avantajıyla sınırsız kazanç ve maksimum görünürlük elde edin.',
+          aktif: true,
         },
       ],
     },

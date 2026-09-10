@@ -144,7 +144,7 @@ export default function SearchClient({ locations, initialListings, initialQuery 
 
       {/* Results Grid */}
       {filteredListings.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
           {filteredListings.map((listing) => (
             <CompactListingCard key={listing._id} listing={listing} />
           ))}

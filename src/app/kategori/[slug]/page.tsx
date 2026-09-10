@@ -4,9 +4,11 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { Crown, Award, Medal, Sparkles, ChevronRight, ShieldCheck, MapPin, Globe } from 'lucide-react';
-import { getListings, getAllLocations, getActiveBanner } from '@/lib/data';
+import { getListings, getAllLocations, getActiveBanner, getHomepageConfig } from '@/lib/data';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import HeroSlider from '@/components/home/HeroSlider';
+import { getTopShowcaseSlides } from '@/lib/showcaseHelper';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -14,56 +16,59 @@ interface Props {
 
 export const revalidate = 86400; // 24 saat önbellek (Vercel ISR kota patlamasını önler)
 
-const TIER_META: Record<string, { title: string; subtitle: string; desc: string; icon: any; badgeBg: string; color: string; border: string }> = {
+const TIER_META: Record<string, { title: string; subtitle: string; desc: string; icon: any; badgeBg: string; color: string; border: string; limit?: number }> = {
   vip: {
-    title: 'VIP Eskort İlanları',
-    subtitle: 'Türkiye Geneli En Seçkin & En Üst Sıra VIP Vitrin İlanları',
-    desc: 'Türkiye genelinde 81 il ve tüm ilçelerde %100 doğrulanmış VIP eskort ve escort bayan ilanları. Anasayfada ve aramalarda en üst sırada yer alan seçkin bağımsız profiller.',
+    title: 'VIP KATEGORİ',
+    subtitle: '50 İlan Sınırı • En Yüksek Öncelikli VIP İlanlar',
+    desc: 'Türkiye genelinde 81 il ve tüm ilçelerde %100 doğrulanmış VIP eskort profilleri.',
     icon: Crown,
     badgeBg: 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950',
     color: 'text-amber-400',
     border: 'border-amber-500/70',
+    limit: 50,
   },
   gold: {
-    title: 'Gold Vitrin Eskort İlanları',
-    subtitle: 'Popüler & Yüksek Dönüşümlü İlanlar',
-    desc: 'Gold vitrin kategorisinde yer alan güncel ve teyitli eskort ve escort ilanları rehberi. WhatsApp ve telefon hatlarıyla anında doğrudan iletişim.',
+    title: 'GOLD KATEGORİ',
+    subtitle: '100 İlan Sınırı • Popüler Gold Kategori İlanları',
+    desc: 'Maksimum 100 kontenjanla sınırlandırılmış güncel ve teyitli Gold kategori ilanları.',
     icon: Award,
     badgeBg: 'bg-amber-600 text-white',
     color: 'text-amber-300',
     border: 'border-amber-600/50',
+    limit: 100,
   },
   silver: {
-    title: 'Silver Standart Eskort İlanları',
-    subtitle: 'Güncel Doğrulanmış Üye İlanları',
-    desc: 'Türkiye genelindeki standart liste ve güncel eskort / escort ilanları. Bölgesel aramalar ve doğrudan WhatsApp ile iletişim.',
+    title: 'SILVER KATEGORİ',
+    subtitle: '200 İlan Sınırı • Standart Silver Kategori İlanları',
+    desc: 'Maksimum 200 kontenjanla sınırlandırılmış güncel Silver kategori ilanları.',
     icon: Medal,
     badgeBg: 'bg-slate-700 text-slate-200',
     color: 'text-slate-300',
     border: 'border-slate-600/50',
+    limit: 200,
   },
   turbanli: {
-    title: 'Türbanlı Eskort Bayan İlanları',
-    subtitle: 'Doğrulanmış ve Teyitli Türbanlı Modeller',
-    desc: 'Türkiye genelinde 81 ilde hizmet veren bağımsız ve doğrulanmış türbanlı eskort bayan ilanları. WhatsApp ve doğrudan iletişim numaraları.',
+    title: 'TÜRBANLI KATEGORİ',
+    subtitle: 'Doğrulanmış Türbanlı Modeller',
+    desc: 'Türkiye genelinde hizmet veren doğrulanmış türbanlı eskort profilleri.',
     icon: Sparkles,
     badgeBg: 'bg-rose-600 text-white',
     color: 'text-rose-400',
     border: 'border-rose-500/50',
   },
   amator: {
-    title: 'Amatör & Bağımsız Eskort İlanları',
-    subtitle: 'Bireysel ve Ajanssız Gerçek İlanlar',
-    desc: 'Kendi evinde, otelde ve rezidansta hizmet veren bağımsız amatör Türk eskort bayan profilleri. Güvenilir ve aracısız iletişim.',
+    title: 'AMATÖR KATEGORİ',
+    subtitle: 'Bireysel & Bağımsız Modeller',
+    desc: 'Kendi evinde ve otelde hizmet veren bağımsız gerçek amatör profiller.',
     icon: ShieldCheck,
     badgeBg: 'bg-emerald-600 text-white',
     color: 'text-emerald-400',
     border: 'border-emerald-500/50',
   },
   tango: {
-    title: 'Tango & Canlı Yayın Eskort İlanları',
-    subtitle: 'Tango Yayıncıları & Özel Eşlik Modelleri',
-    desc: 'Tango canlı yayın modelleri ve özel davet eşlik bayanları. WhatsApp ile doğrudan randevu ve görüşme detayları.',
+    title: 'TANGO KATEGORİ',
+    subtitle: 'Tango Yayıncıları & Modeller',
+    desc: 'Tango canlı yayın modelleri ve özel davet eşlik profilleri.',
     icon: Globe,
     badgeBg: 'bg-purple-600 text-white',
     color: 'text-purple-400',
@@ -142,10 +147,11 @@ export default async function CategoryDetailPage({ params }: Props) {
     notFound();
   }
 
-  const [allListings, locations, activeBanner] = await Promise.all([
-    getListings({ limit: 120 }),
+  const [allListings, locations, activeBanner, homepageConfig] = await Promise.all([
+    getListings({ limit: 150 }),
     getAllLocations(),
     getActiveBanner('ilan_detay'),
+    getHomepageConfig(),
   ]);
 
   // Filter listings by this specific tier (combining ultravip into vip)
@@ -154,6 +160,9 @@ export default async function CategoryDetailPage({ params }: Props) {
     if (slug === 'silver') return l.rozet === 'silver' || !l.rozet || l.rozet === 'standart';
     return l.rozet === slug;
   });
+
+  // Bu kategorinin en çok görüntülenen 1-2 vitrin ilanı
+  const showcaseSlides = getTopShowcaseSlides(categoryListings, 2);
 
   const Icon = tierInfo.icon;
   const siteUrl = getSiteUrl();
@@ -167,112 +176,110 @@ export default async function CategoryDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4 px-2 sm:px-4 py-2 pb-16 w-full max-w-4xl mx-auto text-left">
+    <div className="flex flex-col gap-3 pb-12 w-full max-w-full text-left">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-      {/* Hero Header Banner (Entegre, Dengeli & Lüks Kartvizit Başlık) */}
-      <div className={`relative p-3 sm:p-4 rounded-2xl ${
-        slug === 'vip'
-          ? 'bg-gradient-to-r from-[#ffd700] via-[#f59e0b] to-[#b45309] text-slate-950 shadow-xl shadow-amber-500/30 border border-amber-300'
-          : slug === 'gold'
-          ? 'bg-gradient-to-r from-[#2b210a] via-[#1a1406] to-[#0f0b02] text-amber-200 shadow-lg shadow-black/80 border border-amber-500/60'
-          : 'bg-gradient-to-r from-[#222a36] via-[#161c24] to-[#0d1218] text-slate-100 shadow-lg shadow-black/80 border border-slate-400/50'
-      } overflow-hidden`}>
-        {/* İÇ ÇİFT ÇERÇEVE */}
-        <div className={`rounded-xl border-2 ${
-          slug === 'vip'
-            ? 'border-slate-950/60'
-            : slug === 'gold'
-            ? 'border-amber-400/50'
-            : 'border-slate-300/40'
-        } p-3 sm:p-4 flex flex-col gap-2 relative overflow-hidden text-left`}>
-          
-          {/* ÜST SATIR: İkon + Başlık + Sağda İlan Sayacı */}
-          <div className="flex items-center justify-between gap-2 w-full">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center shrink-0 ${
-                slug === 'vip'
-                  ? 'bg-slate-950 text-amber-400 border-slate-950 shadow-md'
-                  : slug === 'gold'
-                  ? 'bg-black/60 text-amber-400 border-amber-400/40 shadow-md'
-                  : 'bg-black/60 text-slate-200 border-slate-400/40 shadow-md'
-              }`}>
-                <span className="text-base sm:text-lg">{slug === 'vip' ? '👑' : slug === 'gold' ? '⭐' : '⚡'}</span>
-              </div>
+      {/* ── 1. KATEGORİ ÖZEL VİTRİN SLIDER (Edge-to-Edge Sıfır Kenar) ──────────────── */}
+      <section className="w-full">
+        <HeroSlider 
+          slides={showcaseSlides}
+          promoSlides={homepageConfig?.bosVitrinSliderlar}
+          banner={activeBanner}
+        />
+      </section>
 
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className={`text-[8px] sm:text-[9px] font-heading font-black tracking-[0.16em] uppercase truncate ${
-                    slug === 'vip' ? 'text-slate-950' : slug === 'gold' ? 'text-amber-400' : 'text-slate-300'
-                  }`}>
-                    {slug === 'vip' ? 'VIP İLAN' : slug === 'gold' ? 'GOLD İLAN' : 'SILVER İLAN'}
-                  </span>
-                  <span className="text-[9px] opacity-60">✦</span>
-                </div>
-                <h1 className={`font-heading font-black text-base sm:text-xl tracking-tight leading-none truncate ${
-                  slug === 'vip' ? 'text-slate-950' : slug === 'gold' ? 'text-amber-200' : 'text-white'
-                }`}>
-                  {tierInfo.title}
-                </h1>
-              </div>
-            </div>
-
-            {/* İlan Sayısı Kapsülü */}
-            <span className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl text-[10px] sm:text-xs font-mono font-black shrink-0 shadow-md ${
-              slug === 'vip'
-                ? 'bg-slate-950 text-amber-300 border-2 border-slate-950'
-                : slug === 'gold'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
-                : 'bg-white/10 text-slate-200 border border-white/10'
-            }`}>
-              {categoryListings.length} AKTİF İLAN
-            </span>
-          </div>
-
-          {/* ALT SATIR: Açıklama Metni */}
-          <p className={`text-xs leading-relaxed font-medium line-clamp-2 pt-1 border-t border-current/10 ${
-            slug === 'vip' ? 'text-slate-950/85' : slug === 'gold' ? 'text-amber-300/80' : 'text-[#8b949e]'
-          }`}>
-            {tierInfo.desc}
-          </p>
-        </div>
-      </div>
-
-      {/* ── SPONSORLU VIP BANNER REKLAM ALANI ──────────────── */}
-      <div className="w-full -mx-4 sm:mx-0 w-[calc(100%+2rem)] sm:w-full">
+      {/* ── 2. SPONSORLU VIP BANNER REKLAM ALANI (Reklam Üstte) ──────────────── */}
+      <div className="w-full px-0">
         <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
       </div>
 
-      {/* Listings Grid */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between px-1">
-          <span className="font-black text-xs uppercase tracking-wider text-white font-heading flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>{tierInfo.title} Listesi</span>
-          </span>
-          <span className="text-xs text-[#8b949e] font-mono">Toplam {categoryListings.length} İlan</span>
-        </div>
+      {/* ── 3. PREMİUM LÜKS VİTRİN KARTI ──────────────── */}
+      <div className="w-full px-2 sm:px-4 max-w-4xl mx-auto">
+        <div className={`relative w-full rounded-2xl sm:rounded-3xl p-4 sm:p-6 transition-all duration-300 shadow-2xl overflow-hidden ${
+          slug === 'vip'
+            ? 'bg-gradient-to-br from-[#ffd700] via-[#f59e0b] to-[#b45309] text-slate-950 ring-2 ring-amber-300 ring-offset-2 ring-offset-[#0d1117] shadow-amber-500/25'
+            : slug === 'gold'
+            ? 'bg-gradient-to-br from-[#2b210a] via-[#1a1406] to-[#0f0b02] text-amber-200 border-2 border-amber-500/50 shadow-amber-950/40'
+            : slug === 'silver'
+            ? 'bg-gradient-to-br from-[#222a36] via-[#161c24] to-[#0d1218] text-slate-100 border-2 border-slate-400/40 shadow-slate-950/40'
+            : 'bg-gradient-to-br from-[#1c160c] via-[#161b22] to-[#12161c] text-white border-2 border-amber-500/40'
+        }`}>
+          {/* VIP İçin Özel Arka Plan Parlama Efekti */}
+          {slug === 'vip' && (
+            <div className="absolute -right-12 -top-12 w-48 h-48 bg-white/20 rounded-full blur-3xl pointer-events-none" />
+          )}
 
-        {categoryListings.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-            {categoryListings.map((listing: any) => (
-              <CompactListingCard key={listing._id} listing={listing} />
-            ))}
+          <div className="relative z-10 flex flex-col items-center justify-center text-center gap-1.5 sm:gap-2">
+            {/* İkon (Arka plansız, doğrudan solda) + Başlık + İlan Sayacı */}
+            <div className="flex items-center justify-center gap-2.5 sm:gap-3 flex-wrap">
+              <Icon className={`w-6 h-6 sm:w-8 sm:h-8 stroke-[2.5] shrink-0 ${
+                slug === 'vip' ? 'text-slate-950' : slug === 'gold' ? 'text-amber-400' : 'text-slate-200'
+              }`} />
+
+              <h1 className={`font-heading font-black text-2xl sm:text-3xl md:text-4xl tracking-tight leading-none ${
+                slug === 'vip' ? 'text-slate-950 drop-shadow-sm' : slug === 'gold' ? 'text-amber-300' : 'text-white'
+              }`}>
+                {tierInfo.title}
+              </h1>
+
+              {/* BAŞLIĞIN YANINDAKİ İLAN SAYACI */}
+              <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-mono font-black shadow-md tracking-wider flex items-center gap-1.5 shrink-0 ${
+                slug === 'vip'
+                  ? 'bg-slate-950 text-amber-300 border border-slate-900'
+                  : slug === 'gold'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
+                  : 'bg-white/10 text-slate-200 border border-white/15'
+              }`}>
+                <Sparkles className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                <span>{categoryListings.length}{tierInfo.limit ? ` / ${tierInfo.limit}` : ''} İLAN</span>
+              </span>
+            </div>
+
+            {/* Açıklama Alt Başlık (Ortalı) */}
+            <p className={`text-xs sm:text-sm font-semibold max-w-xl text-center leading-relaxed ${
+              slug === 'vip' ? 'text-slate-950/85 font-bold' : slug === 'gold' ? 'text-amber-200/80' : 'text-slate-300'
+            }`}>
+              {tierInfo.subtitle}
+            </p>
           </div>
-        ) : (
-          <div className="p-12 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center gap-3">
-            <Icon className="w-10 h-10 text-[#484f58]" />
-            <h3 className="font-bold text-sm text-white font-heading">Bu kademede henüz ilan bulunmuyor.</h3>
-            <p className="text-xs text-[#8b949e]">İlk ilanı siz ekleyerek bu vitrinde en üst sırada yer alabilirsiniz.</p>
-            <Link
-              href="/ilan-ver"
-              className="mt-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg"
-            >
-              Hemen İlan Ver
-            </Link>
+        </div>
+      </div>
+
+      {/* ── İÇERİK GÖVDESİ (Padding & Max-Width) ──────────────── */}
+      <div className="flex flex-col gap-3 sm:gap-4 px-2 sm:px-4 w-full max-w-4xl mx-auto">
+
+        {/* ── 4. 3'LÜ YAN YANA İLAN GRID LİSTESİ ──────────────── */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between px-1">
+            <span className="font-black text-xs uppercase tracking-wider text-white font-heading flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>{tierInfo.title} Listesi</span>
+            </span>
+            <span className="text-xs text-[#8b949e] font-mono">Toplam {categoryListings.length} İlan</span>
           </div>
-        )}
+
+          {categoryListings.length > 0 ? (
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+              {categoryListings.map((listing: any) => (
+                <CompactListingCard key={listing._id} listing={listing} />
+              ))}
+            </div>
+          ) : (
+            <div className="p-12 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center gap-3">
+              <Icon className="w-10 h-10 text-[#484f58]" />
+              <h3 className="font-bold text-sm text-white font-heading">Bu kademede henüz ilan bulunmuyor.</h3>
+              <p className="text-xs text-[#8b949e]">İlk ilanı siz ekleyerek bu vitrinde en üst sırada yer alabilirsiniz.</p>
+              <Link
+                href="/ilan-ver"
+                className="mt-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg"
+              >
+                Hemen İlan Ver
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
