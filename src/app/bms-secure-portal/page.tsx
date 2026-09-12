@@ -45,7 +45,6 @@ export default function BmsSecurePortalDashboard() {
   const [scanningRankings, setScanningRankings] = useState(false);
   const [newKeywordInput, setNewKeywordInput] = useState('');
   const [testDomainInput, setTestDomainInput] = useState('');
-  const [seoEngineTab, setSeoEngineTab] = useState<'both' | 'google' | 'yandex'>('both');
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
   const [boostingPing, setBoostingPing] = useState(false);
@@ -1487,54 +1486,25 @@ export default function BmsSecurePortalDashboard() {
           </div>
 
           {/* ── BÖLÜM 2: CANLI GOOGLE & YANDEX SIRALAMA TAKİP MOTORU (DUAL SERP TRACKER) ── */}
+          {/* YANDEX CANLI SERP MOTORU */}
           <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-6">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
               <div>
                 <div className="flex items-center gap-3 flex-wrap">
                   <h2 className="font-black text-lg sm:text-xl text-white font-heading flex items-center gap-2">
-                    <span>Google &amp; Yandex Canlı SERP Sıralama &amp; Rakip Takip Motoru</span>
+                    <span>🟡 Yandex TR Canlı SERP Sıralama &amp; Rakip Takip Motoru</span>
                   </h2>
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono">
                     {keywordList.length} Kelime Takipte
                   </span>
                 </div>
                 <p className="text-xs text-[#8b949e] mt-1">
-                  Hedef kelimelerinizde <strong>Google Türkiye</strong> ve <strong>Yandex Türkiye</strong>'deki anlık sıranızı, değişimleri ve rakipleri canlı izleyin.
+                  Hedef kelimelerinizde <strong>Yandex Türkiye</strong>'deki anlık sıranızı, değişimleri ve gerçek rakipleri canlı izleyin.
                 </p>
               </div>
 
-              {/* Arama Motoru Filtresi & Canlı Tara Butonu */}
+              {/* Butonlar */}
               <div className="flex flex-wrap items-center gap-2.5">
-                <div className="flex items-center bg-[#0d1117] border border-[#30363d] rounded-xl p-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setSeoEngineTab('both')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                      seoEngineTab === 'both' ? 'bg-amber-500 text-slate-950 font-black' : 'text-[#8b949e] hover:text-white'
-                    }`}
-                  >
-                    Tüm Motorlar (Çift Görünüm)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSeoEngineTab('google')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                      seoEngineTab === 'google' ? 'bg-blue-600 text-white font-black' : 'text-[#8b949e] hover:text-white'
-                    }`}
-                  >
-                    Google TR 🔴
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSeoEngineTab('yandex')}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
-                      seoEngineTab === 'yandex' ? 'bg-red-600 text-white font-black' : 'text-[#8b949e] hover:text-white'
-                    }`}
-                  >
-                    Yandex TR 🟡
-                  </button>
-                </div>
-
                 <button
                   type="button"
                   onClick={() => handleBoostAndPing()}
@@ -1553,7 +1523,7 @@ export default function BmsSecurePortalDashboard() {
                   className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
                 >
                   <Zap className={`w-4 h-4 ${scanningRankings ? 'animate-spin text-slate-950' : 'fill-slate-950'}`} />
-                  <span>{scanningRankings ? 'Google & Yandex Taranıyor...' : '⚡ Tüm Sıralamaları Canlı Tara'}</span>
+                  <span>{scanningRankings ? 'Yandex Taranıyor...' : '⚡ Tüm Sıralamaları Canlı Tara'}</span>
                 </button>
               </div>
             </div>
@@ -1592,18 +1562,8 @@ export default function BmsSecurePortalDashboard() {
                 <thead>
                   <tr className="border-b border-[#30363d] text-[11px] font-black text-[#8b949e] uppercase tracking-wider">
                     <th className="py-3 px-3">Anahtar Kelime</th>
-                    {(seoEngineTab === 'both' || seoEngineTab === 'google') && (
-                      <>
-                        <th className="py-3 px-3 text-blue-400">Google TR Sırası</th>
-                        <th className="py-3 px-3 text-blue-400">Google Değişim</th>
-                      </>
-                    )}
-                    {(seoEngineTab === 'both' || seoEngineTab === 'yandex') && (
-                      <>
-                        <th className="py-3 px-3 text-amber-400">Yandex TR Sırası</th>
-                        <th className="py-3 px-3 text-amber-400">Yandex Değişim</th>
-                      </>
-                    )}
+                    <th className="py-3 px-3 text-amber-400">Yandex TR Sırası</th>
+                    <th className="py-3 px-3 text-amber-400">Yandex Değişim</th>
                     <th className="py-3 px-3">Önümüzdeki Rakipler</th>
                     <th className="py-3 px-3">Son Tarama</th>
                     <th className="py-3 px-3 text-right">İşlemler</th>
@@ -1611,15 +1571,11 @@ export default function BmsSecurePortalDashboard() {
                 </thead>
                 <tbody className="divide-y divide-[#21262d]">
                   {keywordList.map((item: any) => {
-                    const posG = item.currentPosition || 0;
-                    const changeG = item.change || 0;
                     const posY = item.yandexPosition || 0;
                     const changeY = item.yandexChange || 0;
 
-                    const renderPosBadge = (pos: number, engine: 'google' | 'yandex', keyword: string) => {
-                      const searchUrl = engine === 'google'
-                        ? `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}`
-                        : `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`;
+                    const renderPosBadge = (pos: number, keyword: string) => {
+                      const searchUrl = `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`;
 
                       let badgeContent = null;
                       if (pos > 0 && pos <= 3) {
@@ -1660,7 +1616,7 @@ export default function BmsSecurePortalDashboard() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group inline-block"
-                          title={`${engine === 'google' ? 'Google TR' : 'Yandex TR'} üzerinde canlı sonuçları yeni sekmede gör`}
+                          title="Yandex TR üzerinde canlı sonuçları yeni sekmede gör"
                         >
                           {badgeContent}
                         </a>
@@ -1705,38 +1661,24 @@ export default function BmsSecurePortalDashboard() {
                           <span className="font-bold text-xs text-white capitalize font-heading block">
                             {item.keyword}
                           </span>
-                          <span className="text-[10px] text-[#8b949e]">Türkiye Arama Ağı</span>
+                          <span className="text-[10px] text-[#8b949e]">Yandex Türkiye</span>
                         </td>
 
-                        {/* Google Sırası ve Değişimi */}
-                        {(seoEngineTab === 'both' || seoEngineTab === 'google') && (
-                          <>
-                            <td className="py-3.5 px-3">
-                              {renderPosBadge(posG, 'google', item.keyword)}
-                            </td>
-                            <td className="py-3.5 px-3">
-                              {renderChangeBadge(changeG, posG)}
-                            </td>
-                          </>
-                        )}
+                        {/* Yandex Sırası */}
+                        <td className="py-3.5 px-3">
+                          {renderPosBadge(posY, item.keyword)}
+                        </td>
 
-                        {/* Yandex Sırası ve Değişimi */}
-                        {(seoEngineTab === 'both' || seoEngineTab === 'yandex') && (
-                          <>
-                            <td className="py-3.5 px-3">
-                              {renderPosBadge(posY, 'yandex', item.keyword)}
-                            </td>
-                            <td className="py-3.5 px-3">
-                              {renderChangeBadge(changeY, posY)}
-                            </td>
-                          </>
-                        )}
+                        {/* Yandex Değişimi */}
+                        <td className="py-3.5 px-3">
+                          {renderChangeBadge(changeY, posY)}
+                        </td>
 
                         {/* Rakipler */}
                         <td className="py-3.5 px-3">
-                          {item.topCompetitors && item.topCompetitors.length > 0 ? (
+                          {item.yandexCompetitors && item.yandexCompetitors.length > 0 ? (
                             <div className="flex flex-wrap gap-1 max-w-xs">
-                              {item.topCompetitors.slice(0, 2).map((c: any, cIdx: number) => (
+                              {item.yandexCompetitors.slice(0, 2).map((c: any, cIdx: number) => (
                                 <span
                                   key={cIdx}
                                   className="text-[10px] px-2 py-0.5 rounded bg-[#0d1117] border border-[#30363d] text-[#8b949e] font-mono truncate max-w-[140px]"
