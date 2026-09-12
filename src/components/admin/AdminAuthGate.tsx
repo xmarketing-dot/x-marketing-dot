@@ -108,7 +108,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   useEffect(() => {
     if (!isAuthenticated) return;
     fetchBadges();
-    const interval = setInterval(fetchBadges, 6000);
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      fetchBadges();
+    }, 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated, pathname]);
 

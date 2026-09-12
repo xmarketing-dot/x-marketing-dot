@@ -34,7 +34,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export const revalidate = 86400; // 24 saat önbellek (Vercel ISR kota patlamasını önler)
+export const revalidate = 3600; // 1 saat — ilan güncellemeleri ve yeni ilanlar hızlı yansısın
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -150,6 +150,26 @@ export default async function ListingDetailPage({ params }: Props) {
   const prefilledMessage = `Merhaba, ben ${listingFullUrl} adresindeki "${locationLabel} — ${listing.baslik}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;
   const waUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(prefilledMessage)}`;
 
+  // İl bazlı gerçek koordinat haritası
+  const geoMap: Record<string, { lat: number; lng: number }> = {
+    istanbul: { lat: 41.0082, lng: 28.9784 },
+    ankara: { lat: 39.9334, lng: 32.8597 },
+    izmir: { lat: 38.4237, lng: 27.1428 },
+    antalya: { lat: 36.8969, lng: 30.7133 },
+    bursa: { lat: 40.1826, lng: 29.0665 },
+    adana: { lat: 37.0, lng: 35.3213 },
+    konya: { lat: 37.8714, lng: 32.4846 },
+    gaziantep: { lat: 37.0662, lng: 37.3833 },
+    samsun: { lat: 41.2867, lng: 36.33 },
+    mersin: { lat: 36.8, lng: 34.6333 },
+    trabzon: { lat: 41.0015, lng: 39.7178 },
+    kayseri: { lat: 38.7312, lng: 35.4787 },
+    eskisehir: { lat: 39.7767, lng: 30.5206 },
+    diyarbakir: { lat: 37.9144, lng: 40.2306 },
+    denizli: { lat: 37.7765, lng: 29.0864 },
+  };
+  const geo = geoMap[listing.ilSlug] || { lat: 39.9334, lng: 32.8597 };
+
   // Rich Schema.org JSON-LD
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -169,6 +189,7 @@ export default async function ListingDetailPage({ params }: Props) {
         description: listing.aciklama,
         image: allImages.map((f: any) => f.url),
         telephone: listing.whatsappNumara,
+        url: canonicalUrl,
         address: {
           '@type': 'PostalAddress',
           addressLocality: ilceAdi,
@@ -177,15 +198,25 @@ export default async function ListingDetailPage({ params }: Props) {
         },
         geo: {
           '@type': 'GeoCoordinates',
-          latitude: 41.0082,
-          longitude: 28.9784,
+          latitude: geo.lat,
+          longitude: geo.lng,
         },
         priceRange: '₺₺₺',
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.9',
-          reviewCount: '34',
+        // NOT: Sahte AggregateRating kullanılmıyor — Google Spam Policy ihlali önlendi
+      },
+      {
+        '@type': 'Person',
+        name: listing.baslik,
+        jobTitle: `${ilceAdi} VIP Eskort`,
+        url: canonicalUrl,
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: ilceAdi,
+          addressRegion: ilAdi,
+          addressCountry: 'TR',
         },
+        image: allImages[0]?.url || undefined,
+        telephone: listing.whatsappNumara || undefined,
       },
     ],
   };

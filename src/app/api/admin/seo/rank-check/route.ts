@@ -451,7 +451,7 @@ export async function POST(req: NextRequest) {
       previousPosition: googleResult.position,
       change: 0,
       bestPosition: googleResult.position,
-      topCompetitors: yandexResult.competitors.length > 0 ? yandexResult.competitors : googleResult.competitors,
+      topCompetitors: googleResult.competitors,
       yandexPosition: yandexResult.position,
       previousYandexPosition: yandexResult.position,
       yandexChange: 0,
@@ -512,7 +512,7 @@ export async function PUT(req: NextRequest) {
       item.currentPosition = currG;
       item.change = changeG;
       item.bestPosition = bestG;
-      item.topCompetitors = yandexResult.competitors.length > 0 ? yandexResult.competitors : googleResult.competitors;
+      item.topCompetitors = googleResult.competitors;
 
       item.previousYandexPosition = prevY;
       item.yandexPosition = currY;

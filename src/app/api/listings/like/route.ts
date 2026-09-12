@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     // Determine current base likes
     let currentLikes = typeof listing.likeSayisi === 'number' && listing.likeSayisi > 0
       ? listing.likeSayisi
-      : (listing.rozet === 'ultravip' ? 112 : listing.rozet === 'vip' ? 74 : listing.rozet === 'gold' ? 48 : 28);
+      : (listing.rozet === 'ultravip' ? 3850 : listing.rozet === 'vip' ? 2450 : listing.rozet === 'gold' ? 1720 : 1240);
 
     currentLikes = Math.max(0, currentLikes + (action === 'unlike' ? -1 : 1));
     listing.likeSayisi = currentLikes;

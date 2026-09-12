@@ -52,9 +52,14 @@ export async function POST(req: NextRequest) {
         `${siteUrl}/sehirler`
       );
 
-      // Şehirler
-      locations.slice(0, 30).forEach((loc: any) => {
+      // Tüm 81 İl ve İlçeler
+      locations.forEach((loc: any) => {
         urlsToSubmit.push(`${siteUrl}/${loc.ilSlug}`);
+        if (Array.isArray(loc.ilceler)) {
+          loc.ilceler.forEach((ilce: any) => {
+            if (ilce.slug) urlsToSubmit.push(`${siteUrl}/${loc.ilSlug}/${ilce.slug}`);
+          });
+        }
       });
 
       // İlanlar

@@ -518,7 +518,7 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
                   title="WhatsApp ile Reklam Ver"
                 >
                   <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-white shrink-0" />
-                  <span className="truncate">WhatsApp ile Reklam Ver</span>
+                  <span className="truncate">REKLAM VER</span>
                 </a>
 
                 <button

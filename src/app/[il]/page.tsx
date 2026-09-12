@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const il = location.il;
 
   return {
-    title: `${il} Escort Eskort Bayan İlanları 2026 | ${il} Vip Escort | ${il} Bağımsız Eskort | ${il} WhatsApp Eskort | Best Eskort`,
+    title: `${il} Escort ve Eskort Bayan İlanları 2026 | Best Eskort`,
     description: `${il} eskort ve escort bayan ilanları 2026. Doğrulanmış bağımsız eskort, VIP vitrin, ${il} vip eskort, ${il} amatör eskort, ${il} türbanlı eskort, ${il} tango eskort, ${il} eve gelen eskort, ${il} otele gelen escort, ${il} whatsapp eskort, ${il} telegram eskort, ${il} eskort numaraları, ${il} escort bayan, ${il} eskort bayan ilanları, ${il} lüks eskort, ${il} premium escort, ${il} ucuz eskort, ${il} özel eskort, ${il} masaj eskort, ${il} companion bayan, ${il} call girl, güncel teyitli ${il} eskort rehberi.`,
     keywords: [
       // Ana varyasyonlar

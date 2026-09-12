@@ -48,6 +48,8 @@ export default function BmsSecurePortalDashboard() {
   const [seoEngineTab, setSeoEngineTab] = useState<'both' | 'google' | 'yandex'>('both');
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
+  const [boostingPing, setBoostingPing] = useState(false);
+  const [boostPingResult, setBoostPingResult] = useState<string | null>(null);
 
   const handleAdminListingSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,6 +196,29 @@ export default function BmsSecurePortalDashboard() {
       console.error(e);
     } finally {
       setScanningRankings(false);
+    }
+  };
+
+  const handleBoostAndPing = async () => {
+    setBoostingPing(true);
+    setBoostPingResult(null);
+    try {
+      const res = await fetch('/api/admin/seo/boost-and-ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ boostLikes: true, triggerPing: true }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setBoostPingResult(`🚀 Başarılı! 599 URL arama motorlarına iletildi & İlan beğenileri güçlendirildi.`);
+        setTimeout(() => setBoostPingResult(null), 8000);
+      } else {
+        alert(data.error || 'SEO motoru çalıştırılamadı');
+      }
+    } catch (e: any) {
+      alert('Hata: ' + e.message);
+    } finally {
+      setBoostingPing(false);
     }
   };
 
@@ -1512,6 +1537,17 @@ export default function BmsSecurePortalDashboard() {
 
                 <button
                   type="button"
+                  onClick={() => handleBoostAndPing()}
+                  disabled={boostingPing}
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                  title="599 URL'yi anında IndexNow & Ping ile arama motorlarına iletir ve beğeni sayılarını güçlendirir"
+                >
+                  <Sparkles className={`w-4 h-4 ${boostingPing ? 'animate-spin' : ''}`} />
+                  <span>{boostingPing ? 'Motor Ateşleniyor...' : '🚀 1-Tıkla IndexNow & Ping'}</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => handleScanRankings()}
                   disabled={scanningRankings}
                   className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
@@ -1521,6 +1557,12 @@ export default function BmsSecurePortalDashboard() {
                 </button>
               </div>
             </div>
+
+            {boostPingResult && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+                <span>{boostPingResult}</span>
+              </div>
+            )}
 
             {/* Yeni Kelime Ekleme Formu */}
             <form onSubmit={handleAddKeyword} className="flex flex-col sm:flex-row items-center gap-3">

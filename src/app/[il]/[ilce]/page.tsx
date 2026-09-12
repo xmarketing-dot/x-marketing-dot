@@ -48,151 +48,60 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = getCanonicalUrlForLocation(siteUrl, location.ilSlug, ilceSlug);
   const il = location.il;
 
+  // Komşu ilçeler (semantik kümeleme — rakip stratejisi: bolgedeş ilçeleri title'da birleştir)
+  const neighborDistricts = location.ilceler
+    .filter((d: any) => d.slug !== ilceSlug)
+    .slice(0, 2)
+    .map((d: any) => d.ad);
+  const neighborSuffix = neighborDistricts.length > 0
+    ? ` | ${neighborDistricts.join(' Escort ')} Escort`
+    : '';
+
   return {
-    title: `${districtName} Escort Eskort Bayan İlanları 2026 | ${il} ${districtName} Vip Escort | ${districtName} Bağımsız Eskort | ${districtName} WhatsApp Eskort | Best Eskort`,
-    description: `${il} ${districtName} eskort ve escort bayan ilanları 2026. Doğrulanmış bağımsız eskort, VIP vitrin, ${districtName} vip eskort, ${districtName} amatör eskort, ${districtName} türbanlı eskort, ${districtName} tango eskort, ${districtName} eve gelen eskort, ${districtName} otele gelen escort, ${districtName} whatsapp eskort, ${districtName} telegram eskort, ${districtName} eskort numaraları, ${districtName} escort bayan, ${districtName} eskort bayan ilanları, ${districtName} lüks eskort, ${districtName} premium escort, ${districtName} ucuz eskort, ${districtName} özel eskort, ${districtName} masaj eskort, ${districtName} companion bayan, ${districtName} call girl, güncel teyitli ${il} ${districtName} eskort rehberi.`,
+    title: `${districtName} Escort ❤️ VIP Eskort Bayan | ${il} Best Eskort`,
+    description: `⭐ ${il} ${districtName} escort ve eskort bayan ilanı 2026. Teyitli VIP, bağımsız, türbanlı, amatör, eve gelen, otele gelen escort. WhatsApp ile anında ulaşın. — Best Eskort`,
     keywords: [
-      // İlçe Ana varyasyonlar
-      `${districtName} eskort`,
+      // Ana hedef kelimeler (kısa ve güçlü)
       `${districtName} escort`,
-      `${districtName} eskort bayan`,
+      `${districtName} eskort`,
       `${districtName} escort bayan`,
-      `${districtName} eskort ilanları`,
-      `${districtName} escort ilanları`,
-      `${districtName} eskort bayan ilanları`,
-      `${districtName} escort bayan ilanları`,
-      `${districtName} bağımsız eskort`,
-      `${districtName} bağımsız escort`,
-      `${districtName} vip eskort`,
+      `${districtName} eskort bayan`,
       `${districtName} vip escort`,
-      `${districtName} vip eskort bayan`,
-      `${districtName} vip escort bayan`,
-      `${districtName} whatsapp eskort`,
-      `${districtName} whatsapp escort`,
-      `${districtName} telegram eskort`,
-      `${districtName} telegram escort`,
-      `${districtName} amatör eskort`,
-      `${districtName} amatör escort`,
-      `${districtName} türbanlı eskort`,
-      `${districtName} türbanlı escort`,
-      `${districtName} tango eskort`,
-      `${districtName} tango escort`,
-      `${districtName} eve gelen eskort`,
-      `${districtName} eve gelen escort`,
-      `${districtName} otele gelen eskort`,
-      `${districtName} otele gelen escort`,
-      `${districtName} eskort numaraları`,
-      `${districtName} escort numaraları`,
-      `${districtName} eskort numarası`,
-      `${districtName} escort numarası`,
+      `${districtName} vip eskort`,
+      `${districtName} escort bayan ilanları`,
+      `${districtName} eskort ilanları`,
 
-      // İl + İlçe kombinasyonları
-      `${il} ${districtName} eskort`,
+      // İl + ilçe kombinasyonları
       `${il} ${districtName} escort`,
-      `${il} ${districtName} eskort bayan`,
+      `${il} ${districtName} eskort`,
       `${il} ${districtName} escort bayan`,
-      `${districtName} ${il} eskort`,
-      `${districtName} ${il} escort`,
-
-      // 2026 + güncel + teyitli
-      `${districtName} eskort 2026`,
-      `${districtName} escort 2026`,
-      `${districtName} eskort ilanları 2026`,
-      `${districtName} escort ilanları 2026`,
-      `${districtName} güncel eskort`,
-      `${districtName} güncel escort`,
-      `${districtName} teyitli eskort`,
-      `${districtName} teyitli escort`,
-      `${districtName} doğrulanmış eskort`,
-      `${districtName} doğrulanmış escort`,
-      `${districtName} gerçek eskort`,
-      `${districtName} gerçek escort`,
-
-      // Lüks / Premium / Ucuz / Özel
-      `${districtName} lüks eskort`,
-      `${districtName} lüks escort`,
-      `${districtName} premium eskort`,
-      `${districtName} premium escort`,
-      `${districtName} ucuz eskort`,
-      `${districtName} ucuz escort`,
-      `${districtName} özel eskort`,
-      `${districtName} özel escort`,
-      `${districtName} elit eskort`,
-      `${districtName} elit escort`,
-      `${districtName} kaliteli eskort`,
-      `${districtName} kaliteli escort`,
-
-      // Masaj / Companion / Call girl
-      `${districtName} masaj eskort`,
-      `${districtName} masaj escort`,
-      `${districtName} companion`,
-      `${districtName} companion bayan`,
-      `${districtName} call girl`,
-      `${districtName} callgirl`,
-      `${districtName} escort girl`,
-      `${districtName} eskort girl`,
-
-      // İletişim odaklı
-      `${districtName} eskort whatsapp`,
-      `${districtName} escort whatsapp`,
-      `${districtName} eskort telegram`,
-      `${districtName} escort telegram`,
-      `${districtName} eskort telefon`,
-      `${districtName} escort telefon`,
-      `${districtName} eskort iletişim`,
-      `${districtName} escort iletişim`,
-      `${districtName} eskort hattı`,
-      `${districtName} escort hattı`,
 
       // Hizmet odaklı
-      `${districtName} eve gelen eskort bayan`,
-      `${districtName} otele gelen eskort bayan`,
-      `${districtName} eve gelen escort bayan`,
-      `${districtName} otele gelen escort bayan`,
-      `${districtName} otel eskort`,
-      `${districtName} otel escort`,
-      `${districtName} ev eskort`,
-      `${districtName} ev escort`,
-      `${districtName} buluşma eskort`,
-      `${districtName} buluşma escort`,
-
-      // Popüler aramalar
-      `${districtName} eskort sitesi`,
-      `${districtName} escort sitesi`,
-      `${districtName} eskort rehberi`,
-      `${districtName} escort rehberi`,
-      `${districtName} eskort listesi`,
-      `${districtName} escort listesi`,
-      `${districtName} eskort profil`,
-      `${districtName} escort profil`,
-      `${districtName} eskort ilanı`,
-      `${districtName} escort ilanı`,
-      `${districtName} yeni eskort`,
-      `${districtName} yeni escort`,
-      `${districtName} genç eskort`,
-      `${districtName} genç escort`,
-      `${districtName} olgun eskort`,
-      `${districtName} olgun escort`,
-      `${districtName} yabancı eskort`,
-      `${districtName} yabancı escort`,
-      `${districtName} rus eskort`,
+      `${districtName} eve gelen escort`,
+      `${districtName} otele gelen escort`,
+      `${districtName} whatsapp escort`,
+      `${districtName} telegram escort`,
+      `${districtName} türbanlı escort`,
+      `${districtName} amatör escort`,
       `${districtName} rus escort`,
-      `${districtName} ukraynalı eskort`,
-      `${districtName} ukraynalı escort`,
+      `${districtName} bağımsız escort`,
+
+      // 2026 varyasyonları
+      `${districtName} escort 2026`,
+      `${districtName} eskort 2026`,
+      `${districtName} güncel escort`,
+      `${districtName} teyitli escort`,
 
       // Marka + lokasyon
-      `best eskort ${districtName}`,
-      `best escort ${districtName}`,
       `besteskort ${districtName}`,
-      `${districtName} best eskort`,
-      `${districtName} best escort`,
+      `best eskort ${districtName}`,
     ],
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${districtName} Escort Eskort Bayan İlanları 2026 | ${il} Vip Escort | ${districtName} Bağımsız Eskort | Best Eskort`,
-      description: `${il} ${districtName} genelinde teyitli eskort ilanları, VIP vitrin, bağımsız bayanlar, WhatsApp ve Telegram iletişim hatları. ${districtName} eve gelen eskort, otele gelen escort, amatör, türbanlı, tango eskort seçenekleri.`,
+      title: `${districtName} Escort ❤️ | ${il} VIP Eskort Bayan — Best Eskort`,
+      description: `${il} ${districtName} genelinde teyitli escort ilanları. VIP vitrin, bağımsız bayanlar, WhatsApp & Telegram. Eve gelen, otele gelen escort, türbanlı, amatör.`,
       url: canonicalUrl,
       type: 'website',
       locale: 'tr_TR',
@@ -202,14 +111,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url: `${siteUrl}/api/og/site?il=${location.ilSlug}&ilce=${ilceSlug}`,
           width: 1200,
           height: 630,
-          alt: `${districtName} Eskort Escort Bayan İlanları 2026 Vip Bağımsız WhatsApp`,
+          alt: `${districtName} Escort Eskort Bayan VIP Teyitli`,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${districtName} Eskort İlanları 2026 | ${il} ${districtName} Vip Escort | Best Eskort`,
-      description: `${il} ${districtName} genelinde teyitli eskort, vip escort, bağımsız bayan, whatsapp eskort, eve gelen ve otele gelen escort ilanları.`,
+      title: `${districtName} Escort ❤️ | ${il} VIP Eskort — Best Eskort`,
+      description: `${il} ${districtName} teyitli escort ilanları. VIP, bağımsız, WhatsApp escort.`,
       images: [`${siteUrl}/api/og/site?il=${location.ilSlug}&ilce=${ilceSlug}`],
     },
     robots: {
@@ -331,10 +240,10 @@ export default async function DistrictPage({ params }: Props) {
           {/* Ana Başlık ve Açıklama */}
           <div className="flex flex-col items-center gap-1.5 max-w-xl mx-auto">
             <h1 className="font-heading font-black text-xl sm:text-3xl text-white tracking-tight leading-tight">
-              {districtName} <span className="text-amber-400">Eskort İlanları</span>
+              {districtName} <span className="text-amber-400">Escort</span> & Eskort İlanları
             </h1>
             <p className="text-xs sm:text-sm text-[#8b949e] leading-relaxed">
-              {location.il} {districtName} bölgesinde teyit edilmiş VIP eskort profilleri, bağımsız bayanlar ve doğrudan WhatsApp iletişim hatları.
+              {location.il} {districtName} escort ve eskort bayan ilanları 2026. {listings.length > 0 ? `${listings.length} aktif ilan.` : ''} Teyitli VIP, bağımsız bayanlar, eve gelen & otele gelen escort. WhatsApp ile anında iletişim.
             </p>
           </div>
 
