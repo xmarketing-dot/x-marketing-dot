@@ -115,25 +115,29 @@ export async function POST(req: NextRequest) {
 
       // Process with Sharp → WebP + Anti-Theft Watermark
       const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-      const cleanDomain = host ? host.split(':')[0].toLowerCase() : 'besteskort.com';
+      const cleanDomain = host ? host.split(':')[0].toLowerCase() : 'besteskort.online';
 
-      const image = sharp(inputBuffer).rotate();
-      const metadata = await image.metadata();
-      const imgWidth = metadata.width || 1200;
-      const imgHeight = metadata.height || 1200;
+      // 1. Önce görseli orantılı olarak yeniden boyutlandır (Maks. 1600x1600)
+      const resizedImage = sharp(inputBuffer)
+        .rotate()
+        .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true });
 
-      const fontSize = Math.round(imgWidth * 0.08);
+      const metadata = await resizedImage.metadata();
+      const finalWidth = metadata.width || 1200;
+      const finalHeight = metadata.height || 1200;
+
+      // 2. Yeniden boyutlandırılmış gerçek piksele birebir uyan SVG filigranı oluştur
+      const fontSize = Math.max(22, Math.round(finalWidth * 0.07));
       const watermarkSvg = `
-      <svg width="${imgWidth}" height="${imgHeight}" viewBox="0 0 ${imgWidth} ${imgHeight}" xmlns="http://www.w3.org/2000/svg">
-        <g transform="rotate(-28 ${imgWidth / 2} ${imgHeight / 2})">
-          <text x="${imgWidth / 2}" y="${imgHeight / 2 - fontSize * 0.2}" font-family="sans-serif" font-size="${fontSize}" font-weight="900" fill="white" fill-opacity="0.22" text-anchor="middle" letter-spacing="6">BEST ESKORT</text>
-          <text x="${imgWidth / 2}" y="${imgHeight / 2 + fontSize * 0.85}" font-family="sans-serif" font-size="${Math.round(fontSize * 0.42)}" font-weight="700" fill="#fbbf24" fill-opacity="0.25" text-anchor="middle" letter-spacing="3">${cleanDomain}</text>
+      <svg width="${finalWidth}" height="${finalHeight}" viewBox="0 0 ${finalWidth} ${finalHeight}" xmlns="http://www.w3.org/2000/svg">
+        <g transform="rotate(-28 ${finalWidth / 2} ${finalHeight / 2})">
+          <text x="${finalWidth / 2}" y="${finalHeight / 2 - fontSize * 0.2}" font-family="Arial, Helvetica, sans-serif" font-size="${fontSize}" font-weight="900" fill="white" fill-opacity="0.22" text-anchor="middle" letter-spacing="6">BEST ESKORT</text>
+          <text x="${finalWidth / 2}" y="${finalHeight / 2 + fontSize * 0.85}" font-family="Arial, Helvetica, sans-serif" font-size="${Math.round(fontSize * 0.42)}" font-weight="700" fill="#fbbf24" fill-opacity="0.26" text-anchor="middle" letter-spacing="3">${cleanDomain.toUpperCase()}</text>
         </g>
       </svg>
       `;
 
-      const processedBuffer = await image
-        .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
+      const processedBuffer = await resizedImage
         .composite([{ input: Buffer.from(watermarkSvg), gravity: 'center', blend: 'over' }])
         .webp({ quality: 86, effort: 4 })
         .toBuffer();

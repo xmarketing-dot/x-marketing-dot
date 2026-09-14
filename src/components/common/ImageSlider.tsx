@@ -141,7 +141,7 @@ export default function ImageSlider({
             BEST ESKORT
           </span>
           <span className="font-sans font-bold text-amber-400/[0.22] text-xs sm:text-sm tracking-[0.2em] uppercase -rotate-25 whitespace-nowrap mt-1">
-            {typeof window !== 'undefined' ? window.location.hostname.replace(/^www\./, '') : 'Doğrulanmış Profil'}
+            {typeof window !== 'undefined' && window.location.hostname ? window.location.hostname.replace(/^www\./, '') : 'besteskort.online'}
           </span>
         </div>
 
@@ -250,6 +250,16 @@ export default function ImageSlider({
               unoptimized
               className="object-contain p-2"
             />
+
+            {/* Sahibinden-Style Diagonal Semi-Transparent Fullscreen Watermark */}
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none select-none overflow-hidden">
+              <span className="font-heading font-black text-white/[0.22] text-3xl sm:text-5xl md:text-6xl tracking-[0.25em] uppercase -rotate-25 whitespace-nowrap drop-shadow-md">
+                BEST ESKORT
+              </span>
+              <span className="font-sans font-bold text-amber-400/[0.26] text-sm sm:text-base md:text-lg tracking-[0.2em] uppercase -rotate-25 whitespace-nowrap mt-2">
+                {typeof window !== 'undefined' && window.location.hostname ? window.location.hostname.replace(/^www\./, '') : 'besteskort.online'}
+              </span>
+            </div>
 
             {safeImages.length > 1 && (
               <>
