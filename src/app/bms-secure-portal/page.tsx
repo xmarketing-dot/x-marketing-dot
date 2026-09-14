@@ -599,62 +599,20 @@ export default function BmsSecurePortalDashboard() {
         </div>
       </div>
 
-      {/* ── RESPONSİVE DOMAİN FİLTRESİ ──────────────── */}
+      {/* ── ÜRETİM ALAN ADI BİLGİ ŞERİDİ ──────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-2xl bg-[#161b22] border border-[#30363d]">
-        <div className="flex items-center justify-between sm:justify-start gap-2">
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="text-xs font-heading font-black text-white">Domain Filtresi:</span>
-          </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#0d1117] border border-[#30363d] text-amber-400 font-mono font-bold">
-            {selectedDomain === 'all' ? 'Tüm Ağ' : selectedDomain}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Globe className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="text-xs font-heading font-black text-white">Aktif Üretim Alan Adı:</span>
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono font-bold flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            www.besteskort.online (Production)
           </span>
         </div>
-
-        {/* Mobilde Clean Select Dropdown */}
-        <div className="block sm:hidden w-full">
-          <select
-            value={selectedDomain}
-            onChange={(e) => setSelectedDomain(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-amber-500/40 text-amber-300 font-mono text-xs font-bold outline-none"
-          >
-            <option value="all">🌐 Tüm Domainler (Kümülatif Ağ)</option>
-            {domainBreakdown.map((dItem: any) => (
-              <option key={dItem.domain} value={dItem.domain}>
-                {dItem.domain} ({dItem.uniqueVisitors} Tekil Ziyaretçi)
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Masaüstünde Segmented Pills */}
-        <div className="hidden sm:flex items-center gap-1.5 flex-wrap">
-          <button
-            onClick={() => setSelectedDomain('all')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 ${
-              selectedDomain === 'all'
-                ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-sm shadow-amber-500/20'
-                : 'bg-[#0d1117] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#484f58]'
-            }`}
-          >
-            <span>🌐 Tüm Domainler</span>
-          </button>
-          {domainBreakdown.map((dItem: any) => (
-            <button
-              key={dItem.domain}
-              onClick={() => setSelectedDomain(dItem.domain)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all flex items-center gap-1.5 font-mono ${
-                selectedDomain === dItem.domain
-                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-sm shadow-emerald-500/20'
-                  : 'bg-[#0d1117] border-[#30363d] text-[#8b949e] hover:text-white hover:border-[#484f58]'
-              }`}
-            >
-              <span>{dItem.domain}</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#21262d] text-white">
-                {dItem.uniqueVisitors}
-              </span>
-            </button>
-          ))}
+        <div className="flex items-center gap-2 text-[11px] text-[#8b949e] font-mono">
+          <span className="px-2 py-0.5 rounded-lg bg-[#0d1117] border border-[#30363d] text-amber-400 font-bold">
+            301/308 Yönlendirmeleri Aktif
+          </span>
         </div>
       </div>
 
@@ -662,7 +620,7 @@ export default function BmsSecurePortalDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {[
           { id: 'overview', icon: '📊', label: 'Genel Bakış', count: null },
-          { id: 'seo_rankings', icon: '🎯', label: 'Google Sıralama', count: keywordList.length > 0 ? keywordList.length : null },
+          { id: 'seo_rankings', icon: '🎯', label: 'Yandex Sıralama', count: keywordList.length > 0 ? keywordList.length : null },
           { id: 'listings', icon: '👑', label: 'İlan Performans', count: filteredListings.length },
           { id: 'live_visitors', icon: '⚡', label: 'Canlı Ziyaretçi', count: recentVisitors.length },
         ].map((tab) => (
@@ -1373,11 +1331,8 @@ export default function BmsSecurePortalDashboard() {
             {/* Bağlı ve Aktif Domainler Listesi (Dinamik Canlı Gateway Ağı) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
               {(domainBreakdown && domainBreakdown.length > 0 ? domainBreakdown : [
-                { domain: 'besteskort.devs.surf', resolvedTarget: 'TÜRKİYE / ANA VİTRİN', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
-                { domain: 'istanbuleskort.devs.surf', resolvedTarget: 'İSTANBUL / GENEL', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
-                { domain: 'izmireskort.devs.surf', resolvedTarget: 'İZMİR / GENEL', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
-                { domain: 'beylikduzueskort.devs.surf', resolvedTarget: 'İSTANBUL / BEYLİKDÜZÜ', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
-                { domain: 'beylikduzuescort.devs.surf', resolvedTarget: 'İSTANBUL / BEYLİKDÜZÜ', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
+                { domain: 'www.besteskort.online', resolvedTarget: 'TÜRKİYE / ANA VİTRİN (PRODUCTION)', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
+                { domain: 'besteskort.online', resolvedTarget: 'TÜRKİYE / 308 YÖNLENDİRME', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
               ]).map((d: any, idx: number) => {
                 const target = d.resolvedTarget || resolveTargetFromHost(d.domain);
                 const targetLabel = typeof target === 'string' ? target : (target ? `${target.ilSlug?.toUpperCase()} ${target.ilceSlug ? '/ ' + target.ilceSlug?.toUpperCase() : ''}` : 'TÜRKİYE / ANA VİTRİN');

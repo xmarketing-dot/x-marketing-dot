@@ -483,15 +483,10 @@ export async function GET(req: Request) {
         };
       });
 
-    // ── 14. Domain Bazlı İstatistik Haritası (Çoklu Domain Gateway İstihbaratı) ──
+    // ── 14. Domain Bazlı İstatistik Haritası ──
     const defaultGatewayDomains = [
-      'besteskort.online',
       'www.besteskort.online',
-      'besteskort.devs.surf',
-      'istanbuleskort.devs.surf',
-      'izmireskort.devs.surf',
-      'beylikduzueskort.devs.surf',
-      'beylikduzuescort.devs.surf',
+      'besteskort.online',
     ];
 
     const domainStatsMap: Record<string, any> = {};
