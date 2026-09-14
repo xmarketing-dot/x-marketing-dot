@@ -11,7 +11,7 @@ export function getSiteUrl(): string {
     return process.env.SITE_URL.replace(/\/+$/, '');
   }
   // Asla gizli Vercel preview URL'lerini sitemap veya canonical meta etiketlerine sızdırma!
-  return 'https://besteskort.devs.surf';
+  return 'https://www.besteskort.online';
 }
 
 /**

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import BannerAdModel from '@/models/BannerAd';
 import { sendTelegramNotification } from '@/lib/telegramNotify';
+import { getSiteUrl } from '@/lib/siteUrl';
 
 export const dynamic = 'force-dynamic';
 
@@ -112,7 +113,7 @@ export async function POST(req: NextRequest) {
       `📱 <b>İletişim:</b> <code>${musteriIletisim.trim()}</code>`,
       `🔗 <b>Hedef Link:</b> ${hedefUrl.trim()}`,
       `━━━━━━━━━━━━━━━━━━`,
-      `👑 <a href="https://besteskort.devs.surf/bms-secure-portal">Yönetici Panelinden Onayla</a>`,
+      `👑 <a href="${getSiteUrl()}/bms-secure-portal">Yönetici Panelinden Onayla</a>`,
     ].join('\n');
 
     sendTelegramNotification(notifText).catch(() => {});

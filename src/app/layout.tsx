@@ -90,11 +90,11 @@ export const metadata: Metadata = {
   },
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION
-      ? [process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION, 'rbc2vzlSBnvQ7UIKEMYkAiuYRd-8bwvQYPR78BkR0n4', 'Xrpyfl4bjrgIAMuOiV4JI5jDhZVuU9Zxc5-wTt5wcEA']
-      : ['rbc2vzlSBnvQ7UIKEMYkAiuYRd-8bwvQYPR78BkR0n4', 'Xrpyfl4bjrgIAMuOiV4JI5jDhZVuU9Zxc5-wTt5wcEA'],
+      ? [process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION, '9f7_GOdU1Xh9JLpMzSvN1mxFtPYhkbbfy9GxejL-as8', 'rbc2vzlSBnvQ7UIKEMYkAiuYRd-8bwvQYPR78BkR0n4', 'Xrpyfl4bjrgIAMuOiV4JI5jDhZVuU9Zxc5-wTt5wcEA']
+      : ['9f7_GOdU1Xh9JLpMzSvN1mxFtPYhkbbfy9GxejL-as8', 'rbc2vzlSBnvQ7UIKEMYkAiuYRd-8bwvQYPR78BkR0n4', 'Xrpyfl4bjrgIAMuOiV4JI5jDhZVuU9Zxc5-wTt5wcEA'],
     yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION
-      ? [process.env.NEXT_PUBLIC_YANDEX_VERIFICATION, 'f65d1a854e45395b', 'b94d8c81d8b58fac', '5f93294064f2f463', 'c2eb710564994f5b', '9b8ca2b97769a1ce']
-      : ['f65d1a854e45395b', 'b94d8c81d8b58fac', '5f93294064f2f463', 'c2eb710564994f5b', '9b8ca2b97769a1ce'],
+      ? [process.env.NEXT_PUBLIC_YANDEX_VERIFICATION, '5380920e077381e1', 'f65d1a854e45395b', 'b94d8c81d8b58fac', '5f93294064f2f463', 'c2eb710564994f5b', '9b8ca2b97769a1ce']
+      : ['5380920e077381e1', 'f65d1a854e45395b', 'b94d8c81d8b58fac', '5f93294064f2f463', 'c2eb710564994f5b', '9b8ca2b97769a1ce'],
   },
   other: {
     '6a97888e-site-verification': 'd56702bff7a1051249d301cd6c520d4f',

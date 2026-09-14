@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
+import { getSiteUrl } from '@/lib/siteUrl';
 
 function generateSlug(ilce: string, baslik: string, tamAd?: string): string {
   const trMap: Record<string, string> = {
@@ -250,7 +251,7 @@ export async function POST(req: NextRequest) {
         `📱 <b>WhatsApp:</b> <code>${whatsappNumara}</code>`,
         `🔑 <b>İlan Düzenleme Şifresi:</b> <code>${generatedPassword}</code>`,
         `━━━━━━━━━━━━━━━━━━`,
-        `👉 <a href="https://besteskort.devs.surf/bms-secure-portal">Yönetici Panelinden İncele & Onayla</a>`,
+        `👉 <a href="${getSiteUrl()}/bms-secure-portal">Yönetici Panelinden İncele & Onayla</a>`,
       ].join('\n');
       sendTelegramNotification(notif).catch(() => {});
     } catch (e) {

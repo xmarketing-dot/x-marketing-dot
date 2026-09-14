@@ -485,6 +485,8 @@ export async function GET(req: Request) {
 
     // ── 14. Domain Bazlı İstatistik Haritası (Çoklu Domain Gateway İstihbaratı) ──
     const defaultGatewayDomains = [
+      'besteskort.online',
+      'www.besteskort.online',
       'besteskort.devs.surf',
       'istanbuleskort.devs.surf',
       'izmireskort.devs.surf',

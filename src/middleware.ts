@@ -117,7 +117,7 @@ export function middleware(req: NextRequest) {
 
   // Doğrudan *.vercel.app domaininden gelenleri ana domaine yönlendir (301 Kalıcı Yönlendirme)
   if (hostname.includes('.vercel.app') && !pathname.startsWith('/api') && !pathname.startsWith('/bms-secure-portal')) {
-    return NextResponse.redirect(new URL(`https://besteskort.devs.surf${pathname}${url.search}`), 301);
+    return NextResponse.redirect(new URL(`https://www.besteskort.online${pathname}${url.search}`), 301);
   }
 
   // ── ESKİ / FAZLADAN SEGMENT İÇEREN URL'LERİ (ÖRN: /sanliurfa/siverek/emlak) DÜZELT ──
