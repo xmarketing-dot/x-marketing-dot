@@ -59,6 +59,20 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: '/ilan-duzenle',
+        destination: '/panelim',
+        permanent: true,
+      },
+      {
+        source: '/ilan-duzenle/:path*',
+        destination: '/panelim',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

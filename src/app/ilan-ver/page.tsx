@@ -347,11 +347,11 @@ export default function CreateListingPage() {
           </button>
 
           <Link
-            href="/ilan-duzenle"
+            href="/panelim"
             className="w-full py-3 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-bold text-xs border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <KeyRound className="w-4 h-4 text-amber-400" />
-            <span>İlanımı Düzenle / Güncelle</span>
+            <span>Panelim / İlanlarımı Yönet</span>
           </Link>
         </div>
 
@@ -380,11 +380,11 @@ export default function CreateListingPage() {
 
         <div className="flex items-center gap-2">
           <Link
-            href="/ilan-duzenle"
+            href="/panelim"
             className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-black text-xs border border-amber-500/30 active:scale-95 transition-all flex items-center gap-1.5 font-heading"
           >
             <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-            <span>İlan Düzenle</span>
+            <span>Panelim</span>
           </Link>
 
           <button

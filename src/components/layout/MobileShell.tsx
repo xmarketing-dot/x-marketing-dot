@@ -72,7 +72,7 @@ export default function MobileShell({ children }: MobileShellProps) {
   }
 
   // Reklam Ver & İlan Ver gibi özel form sayfaları desktopta ajans ana sayfası yerine kendi form içeriklerini gösterir
-  const isDedicatedFormPage = pathname === '/reklam-ver' || pathname === '/ilan-ver' || pathname?.startsWith('/ilan-duzenle');
+  const isDedicatedFormPage = pathname === '/reklam-ver' || pathname === '/ilan-ver';
   if (isDedicatedFormPage) {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans overflow-x-hidden flex flex-col">
