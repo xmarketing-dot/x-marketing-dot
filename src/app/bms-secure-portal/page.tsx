@@ -48,7 +48,7 @@ export default function BmsSecurePortalDashboard() {
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
   const [boostingPing, setBoostingPing] = useState(false);
-  const [boostPingResult, setBoostPingResult] = useState<string | null>(null);
+  const [boostPingResult, setBoostPingResult] = useState<any | null>(null);
 
   const handleAdminListingSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,8 +209,7 @@ export default function BmsSecurePortalDashboard() {
       });
       const data = await res.json();
       if (data.success) {
-        setBoostPingResult(`🚀 Başarılı! 599 URL arama motorlarına iletildi & İlan beğenileri güçlendirildi.`);
-        setTimeout(() => setBoostPingResult(null), 8000);
+        setBoostPingResult(data);
       } else {
         alert(data.error || 'SEO motoru çalıştırılamadı');
       }
@@ -1484,8 +1483,56 @@ export default function BmsSecurePortalDashboard() {
             </div>
 
             {boostPingResult && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2 animate-fadeIn">
-                <span>{boostPingResult}</span>
+              <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-white flex flex-col gap-3 animate-fadeIn shadow-xl">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+                    <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{boostPingResult.message || 'IndexNow & Ping Gönderimi Başarıyla Tamamlandı'}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setBoostPingResult(null)}
+                    className="text-[11px] text-[#8b949e] hover:text-white px-2 py-0.5 rounded-md hover:bg-[#30363d] transition-colors"
+                  >
+                    ✕ Kapat
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-emerald-500/20">
+                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
+                    <span className="text-[10px] text-[#8b949e] font-mono">🟡 Yandex IndexNow</span>
+                    <span className="text-xs font-bold text-emerald-400 font-mono mt-0.5">
+                      {boostPingResult.pingResult?.endpoints?.yandex ? '✅ HTTP 200 (İletildi)' : '⚠️ Kuyrukta'}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
+                    <span className="text-[10px] text-[#8b949e] font-mono">🔵 Bing IndexNow</span>
+                    <span className="text-xs font-bold text-emerald-400 font-mono mt-0.5">
+                      {boostPingResult.pingResult?.endpoints?.bing || boostPingResult.pingResult?.endpoints?.indexnow ? '✅ HTTP 200 (İletildi)' : '⚠️ Kuyrukta'}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
+                    <span className="text-[10px] text-[#8b949e] font-mono">🔍 Google Sitemap Ping</span>
+                    <span className="text-xs font-bold text-blue-400 font-mono mt-0.5">
+                      {boostPingResult.pingResult?.endpoints?.googleSitemapPing ? '✅ Ping Gönderildi' : '⚠️ Kuyrukta'}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
+                    <span className="text-[10px] text-[#8b949e] font-mono">🚀 Gönderilen URL</span>
+                    <span className="text-xs font-bold text-amber-400 font-mono mt-0.5">
+                      {boostPingResult.pingResult?.submittedCount || 0} Adet Sayfa
+                    </span>
+                  </div>
+                </div>
+
+                {boostPingResult.updatedLikesCount > 0 && (
+                  <div className="text-[11px] text-emerald-300/80 font-mono flex items-center gap-1.5">
+                    <span>❤️ Toplam {boostPingResult.updatedLikesCount} ilanın beğeni sayıları doğal SEO limitlerine yükseltildi.</span>
+                  </div>
+                )}
               </div>
             )}
 
