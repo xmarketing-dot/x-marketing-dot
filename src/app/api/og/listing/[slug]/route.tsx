@@ -2,8 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
 import sharp from 'sharp';
+import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
+
+async function getGridFSBuffer(fileId: string): Promise<Buffer | null> {
+  try {
+    if (!fileId || !mongoose.Types.ObjectId.isValid(fileId)) return null;
+    const db = mongoose.connection.db!;
+    const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'uploads' });
+    const objectId = new mongoose.Types.ObjectId(fileId);
+    const downloadStream = bucket.openDownloadStream(objectId);
+    const chunks: Buffer[] = [];
+    await new Promise<void>((resolve, reject) => {
+      downloadStream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+      downloadStream.on('end', () => resolve());
+      downloadStream.on('error', reject);
+    });
+    return Buffer.concat(chunks);
+  } catch (err) {
+    return null;
+  }
+}
 
 export async function GET(
   req: NextRequest,
@@ -32,32 +52,25 @@ export async function GET(
 
     let inputBuffer: Buffer | null = null;
 
+    // Direct GridFS Read (0 ms latency, no deadlock)
+    if (photoUrl && photoUrl.includes('/api/img/')) {
+      const fileId = photoUrl.split('/api/img/')[1].split('?')[0].split('/')[0];
+      inputBuffer = await getGridFSBuffer(fileId);
+    }
+
     // Handle Data URL (Base64)
-    if (photoUrl && photoUrl.startsWith('data:image/')) {
+    if (!inputBuffer && photoUrl && photoUrl.startsWith('data:image/')) {
       const match = photoUrl.match(/^data:(image\/[a-zA-Z0-9\+\-\.]+);base64,([\s\S]+)$/);
       if (match) {
         inputBuffer = Buffer.from(match[2], 'base64');
       }
-    } else if (photoUrl && photoUrl.startsWith('/')) {
-      // /api/img/[id] GridFS URL or /uploads/ local path — fetch from server
-      try {
-        const { getSiteUrl } = await import('@/lib/siteUrl');
-        const fullUrl = `${getSiteUrl()}${photoUrl}`;
-        const imageRes = await fetch(fullUrl, {
-          headers: { 'User-Agent': 'BestEskortOGBot/1.0' },
-        });
-        if (imageRes.ok) {
-          inputBuffer = Buffer.from(await imageRes.arrayBuffer());
-        }
-      } catch (fsErr) {
-        console.error('Error fetching photo in OG route:', fsErr);
-      }
-    } else if (photoUrl && (photoUrl.startsWith('http://') || photoUrl.startsWith('https://'))) {
+    } else if (!inputBuffer && photoUrl && (photoUrl.startsWith('http://') || photoUrl.startsWith('https://'))) {
       try {
         const imageRes = await fetch(photoUrl, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (compatible; BestEskortOGProxy/1.0)',
           },
+          signal: AbortSignal.timeout(3500),
         });
 
         if (imageRes.ok) {

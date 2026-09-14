@@ -58,10 +58,19 @@ export function middleware(req: NextRequest) {
     ua.includes('duckduck') ||
     ua.includes('applebot') ||
     ua.includes('twitterbot') ||
+    ua.includes('twitter') ||
+    ua.includes('xbot') ||
+    ua.includes('t.co') ||
     ua.includes('facebookexternalhit') ||
+    ua.includes('facebot') ||
+    ua.includes('meta-externalagent') ||
     ua.includes('whatsapp') ||
     ua.includes('telegrambot') ||
-    ua.includes('slackbot');
+    ua.includes('telegram') ||
+    ua.includes('discordbot') ||
+    ua.includes('slackbot') ||
+    ua.includes('linkedinbot') ||
+    ua.includes('pinterest');
 
   if (!isSearchEngineOrSocial) {
     const pathLower = pathname.toLowerCase();

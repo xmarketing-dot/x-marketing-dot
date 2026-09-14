@@ -89,9 +89,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+      site: '@besteskort',
+      creator: '@besteskort',
       title: metaTitle,
       description: metaDescription,
-      images: [ogImageUrl],
+      images: [
+        {
+          url: ogImageUrl,
+          alt: listing.baslik,
+          width: 1200,
+          height: 630,
+        },
+      ],
     },
   };
 }

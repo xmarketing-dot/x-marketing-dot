@@ -81,6 +81,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@besteskort',
+    creator: '@besteskort',
     title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
     description: 'Türkiye genelinde 81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları.',
     images: [`${siteUrl}/api/og/site`],

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
 import sharp from 'sharp';
+import mongoose from 'mongoose';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -65,7 +66,26 @@ export async function GET(req: NextRequest) {
           listing.anaFotograf?.url ||
           (listing.fotograflar?.length > 0 ? listing.fotograflar[0]?.url : '');
 
-        if (!photoUrl) continue;
+        // Case 0: GridFS /api/img/[id]
+        if (photoUrl.includes('/api/img/')) {
+          try {
+            const fileId = photoUrl.split('/api/img/')[1].split('?')[0].split('/')[0];
+            if (mongoose.Types.ObjectId.isValid(fileId)) {
+              const db = mongoose.connection.db!;
+              const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'uploads' });
+              const objectId = new mongoose.Types.ObjectId(fileId);
+              const downloadStream = bucket.openDownloadStream(objectId);
+              const chunks: Buffer[] = [];
+              await new Promise<void>((resolve, reject) => {
+                downloadStream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+                downloadStream.on('end', () => resolve());
+                downloadStream.on('error', reject);
+              });
+              inputBuffer = Buffer.concat(chunks);
+              if (inputBuffer && inputBuffer.length > 0) break;
+            }
+          } catch (gfsErr) {}
+        }
 
         // Case 1: Base64 data URL
         if (photoUrl.startsWith('data:image/')) {
