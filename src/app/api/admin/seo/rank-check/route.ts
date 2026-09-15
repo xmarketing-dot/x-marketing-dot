@@ -15,27 +15,34 @@ async function checkAdminAuth(): Promise<boolean> {
   }
 }
 
+const OUR_EXACT_DOMAINS = new Set([
+  'besteskort.online',
+  'www.besteskort.online',
+]);
+
 /**
- * Domain'in ağımıza veya sitemize ait olup olmadığını doğrular
+ * Domain'in kesin olarak bizim sitemize ait olup olmadığını doğrular (Sadece besteskort.online)
  */
-function isOurSiteDomain(hostname: string, targetDomain: string): boolean {
-  const host = hostname.toLowerCase().replace(/^www\./, '');
-  const cleanTarget = targetDomain.replace(/^https?:\/\//, '').replace(/\/$/, '').toLowerCase();
-  const cleanTargetBase = cleanTarget.split('.')[0];
+function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
+  const host = hostname.toLowerCase().replace(/^www\./, '').trim();
 
-  if (cleanTarget && host.includes(cleanTarget)) return true;
-  if (cleanTargetBase && cleanTargetBase.length > 3 && host.includes(cleanTargetBase)) return true;
+  if (targetDomain) {
+    const cleanTarget = targetDomain
+      .replace(/^https?:\/\//, '')
+      .replace(/\/.*$/, '')
+      .toLowerCase()
+      .replace(/^www\./, '')
+      .trim();
 
-  // Tüm ağ domainlerimiz ve subdomainlerimiz
+    if (cleanTarget && (host === cleanTarget || host.endsWith('.' + cleanTarget))) {
+      return true;
+    }
+  }
+
   if (
-    host.includes('devs.surf') ||
-    host.includes('besteskort') ||
-    host.includes('istanbuleskort') ||
-    host.includes('beylikduzueskort') ||
-    host.includes('beylikduzuescort') ||
-    host.includes('izmireskort') ||
-    host.includes('bestmarketing') ||
-    host.includes('localhost')
+    OUR_EXACT_DOMAINS.has(host) ||
+    host === 'besteskort.online' ||
+    host.endsWith('.besteskort.online')
   ) {
     return true;
   }
@@ -124,7 +131,7 @@ async function scrapeGoogleSerp(
       }
     }
   } catch (err) {
-    console.warn('Google direct scan notice:', err);
+    // Silent
   }
 
   return { position: foundPosition, competitors };
@@ -194,7 +201,7 @@ async function scrapeYandexSerp(
       }
     }
   } catch (err) {
-    console.warn('Yandex SERP scan error:', err);
+    // Silent
   }
 
   return { position: foundPosition, competitors };

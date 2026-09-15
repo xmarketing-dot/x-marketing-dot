@@ -101,7 +101,7 @@ export default function BmsSecurePortalDashboard() {
         setBannerList(json.banners);
       }
     } catch (e) {
-      console.error(e);
+      // Silent
     } finally {
       setBannerLoading(false);
     }
@@ -134,7 +134,7 @@ export default function BmsSecurePortalDashboard() {
         setKeywordList(json.keywords);
       }
     } catch (e) {
-      console.error(e);
+      // Silent
     } finally {
       setKeywordLoading(false);
     }
@@ -159,7 +159,7 @@ export default function BmsSecurePortalDashboard() {
         alert(json.error || 'Kelime eklenemedi');
       }
     } catch (e) {
-      console.error(e);
+      // Silent
     } finally {
       setKeywordLoading(false);
     }
@@ -175,7 +175,7 @@ export default function BmsSecurePortalDashboard() {
       });
       setKeywordList(prev => prev.filter(k => k._id !== id));
     } catch (e) {
-      console.error(e);
+      // Silent
     }
   };
 
@@ -192,7 +192,7 @@ export default function BmsSecurePortalDashboard() {
         setKeywordList(json.keywords);
       }
     } catch (e) {
-      console.error(e);
+      // Silent
     } finally {
       setScanningRankings(false);
     }
@@ -234,7 +234,7 @@ export default function BmsSecurePortalDashboard() {
         setData(json.analytics);
       }
     } catch (e) {
-      console.error(e);
+      // Silent
     } finally {
       setLoading(false);
     }
