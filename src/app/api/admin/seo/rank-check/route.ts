@@ -70,34 +70,30 @@ async function scrapeGoogleSerp(
   let rankCounter = 1;
 
   try {
-    const googleUrl = `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}&num=30&hl=tr&gl=tr`;
-    const res = await fetch(googleUrl, {
+    const serperUrl = `https://google.serper.dev/search`;
+    const res = await fetch(serperUrl, {
+      method: 'POST',
       headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'X-API-KEY': process.env.SERPER_API_KEY || '8078961d0c92f23ce765317915a6a500b20c2889',
+        'Content-Type': 'application/json'
       },
+      body: JSON.stringify({
+        q: keyword,
+        gl: 'tr',
+        hl: 'tr',
+        num: 30
+      })
     });
 
     if (res.ok) {
-      const html = await res.text();
-      const linkRegex = /href="([^"]+)"/g;
-      let m;
+      const data = await res.json();
+      const organicResults = data.organic || [];
 
-      while ((m = linkRegex.exec(html)) !== null) {
-        let rawHref = m[1];
-        if (!rawHref) continue;
-
-        if (rawHref.startsWith('/url?q=')) {
-          const extracted = rawHref.split('/url?q=')[1]?.split('&')[0];
-          if (extracted) rawHref = decodeURIComponent(extracted);
-        }
-
-        if (!rawHref.startsWith('http')) continue;
+      for (const result of organicResults) {
+        if (!result.link || !result.link.startsWith('http')) continue;
 
         try {
-          const parsed = new URL(rawHref);
+          const parsed = new URL(result.link);
           const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
           if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
@@ -309,15 +305,17 @@ export async function POST(req: NextRequest) {
 
     // Yandex Canlı Tarama
     const yandexResult = await scrapeYandexSerp(cleanKw, targetDomain);
+    // Google Serper Canlı Tarama
+    const googleResult = await scrapeGoogleSerp(cleanKw, targetDomain);
 
     const doc = await KeywordRankModel.create({
       keyword: cleanKw,
       targetDomain,
-      currentPosition: 0,
-      previousPosition: 0,
+      currentPosition: googleResult.position,
+      previousPosition: googleResult.position,
       change: 0,
-      bestPosition: 0,
-      topCompetitors: [],
+      bestPosition: googleResult.position,
+      topCompetitors: googleResult.competitors,
       yandexPosition: yandexResult.position,
       previousYandexPosition: yandexResult.position,
       yandexChange: 0,
@@ -350,6 +348,7 @@ export async function PUT(req: NextRequest) {
 
     for (const item of items) {
       const yandexResult = await scrapeYandexSerp(item.keyword, item.targetDomain);
+      const googleResult = await scrapeGoogleSerp(item.keyword, item.targetDomain);
 
       // Yandex değişim hesabı
       const prevY = item.yandexPosition || 0;
@@ -359,10 +358,27 @@ export async function PUT(req: NextRequest) {
       else if (prevY === 0 && currY > 0) changeY = currY;
       else if (prevY > 0 && currY === 0) changeY = -prevY;
 
+      // Google değişim hesabı
+      const prevG = item.currentPosition || 0;
+      const currG = googleResult.position || 0;
+      let changeG = 0;
+      if (prevG > 0 && currG > 0) changeG = prevG - currG;
+      else if (prevG === 0 && currG > 0) changeG = currG;
+      else if (prevG > 0 && currG === 0) changeG = -prevG;
+
       item.previousYandexPosition = prevY;
       item.yandexPosition = currY;
       item.yandexChange = changeY;
       item.yandexCompetitors = yandexResult.competitors;
+
+      item.previousPosition = prevG;
+      item.currentPosition = currG;
+      item.change = changeG;
+      item.topCompetitors = googleResult.competitors;
+      if (currG > 0 && (item.bestPosition === 0 || currG < item.bestPosition)) {
+        item.bestPosition = currG;
+      }
+
       item.lastCheckedAt = new Date();
 
       await item.save();
