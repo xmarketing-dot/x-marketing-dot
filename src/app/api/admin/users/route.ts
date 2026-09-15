@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import UserModel from '@/models/User';
 import ListingModel from '@/models/Listing';
+import BannerAdModel from '@/models/BannerAd';
 
 export const dynamic = 'force-dynamic';
 
@@ -159,7 +160,32 @@ export async function DELETE(req: NextRequest) {
     }
 
     await connectToDatabase();
-    await UserModel.findByIdAndDelete(id);
+    const user = await UserModel.findById(id);
+
+    if (user) {
+      const phoneDigits = (user.telefon || '').replace(/\D/g, '');
+      
+      // Cascade delete user's listings
+      await ListingModel.deleteMany({
+        $or: [
+          { kullaniciId: user._id },
+          { kullaniciId: user._id.toString() },
+          ...(user.telefon ? [{ whatsappNumara: user.telefon }] : []),
+          ...(phoneDigits.length >= 10 ? [{ whatsappNumara: { $regex: phoneDigits.slice(-10) } }] : []),
+        ],
+      });
+
+      // Cascade delete user's banner ads
+      await BannerAdModel.deleteMany({
+        $or: [
+          ...(user.telefon ? [{ musteriIletisim: user.telefon }] : []),
+          ...(phoneDigits.length >= 10 ? [{ musteriIletisim: { $regex: phoneDigits.slice(-10) } }] : []),
+          ...(user.kullaniciAdi ? [{ musteriIletisim: user.kullaniciAdi }] : []),
+        ],
+      });
+
+      await UserModel.findByIdAndDelete(id);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

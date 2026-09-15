@@ -140,22 +140,25 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 2. Eğer UserModel'de yoksa -> ListingModel'de (WhatsApp No + panelSifresi) ara
+    // 2. Eğer UserModel'de yoksa -> ListingModel'de (WhatsApp No + panelSifresi) BİRLİKTE eşleşmeli
+    const phoneFilter: any[] = [
+      { whatsappNumara: rawIdent },
+      { whatsappNumara: cleanPhone },
+    ];
+    if (cleanPhone.length >= 10) {
+      phoneFilter.push({ whatsappNumara: { $regex: cleanPhone.slice(-10) } });
+    }
+
     const listingMatches = await ListingModel.find({
-      $or: [
-        { whatsappNumara: rawIdent },
-        { whatsappNumara: cleanPhone },
-        { whatsappNumara: { $regex: cleanPhone.slice(-10) } },
-        { panelSifresi: cleanPass },
-      ],
+      $or: phoneFilter,
+      panelSifresi: cleanPass,
+      status: { $in: ['yayinda', 'onay_bekliyor', 'odeme_bekliyor', 'taslak'] },
     }).sort({ createdAt: -1 });
 
-    const matchedListing = listingMatches.find(
-      (l) => l.panelSifresi === cleanPass || l.panelSifresi?.toString().trim() === cleanPass
-    );
+    const matchedListing = listingMatches.length > 0 ? listingMatches[0] : null;
 
     if (matchedListing) {
-      const validMatches = listingMatches.filter((l) => l.panelSifresi === cleanPass);
+      const validMatches = listingMatches;
       const listingIds = validMatches.map((l) => l._id.toString());
 
       // İlanların tekil ziyaretçilerini çek
