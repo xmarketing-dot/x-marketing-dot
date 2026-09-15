@@ -74,7 +74,7 @@ async function scrapeGoogleSerp(
     const res = await fetch(serperUrl, {
       method: 'POST',
       headers: {
-        'X-API-KEY': process.env.SERPER_API_KEY || '',
+        'X-API-KEY': process.env.SERPER_API_KEY || '8078961d0c92f23ce765317915a6a500b20c2889',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
