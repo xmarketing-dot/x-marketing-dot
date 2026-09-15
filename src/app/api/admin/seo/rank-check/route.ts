@@ -70,34 +70,30 @@ async function scrapeGoogleSerp(
   let rankCounter = 1;
 
   try {
-    const googleUrl = `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}&num=30&hl=tr&gl=tr`;
-    const res = await fetch(googleUrl, {
+    const serperUrl = `https://google.serper.dev/search`;
+    const res = await fetch(serperUrl, {
+      method: 'POST',
       headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'X-API-KEY': process.env.SERPER_API_KEY || '',
+        'Content-Type': 'application/json'
       },
+      body: JSON.stringify({
+        q: keyword,
+        gl: 'tr',
+        hl: 'tr',
+        num: 30
+      })
     });
 
     if (res.ok) {
-      const html = await res.text();
-      const linkRegex = /href="([^"]+)"/g;
-      let m;
+      const data = await res.json();
+      const organicResults = data.organic || [];
 
-      while ((m = linkRegex.exec(html)) !== null) {
-        let rawHref = m[1];
-        if (!rawHref) continue;
-
-        if (rawHref.startsWith('/url?q=')) {
-          const extracted = rawHref.split('/url?q=')[1]?.split('&')[0];
-          if (extracted) rawHref = decodeURIComponent(extracted);
-        }
-
-        if (!rawHref.startsWith('http')) continue;
+      for (const result of organicResults) {
+        if (!result.link || !result.link.startsWith('http')) continue;
 
         try {
-          const parsed = new URL(rawHref);
+          const parsed = new URL(result.link);
           const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
           if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
