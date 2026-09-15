@@ -305,15 +305,17 @@ export async function POST(req: NextRequest) {
 
     // Yandex Canlı Tarama
     const yandexResult = await scrapeYandexSerp(cleanKw, targetDomain);
+    // Google Serper Canlı Tarama
+    const googleResult = await scrapeGoogleSerp(cleanKw, targetDomain);
 
     const doc = await KeywordRankModel.create({
       keyword: cleanKw,
       targetDomain,
-      currentPosition: 0,
-      previousPosition: 0,
+      currentPosition: googleResult.position,
+      previousPosition: googleResult.position,
       change: 0,
-      bestPosition: 0,
-      topCompetitors: [],
+      bestPosition: googleResult.position,
+      topCompetitors: googleResult.competitors,
       yandexPosition: yandexResult.position,
       previousYandexPosition: yandexResult.position,
       yandexChange: 0,
@@ -346,6 +348,7 @@ export async function PUT(req: NextRequest) {
 
     for (const item of items) {
       const yandexResult = await scrapeYandexSerp(item.keyword, item.targetDomain);
+      const googleResult = await scrapeGoogleSerp(item.keyword, item.targetDomain);
 
       // Yandex değişim hesabı
       const prevY = item.yandexPosition || 0;
@@ -355,10 +358,27 @@ export async function PUT(req: NextRequest) {
       else if (prevY === 0 && currY > 0) changeY = currY;
       else if (prevY > 0 && currY === 0) changeY = -prevY;
 
+      // Google değişim hesabı
+      const prevG = item.currentPosition || 0;
+      const currG = googleResult.position || 0;
+      let changeG = 0;
+      if (prevG > 0 && currG > 0) changeG = prevG - currG;
+      else if (prevG === 0 && currG > 0) changeG = currG;
+      else if (prevG > 0 && currG === 0) changeG = -prevG;
+
       item.previousYandexPosition = prevY;
       item.yandexPosition = currY;
       item.yandexChange = changeY;
       item.yandexCompetitors = yandexResult.competitors;
+
+      item.previousPosition = prevG;
+      item.currentPosition = currG;
+      item.change = changeG;
+      item.topCompetitors = googleResult.competitors;
+      if (currG > 0 && (item.bestPosition === 0 || currG < item.bestPosition)) {
+        item.bestPosition = currG;
+      }
+
       item.lastCheckedAt = new Date();
 
       await item.save();

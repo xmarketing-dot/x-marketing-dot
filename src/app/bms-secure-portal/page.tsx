@@ -1564,9 +1564,11 @@ export default function BmsSecurePortalDashboard() {
                 <thead>
                   <tr className="border-b border-[#30363d] text-[11px] font-black text-[#8b949e] uppercase tracking-wider">
                     <th className="py-3 px-3">Anahtar Kelime</th>
-                    <th className="py-3 px-3 text-amber-400">Yandex TR Sırası</th>
+                    <th className="py-3 px-3 text-blue-400">Google Sırası</th>
+                    <th className="py-3 px-3 text-amber-400">Yandex Sırası</th>
+                    <th className="py-3 px-3 text-blue-400">Google Değişim</th>
                     <th className="py-3 px-3 text-amber-400">Yandex Değişim</th>
-                    <th className="py-3 px-3">Önümüzdeki Rakipler</th>
+                    <th className="py-3 px-3">Rakipler (G/Y)</th>
                     <th className="py-3 px-3">Son Tarama</th>
                     <th className="py-3 px-3 text-right">İşlemler</th>
                   </tr>
@@ -1575,9 +1577,13 @@ export default function BmsSecurePortalDashboard() {
                   {keywordList.map((item: any) => {
                     const posY = item.yandexPosition || 0;
                     const changeY = item.yandexChange || 0;
+                    const posG = item.currentPosition || 0;
+                    const changeG = item.change || 0;
 
-                    const renderPosBadge = (pos: number, keyword: string) => {
-                      const searchUrl = `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`;
+                    const renderPosBadge = (pos: number, keyword: string, engine: 'google'|'yandex') => {
+                      const searchUrl = engine === 'yandex' 
+                        ? `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`
+                        : `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}`;
 
                       let badgeContent = null;
                       if (pos > 0 && pos <= 3) {
@@ -1618,7 +1624,7 @@ export default function BmsSecurePortalDashboard() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group inline-block"
-                          title="Yandex TR üzerinde canlı sonuçları yeni sekmede gör"
+                          title={`${engine === 'yandex' ? 'Yandex TR' : 'Google TR'} üzerinde canlı sonuçları yeni sekmede gör`}
                         >
                           {badgeContent}
                         </a>
@@ -1666,9 +1672,19 @@ export default function BmsSecurePortalDashboard() {
                           <span className="text-[10px] text-[#8b949e]">Yandex Türkiye</span>
                         </td>
 
+                        {/* Google Sırası */}
+                        <td className="py-3.5 px-3">
+                          {renderPosBadge(posG, item.keyword, 'google')}
+                        </td>
+
                         {/* Yandex Sırası */}
                         <td className="py-3.5 px-3">
-                          {renderPosBadge(posY, item.keyword)}
+                          {renderPosBadge(posY, item.keyword, 'yandex')}
+                        </td>
+
+                        {/* Google Değişimi */}
+                        <td className="py-3.5 px-3">
+                          {renderChangeBadge(changeG, posG)}
                         </td>
 
                         {/* Yandex Değişimi */}
@@ -1676,23 +1692,41 @@ export default function BmsSecurePortalDashboard() {
                           {renderChangeBadge(changeY, posY)}
                         </td>
 
-                        {/* Rakipler */}
+                        {/* Rakipler (Google/Yandex) */}
                         <td className="py-3.5 px-3">
-                          {item.yandexCompetitors && item.yandexCompetitors.length > 0 ? (
-                            <div className="flex flex-wrap gap-1 max-w-xs">
-                              {item.yandexCompetitors.slice(0, 2).map((c: any, cIdx: number) => (
-                                <span
-                                  key={cIdx}
-                                  className="text-[10px] px-2 py-0.5 rounded bg-[#0d1117] border border-[#30363d] text-[#8b949e] font-mono truncate max-w-[140px]"
-                                  title={c.domain}
-                                >
-                                  #{c.position} {c.domain}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <span className="text-[10px] text-[#484f58]">Tespit edilmedi</span>
-                          )}
+                          <div className="flex flex-col gap-2">
+                            {item.topCompetitors && item.topCompetitors.length > 0 && (
+                              <div className="flex flex-wrap gap-1 max-w-xs">
+                                <span className="text-[10px] text-blue-400 font-bold mr-1">G:</span>
+                                {item.topCompetitors.slice(0, 2).map((c: any, cIdx: number) => (
+                                  <span
+                                    key={cIdx}
+                                    className="text-[10px] px-2 py-0.5 rounded bg-[#0d1117] border border-[#30363d] text-[#8b949e] font-mono truncate max-w-[140px]"
+                                    title={c.domain}
+                                  >
+                                    #{c.position} {c.domain}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {item.yandexCompetitors && item.yandexCompetitors.length > 0 && (
+                              <div className="flex flex-wrap gap-1 max-w-xs">
+                                <span className="text-[10px] text-amber-400 font-bold mr-1">Y:</span>
+                                {item.yandexCompetitors.slice(0, 2).map((c: any, cIdx: number) => (
+                                  <span
+                                    key={cIdx}
+                                    className="text-[10px] px-2 py-0.5 rounded bg-[#0d1117] border border-[#30363d] text-[#8b949e] font-mono truncate max-w-[140px]"
+                                    title={c.domain}
+                                  >
+                                    #{c.position} {c.domain}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {(!item.topCompetitors?.length && !item.yandexCompetitors?.length) && (
+                              <span className="text-[10px] text-[#484f58]">Tespit edilmedi</span>
+                            )}
+                          </div>
                         </td>
 
                         {/* Son Kontrol */}
