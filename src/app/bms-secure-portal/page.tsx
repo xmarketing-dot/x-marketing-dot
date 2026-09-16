@@ -672,53 +672,55 @@ export default function BmsSecurePortalDashboard() {
       {activeTab === 'overview' && (
         <div className="flex flex-col gap-5 sm:gap-6 animate-fadeIn">
           
-          {/* Canlı Kullanıcı Bannerı */}
-          <div className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#161b22] to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-xl">
-            <div className="flex items-center gap-3">
-              <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 shrink-0">
-                <div className="absolute inset-0 bg-emerald-500/30 rounded-full animate-ping"></div>
-                <div className="relative bg-emerald-500 text-slate-950 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-black">
-                  <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Canlı Kullanıcı Bannerı */}
+            <div className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#161b22] to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-xl">
+              <div className="flex items-center gap-3">
+                <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 shrink-0">
+                  <div className="absolute inset-0 bg-emerald-500/30 rounded-full animate-ping"></div>
+                  <div className="relative bg-emerald-500 text-slate-950 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-black">
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </div>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-black text-emerald-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
+                    Sitede {activeUsers} Ziyaretçi Aktif
+                  </span>
+                  <span className="text-[11px] text-[#8b949e] truncate">Son 5 dk içerisinde aktif olanlar</span>
                 </div>
               </div>
-              <div className="flex flex-col min-w-0">
-                <span className="font-black text-emerald-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
-                  Şu An Sitede {activeUsers} Tekil Ziyaretçi Aktif
-                </span>
-                <span className="text-[11px] text-[#8b949e] truncate">Son 5 dakika içerisinde sayfaları gezen gerçek kullanıcılar</span>
-              </div>
+
+              <span className="hidden xl:inline-flex px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-heading shrink-0">
+                CANLI AKIŞ
+              </span>
             </div>
 
-            <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-heading shrink-0">
-              CANLI AKIŞ
-            </span>
-          </div>
-
-          {/* Sitedeki / Paneldeki Kayıtlı Online Kullanıcılar Card */}
-          <div 
-            onClick={() => setShowOnlineUsersModal(true)}
-            className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#161b22] to-amber-500/10 border border-amber-500/30 flex items-center justify-between shadow-xl cursor-pointer hover:border-amber-400 transition-all group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0 group-hover:scale-110 transition-transform">
-                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-black text-amber-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
-                    Panelde {onlineUsers.length} Kullanıcı Aktif
+            {/* Sitedeki / Paneldeki Kayıtlı Online Kullanıcılar Card */}
+            <div 
+              onClick={() => setShowOnlineUsersModal(true)}
+              className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#161b22] to-amber-500/10 border border-amber-500/30 flex items-center justify-between shadow-xl cursor-pointer hover:border-amber-400 transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0 group-hover:scale-110 transition-transform">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-black text-amber-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
+                      Panelde {onlineUsers.length} Müşteri Aktif
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-[#8b949e] truncate">
+                    Sisteme giriş yapmış online müşteriler
                   </span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] truncate">
-                  Sisteme giriş yapmış ve şuan içeride olan müşteriler
-                </span>
               </div>
+              
+              <button className="hidden sm:flex px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold font-heading shrink-0 items-center gap-1 transition-all">
+                <Eye className="w-3.5 h-3.5" />
+                <span>İncele</span>
+              </button>
             </div>
-            
-            <button className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold font-heading shrink-0 flex items-center gap-1 transition-all">
-              <Eye className="w-3.5 h-3.5" />
-              <span>İncele</span>
-            </button>
           </div>
 
           {/* 6 Ana Metrik Kartı — Mobilde 2x3, Masaüstünde 6'lı Grid (Vercel + Google Analytics Seviyesi) */}
