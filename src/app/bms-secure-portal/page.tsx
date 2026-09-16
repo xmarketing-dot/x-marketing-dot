@@ -9,7 +9,7 @@ import {
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
   Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
   Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3, X, Copy,
-  PhoneCall, ArrowRight, SlidersHorizontal
+  PhoneCall, ArrowRight, SlidersHorizontal, Users
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
@@ -24,6 +24,10 @@ export default function BmsSecurePortalDashboard() {
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
+
+  // Online Users State
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+  const [showOnlineUsersModal, setShowOnlineUsersModal] = useState(false);
 
   // Mobile Drawers
   const [showPagesDrawer, setShowPagesDrawer] = useState(false);
@@ -90,7 +94,22 @@ export default function BmsSecurePortalDashboard() {
   useEffect(() => {
     fetchKeywords();
     fetchBanners();
+    fetchOnlineUsers();
+    
+    // Poll online users every 30 seconds
+    const interval = setInterval(fetchOnlineUsers, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const fetchOnlineUsers = async () => {
+    try {
+      const res = await fetch('/api/admin/users-online');
+      const json = await res.json();
+      if (json.success) {
+        setOnlineUsers(json.users || []);
+      }
+    } catch (e) {}
+  };
 
   const fetchBanners = async () => {
     setBannerLoading(true);
@@ -673,6 +692,33 @@ export default function BmsSecurePortalDashboard() {
             <span className="hidden sm:inline-flex px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-heading shrink-0">
               CANLI AKIŞ
             </span>
+          </div>
+
+          {/* Sitedeki / Paneldeki Kayıtlı Online Kullanıcılar Card */}
+          <div 
+            onClick={() => setShowOnlineUsersModal(true)}
+            className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#161b22] to-amber-500/10 border border-amber-500/30 flex items-center justify-between shadow-xl cursor-pointer hover:border-amber-400 transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0 group-hover:scale-110 transition-transform">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-amber-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
+                    Panelde {onlineUsers.length} Kullanıcı Aktif
+                  </span>
+                </div>
+                <span className="text-[11px] text-[#8b949e] truncate">
+                  Sisteme giriş yapmış ve şuan içeride olan müşteriler
+                </span>
+              </div>
+            </div>
+            
+            <button className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-bold font-heading shrink-0 flex items-center gap-1 transition-all">
+              <Eye className="w-3.5 h-3.5" />
+              <span>İncele</span>
+            </button>
           </div>
 
           {/* 6 Ana Metrik Kartı — Mobilde 2x3, Masaüstünde 6'lı Grid (Vercel + Google Analytics Seviyesi) */}
@@ -2783,6 +2829,83 @@ export default function BmsSecurePortalDashboard() {
                     </div>
                   ))
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ONLINE KULLANICILAR MODAL */}
+      {showOnlineUsersModal && (
+        <div 
+          onClick={() => setShowOnlineUsersModal(false)}
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950 animate-in fade-in duration-200"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg bg-[#161b22] border border-[#30363d] rounded-[32px] p-6 shadow-2xl flex flex-col gap-4 text-left animate-in zoom-in-95 duration-200 max-h-[80vh]"
+          >
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-4 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="font-black text-lg text-white font-heading">Online Müşteriler</h3>
+                  <span className="text-xs text-[#8b949e]">Şuan panelde {onlineUsers.length} kişi aktif</span>
+                </div>
+              </div>
+              <button onClick={() => setShowOnlineUsersModal(false)} className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 flex flex-col gap-3 pr-1 custom-scrollbar">
+              {onlineUsers.length === 0 ? (
+                <div className="py-10 text-center text-xs text-[#8b949e] flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                    <Clock className="w-6 h-6 text-[#8b949e]" />
+                  </div>
+                  <span>Şuan içeride online olan kayıtlı müşteri bulunmuyor.</span>
+                </div>
+              ) : (
+                onlineUsers.map((u) => {
+                  const now = new Date();
+                  const startedAt = u.sessionStartedAt ? new Date(u.sessionStartedAt) : (u.lastActiveAt ? new Date(u.lastActiveAt) : now);
+                  const minsInside = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60000));
+                  
+                  return (
+                    <div key={u._id} className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-sm font-black text-white shrink-0">
+                            {u.kullaniciAdi?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0d1117]"></span>
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-bold text-sm text-white truncate font-heading">{u.ad || u.kullaniciAdi}</span>
+                          <span className="text-[10px] text-amber-400 font-mono font-bold">{minsInside > 0 ? `${minsInside} dk'dır içeride` : 'Az önce girdi'}</span>
+                        </div>
+                      </div>
+                      
+                      {u.telefon && (
+                        <a href={`https://wa.me/${u.telefon.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-[#21262d] text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 transition-colors shrink-0">
+                          <OfficialWhatsAppIcon className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-[#30363d] flex justify-end shrink-0">
+              <Link 
+                href="/bms-secure-portal/kullanicilar" 
+                className="text-xs text-amber-400 font-bold flex items-center gap-1 hover:underline"
+              >
+                Tüm Kullanıcılara Git <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </div>

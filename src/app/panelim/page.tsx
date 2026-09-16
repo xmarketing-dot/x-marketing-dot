@@ -144,6 +144,45 @@ export default function PanelimPage() {
     }
   }, []);
 
+  // Online Heartbeat Tracker
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const sendHeartbeat = (status = 'online') => {
+      const activeIdent = currentUser.identifier || currentUser.telefon || currentUser.kullaniciAdi;
+      if (!activeIdent) return;
+
+      if (status === 'offline' && navigator.sendBeacon) {
+        // Use sendBeacon for reliable delivery when tab is closing
+        const blob = new Blob([JSON.stringify({ identifier: activeIdent, status })], { type: 'application/json' });
+        navigator.sendBeacon('/api/user-panel/heartbeat', blob);
+      } else {
+        fetch('/api/user-panel/heartbeat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: activeIdent, status })
+        }).catch(() => {});
+      }
+    };
+
+    // Initial ping
+    sendHeartbeat('online');
+
+    // Interval ping every 30 seconds
+    const intervalId = setInterval(() => sendHeartbeat('online'), 30000);
+
+    // Offline signal on tab close
+    const handleUnload = () => sendHeartbeat('offline');
+    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener('pagehide', handleUnload); // For iOS Safari
+
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener('pagehide', handleUnload);
+    };
+  }, [currentUser]);
+
   // Fetch listings
   const fetchListings = async (ident: string, pass: string) => {
     setLoading(true);
@@ -228,6 +267,18 @@ export default function PanelimPage() {
   };
 
   const handleLogout = () => {
+    // Send offline ping before logging out
+    if (currentUser) {
+      const activeIdent = currentUser.identifier || currentUser.telefon || currentUser.kullaniciAdi;
+      if (activeIdent) {
+        fetch('/api/user-panel/heartbeat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: activeIdent, status: 'offline' })
+        }).catch(() => {});
+      }
+    }
+
     localStorage.removeItem('panel_user_session');
     setCurrentUser(null);
     setListings([]);

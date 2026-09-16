@@ -7,6 +7,9 @@ export interface IUser extends Document {
   email?: string;
   sifreHash?: string;
   chatThreadId?: mongoose.Types.ObjectId;
+  lastActiveAt?: Date;
+  sessionStartedAt?: Date;
+  isOnline?: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -17,6 +20,9 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, default: '' },
     sifreHash: { type: String, default: '' },
     chatThreadId: { type: Schema.Types.ObjectId, ref: 'ChatThread' },
+    lastActiveAt: { type: Date },
+    sessionStartedAt: { type: Date },
+    isOnline: { type: Boolean, default: false },
   },
   { timestamps: true, autoIndex: false }
 );

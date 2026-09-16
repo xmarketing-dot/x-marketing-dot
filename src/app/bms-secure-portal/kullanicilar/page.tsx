@@ -287,6 +287,9 @@ export default function AdminUsersPage() {
                       const stats = u.stats || { totalListings: 0, activeListings: 0, pendingListings: 0, totalViews: 0, totalWhatsapp: 0 };
                       const listings = u.listings || [];
                       const isCopied = copiedId === u._id;
+                      
+                      const now = new Date();
+                      const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
 
                       return (
                         <React.Fragment key={u._id}>
@@ -294,8 +297,11 @@ export default function AdminUsersPage() {
                             {/* Kullanıcı */}
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black text-sm shadow-md shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black text-sm shadow-md shrink-0 relative">
                                   {u.kullaniciAdi?.charAt(0).toUpperCase() || 'U'}
+                                  {isActuallyOnline && (
+                                    <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#161b22] animate-pulse"></span>
+                                  )}
                                 </div>
                                 <div className="flex flex-col min-w-0">
                                   <span className="font-black text-sm text-white font-mono flex items-center gap-1">
@@ -303,7 +309,11 @@ export default function AdminUsersPage() {
                                     {u.kullaniciAdi}
                                   </span>
                                   <span className="text-[10px] text-[#8b949e] font-mono mt-0.5">
-                                    Kayıt: {new Date(u.createdAt).toLocaleDateString('tr-TR')}
+                                    {isActuallyOnline ? (
+                                      <span className="text-emerald-400 font-bold">● Şuan Online</span>
+                                    ) : (
+                                      `Kayıt: ${new Date(u.createdAt).toLocaleDateString('tr-TR')}`
+                                    )}
                                   </span>
                                 </div>
                               </div>
@@ -476,6 +486,9 @@ export default function AdminUsersPage() {
                 const stats = u.stats || { totalListings: 0, activeListings: 0, pendingListings: 0, totalViews: 0, totalWhatsapp: 0 };
                 const listings = u.listings || [];
                 const isCopied = copiedId === u._id;
+                
+                const now = new Date();
+                const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
 
                 return (
                   <div 
@@ -487,8 +500,11 @@ export default function AdminUsersPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       
                       <div className="flex items-center gap-3.5">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black text-lg shadow-md shrink-0">
+                        <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black text-lg shadow-md shrink-0">
                           {u.kullaniciAdi?.charAt(0).toUpperCase() || 'U'}
+                          {isActuallyOnline && (
+                            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#161b22] animate-pulse"></span>
+                          )}
                         </div>
                         
                         <div className="flex flex-col min-w-0">
@@ -521,7 +537,11 @@ export default function AdminUsersPage() {
                             )}
                             <span className="text-[#30363d]">●</span>
                             <span className="text-[11px] text-[#8b949e]">
-                              Kayıt: {new Date(u.createdAt).toLocaleDateString('tr-TR')}
+                              {isActuallyOnline ? (
+                                <span className="text-emerald-400 font-bold">Şuan Online</span>
+                              ) : (
+                                `Kayıt: ${new Date(u.createdAt).toLocaleDateString('tr-TR')}`
+                              )}
                             </span>
                           </div>
                         </div>
