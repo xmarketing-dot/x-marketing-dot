@@ -234,8 +234,19 @@ export async function GET(req: NextRequest) {
   if (rawKeywords.length === 0) {
     const defaultDomain = getReqDomain(req);
     const defaults = [
+      'kayseri eskort',
+      'kayseri escort',
+      'diyarbakır eskort',
+      'diyarbakır escort',
       'adıyaman eskort',
       'adıyaman escort',
+      'sinop eskort',
+      'sinop escort',
+      'hakkari eskort',
+      'hakkari escort',
+      'kars eskort',
+      'bitlis eskort',
+      'aydın eskort',
       'beylikdüzü eskort',
       'kadıköy eskort',
       'istanbul eskort ilanları',
@@ -244,15 +255,6 @@ export async function GET(req: NextRequest) {
       'türbanlı eskort',
       'antalya eskort',
       'bursa eskort',
-      'türk ifşa',
-      'türk porno',
-      'türkçe porno',
-      'amatör türk porno',
-      'konulu porno',
-      'türbanlı porno',
-      'hd porno izle',
-      'türkçe altyazılı porno',
-      'rus porno',
       'vip eskort',
     ];
 

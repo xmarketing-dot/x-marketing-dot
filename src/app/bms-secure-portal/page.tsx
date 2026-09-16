@@ -828,6 +828,193 @@ export default function BmsSecurePortalDashboard() {
             </div>
           </div>
 
+          {/* ── TRAFİK KAYNAKLARI & REFERRER DAĞILIMI (YANDEX, DİREKT, GOOGLE, X, SOSYAL MEDYA) ── */}
+          {(() => {
+            const totalSourceSum = (sources.yandex || 0) + (sources.direct || 0) + (sources.google || 0) + (sources.x || 0) + (sources.whatsapp || 0) + (sources.instagram || 0) + (sources.telegram || 0) + (sources.facebook || 0);
+            const baseCount = totalSourceSum > 0 ? totalSourceSum : (totalPageviews > 0 ? totalPageviews : 1);
+
+            const sourceList = [
+              {
+                id: 'yandex',
+                name: 'Yandex Arama',
+                icon: '🇷🇺',
+                count: sources.yandex || 0,
+                pct: Math.round(((sources.yandex || 0) / baseCount) * 100),
+                color: 'text-red-400',
+                bgColor: 'bg-red-500/15',
+                borderColor: 'border-red-500/30',
+                barColor: 'bg-red-500',
+                tag: 'Ana Trafik Kaynağı'
+              },
+              {
+                id: 'direct',
+                name: 'Direkt Giriş (Direct / Yer İmleri)',
+                icon: '🔗',
+                count: sources.direct || 0,
+                pct: Math.round(((sources.direct || 0) / baseCount) * 100),
+                color: 'text-amber-400',
+                bgColor: 'bg-amber-500/15',
+                borderColor: 'border-amber-500/30',
+                barColor: 'bg-amber-500',
+                tag: 'Doğrudan Ziyaret'
+              },
+              {
+                id: 'google',
+                name: 'Google Arama',
+                icon: '🌐',
+                count: sources.google || 0,
+                pct: Math.round(((sources.google || 0) / baseCount) * 100),
+                color: 'text-blue-400',
+                bgColor: 'bg-blue-500/15',
+                borderColor: 'border-blue-500/30',
+                barColor: 'bg-blue-500',
+                tag: 'Organik Google'
+              },
+              {
+                id: 'x',
+                name: 'X (Twitter)',
+                icon: '🐦',
+                count: sources.x || 0,
+                pct: Math.round(((sources.x || 0) / baseCount) * 100),
+                color: 'text-sky-400',
+                bgColor: 'bg-sky-500/15',
+                borderColor: 'border-sky-500/30',
+                barColor: 'bg-sky-500',
+                tag: 'Sosyal Trafik'
+              },
+              {
+                id: 'whatsapp',
+                name: 'WhatsApp Yönlendirme',
+                icon: '💬',
+                count: sources.whatsapp || 0,
+                pct: Math.round(((sources.whatsapp || 0) / baseCount) * 100),
+                color: 'text-emerald-400',
+                bgColor: 'bg-emerald-500/15',
+                borderColor: 'border-emerald-500/30',
+                barColor: 'bg-emerald-500',
+                tag: 'Mesajlaşma'
+              },
+              {
+                id: 'instagram',
+                name: 'Instagram',
+                icon: '📸',
+                count: sources.instagram || 0,
+                pct: Math.round(((sources.instagram || 0) / baseCount) * 100),
+                color: 'text-pink-400',
+                bgColor: 'bg-pink-500/15',
+                borderColor: 'border-pink-500/30',
+                barColor: 'bg-pink-500',
+                tag: 'Sosyal Medya'
+              },
+              {
+                id: 'telegram',
+                name: 'Telegram',
+                icon: '✈️',
+                count: sources.telegram || 0,
+                pct: Math.round(((sources.telegram || 0) / baseCount) * 100),
+                color: 'text-cyan-400',
+                bgColor: 'bg-cyan-500/15',
+                borderColor: 'border-cyan-500/30',
+                barColor: 'bg-cyan-500',
+                tag: 'Kanal Trafiği'
+              },
+              {
+                id: 'facebook',
+                name: 'Facebook',
+                icon: '👥',
+                count: sources.facebook || 0,
+                pct: Math.round(((sources.facebook || 0) / baseCount) * 100),
+                color: 'text-indigo-400',
+                bgColor: 'bg-indigo-500/15',
+                borderColor: 'border-indigo-500/30',
+                barColor: 'bg-indigo-500',
+                tag: 'Sosyal Ağ'
+              },
+            ];
+
+            return (
+              <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#30363d] pb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0">
+                      <TrendingUp className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <h2 className="font-black text-sm sm:text-base text-white font-heading">
+                          Trafik Kaynakları &amp; Referrer Kanalları
+                        </h2>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold">
+                          {totalSourceSum.toLocaleString()} Toplam Hit
+                        </span>
+                      </div>
+                      <span className="text-[10px] sm:text-[11px] text-[#8b949e]">
+                        Ziyaretçilerin siteye hangi arama motoru, sosyal ağ veya doğrudan bağlantıyla ulaştığının net dağılımı.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#8b949e] shrink-0">
+                    <span className="text-red-400">Yandex: %{sourceList[0].pct}</span>
+                    <span>•</span>
+                    <span className="text-amber-400">Direkt: %{sourceList[1].pct}</span>
+                    <span>•</span>
+                    <span className="text-blue-400">Google: %{sourceList[2].pct}</span>
+                  </div>
+                </div>
+
+                {/* Çok Renkli Genişletilmiş Dağılım Çubuğu (Distribution Multi-Bar) */}
+                <div className="w-full h-3 rounded-full bg-[#0d1117] border border-[#30363d] overflow-hidden flex gap-0.5 p-0.5">
+                  {sourceList.filter(s => s.count > 0).map((s) => (
+                    <div
+                      key={s.id}
+                      className={`h-full rounded-sm ${s.barColor} transition-all duration-700`}
+                      style={{ width: `${Math.max(s.pct, 2)}%` }}
+                      title={`${s.name}: ${s.count.toLocaleString()} Hit (%${s.pct})`}
+                    />
+                  ))}
+                </div>
+
+                {/* 8'li Kanal Dağılım Kartları Izgarası */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                  {sourceList.map((s) => (
+                    <div
+                      key={s.id}
+                      className={`p-3 sm:p-3.5 rounded-2xl bg-[#0d1117] border ${s.borderColor} hover:border-opacity-100 transition-all flex flex-col justify-between gap-2 shadow-md group`}
+                    >
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className="text-xs font-heading font-black text-white flex items-center gap-1.5 truncate">
+                          <span>{s.icon}</span>
+                          <span className="truncate">{s.name}</span>
+                        </span>
+                        <span className={`text-[10px] font-mono font-black ${s.color} shrink-0`}>
+                          %{s.pct}
+                        </span>
+                      </div>
+
+                      <div className="flex items-baseline justify-between">
+                        <span className="font-mono font-black text-base sm:text-xl text-white">
+                          {s.count.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-[#8b949e] font-mono font-bold">
+                          {s.tag}
+                        </span>
+                      </div>
+
+                      {/* Mini Progress Bar */}
+                      <div className="w-full h-1.5 rounded-full bg-[#21262d] overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${s.barColor} transition-all duration-500`}
+                          style={{ width: `${Math.min(s.pct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* ── ÇOKLU DOMAİN GATEWAY İSTİHBARAT & PERFORMANS MASASI (SLIDE KARTLAR) ── */}
           <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 sm:gap-4 shadow-xl">
             <div className="flex items-center justify-between gap-2 border-b border-[#30363d] pb-3">
