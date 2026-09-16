@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import connectToDatabase from '@/lib/mongodb';
 import KeywordRankModel, { ICompetitor } from '@/models/KeywordRank';
 
+import { getSiteUrl } from '@/lib/siteUrl';
+
 export const dynamic = 'force-dynamic';
 
 async function checkAdminAuth(): Promise<boolean> {
@@ -15,16 +17,29 @@ async function checkAdminAuth(): Promise<boolean> {
   }
 }
 
-const OUR_EXACT_DOMAINS = new Set([
-  'besteskort.online',
-  'www.besteskort.online',
-]);
+/**
+ * Sistemde o an aktif olan birincil alan adını (.env veya siteUrl yardımcısından) dinamik olarak alır.
+ */
+function getPrimaryDomain(): string {
+  try {
+    const raw = getSiteUrl();
+    const url = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
+    return url.hostname.toLowerCase().replace(/^www\./, '');
+  } catch (e) {
+    return (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'besteskort.online')
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .replace(/\/.*$/, '')
+      .toLowerCase();
+  }
+}
 
 /**
- * Domain'in kesin olarak bizim sitemize ait olup olmadığını doğrular (Sadece besteskort.online)
+ * Domain'in dinamik olarak sitemize ait olup olmadığını doğrular
  */
 function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
   const host = hostname.toLowerCase().replace(/^www\./, '').trim();
+  const primary = getPrimaryDomain();
 
   if (targetDomain) {
     const cleanTarget = targetDomain
@@ -39,11 +54,7 @@ function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
     }
   }
 
-  if (
-    OUR_EXACT_DOMAINS.has(host) ||
-    host === 'besteskort.online' ||
-    host.endsWith('.besteskort.online')
-  ) {
+  if (primary && (host === primary || host.endsWith('.' + primary))) {
     return true;
   }
 
@@ -208,8 +219,11 @@ async function scrapeYandexSerp(
 }
 
 function getReqDomain(req: NextRequest): string {
-  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || process.env.NEXT_PUBLIC_SITE_URL?.replace(/^https?:\/\//, '') || '';
-  return host.split(':')[0];
+  const host = (req.headers.get('x-forwarded-host') || req.headers.get('host') || '').split(':')[0].toLowerCase();
+  if (!host || host.includes('localhost') || host.includes('127.0.0.1')) {
+    return getPrimaryDomain();
+  }
+  return host;
 }
 
 // ── GET: Tüm Takip Edilen Kelimeleri Getir ──────────────────────
@@ -290,7 +304,11 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const defaultDomain = getReqDomain(req);
-    const { action, id, keyword, targetDomain = defaultDomain } = body;
+    const { action, id, keyword, targetDomain } = body;
+    const rawTarget = targetDomain || defaultDomain;
+    const cleanTargetDomain = !rawTarget || rawTarget.includes('localhost')
+      ? getPrimaryDomain()
+      : rawTarget.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '').toLowerCase();
 
     await connectToDatabase();
 
@@ -313,13 +331,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Yandex Canlı Tarama
-    const yandexResult = await scrapeYandexSerp(cleanKw, targetDomain);
+    const yandexResult = await scrapeYandexSerp(cleanKw, cleanTargetDomain);
     // Google Serper Canlı Tarama
-    const googleResult = await scrapeGoogleSerp(cleanKw, targetDomain);
+    const googleResult = await scrapeGoogleSerp(cleanKw, cleanTargetDomain);
 
     const doc = await KeywordRankModel.create({
       keyword: cleanKw,
-      targetDomain,
+      targetDomain: cleanTargetDomain,
       currentPosition: googleResult.position,
       previousPosition: googleResult.position,
       change: 0,
@@ -356,8 +374,13 @@ export async function PUT(req: NextRequest) {
     const updatedItems = [];
 
     for (const item of items) {
-      const yandexResult = await scrapeYandexSerp(item.keyword, item.targetDomain);
-      const googleResult = await scrapeGoogleSerp(item.keyword, item.targetDomain);
+      const cleanTarget = !item.targetDomain || item.targetDomain.includes('localhost')
+        ? getPrimaryDomain()
+        : item.targetDomain.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '').toLowerCase();
+      item.targetDomain = cleanTarget;
+
+      const yandexResult = await scrapeYandexSerp(item.keyword, cleanTarget);
+      const googleResult = await scrapeGoogleSerp(item.keyword, cleanTarget);
 
       // Yandex değişim hesabı
       const prevY = item.yandexPosition || 0;
