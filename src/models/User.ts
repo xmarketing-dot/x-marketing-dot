@@ -9,6 +9,8 @@ export interface IUser extends Document {
   chatThreadId?: mongoose.Types.ObjectId;
   lastActiveAt?: Date;
   sessionStartedAt?: Date;
+  lastLogoutAt?: Date;
+  currentTab?: string;
   isOnline?: boolean;
 }
 
@@ -22,6 +24,8 @@ const UserSchema = new Schema<IUser>(
     chatThreadId: { type: Schema.Types.ObjectId, ref: 'ChatThread' },
     lastActiveAt: { type: Date },
     sessionStartedAt: { type: Date },
+    lastLogoutAt: { type: Date },
+    currentTab: { type: String, default: 'ilanlarim' },
     isOnline: { type: Boolean, default: false },
   },
   { timestamps: true, autoIndex: false }

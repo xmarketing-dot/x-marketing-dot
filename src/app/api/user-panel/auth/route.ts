@@ -52,6 +52,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Şifreniz hatalı! Lütfen kontrol ediniz.' }, { status: 401 });
       }
 
+      // Giriş anında online durumunu ve oturum başlangıcını anında güncelle
+      user.isOnline = true;
+      user.sessionStartedAt = now;
+      user.lastActiveAt = now;
+      await user.save().catch(() => {});
+
       // Kullanıcının ilanlarını kesin sahiplikle (kullaniciId veya sahipsizse telefon) çek
       const userListings = await ListingModel.find({
         $or: [

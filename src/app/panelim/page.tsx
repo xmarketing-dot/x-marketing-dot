@@ -150,17 +150,25 @@ export default function PanelimPage() {
     
     const sendHeartbeat = (status = 'online') => {
       const activeIdent = currentUser.identifier || currentUser.telefon || currentUser.kullaniciAdi;
-      if (!activeIdent) return;
+      if (!activeIdent && !currentUser.userId && !currentUser._id) return;
 
-      if (status === 'offline' && navigator.sendBeacon) {
-        // Use sendBeacon for reliable delivery when tab is closing
-        const blob = new Blob([JSON.stringify({ identifier: activeIdent, status })], { type: 'application/json' });
+      const payload = {
+        userId: currentUser.userId || currentUser._id,
+        identifier: activeIdent,
+        telefon: currentUser.telefon,
+        kullaniciAdi: currentUser.kullaniciAdi,
+        currentTab: activeTab,
+        status,
+      };
+
+      if (status === 'offline' && typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
         navigator.sendBeacon('/api/user-panel/heartbeat', blob);
       } else {
         fetch('/api/user-panel/heartbeat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ identifier: activeIdent, status })
+          body: JSON.stringify(payload)
         }).catch(() => {});
       }
     };
@@ -181,7 +189,7 @@ export default function PanelimPage() {
       window.removeEventListener('beforeunload', handleUnload);
       window.removeEventListener('pagehide', handleUnload);
     };
-  }, [currentUser]);
+  }, [currentUser, activeTab]);
 
   // Fetch listings
   const fetchListings = async (ident: string, pass: string) => {
@@ -201,6 +209,21 @@ export default function PanelimPage() {
         const fetchedListings = data.listings || [];
         setListings(fetchedListings);
         setBanners(data.banners || []);
+
+        if (data.user) {
+          const userObj = {
+            userId: data.user._id,
+            identifier: data.user.identifier || ident.trim(),
+            password: pass.trim(),
+            panelSifresi: pass.trim(),
+            kullaniciAdi: data.user.kullaniciAdi || data.user.ad || ident.trim(),
+            telefon: data.user.telefon || '',
+            ad: data.user.ad || data.user.kullaniciAdi || 'İlan Sahibi',
+            type: data.user.type || 'user'
+          };
+          localStorage.setItem('panel_user_session', JSON.stringify(userObj));
+          setCurrentUser(userObj);
+        }
 
         if (typeof window !== 'undefined') {
           const urlParams = new URLSearchParams(window.location.search);
@@ -244,6 +267,7 @@ export default function PanelimPage() {
 
       if (data.success && data.user) {
         const userObj = {
+          userId: data.user._id,
           identifier: data.user.identifier || telefon.trim(),
           password: panelSifresi.trim(),
           panelSifresi: panelSifresi.trim(),
@@ -270,18 +294,24 @@ export default function PanelimPage() {
     // Send offline ping before logging out
     if (currentUser) {
       const activeIdent = currentUser.identifier || currentUser.telefon || currentUser.kullaniciAdi;
-      if (activeIdent) {
-        fetch('/api/user-panel/heartbeat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ identifier: activeIdent, status: 'offline' })
-        }).catch(() => {});
-      }
+      const payload = {
+        userId: currentUser.userId || currentUser._id,
+        identifier: activeIdent,
+        telefon: currentUser.telefon,
+        kullaniciAdi: currentUser.kullaniciAdi,
+        status: 'offline',
+      };
+      fetch('/api/user-panel/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(() => {});
     }
 
     localStorage.removeItem('panel_user_session');
     setCurrentUser(null);
     setListings([]);
+    setBanners([]);
     setTelefon('');
     setPanelSifresi('');
   };

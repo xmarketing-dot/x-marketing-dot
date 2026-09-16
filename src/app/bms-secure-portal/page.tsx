@@ -2870,29 +2870,65 @@ export default function BmsSecurePortalDashboard() {
                   <span>Şuan içeride online olan kayıtlı müşteri bulunmuyor.</span>
                 </div>
               ) : (
-                onlineUsers.map((u) => {
+                onlineUsers.map((u: any) => {
                   const now = new Date();
                   const startedAt = u.sessionStartedAt ? new Date(u.sessionStartedAt) : (u.lastActiveAt ? new Date(u.lastActiveAt) : now);
                   const minsInside = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60000));
-                  
+                  const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
+                  const entryTimeStr = startedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                  const lastActiveTimeStr = u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
+
                   return (
-                    <div key={u._id} className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="relative">
-                          <div className="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-sm font-black text-white shrink-0">
+                    <div key={u._id} className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-3 hover:border-amber-500/40 transition-all">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="relative shrink-0">
+                          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center text-sm font-black shadow-md">
                             {u.kullaniciAdi?.charAt(0).toUpperCase() || 'U'}
                           </div>
-                          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0d1117]"></span>
+                          <span className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-[#0d1117] ${
+                            isActuallyOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-500'
+                          }`}></span>
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="font-bold text-sm text-white truncate font-heading">{u.ad || u.kullaniciAdi}</span>
-                          <span className="text-[10px] text-amber-400 font-mono font-bold">{minsInside > 0 ? `${minsInside} dk'dır içeride` : 'Az önce girdi'}</span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-black text-sm text-white truncate font-mono">@{u.kullaniciAdi}</span>
+                            {u.ad && u.ad !== u.kullaniciAdi && (
+                              <span className="text-[11px] text-[#8b949e] truncate">({u.ad})</span>
+                            )}
+                          </div>
+
+                          {u.primaryListingTitle && (
+                            <div className="flex items-center gap-1.5 text-xs text-amber-300 font-bold truncate mt-0.5">
+                              <span>👑 {u.primaryListingTitle}</span>
+                              {u.primaryListingLocation && (
+                                <span className="text-[10px] text-[#8b949e] font-mono">({u.primaryListingLocation})</span>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2 text-[10px] text-[#8b949e] font-mono mt-1 flex-wrap">
+                            <span className="text-emerald-400 font-bold">
+                              {isActuallyOnline ? `🟢 Giriş: ${entryTimeStr} (${minsInside > 0 ? `${minsInside} dk` : 'yeni'})` : `⚪ Çıkış: ${lastActiveTimeStr || 'Ayrıldı'}`}
+                            </span>
+                            {u.currentTab && (
+                              <>
+                                <span>•</span>
+                                <span className="text-cyan-400 font-bold">Sekme: {u.currentTab}</span>
+                              </>
+                            )}
+                          </div>
                         </div>
                       </div>
                       
                       {u.telefon && (
-                        <a href={`https://wa.me/${u.telefon.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="p-2 rounded-xl bg-[#21262d] text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 transition-colors shrink-0">
-                          <OfficialWhatsAppIcon className="w-4 h-4" />
+                        <a 
+                          href={`https://wa.me/${u.telefon.replace(/\D/g, '')}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="p-2.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/30 transition-all shrink-0 flex items-center justify-center shadow-md"
+                          title="WhatsApp'tan Yaz"
+                        >
+                          <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
                         </a>
                       )}
                     </div>

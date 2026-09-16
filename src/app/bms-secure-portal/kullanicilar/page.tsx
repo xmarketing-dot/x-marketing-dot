@@ -273,9 +273,10 @@ export default function AdminUsersPage() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#1a202c] border-b border-[#30363d] text-[11px] font-black uppercase text-[#8b949e] font-heading tracking-wider">
-                      <th className="py-3.5 px-4">Kullanıcı Bilgisi</th>
+                      <th className="py-3.5 px-4">Kullanıcı &amp; Bağlı İlan</th>
                       <th className="py-3.5 px-4">İletişim &amp; WhatsApp</th>
                       <th className="py-3.5 px-4">Panel Şifresi</th>
+                      <th className="py-3.5 px-4">Oturum &amp; Canlı Durum</th>
                       <th className="py-3.5 px-4 text-center">İlan Durumu</th>
                       <th className="py-3.5 px-4 text-center">Toplam Hit</th>
                       <th className="py-3.5 px-4 text-right">İşlemler</th>
@@ -290,6 +291,11 @@ export default function AdminUsersPage() {
                       
                       const now = new Date();
                       const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
+                      const startedAt = u.sessionStartedAt ? new Date(u.sessionStartedAt) : (u.lastActiveAt ? new Date(u.lastActiveAt) : null);
+                      const minsInside = startedAt ? Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60000)) : 0;
+                      const entryTimeStr = startedAt ? startedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
+                      const lastActiveStr = u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
+                      const lastLogoutStr = u.lastLogoutAt ? new Date(u.lastLogoutAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : lastActiveStr;
 
                       return (
                         <React.Fragment key={u._id}>
@@ -300,21 +306,23 @@ export default function AdminUsersPage() {
                                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black text-sm shadow-md shrink-0 relative">
                                   {u.kullaniciAdi?.charAt(0).toUpperCase() || 'U'}
                                   {isActuallyOnline && (
-                                    <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#161b22] animate-pulse"></span>
+                                    <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#161b22] animate-pulse"></span>
                                   )}
                                 </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="font-black text-sm text-white font-mono flex items-center gap-1">
-                                    <AtSign className="w-3.5 h-3.5 text-amber-400" />
+                                <div className="flex flex-col min-w-0 max-w-[200px]">
+                                  <span className="font-black text-sm text-white font-mono flex items-center gap-1 truncate">
+                                    <AtSign className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                                     {u.kullaniciAdi}
                                   </span>
-                                  <span className="text-[10px] text-[#8b949e] font-mono mt-0.5">
-                                    {isActuallyOnline ? (
-                                      <span className="text-emerald-400 font-bold">● Şuan Online</span>
-                                    ) : (
-                                      `Kayıt: ${new Date(u.createdAt).toLocaleDateString('tr-TR')}`
-                                    )}
-                                  </span>
+                                  {listings.length > 0 ? (
+                                    <span className="text-xs text-amber-300 font-bold truncate mt-0.5">
+                                      👑 {listings[0].baslik}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] text-[#8b949e] font-mono mt-0.5">
+                                      {u.ad && u.ad !== u.kullaniciAdi ? u.ad : 'İlan henüz yok'}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </td>
@@ -328,7 +336,7 @@ export default function AdminUsersPage() {
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1.5 text-emerald-400 font-mono font-bold hover:text-emerald-300 transition-colors"
                                 >
-                                  <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
+                                  <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400 shrink-0" />
                                   <span>{u.telefon}</span>
                                 </a>
                               ) : (
@@ -348,6 +356,43 @@ export default function AdminUsersPage() {
                                 <span>{u.sifreHash || '—'}</span>
                                 {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-[#8b949e]" />}
                               </button>
+                            </td>
+
+                            {/* Oturum & Canlı Durum */}
+                            <td className="py-3.5 px-4">
+                              {isActuallyOnline ? (
+                                <div className="flex flex-col items-start gap-1">
+                                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black font-mono flex items-center gap-1.5 animate-pulse">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                    ONLINE (İÇERİDE)
+                                  </span>
+                                  <span className="text-[10px] text-amber-300 font-mono font-bold">
+                                    Giriş: {entryTimeStr || 'Az önce'} ({minsInside > 0 ? `${minsInside} dk` : 'yeni'})
+                                  </span>
+                                  {u.currentTab && (
+                                    <span className="text-[9px] text-cyan-400 font-mono">
+                                      Sekme: {u.currentTab}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : u.lastActiveAt ? (
+                                <div className="flex flex-col items-start gap-0.5 font-mono text-[10px]">
+                                  <span className="text-slate-400 font-bold flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                                    Çevrimdışı
+                                  </span>
+                                  <span className="text-[#8b949e]">
+                                    Giriş: {entryTimeStr || '—'}
+                                  </span>
+                                  <span className="text-slate-500">
+                                    Çıkış: {lastLogoutStr || '—'} ({new Date(u.lastActiveAt).toLocaleDateString('tr-TR')})
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-[10px] text-[#8b949e] font-mono">
+                                  Kayıt: {new Date(u.createdAt).toLocaleDateString('tr-TR')}
+                                </span>
+                              )}
                             </td>
 
                             {/* İlan Durumu */}
@@ -489,6 +534,11 @@ export default function AdminUsersPage() {
                 
                 const now = new Date();
                 const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
+                const startedAt = u.sessionStartedAt ? new Date(u.sessionStartedAt) : (u.lastActiveAt ? new Date(u.lastActiveAt) : null);
+                const minsInside = startedAt ? Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60000)) : 0;
+                const entryTimeStr = startedAt ? startedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
+                const lastActiveStr = u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
+                const lastLogoutStr = u.lastLogoutAt ? new Date(u.lastLogoutAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : lastActiveStr;
 
                 return (
                   <div 
@@ -513,7 +563,7 @@ export default function AdminUsersPage() {
                               <AtSign className="w-4 h-4 text-amber-400" />
                               {u.kullaniciAdi}
                             </span>
-                            
+
                             {/* Password Badge with Copy */}
                             <button
                               type="button"
@@ -526,7 +576,13 @@ export default function AdminUsersPage() {
                             </button>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2.5 text-xs mt-1 text-[#8b949e]">
+                          {listings.length > 0 && (
+                            <div className="text-xs text-amber-300 font-bold truncate mt-1">
+                              👑 {listings[0].baslik}
+                            </div>
+                          )}
+
+                          <div className="flex flex-wrap items-center gap-2 text-xs mt-1.5 text-[#8b949e]">
                             {u.telefon ? (
                               <span className="flex items-center gap-1 text-emerald-400 font-mono font-bold">
                                 <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
@@ -536,13 +592,19 @@ export default function AdminUsersPage() {
                               <span className="text-[#8b949e]">Tel: Belirtilmedi</span>
                             )}
                             <span className="text-[#30363d]">●</span>
-                            <span className="text-[11px] text-[#8b949e]">
-                              {isActuallyOnline ? (
-                                <span className="text-emerald-400 font-bold">Şuan Online</span>
-                              ) : (
-                                `Kayıt: ${new Date(u.createdAt).toLocaleDateString('tr-TR')}`
-                              )}
-                            </span>
+                            {isActuallyOnline ? (
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-[10px] font-mono flex items-center gap-1">
+                                🟢 Online ({entryTimeStr} - {minsInside} dk)
+                              </span>
+                            ) : u.lastActiveAt ? (
+                              <span className="text-[11px] text-slate-400 font-mono">
+                                Son Çıkış: {lastLogoutStr || '—'} ({new Date(u.lastActiveAt).toLocaleDateString('tr-TR')})
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-[#8b949e]">
+                                Kayıt: {new Date(u.createdAt).toLocaleDateString('tr-TR')}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
