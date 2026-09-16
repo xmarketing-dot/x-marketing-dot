@@ -28,6 +28,7 @@ export default function BmsSecurePortalDashboard() {
   // Online Users State
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [showOnlineUsersModal, setShowOnlineUsersModal] = useState(false);
+  const [showActiveVisitorsModal, setShowActiveVisitorsModal] = useState(false);
 
   // Mobile Drawers
   const [showPagesDrawer, setShowPagesDrawer] = useState(false);
@@ -674,9 +675,12 @@ export default function BmsSecurePortalDashboard() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Canlı Kullanıcı Bannerı */}
-            <div className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#161b22] to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-xl">
+            <div 
+              onClick={() => setShowActiveVisitorsModal(true)}
+              className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#161b22] to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-xl cursor-pointer hover:border-emerald-400 transition-all group"
+            >
               <div className="flex items-center gap-3">
-                <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 shrink-0">
+                <div className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 shrink-0 group-hover:scale-110 transition-transform">
                   <div className="absolute inset-0 bg-emerald-500/30 rounded-full animate-ping"></div>
                   <div className="relative bg-emerald-500 text-slate-950 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center font-black">
                     <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -686,13 +690,14 @@ export default function BmsSecurePortalDashboard() {
                   <span className="font-black text-emerald-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
                     Sitede {activeUsers} Ziyaretçi Aktif
                   </span>
-                  <span className="text-[11px] text-[#8b949e] truncate">Son 5 dk içerisinde aktif olanlar</span>
+                  <span className="text-[11px] text-[#8b949e] truncate">Gezilen sayfaları &amp; ilanları gör →</span>
                 </div>
               </div>
 
-              <span className="hidden xl:inline-flex px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-heading shrink-0">
-                CANLI AKIŞ
-              </span>
+              <button className="hidden sm:flex px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold font-heading shrink-0 items-center gap-1 transition-all">
+                <Eye className="w-3.5 h-3.5" />
+                <span>Canlı İncele</span>
+              </button>
             </div>
 
             {/* Sitedeki / Paneldeki Kayıtlı Online Kullanıcılar Card */}
@@ -3135,6 +3140,211 @@ export default function BmsSecurePortalDashboard() {
           </div>
         </div>
       )}
+
+      {/* SİTEDEKİ AKTİF ZİYARETÇİLER VE İNCELENEN İLANLAR CANLI MODAL */}
+      {showActiveVisitorsModal && (() => {
+        const fiveMinAgoMs = Date.now() - 5 * 60 * 1000;
+        const activeMap = new Map<string, any>();
+        
+        (recentVisitors as any[] || []).forEach((v: any) => {
+          const vTime = new Date(v.createdAt).getTime();
+          if (vTime >= fiveMinAgoMs && !activeMap.has(v.visitorId)) {
+            activeMap.set(v.visitorId, v);
+          }
+        });
+
+        const activeList = activeMap.size > 0 
+          ? Array.from(activeMap.values())
+          : (recentVisitors as any[] || []).slice(0, 15);
+
+        return (
+          <div 
+            onClick={() => setShowActiveVisitorsModal(false)}
+            className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-2xl bg-[#161b22] border border-[#30363d] rounded-[32px] p-5 sm:p-6 shadow-2xl flex flex-col gap-4 text-left animate-in zoom-in-95 duration-200 max-h-[85vh]"
+            >
+              {/* Modal Başlığı */}
+              <div className="flex items-center justify-between border-b border-[#30363d] pb-4 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/20">
+                    <Activity className="w-5 h-5" />
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-black text-base sm:text-lg text-white font-heading">
+                        Canlı Ziyaretçiler &amp; İncelenen İlanlar
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        {activeList.length} Aktif
+                      </span>
+                    </div>
+                    <span className="text-xs text-[#8b949e]">
+                      Şu an sitede bulunan ziyaretçilerin hangi sayfada veya ilanda olduğunu anlık olarak görün.
+                    </span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowActiveVisitorsModal(false)} 
+                  className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Ziyaretçi Kartları Listesi */}
+              <div className="overflow-y-auto flex-1 flex flex-col gap-3 pr-1 custom-scrollbar">
+                {activeList.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-[#8b949e] flex flex-col items-center gap-2">
+                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+                      <Activity className="w-6 h-6 text-emerald-400" />
+                    </div>
+                    <span>Şu an canlı ziyaretçi akışı bekleniyor...</span>
+                  </div>
+                ) : (
+                  activeList.map((v: any, idx: number) => {
+                    const isListing = v.path && v.path.startsWith('/ilan/');
+                    const isSearch = v.searchKeyword || (v.path && v.path.startsWith('/ara'));
+                    const isCity = v.path && !isListing && v.path !== '/' && !v.path.startsWith('/admin') && !v.path.startsWith('/bms');
+                    const isHome = v.path === '/';
+
+                    const refSrc = (v.refererSource || 'direct').toLowerCase();
+                    let refIcon = '🔗';
+                    let refName = 'Direkt Giriş';
+                    let refBadge = 'bg-slate-800 text-slate-300 border-white/5';
+
+                    if (refSrc === 'yandex' || (v.referer || '').includes('yandex')) {
+                      refIcon = '🇷🇺';
+                      refName = 'Yandex Arama';
+                      refBadge = 'bg-red-500/15 text-red-400 border-red-500/30';
+                    } else if (refSrc === 'google' || (v.referer || '').includes('google')) {
+                      refIcon = '🌐';
+                      refName = 'Google Arama';
+                      refBadge = 'bg-blue-500/15 text-blue-400 border-blue-500/30';
+                    } else if (refSrc === 'x' || (v.referer || '').includes('t.co')) {
+                      refIcon = '🐦';
+                      refName = 'X (Twitter)';
+                      refBadge = 'bg-sky-500/15 text-sky-400 border-sky-500/30';
+                    } else if (refSrc === 'whatsapp') {
+                      refIcon = '💬';
+                      refName = 'WhatsApp';
+                      refBadge = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+                    }
+
+                    const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(v.createdAt).getTime()) / 1000));
+                    const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : `${Math.floor(elapsedSec / 60)} dk önce`;
+
+                    return (
+                      <div 
+                        key={v._id || idx} 
+                        className={`p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border transition-all flex flex-col gap-2.5 shadow-md ${
+                          isListing ? 'border-amber-500/40 hover:border-amber-400' : 'border-[#30363d] hover:border-emerald-500/40'
+                        }`}
+                      >
+                        {/* Üst Satır: Ziyaretçi Cihazı, Şehir, IP & Canlı Süre */}
+                        <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                            </span>
+                            <span className="font-bold text-white flex items-center gap-1">
+                              📍 {v.city || 'İstanbul'}
+                            </span>
+                            <span className="text-[10px] text-[#8b949e] font-mono">
+                              ({v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} • {v.browser || 'Chrome'})
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-emerald-400 font-bold">
+                              🟢 {timeStr}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold border ${refBadge}`}>
+                              {refIcon} {refName}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Orta Satır: Hangi Sayfada / Hangi İlanı İnceliyor */}
+                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#21262d] flex items-center justify-between gap-3">
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {isListing ? (
+                                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-black font-heading tracking-wider">
+                                  👑 İLAN İNCELİYOR
+                                </span>
+                              ) : isSearch ? (
+                                <span className="px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[9px] font-black font-heading tracking-wider">
+                                  🔍 SİTE İÇİ ARAMA
+                                </span>
+                              ) : isCity ? (
+                                <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-black font-heading tracking-wider">
+                                  📍 İL / İLÇE VİTRİNİ
+                                </span>
+                              ) : isHome ? (
+                                <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black font-heading tracking-wider">
+                                  🏠 ANA SAYFA
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-md bg-slate-700 text-slate-300 text-[9px] font-bold">
+                                  📄 SAYFA
+                                </span>
+                              )}
+
+                              <span className="font-mono text-[11px] text-amber-400 font-bold truncate">
+                                {v.path}
+                              </span>
+                            </div>
+
+                            <span className="text-xs text-white font-bold truncate mt-1">
+                              {v.pageTitle || 'Best Eskort Vitrini'}
+                            </span>
+
+                            {v.searchKeyword && (
+                              <span className="text-[10px] text-cyan-400 font-mono mt-0.5">
+                                Aranan Kelime: &quot;{v.searchKeyword}&quot;
+                              </span>
+                            )}
+                          </div>
+
+                          <Link 
+                            href={v.path || '#'} 
+                            target="_blank"
+                            className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-amber-500/30 text-xs font-bold font-heading shrink-0 flex items-center gap-1 transition-all"
+                          >
+                            <span>Sayfayı Aç</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Modal Altı */}
+              <div className="pt-3 border-t border-[#30363d] flex items-center justify-between shrink-0">
+                <span className="text-[11px] text-[#8b949e]">
+                  Otomatik 15 saniyede bir güncellenir.
+                </span>
+                <button
+                  onClick={() => {
+                    setShowActiveVisitorsModal(false);
+                    setActiveTab('live_visitors');
+                  }}
+                  className="text-xs text-amber-400 font-bold flex items-center gap-1 hover:underline font-heading"
+                >
+                  Tüm Canlı Akış Loglarına Git →
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
     </div>
   );
