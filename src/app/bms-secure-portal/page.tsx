@@ -3066,7 +3066,7 @@ export default function BmsSecurePortalDashboard() {
                   const now = new Date();
                   const startedAt = u.sessionStartedAt ? new Date(u.sessionStartedAt) : (u.lastActiveAt ? new Date(u.lastActiveAt) : now);
                   const minsInside = Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60000));
-                  const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
+                  const isActuallyOnline = !!(u.isOnline && u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 2 * 60000);
                   const entryTimeStr = startedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
                   const lastActiveTimeStr = u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
 

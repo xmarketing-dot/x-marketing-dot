@@ -9,14 +9,18 @@ export async function GET() {
   try {
     await connectToDatabase();
     
-    // Son 5 dakikada aktif olan veya isOnline=true olanlar
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    // Gerçek canlılık için son 2 dakikada heartbeat göndermiş olması şarttır
+    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+    
+    // Sekmeyi kapatıp çıkan ve 2 dakikadır sinyal göndermeyenleri otomatik offline yap
+    await UserModel.updateMany(
+      { isOnline: true, $or: [{ lastActiveAt: { $lt: twoMinutesAgo } }, { lastActiveAt: { $exists: false } }] },
+      { $set: { isOnline: false } }
+    );
     
     const onlineUsers = await UserModel.find({
-      $or: [
-        { isOnline: true },
-        { lastActiveAt: { $gte: fiveMinutesAgo } }
-      ]
+      isOnline: true,
+      lastActiveAt: { $gte: twoMinutesAgo }
     })
       .select('kullaniciAdi telefon ad isOnline lastActiveAt sessionStartedAt lastLogoutAt currentTab')
       .sort({ lastActiveAt: -1 })
