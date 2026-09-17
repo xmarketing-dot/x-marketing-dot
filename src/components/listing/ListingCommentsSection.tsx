@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Star,
   MessageSquare,
@@ -14,7 +14,8 @@ import {
   User,
   AlertCircle,
   Loader2,
-  Plus
+  Plus,
+  Lock
 } from 'lucide-react';
 
 export interface CommentItem {
@@ -23,6 +24,8 @@ export interface CommentItem {
   yorum: string;
   puan: number;
   onayli?: boolean;
+  userIp?: string;
+  visitorId?: string;
   createdAt: string | Date;
 }
 
@@ -40,6 +43,7 @@ export default function ListingCommentsSection({
   const [comments, setComments] = useState<CommentItem[]>(initialComments);
   const [showForm, setShowForm] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [hasAlreadyCommented, setHasAlreadyCommented] = useState(false);
 
   // Form states
   const [puan, setPuan] = useState(5);
@@ -50,6 +54,59 @@ export default function ListingCommentsSection({
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
+  // Get or create persistent visitor ID
+  const getVisitorId = () => {
+    if (typeof window === 'undefined') return '';
+    let vid = localStorage.getItem('best_eskort_visitor_id');
+    if (!vid) {
+      vid = `vid_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+      localStorage.setItem('best_eskort_visitor_id', vid);
+    }
+    return vid;
+  };
+
+  // Visitor ID, Cooldown & Previously Commented Check on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const vid = getVisitorId();
+
+    // Check if this user already commented on THIS specific listing
+    const isCommentedLocally = localStorage.getItem(`commented_slug_${listingSlug}`);
+    const isCommentedInList = comments.some(
+      (c) => c.visitorId && c.visitorId === vid
+    );
+
+    if (isCommentedLocally || isCommentedInList) {
+      setHasAlreadyCommented(true);
+    }
+
+    // Check global cooldown timestamp
+    const lastGlobalTs = localStorage.getItem('best_eskort_global_last_comment_ts');
+    if (lastGlobalTs) {
+      const elapsed = Date.now() - Number(lastGlobalTs);
+      if (elapsed < 60000) {
+        setCooldownRemaining(Math.ceil((60000 - elapsed) / 1000));
+      }
+    }
+  }, [listingSlug, comments]);
+
+  // Cooldown countdown tick
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return;
+    const interval = setInterval(() => {
+      setCooldownRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldownRemaining]);
 
   // Calculate average rating
   const avgRating = useMemo(() => {
@@ -81,6 +138,16 @@ export default function ListingCommentsSection({
     setErrorMessage('');
     setSuccessMessage('');
 
+    if (hasAlreadyCommented) {
+      setErrorMessage('Bu ilana daha önce zaten yorum yaptınız. Her ilana yalnızca 1 kez yorum yapabilirsiniz.');
+      return;
+    }
+
+    if (cooldownRemaining > 0) {
+      setErrorMessage(`Güvenlik Koruması: Lütfen ${cooldownRemaining} saniye bekleyin.`);
+      return;
+    }
+
     if (yorum.trim().length < 5) {
       setErrorMessage('Lütfen en az 5 karakter uzunluğunda bir yorum yazın.');
       return;
@@ -91,20 +158,10 @@ export default function ListingCommentsSection({
       return;
     }
 
-    // Client-side quick spam check (30 seconds interval in localStorage)
-    const lastPostKey = `comment_ts_${listingSlug}`;
-    const lastPostTime = localStorage.getItem(lastPostKey);
-    if (lastPostTime) {
-      const diff = Date.now() - Number(lastPostTime);
-      if (diff < 30000) {
-        setErrorMessage(`Lütfen yeni bir yorum yazmadan önce ${Math.ceil((30000 - diff) / 1000)} saniye bekleyin.`);
-        return;
-      }
-    }
-
     setSubmitting(true);
 
     try {
+      const vid = getVisitorId();
       const res = await fetch('/api/listings/comment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -114,6 +171,7 @@ export default function ListingCommentsSection({
           yorum: yorum.trim(),
           puan,
           hp_field: hpField,
+          visitorId: vid,
         }),
       });
 
@@ -121,12 +179,30 @@ export default function ListingCommentsSection({
 
       if (!res.ok || !data.success) {
         setErrorMessage(data.error || 'Yorum gönderilirken bir sorun oluştu.');
+
+        // If 403 (Already commented), lock permanently
+        if (res.status === 403) {
+          setHasAlreadyCommented(true);
+          localStorage.setItem(`commented_slug_${listingSlug}`, 'true');
+        }
+
+        // If 429 rate limited, set client cooldown
+        if (res.status === 429) {
+          const match = data.error?.match(/(\d+)\s*saniye/);
+          const sec = match ? Number(match[1]) : 60;
+          setCooldownRemaining(sec);
+          localStorage.setItem('best_eskort_global_last_comment_ts', Date.now().toString());
+        }
         setSubmitting(false);
         return;
       }
 
-      // Success
-      localStorage.setItem(lastPostKey, Date.now().toString());
+      // Success -> Lock this listing permanently for this user
+      localStorage.setItem(`commented_slug_${listingSlug}`, 'true');
+      localStorage.setItem('best_eskort_global_last_comment_ts', Date.now().toString());
+      setHasAlreadyCommented(true);
+      setCooldownRemaining(60);
+
       if (data.comments) {
         setComments(data.comments);
       } else if (data.newComment) {
@@ -141,7 +217,7 @@ export default function ListingCommentsSection({
       setTimeout(() => {
         setSuccessMessage('');
         setShowForm(false);
-      }, 2500);
+      }, 3000);
     } catch (err) {
       setErrorMessage('Bağlantı hatası. Lütfen tekrar deneyin.');
     } finally {
@@ -194,23 +270,40 @@ export default function ListingCommentsSection({
               <span className="text-xs font-black text-white font-heading">{avgRating}</span>
             </div>
 
-            {/* Toggle Comment Form Button */}
-            <button
-              onClick={() => {
-                setShowForm(!showForm);
-                setErrorMessage('');
-                setSuccessMessage('');
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading shadow-md active:scale-95 transition-all shrink-0"
-            >
-              <Plus className={`w-3.5 h-3.5 stroke-[3] transition-transform duration-200 ${showForm ? 'rotate-45' : ''}`} />
-              <span>{showForm ? 'Formu Kapat' : 'Yorum Yaz'}</span>
-            </button>
+            {/* Action / Status Button */}
+            {hasAlreadyCommented ? (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold font-heading shrink-0 shadow-sm">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Değerlendirmeniz Kayıtlı</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setShowForm(!showForm);
+                  setErrorMessage('');
+                  setSuccessMessage('');
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading shadow-md active:scale-95 transition-all shrink-0"
+              >
+                <Plus className={`w-3.5 h-3.5 stroke-[3] transition-transform duration-200 ${showForm ? 'rotate-45' : ''}`} />
+                <span>{showForm ? 'Formu Kapat' : 'Yorum Yaz'}</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* ── 2. YORUM YAZMA FORMU (COLLAPSIBLE FORM) ──────────────── */}
-        {showForm && (
+        {/* ── 2. DAHA ÖNCE YORUM YAPILDIYSA BİLGİLENDİRME PANELİ ──────────────── */}
+        {hasAlreadyCommented && (
+          <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-2.5 text-xs text-emerald-300 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>
+              Bu ilanı daha önce değerlendirdiniz. Güvenlik politikamız gereği her ilana yalnızca <strong>1 kez</strong> yorum yapabilirsiniz.
+            </span>
+          </div>
+        )}
+
+        {/* ── 3. YORUM YAZMA FORMU (COLLAPSIBLE FORM) ──────────────── */}
+        {showForm && !hasAlreadyCommented && (
           <form
             onSubmit={handleSubmit}
             className="p-4 sm:p-5 rounded-2xl bg-[#0d1117] border border-amber-500/40 shadow-xl flex flex-col gap-3.5 animate-in fade-in slide-in-from-top-3 duration-200"
@@ -222,8 +315,8 @@ export default function ListingCommentsSection({
                   Deneyimini Paylaş
                 </span>
               </div>
-              <span className="text-[10px] text-[#8b949e]">
-                Anonim olarak anında yayınlanır
+              <span className="text-[10px] text-amber-400/80 font-medium">
+                Her ilana yalnızca 1 kez yorum yapılabilir
               </span>
             </div>
 
@@ -343,13 +436,18 @@ export default function ListingCommentsSection({
             {/* Submit Action */}
             <button
               type="submit"
-              disabled={submitting || yorum.trim().length < 5}
+              disabled={submitting || yorum.trim().length < 5 || cooldownRemaining > 0}
               className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-xs font-heading shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Yayınlanıyor...</span>
+                </>
+              ) : cooldownRemaining > 0 ? (
+                <>
+                  <Clock className="w-3.5 h-3.5 animate-pulse" />
+                  <span>⏳ {cooldownRemaining}s Bekleyin</span>
                 </>
               ) : (
                 <>
@@ -361,7 +459,7 @@ export default function ListingCommentsSection({
           </form>
         )}
 
-        {/* ── 3. YORUMLAR LİSTESİ ──────────────── */}
+        {/* ── 4. YORUMLAR LİSTESİ ──────────────── */}
         {comments.length === 0 ? (
           <div className="p-6 sm:p-8 rounded-2xl bg-[#0d1117] border border-[#30363d]/60 text-center flex flex-col items-center justify-center gap-2.5">
             <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
@@ -375,12 +473,14 @@ export default function ListingCommentsSection({
                 Bu ilan için ilk değerlendirmeyi yaparak diğer ziyaretçilere rehberlik edin.
               </p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="mt-1 px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 text-xs font-black font-heading border border-[#30363d] transition-colors"
-            >
-              + İlk Yorumu Sen Yaz
-            </button>
+            {!hasAlreadyCommented && (
+              <button
+                onClick={() => setShowForm(true)}
+                className="mt-1 px-4 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 text-xs font-black font-heading border border-[#30363d] transition-colors"
+              >
+                + İlk Yorumu Sen Yaz
+              </button>
+            )}
           </div>
         ) : (
           <div className="flex flex-col gap-2.5">
@@ -441,7 +541,7 @@ export default function ListingCommentsSection({
               );
             })}
 
-            {/* ── 4. DAHA FAZLA GÖSTER (5'TEN FAZLA YORUM OLURSA) ──────────────── */}
+            {/* ── 5. DAHA FAZLA GÖSTER (5'TEN FAZLA YORUM OLURSA) ──────────────── */}
             {comments.length > 5 && (
               <button
                 onClick={() => setShowAll(!showAll)}

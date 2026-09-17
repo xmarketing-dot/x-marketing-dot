@@ -265,12 +265,27 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
+    const commentId = searchParams.get('commentId');
 
     if (!id) {
       return NextResponse.json({ error: 'İlan ID zorunludur.' }, { status: 400 });
     }
 
     await connectToDatabase();
+
+    // Yorum Silme İsteği
+    if (commentId) {
+      const updated = await ListingModel.findByIdAndUpdate(
+        id,
+        { $pull: { anonimYorumlar: { _id: commentId } } },
+        { new: true }
+      ).lean();
+
+      adminListingsCache = null;
+      return NextResponse.json({ success: true, listing: updated });
+    }
+
+    // İlan Silme İsteği
     await ListingModel.findByIdAndDelete(id);
 
     adminListingsCache = null;
