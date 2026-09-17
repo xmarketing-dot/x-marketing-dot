@@ -93,6 +93,7 @@ export default function BmsSecurePortalDashboard() {
     }
   };
 
+  // SSE Real-time Lead & Chat Sync
   useEffect(() => {
     fetchKeywords();
     fetchBanners();
@@ -100,7 +101,63 @@ export default function BmsSecurePortalDashboard() {
     
     // Poll online users every 30 seconds
     const interval = setInterval(fetchOnlineUsers, 30000);
-    return () => clearInterval(interval);
+
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('/api/admin/chat/sse');
+      eventSource.addEventListener('admin_whatsapp_click', (e) => {
+        try {
+          const clickData = JSON.parse(e.data);
+          if (clickData) {
+            setData((prev: any) => {
+              if (!prev) return prev;
+              const prevLeads = prev.recentWhatsappClicks || [];
+              const exists = prevLeads.some((l: any) => (l._id && l._id === clickData._id) || (l.createdAt === clickData.createdAt && l.visitorId === clickData.visitorId));
+              if (exists) return prev;
+
+              const formattedLead = {
+                _id: clickData._id || `temp_${Date.now()}`,
+                eventType: 'whatsapp_click',
+                targetId: clickData.targetId,
+                targetTitle: clickData.targetTitle || clickData.baslik || 'WhatsApp Talebi',
+                targetCity: clickData.targetCity || clickData.ilSlug || 'İstanbul',
+                path: clickData.path || `/ilan/${clickData.slug || ''}`,
+                visitorId: clickData.visitorId,
+                ip: clickData.ip,
+                createdAt: clickData.timestamp || new Date().toISOString(),
+                isNewLive: true,
+                metadata: {
+                  listingPhone: clickData.whatsappNumara,
+                  listingLocation: clickData.ilSlug ? `${clickData.ilSlug}/${clickData.ilceSlug || ''}` : null,
+                  listingSlug: clickData.slug,
+                  city: clickData.city,
+                  device: clickData.device,
+                  browser: clickData.browser,
+                  os: clickData.os,
+                  referer: clickData.referer,
+                  refererSource: clickData.refererSource,
+                  searchKeyword: clickData.searchKeyword,
+                }
+              };
+
+              return {
+                ...prev,
+                recentWhatsappClicks: [formattedLead, ...prevLeads],
+                eventCounts: {
+                  ...prev.eventCounts,
+                  whatsappClicks: (prev.eventCounts?.whatsappClicks || 0) + 1,
+                }
+              };
+            });
+          }
+        } catch (err) {}
+      });
+    } catch (err) {}
+
+    return () => {
+      clearInterval(interval);
+      if (eventSource) eventSource.close();
+    };
   }, []);
 
   const fetchOnlineUsers = async () => {
@@ -1663,6 +1720,7 @@ export default function BmsSecurePortalDashboard() {
                           const refSrc = (m.refererSource || 'direct').toLowerCase();
                           const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(lead.createdAt).getTime()) / 1000));
                           const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : elapsedSec < 3600 ? `${Math.floor(elapsedSec / 60)} dk önce` : `${Math.floor(elapsedSec / 3600)} sa önce`;
+                          const isNew = lead.isNewLive || elapsedSec < 120;
 
                           let refIcon = '🔗';
                           let refName = 'Direkt Giriş';
@@ -1689,15 +1747,25 @@ export default function BmsSecurePortalDashboard() {
                           return (
                             <tr 
                               key={lead._id || idx}
-                              className="hover:bg-[#0d1117]/60 transition-colors group"
+                              className={`transition-all duration-300 group ${
+                                isNew 
+                                  ? 'bg-gradient-to-r from-emerald-950/70 via-[#102a1e]/60 to-emerald-950/40 border-l-4 border-l-emerald-400 shadow-[inset_0_0_20px_rgba(16,185,129,0.15)] animate-pulse' 
+                                  : 'hover:bg-[#0d1117]/60'
+                              }`}
                             >
                               {/* Zaman Damgası */}
                               <td className="py-4 px-5">
                                 <div className="flex flex-col gap-1">
-                                  <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-black border border-emerald-500/20 flex items-center gap-1.5 w-fit">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                                    {timeStr}
-                                  </span>
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className={`px-2.5 py-0.5 rounded-lg font-mono text-[11px] font-black border flex items-center gap-1.5 w-fit ${
+                                      isNew 
+                                        ? 'bg-emerald-500 text-slate-950 border-emerald-300 shadow-md shadow-emerald-500/40' 
+                                        : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                    }`}>
+                                      <span className={`w-1.5 h-1.5 rounded-full ${isNew ? 'bg-slate-950 animate-ping' : 'bg-emerald-400 animate-ping'}`}></span>
+                                      {isNew ? `⚡ YENİ (${timeStr})` : timeStr}
+                                    </span>
+                                  </div>
                                   <span className="text-[11px] text-[#8b949e] font-mono">
                                     {new Date(lead.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                   </span>
@@ -1708,20 +1776,20 @@ export default function BmsSecurePortalDashboard() {
                               <td className="py-4 px-5">
                                 <div className="flex flex-col gap-1 max-w-xs">
                                   <div className="flex items-center gap-1.5">
-                                    <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                                    <span className="font-bold text-white text-xs truncate group-hover:text-amber-300 transition-colors">
+                                    <Crown className={`w-3.5 h-3.5 shrink-0 ${isNew ? 'text-emerald-300 animate-bounce' : 'text-amber-400'}`} />
+                                    <span className={`font-black text-xs truncate transition-colors ${isNew ? 'text-emerald-200 text-sm' : 'text-white group-hover:text-amber-300'}`}>
                                       {lead.targetTitle || 'İlan'}
                                     </span>
                                   </div>
                                   
                                   <div className="flex items-center gap-2 text-[11px] font-mono text-[#8b949e]">
                                     {m.listingLocation && (
-                                      <span>📍 {m.listingLocation.toUpperCase()}</span>
+                                      <span className="font-bold text-slate-300">📍 {m.listingLocation.toUpperCase()}</span>
                                     )}
                                     {m.listingPhone && (
                                       <>
                                         <span>•</span>
-                                        <span className="text-emerald-400 font-bold">📞 {m.listingPhone}</span>
+                                        <span className="text-emerald-400 font-black">📞 {m.listingPhone}</span>
                                       </>
                                     )}
                                   </div>
@@ -1780,7 +1848,11 @@ export default function BmsSecurePortalDashboard() {
                                       href={`https://wa.me/${m.listingPhone.replace(/\D/g, '')}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/30 text-xs font-bold font-heading flex items-center gap-1.5 transition-all shadow-sm"
+                                      className={`px-3 py-1.5 rounded-xl font-bold font-heading flex items-center gap-1.5 transition-all shadow-md ${
+                                        isNew 
+                                          ? 'bg-emerald-400 hover:bg-emerald-300 text-slate-950 text-xs shadow-emerald-500/30' 
+                                          : 'bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/30 text-xs'
+                                      }`}
                                       title="WhatsApp Görüşmesi Başlat"
                                     >
                                       <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-current" />
@@ -1827,6 +1899,7 @@ export default function BmsSecurePortalDashboard() {
                     const refSrc = (m.refererSource || 'direct').toLowerCase();
                     const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(lead.createdAt).getTime()) / 1000));
                     const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : elapsedSec < 3600 ? `${Math.floor(elapsedSec / 60)} dk önce` : `${Math.floor(elapsedSec / 3600)} sa önce`;
+                    const isNew = lead.isNewLive || elapsedSec < 120;
 
                     let refIcon = '🔗';
                     let refName = 'Direkt Giriş';
@@ -1853,12 +1926,20 @@ export default function BmsSecurePortalDashboard() {
                     return (
                       <div
                         key={lead._id || idx}
-                        className="p-4 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-lg"
+                        className={`p-4 rounded-3xl border transition-all flex flex-col gap-3 shadow-lg ${
+                          isNew 
+                            ? 'bg-gradient-to-r from-emerald-950/80 via-[#102a1e] to-emerald-950/80 border-2 border-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.3)] animate-pulse' 
+                            : 'bg-[#161b22] border-[#30363d]'
+                        }`}
                       >
                         <div className="flex items-center justify-between gap-2 border-b border-[#21262d] pb-2.5">
-                          <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-black border border-emerald-500/20 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                            {timeStr}
+                          <span className={`px-2.5 py-0.5 rounded-lg font-mono text-[11px] font-black border flex items-center gap-1.5 ${
+                            isNew 
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-300' 
+                              : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isNew ? 'bg-slate-950 animate-ping' : 'bg-emerald-400 animate-ping'}`}></span>
+                            {isNew ? `⚡ YENİ (${timeStr})` : timeStr}
                           </span>
                           <span className={`px-2.5 py-0.5 rounded-xl text-[11px] font-mono font-bold border ${refBadge}`}>
                             {refIcon} {refName}
