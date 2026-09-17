@@ -33,27 +33,36 @@ function getPrimaryDomain(): string {
       .toLowerCase();
   }
 }
+const EXACT_OUR_DOMAINS = new Set([
+  'besteskort.online',
+  'www.besteskort.online',
+  'besteskort.devs.surf',
+  'istanbuleskort.devs.surf',
+  'beylikduzueskort.devs.surf',
+  'bestescort.vercel.app',
+  'besteskort.vercel.app',
+]);
 
 /**
- * Domain'in dinamik olarak sitemize ait olup olmadığını doğrular (Eski ve yeni domainler + subdomainler dahil)
+ * Domain'in kesin ve net olarak sadece bizim sitemize ait olduğunu doğrular.
+ * Sadece birebir bizim olan alan adlarını kabul eder.
  */
 function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
   const host = hostname.toLowerCase().replace(/^www\./, '').trim();
+  const rawHost = hostname.toLowerCase().trim();
   const primary = getPrimaryDomain();
 
-  // Bilinen tüm ana domainlerimiz ve kök kelimelerimiz
+  // 1. Kesin birebir bizim domainlerimiz
   if (
-    host.includes('besteskort') ||
-    host.includes('devs.surf') ||
-    host.includes('istanbuleskort') ||
-    host.includes('beylikduzueskort') ||
-    host.includes('beylikduzuescort') ||
-    host.includes('izmireskort') ||
-    host.includes('bestmarketing')
+    EXACT_OUR_DOMAINS.has(rawHost) ||
+    EXACT_OUR_DOMAINS.has(host) ||
+    host === 'besteskort.online' ||
+    host.endsWith('.besteskort.online')
   ) {
     return true;
   }
 
+  // 2. Belirtilen hedef domain (birebir eşleşme)
   if (targetDomain) {
     const cleanTarget = targetDomain
       .replace(/^https?:\/\//, '')
@@ -62,12 +71,13 @@ function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
       .replace(/^www\./, '')
       .trim();
 
-    if (cleanTarget && (host === cleanTarget || host.endsWith('.' + cleanTarget) || host.includes(cleanTarget))) {
+    if (cleanTarget && host === cleanTarget) {
       return true;
     }
   }
 
-  if (primary && (host === primary || host.endsWith('.' + primary) || host.includes(primary))) {
+  // 3. Primary sistem domaini
+  if (primary && host === primary) {
     return true;
   }
 
