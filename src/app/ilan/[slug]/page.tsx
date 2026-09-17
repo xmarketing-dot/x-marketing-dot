@@ -29,6 +29,7 @@ import ImageSlider from '@/components/common/ImageSlider';
 import LikeButton from '@/components/common/LikeButton';
 import ShareButtons from '@/components/common/ShareButtons';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import ListingCommentsSection from '@/components/listing/ListingCommentsSection';
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -403,6 +404,13 @@ export default async function ListingDetailPage({ params }: Props) {
             </Link>
           </div>
         </div>
+
+        {/* ── 3. KULLANICI YORUMLARI & DEĞERLENDİRMELER (RESPONSIVE & GÜVENLİ) ──────────────── */}
+        <ListingCommentsSection
+          listingSlug={listing.slug}
+          listingTitle={listing.baslik}
+          initialComments={listing.anonimYorumlar || []}
+        />
 
       </div>
 

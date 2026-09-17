@@ -12,6 +12,8 @@ export interface IComment {
   yorum: string;
   puan: number;
   onayli: boolean;
+  userIp?: string;
+  visitorId?: string;
   createdAt: Date;
 }
 
@@ -80,6 +82,8 @@ const CommentSchema = new Schema<IComment>({
   yorum: { type: String, required: true },
   puan: { type: Number, default: 5, min: 1, max: 5 },
   onayli: { type: Boolean, default: true },
+  userIp: { type: String },
+  visitorId: { type: String },
   createdAt: { type: Date, default: Date.now },
 });
 

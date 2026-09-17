@@ -64,3 +64,23 @@ h1, h2, h3, .font-heading {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ── Global Mobile Virtual Keyboard Handling ── */
+:root {
+  --keyboard-height: 0px;
+  --visual-viewport-height: 100dvh;
+}
+
+/* When virtual keyboard is open on mobile: hide blocking sticky CTA bars */
+html[data-keyboard-open="true"] .fixed.bottom-0:not(.chat-input-bar):not(.keyboard-persist) {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(100%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Ensure smooth transition when keyboard closes */
+.fixed.bottom-0 {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
