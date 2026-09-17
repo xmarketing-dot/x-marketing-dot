@@ -35,11 +35,24 @@ function getPrimaryDomain(): string {
 }
 
 /**
- * Domain'in dinamik olarak sitemize ait olup olmadığını doğrular
+ * Domain'in dinamik olarak sitemize ait olup olmadığını doğrular (Eski ve yeni domainler + subdomainler dahil)
  */
 function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
   const host = hostname.toLowerCase().replace(/^www\./, '').trim();
   const primary = getPrimaryDomain();
+
+  // Bilinen tüm ana domainlerimiz ve kök kelimelerimiz
+  if (
+    host.includes('besteskort') ||
+    host.includes('devs.surf') ||
+    host.includes('istanbuleskort') ||
+    host.includes('beylikduzueskort') ||
+    host.includes('beylikduzuescort') ||
+    host.includes('izmireskort') ||
+    host.includes('bestmarketing')
+  ) {
+    return true;
+  }
 
   if (targetDomain) {
     const cleanTarget = targetDomain
@@ -49,12 +62,12 @@ function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
       .replace(/^www\./, '')
       .trim();
 
-    if (cleanTarget && (host === cleanTarget || host.endsWith('.' + cleanTarget))) {
+    if (cleanTarget && (host === cleanTarget || host.endsWith('.' + cleanTarget) || host.includes(cleanTarget))) {
       return true;
     }
   }
 
-  if (primary && (host === primary || host.endsWith('.' + primary))) {
+  if (primary && (host === primary || host.endsWith('.' + primary) || host.includes(primary))) {
     return true;
   }
 
@@ -81,9 +94,11 @@ function isNoiseDomain(host: string): boolean {
 async function scrapeGoogleSerp(
   keyword: string,
   targetDomain: string
-): Promise<{ position: number; competitors: ICompetitor[] }> {
+): Promise<{ position: number; competitors: ICompetitor[]; foundUrl?: string; foundDomain?: string }> {
   const competitors: ICompetitor[] = [];
   let foundPosition = 0;
+  let foundUrl = '';
+  let foundDomain = '';
   const seenDomains = new Set<string>();
   let rankCounter = 1;
 
@@ -99,7 +114,7 @@ async function scrapeGoogleSerp(
         q: keyword,
         gl: 'tr',
         hl: 'tr',
-        num: 30
+        num: 40
       })
     });
 
@@ -125,6 +140,8 @@ async function scrapeGoogleSerp(
           if (isOurSite) {
             if (foundPosition === 0) {
               foundPosition = rankCounter;
+              foundUrl = result.link;
+              foundDomain = hostname;
             }
           } else {
             if (competitors.length < 3) {
@@ -145,7 +162,7 @@ async function scrapeGoogleSerp(
     // Silent
   }
 
-  return { position: foundPosition, competitors };
+  return { position: foundPosition, competitors, foundUrl, foundDomain };
 }
 
 /**
@@ -154,9 +171,11 @@ async function scrapeGoogleSerp(
 async function scrapeYandexSerp(
   keyword: string,
   targetDomain: string
-): Promise<{ position: number; competitors: ICompetitor[] }> {
+): Promise<{ position: number; competitors: ICompetitor[]; foundUrl?: string; foundDomain?: string }> {
   const competitors: ICompetitor[] = [];
   let foundPosition = 0;
+  let foundUrl = '';
+  let foundDomain = '';
   const seenDomains = new Set<string>();
   let rankCounter = 1;
 
@@ -195,6 +214,8 @@ async function scrapeYandexSerp(
           if (isOurSite) {
             if (foundPosition === 0) {
               foundPosition = rankCounter;
+              foundUrl = rawHref;
+              foundDomain = hostname;
             }
           } else {
             if (competitors.length < 3) {
@@ -215,7 +236,7 @@ async function scrapeYandexSerp(
     // Silent
   }
 
-  return { position: foundPosition, competitors };
+  return { position: foundPosition, competitors, foundUrl, foundDomain };
 }
 
 function getReqDomain(req: NextRequest): string {
@@ -343,10 +364,14 @@ export async function POST(req: NextRequest) {
       change: 0,
       bestPosition: googleResult.position,
       topCompetitors: googleResult.competitors,
+      googleFoundUrl: googleResult.foundUrl || '',
+      googleFoundDomain: googleResult.foundDomain || '',
       yandexPosition: yandexResult.position,
       previousYandexPosition: yandexResult.position,
       yandexChange: 0,
       yandexCompetitors: yandexResult.competitors,
+      yandexFoundUrl: yandexResult.foundUrl || '',
+      yandexFoundDomain: yandexResult.foundDomain || '',
       lastCheckedAt: new Date(),
     });
 
@@ -373,7 +398,8 @@ export async function PUT(req: NextRequest) {
 
     const updatedItems = [];
 
-    for (const item of items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       const cleanTarget = !item.targetDomain || item.targetDomain.includes('localhost')
         ? getPrimaryDomain()
         : item.targetDomain.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '').toLowerCase();
@@ -402,11 +428,15 @@ export async function PUT(req: NextRequest) {
       item.yandexPosition = currY;
       item.yandexChange = changeY;
       item.yandexCompetitors = yandexResult.competitors;
+      item.yandexFoundUrl = yandexResult.foundUrl || '';
+      item.yandexFoundDomain = yandexResult.foundDomain || '';
 
       item.previousPosition = prevG;
       item.currentPosition = currG;
       item.change = changeG;
       item.topCompetitors = googleResult.competitors;
+      item.googleFoundUrl = googleResult.foundUrl || '';
+      item.googleFoundDomain = googleResult.foundDomain || '';
       if (currG > 0 && (item.bestPosition === 0 || currG < item.bestPosition)) {
         item.bestPosition = currG;
       }
@@ -415,6 +445,11 @@ export async function PUT(req: NextRequest) {
 
       await item.save();
       updatedItems.push(item);
+
+      // Seri isteklerde bot blokajını önlemek için ufak bekleme
+      if (items.length > 1 && i < items.length - 1) {
+        await new Promise(res => setTimeout(res, 250));
+      }
     }
 
     const rawKeywords = await KeywordRankModel.find({}).lean();

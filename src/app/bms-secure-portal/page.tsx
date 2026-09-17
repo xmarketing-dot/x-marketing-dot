@@ -1820,7 +1820,13 @@ export default function BmsSecurePortalDashboard() {
                     const posG = item.currentPosition || 0;
                     const changeG = item.change || 0;
 
-                    const renderPosBadge = (pos: number, keyword: string, engine: 'google'|'yandex') => {
+                    const renderPosBadge = (
+                      pos: number,
+                      keyword: string,
+                      engine: 'google' | 'yandex',
+                      foundDomain?: string,
+                      foundUrl?: string
+                    ) => {
                       const searchUrl = engine === 'yandex' 
                         ? `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`
                         : `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}`;
@@ -1859,15 +1865,33 @@ export default function BmsSecurePortalDashboard() {
                       }
 
                       return (
-                        <a
-                          href={searchUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group inline-block"
-                          title={`${engine === 'yandex' ? 'Yandex TR' : 'Google TR'} üzerinde canlı sonuçları yeni sekmede gör`}
-                        >
-                          {badgeContent}
-                        </a>
+                        <div className="flex flex-col gap-1 items-start">
+                          <a
+                            href={searchUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group inline-block"
+                            title={`${engine === 'yandex' ? 'Yandex TR' : 'Google TR'} üzerinde canlı sonuçları yeni sekmede gör`}
+                          >
+                            {badgeContent}
+                          </a>
+                          {pos > 0 && (foundDomain || foundUrl) && (
+                            <a
+                              href={foundUrl || `https://${foundDomain}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`text-[10px] font-mono px-1.5 py-0.5 rounded border max-w-[150px] truncate inline-flex items-center gap-1 transition-colors ${
+                                engine === 'google'
+                                  ? 'text-blue-400/90 bg-blue-500/10 border-blue-500/20 hover:border-blue-500/50'
+                                  : 'text-amber-400/90 bg-amber-500/10 border-amber-500/20 hover:border-amber-500/50'
+                              }`}
+                              title={foundUrl || foundDomain}
+                            >
+                              <Globe className="w-2.5 h-2.5 shrink-0" />
+                              <span className="truncate">{foundDomain || 'Site URL'}</span>
+                            </a>
+                          )}
+                        </div>
                       );
                     };
 
@@ -1909,17 +1933,17 @@ export default function BmsSecurePortalDashboard() {
                           <span className="font-bold text-xs text-white capitalize font-heading block">
                             {item.keyword}
                           </span>
-                          <span className="text-[10px] text-[#8b949e]">Yandex Türkiye</span>
+                          <span className="text-[10px] text-[#8b949e]">Yandex / Google TR</span>
                         </td>
 
                         {/* Google Sırası */}
                         <td className="py-3.5 px-3">
-                          {renderPosBadge(posG, item.keyword, 'google')}
+                          {renderPosBadge(posG, item.keyword, 'google', item.googleFoundDomain, item.googleFoundUrl)}
                         </td>
 
                         {/* Yandex Sırası */}
                         <td className="py-3.5 px-3">
-                          {renderPosBadge(posY, item.keyword, 'yandex')}
+                          {renderPosBadge(posY, item.keyword, 'yandex', item.yandexFoundDomain, item.yandexFoundUrl)}
                         </td>
 
                         {/* Google Değişimi */}

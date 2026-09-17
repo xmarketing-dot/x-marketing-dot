@@ -14,11 +14,15 @@ export interface IKeywordRank extends Document {
   change: number; // Google değişim
   bestPosition: number;
   topCompetitors: ICompetitor[];
+  googleFoundUrl?: string;
+  googleFoundDomain?: string;
   // Yandex Canlı Sıralamaları
   yandexPosition?: number;
   previousYandexPosition?: number;
   yandexChange?: number;
   yandexCompetitors?: ICompetitor[];
+  yandexFoundUrl?: string;
+  yandexFoundDomain?: string;
   lastCheckedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -42,10 +46,14 @@ const KeywordRankSchema = new Schema<IKeywordRank>(
     change: { type: Number, default: 0 },
     bestPosition: { type: Number, default: 0 },
     topCompetitors: [CompetitorSchema],
+    googleFoundUrl: { type: String, default: '' },
+    googleFoundDomain: { type: String, default: '' },
     yandexPosition: { type: Number, default: 0 },
     previousYandexPosition: { type: Number, default: 0 },
     yandexChange: { type: Number, default: 0 },
     yandexCompetitors: [CompetitorSchema],
+    yandexFoundUrl: { type: String, default: '' },
+    yandexFoundDomain: { type: String, default: '' },
     lastCheckedAt: { type: Date },
   },
   {
