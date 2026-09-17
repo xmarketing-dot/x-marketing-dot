@@ -14,14 +14,21 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const nowDate = new Date();
 
     const [
       pendingListings,
+      expiredListings,
       unreadChatThreads,
       pendingBanners,
     ] = await Promise.all([
       ListingModel.countDocuments({ status: 'onay_bekliyor' }).catch(() => 0),
+      ListingModel.countDocuments({
+        $or: [
+          { status: 'suresi_doldu' },
+          { paketBitisTarihi: { $exists: true, $ne: null, $lt: nowDate } }
+        ]
+      }).catch(() => 0),
       ChatThreadModel.countDocuments({ okunmadiAdminSayisi: { $gt: 0 } }).catch(() => 0),
       BannerAdModel.countDocuments({ durum: 'onay_bekliyor' }).catch(() => 0),
     ]);
@@ -30,14 +37,15 @@ export async function GET() {
       success: true,
       counts: {
         pendingListings,
+        expiredListings,
         vitrinRequests: 0,
         unreadChats: unreadChatThreads,
         pendingBanners,
         activeBans: 0,
         recentUsers: 0,
         activeBacklinks: 0,
-        // Menu item badges (Sadece gerçekten aksiyon/onay bekleyen bildirimler):
-        ilanlarBadge: pendingListings,
+        // Menu item badges:
+        ilanlarBadge: pendingListings + expiredListings,
         anasayfaBadge: 0,
         chatBadge: unreadChatThreads,
         bannersBadge: pendingBanners,

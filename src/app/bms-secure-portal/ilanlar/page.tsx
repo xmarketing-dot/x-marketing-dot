@@ -42,7 +42,7 @@ import { turkeyProvinces } from '@/data/turkeyLocations';
 export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda'>('all');
+  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
 
   // Detaylı İnceleme Modalı (Full Inspection Modal)
   const [inspectItem, setInspectItem] = useState<any | null>(null);
@@ -587,6 +587,7 @@ export default function AdminListingsPage() {
   // Helper to format remaining listing days
   const getRemainingTime = (expiryDate?: string | Date, status?: string) => {
     if (status === 'onay_bekliyor') return { text: '⏳ Onay Bekliyor', isExpired: false, isPending: true };
+    if (status === 'suresi_doldu') return { text: '❌ Süresi Doldu', isExpired: true, isPending: false };
     if (!expiryDate) return { text: '⏳ 7 Gün Kaldı', isExpired: false, isPending: false };
     const expiry = new Date(expiryDate);
     const now = new Date();
@@ -608,9 +609,17 @@ export default function AdminListingsPage() {
   const selectedProvince = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
 
   const pendingCount = listings.filter((l) => l.status === 'onay_bekliyor').length;
+  const expiredCount = listings.filter((l) => {
+    if (l.status === 'suresi_doldu') return true;
+    if (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now()) return true;
+    return false;
+  }).length;
 
   const filteredListings = listings.filter((l) => {
     if (filter === 'all') return true;
+    if (filter === 'suresi_doldu') {
+      return l.status === 'suresi_doldu' || (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now());
+    }
     return l.status === filter;
   });
 
@@ -629,6 +638,11 @@ export default function AdminListingsPage() {
               {pendingCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse shrink-0">
                   {pendingCount} Bekliyor
+                </span>
+              )}
+              {expiredCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-black shrink-0">
+                  {expiredCount} Süresi Doldu
                 </span>
               )}
             </h1>
@@ -688,8 +702,21 @@ export default function AdminListingsPage() {
         >
           <span>🟢 Yayındakiler</span>
           <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'yayinda' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-emerald-400'}`}>
-            {listings.filter((l) => l.status === 'yayinda').length}
+            {listings.filter((l) => l.status === 'yayinda' && (!l.paketBitisTarihi || new Date(l.paketBitisTarihi).getTime() >= Date.now())).length}
           </span>
+        </button>
+
+        <button
+          onClick={() => setFilter('suresi_doldu')}
+          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'suresi_doldu' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+            }`}
+        >
+          <span>⏰ Süresi Dolanlar</span>
+          {expiredCount > 0 && (
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'suresi_doldu' ? 'bg-slate-950/30 text-slate-950' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'}`}>
+              {expiredCount}
+            </span>
+          )}
         </button>
       </div>
 

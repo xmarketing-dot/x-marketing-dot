@@ -44,6 +44,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [badgeCounts, setBadgeCounts] = useState<{
     pendingListings: number;
+    expiredListings: number;
     vitrinRequests: number;
     unreadChats: number;
     pendingBanners: number;
@@ -58,6 +59,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     kullanicilarBadge: number;
   }>({
     pendingListings: 0,
+    expiredListings: 0,
     vitrinRequests: 0,
     unreadChats: 0,
     pendingBanners: 0,
@@ -349,11 +351,18 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <List className="w-4 h-4 text-amber-400" />
                 <span>İlan Moderasyonu</span>
               </div>
-              {badgeCounts.ilanlarBadge > 0 && (
-                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/40 animate-pulse border border-rose-400 shrink-0">
-                  +{badgeCounts.ilanlarBadge}
-                </span>
-              )}
+              <div className="flex items-center gap-1">
+                {badgeCounts.pendingListings > 0 && (
+                  <span className="px-1.5 py-0.5 text-[9px] font-black rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/40 animate-pulse border border-rose-400 shrink-0" title={`${badgeCounts.pendingListings} İlan Onay Bekliyor`}>
+                    +{badgeCounts.pendingListings}
+                  </span>
+                )}
+                {badgeCounts.expiredListings > 0 && (
+                  <span className="px-1.5 py-0.5 text-[9px] font-black rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 shrink-0" title={`${badgeCounts.expiredListings} İlanın Süresi Doldu`}>
+                    {badgeCounts.expiredListings} doldu
+                  </span>
+                )}
+              </div>
             </Link>
 
             <Link
@@ -610,11 +619,18 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               >
                 <div className="flex items-center justify-between">
                   <List className="w-5 h-5 text-amber-400" />
-                  {badgeCounts.ilanlarBadge > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black animate-pulse">
-                      +{badgeCounts.ilanlarBadge}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {badgeCounts.pendingListings > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black animate-pulse">
+                        +{badgeCounts.pendingListings}
+                      </span>
+                    )}
+                    {badgeCounts.expiredListings > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-amber-500/30 text-amber-300 border border-amber-500/50 text-[9px] font-black">
+                        {badgeCounts.expiredListings} doldu
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <span>2. İlan Moderasyonu</span>
               </Link>

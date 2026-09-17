@@ -176,7 +176,7 @@ async function scrapeGoogleSerp(
 }
 
 /**
- * YANDEX SERP MOTORU (CANLI VE %100 GERÇEK TARAMA)
+ * YANDEX SERP MOTORU (CANLI VE GERÇEK TARAMA)
  */
 async function scrapeYandexSerp(
   keyword: string,
@@ -189,61 +189,84 @@ async function scrapeYandexSerp(
   const seenDomains = new Set<string>();
   let rankCounter = 1;
 
-  try {
-    const yandexUrl = `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`;
-    const res = await fetch(yandexUrl, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        'Accept-Language': 'tr-TR,tr;q=0.9,en;q=0.8',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-      },
-    });
+  const yandexUrls = [
+    `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`,
+    `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508`
+  ];
 
-    if (res.ok) {
-      const html = await res.text();
-      const linkRegex = /href="([^"]+)"/g;
-      let m;
+  for (const yandexUrl of yandexUrls) {
+    try {
+      const res = await fetch(yandexUrl, {
+        headers: {
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+          'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Sec-Ch-Ua': '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
+          'Upgrade-Insecure-Requests': '1',
+        },
+      });
 
-      while ((m = linkRegex.exec(html)) !== null) {
-        let rawHref = m[1];
-        if (!rawHref.startsWith('http')) continue;
+      if (res.ok) {
+        const html = await res.text();
+        if (html.includes('SmartCaptcha') || html.includes('Verification') || html.length < 50000) {
+          // Captcha veya kısa verification sayfası ise diğer endpoint'i dene
+          continue;
+        }
 
-        try {
-          const parsed = new URL(rawHref);
-          const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+        const linkRegex = /href="([^"]+)"/g;
+        let m;
 
-          if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
-            continue;
-          }
+        while ((m = linkRegex.exec(html)) !== null) {
+          let rawHref = m[1];
+          if (!rawHref.startsWith('http')) continue;
 
-          seenDomains.add(hostname);
+          try {
+            const parsed = new URL(rawHref);
+            const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
-          const isOurSite = isOurSiteDomain(hostname, targetDomain);
-
-          if (isOurSite) {
-            if (foundPosition === 0) {
-              foundPosition = rankCounter;
-              foundUrl = rawHref;
-              foundDomain = hostname;
+            if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
+              continue;
             }
-          } else {
-            if (competitors.length < 3) {
-              competitors.push({
-                position: rankCounter,
-                domain: hostname,
-                title: hostname,
-              });
-            }
-          }
 
-          rankCounter++;
-          if (rankCounter > 50) break;
-        } catch (e) { }
+            seenDomains.add(hostname);
+
+            const isOurSite = isOurSiteDomain(hostname, targetDomain);
+
+            if (isOurSite) {
+              if (foundPosition === 0) {
+                foundPosition = rankCounter;
+                foundUrl = rawHref;
+                foundDomain = hostname;
+              }
+            } else {
+              if (competitors.length < 3) {
+                competitors.push({
+                  position: rankCounter,
+                  domain: hostname,
+                  title: hostname,
+                });
+              }
+            }
+
+            rankCounter++;
+            if (rankCounter > 50) break;
+          } catch (e) { }
+        }
+
+        if (rankCounter > 1) {
+          break; // Başarılı sonuç alındı
+        }
       }
+    } catch (err) {
+      // Silent
     }
-  } catch (err) {
-    // Silent
   }
 
   return { position: foundPosition, competitors, foundUrl, foundDomain };
