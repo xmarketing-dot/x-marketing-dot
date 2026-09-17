@@ -1459,287 +1459,444 @@ export default function BmsSecurePortalDashboard() {
       {activeTab === 'whatsapp_leads' && (
         <div className="flex flex-col gap-6 animate-fadeIn">
           
-          {/* ── BAŞLIK & ÖZET KARTLARI ── */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161b22] via-[#064e3b]/30 to-[#161b22] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-black shadow-lg shadow-emerald-500/10">
-                  <OfficialWhatsAppIcon className="w-6 h-6 fill-emerald-400" />
+          {/* ── ENTERPRISE LEAD COMMAND CENTER BANNER & METRICS ── */}
+          <div className="p-6 sm:p-8 rounded-[36px] bg-gradient-to-br from-[#161b22] via-[#0b1d16] to-[#161b22] border-2 border-emerald-500/40 shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col gap-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
+
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-[#30363d]/80 pb-6 relative z-10">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-[#25D366] text-slate-950 flex items-center justify-center font-black shadow-xl shadow-emerald-500/30">
+                    <OfficialWhatsAppIcon className="w-8 h-8 fill-slate-950" />
+                  </div>
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[#161b22]"></span>
+                  </span>
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-black text-lg sm:text-xl text-white font-heading">
-                      Canlı WhatsApp Randevu &amp; Lead Akışı
+
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h2 className="font-black text-xl sm:text-2xl text-white font-heading tracking-tight">
+                      WhatsApp Randevu &amp; Lead İstihbarat Merkezi
                     </h2>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                      CANLI DİNLEME AKTİF
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-black flex items-center gap-1.5 shadow-sm">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      GERÇEK ZAMANLI SSE AKTİF
                     </span>
                   </div>
-                  <p className="text-xs text-[#8b949e] mt-0.5">
-                    Sitedeki tüm ilanların WhatsApp butonlarına basan ziyaretçilerin anlık tıklama kayıtları, konumları ve istihbaratı.
+                  <p className="text-xs sm:text-sm text-[#8b949e] mt-1">
+                    İlanların WhatsApp butonuna basan tüm müşterilerin şehri, arama motoru terimi, cihazı, IP&apos;si ve hedef ilanı anlık olarak işlenir.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="px-3.5 py-1.5 rounded-2xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold">
-                  Toplam: {eventCounts.whatsappClicks} Tıklama
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="px-4 py-2.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center gap-3">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-[#8b949e] uppercase font-bold tracking-wider">Kayıtlı Lead Sayısı</span>
+                    <span className="text-base font-black text-emerald-400 font-mono">
+                      {(recentWhatsappClicks as any[] || []).length} Tıklama
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 KPI Enterprise Metrik Kartı */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
+              <div className="p-5 rounded-3xl bg-[#0d1117]/90 border border-emerald-500/30 flex flex-col justify-between gap-3 shadow-lg hover:border-emerald-400 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#8b949e] font-bold uppercase tracking-wider font-heading">Toplam Randevu Hit</span>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    <OfficialWhatsAppIcon className="w-4 h-4 fill-emerald-400" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-black text-3xl text-white font-heading">{eventCounts.whatsappClicks}</span>
+                  <span className="text-xs text-emerald-400 font-bold">Dönüşüm</span>
+                </div>
+                <span className="text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                  Seçili dönemde doğrudan WhatsApp&apos;a basanlar
+                </span>
+              </div>
+
+              <div className="p-5 rounded-3xl bg-[#0d1117]/90 border border-amber-500/30 flex flex-col justify-between gap-3 shadow-lg hover:border-amber-400 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#8b949e] font-bold uppercase tracking-wider font-heading">En Çok Talep Alan İlan</span>
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                    <Crown className="w-4 h-4 text-amber-400" />
+                  </div>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-black text-base text-amber-300 font-heading truncate">
+                    {topContactedListings[0]?._id || 'Kayıt Bekleniyor'}
+                  </span>
+                  <span className="text-xs font-black text-amber-400 font-mono mt-0.5">
+                    {topContactedListings[0]?.whatsappClicks || 0} Randevu Tıklaması
+                  </span>
+                </div>
+                <span className="text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                  Vitrin lideri dönüşüm şampiyonu
+                </span>
+              </div>
+
+              <div className="p-5 rounded-3xl bg-[#0d1117]/90 border border-blue-500/30 flex flex-col justify-between gap-3 shadow-lg hover:border-blue-400 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#8b949e] font-bold uppercase tracking-wider font-heading">En Çok Lead Veren Şehir</span>
+                  <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-blue-400" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-black text-2xl text-blue-400 font-heading">
+                    {topCities[0]?._id ? `📍 ${topCities[0]._id}` : 'Türkiye'}
+                  </span>
+                </div>
+                <span className="text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                  En yüksek müşteri yoğunluğu
+                </span>
+              </div>
+
+              <div className="p-5 rounded-3xl bg-[#0d1117]/90 border border-purple-500/30 flex flex-col justify-between gap-3 shadow-lg hover:border-purple-400 transition-colors">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-[#8b949e] font-bold uppercase tracking-wider font-heading">Lead Dönüşüm (CTR)</span>
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-purple-400" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-black text-3xl text-purple-300 font-heading">
+                    %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
+                  </span>
+                  <span className="text-xs text-purple-400 font-bold">Ziyaretçi Başına</span>
+                </div>
+                <span className="text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                  Organik ziyaretçi randevu verimliliği
                 </span>
               </div>
             </div>
 
-            {/* 4 KPI Kartı (WhatsApp Lead İstihbaratı) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col gap-1">
-                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
-                  <OfficialWhatsAppIcon className="w-4 h-4 fill-emerald-400" />
-                  Toplam Randevu / Tık
-                </span>
-                <span className="font-black text-2xl text-white font-heading">
-                  {eventCounts.whatsappClicks}
-                </span>
-                <span className="text-[10px] text-[#8b949e]">Seçili dönemde WhatsApp'a basanlar</span>
+            {/* Arama, Filtreleme ve Tablo Araç Çubuğu */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10 pt-2">
+              <div className="relative w-full sm:w-96">
+                <input
+                  type="text"
+                  placeholder="İlan, telefon, şehir, IP, kelime ara..."
+                  value={whatsappLeadSearchTerm}
+                  onChange={(e) => setWhatsappLeadSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-emerald-400 focus:outline-none transition-colors shadow-inner"
+                />
+                <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3.5" />
+                {whatsappLeadSearchTerm && (
+                  <button
+                    onClick={() => setWhatsappLeadSearchTerm('')}
+                    className="absolute right-3.5 top-3 text-xs text-[#8b949e] hover:text-white"
+                  >
+                    ✕ Temizle
+                  </button>
+                )}
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-1">
-                <span className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
-                  <Crown className="w-4 h-4 text-amber-400" />
-                  Lider İlan
-                </span>
-                <span className="font-black text-sm text-amber-300 font-heading truncate">
-                  {topContactedListings[0]?._id || 'Kayıt Bekleniyor'}
-                </span>
-                <span className="text-[10px] text-[#8b949e] font-mono">
-                  {topContactedListings[0]?.whatsappClicks || 0} WhatsApp İletişimi
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <span className="text-xs text-[#8b949e] font-mono">
+                  Otomatik SSE Live Sync
                 </span>
               </div>
-
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-1">
-                <span className="text-xs text-blue-400 font-bold flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-blue-400" />
-                  En Çok İletişim Alan İl
-                </span>
-                <span className="font-black text-2xl text-blue-400 font-heading">
-                  {topCities[0]?._id ? `📍 ${topCities[0]._id}` : 'Türkiye'}
-                </span>
-                <span className="text-[10px] text-[#8b949e]">Lider müşteri lokasyonu</span>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-purple-500/30 flex flex-col gap-1">
-                <span className="text-xs text-purple-400 font-bold flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-purple-400" />
-                  Dönüşüm Oranı (CTR)
-                </span>
-                <span className="font-black text-2xl text-purple-300 font-heading">
-                  %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
-                </span>
-                <span className="text-[10px] text-[#8b949e]">Tekil ziyaretçi randevu oranı</span>
-              </div>
-            </div>
-
-            {/* Arama ve Filtre Çubuğu */}
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder="İlan adı, telefon, ziyaretçi şehri, IP veya arama kelimesi ara..."
-                value={whatsappLeadSearchTerm}
-                onChange={(e) => setWhatsappLeadSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-emerald-400 focus:outline-none transition-colors"
-              />
-              <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3.5" />
-              {whatsappLeadSearchTerm && (
-                <button
-                  onClick={() => setWhatsappLeadSearchTerm('')}
-                  className="absolute right-3.5 top-3 text-xs text-[#8b949e] hover:text-white"
-                >
-                  ✕ Temizle
-                </button>
-              )}
             </div>
           </div>
 
-          {/* ── CANLI WHATSAPP TIKLAMA AKIŞ KARTLARI LİSTESİ ── */}
-          <div className="flex flex-col gap-3">
-            {(() => {
-              const leads = (recentWhatsappClicks as any[] || []).filter((item: any) => {
-                if (!whatsappLeadSearchTerm) return true;
-                const term = whatsappLeadSearchTerm.toLowerCase();
-                const m = item.metadata || {};
-                return (
-                  (item.targetTitle || '').toLowerCase().includes(term) ||
-                  (item.targetCity || '').toLowerCase().includes(term) ||
-                  (m.city || '').toLowerCase().includes(term) ||
-                  (m.listingPhone || '').includes(term) ||
-                  (m.searchKeyword || '').toLowerCase().includes(term) ||
-                  (item.ip || '').includes(term) ||
-                  (item.path || '').toLowerCase().includes(term)
-                );
-              });
+          {/* ── ENTERPRISE VERİ TABLOSU (MASAÜSTÜNDE GENİŞ KURUMSAL TABLO, MOBİLDE KART) ── */}
+          {(() => {
+            const leads = (recentWhatsappClicks as any[] || []).filter((item: any) => {
+              if (!whatsappLeadSearchTerm) return true;
+              const term = whatsappLeadSearchTerm.toLowerCase();
+              const m = item.metadata || {};
+              return (
+                (item.targetTitle || '').toLowerCase().includes(term) ||
+                (item.targetCity || '').toLowerCase().includes(term) ||
+                (m.city || '').toLowerCase().includes(term) ||
+                (m.listingPhone || '').includes(term) ||
+                (m.searchKeyword || '').toLowerCase().includes(term) ||
+                (item.ip || '').includes(term) ||
+                (item.path || '').toLowerCase().includes(term)
+              );
+            });
 
-              if (leads.length === 0) {
-                return (
-                  <div className="p-12 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                      <OfficialWhatsAppIcon className="w-7 h-7 fill-emerald-400" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-white font-bold text-sm">Henüz WhatsApp Tıklaması Kaydedilmedi</span>
-                      <span className="text-xs text-[#8b949e]">Kullanıcılar ilanlardaki WhatsApp butonuna tıkladıkça canlı istihbarat burada belirecektir.</span>
-                    </div>
+            if (leads.length === 0) {
+              return (
+                <div className="p-16 rounded-[32px] bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-4 shadow-xl">
+                  <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                    <OfficialWhatsAppIcon className="w-8 h-8 fill-emerald-400" />
                   </div>
-                );
-              }
+                  <div className="flex flex-col gap-1">
+                    <span className="text-white font-bold text-base">WhatsApp Lead Kaydı Bulunamadı</span>
+                    <span className="text-xs text-[#8b949e] max-w-md">
+                      Ziyaretçiler sitedeki ilanların WhatsApp butonuna bastıkça anlık istihbarat ve lead verileri bu kurumsal tabloda sıralanacaktır.
+                    </span>
+                  </div>
+                </div>
+              );
+            }
 
-              return leads.map((lead: any, idx: number) => {
-                const m = lead.metadata || {};
-                const isMobile = m.device === 'mobile';
-                const refSrc = (m.refererSource || 'direct').toLowerCase();
-                const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(lead.createdAt).getTime()) / 1000));
-                const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : elapsedSec < 3600 ? `${Math.floor(elapsedSec / 60)} dk önce` : `${Math.floor(elapsedSec / 3600)} sa önce`;
+            return (
+              <div className="flex flex-col gap-4">
+                
+                {/* 1. MASAÜSTÜ KURUMSAL DATA TABLE (hidden sm:block / lg:table) */}
+                <div className="hidden lg:block rounded-[32px] bg-[#161b22] border border-[#30363d] overflow-hidden shadow-2xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-[#30363d] bg-[#0d1117]/80 text-[#8b949e] text-[11px] font-mono font-bold uppercase tracking-wider">
+                          <th className="py-4 px-5">Zaman Damgası</th>
+                          <th className="py-4 px-5">Hedef İlan &amp; Telefon</th>
+                          <th className="py-4 px-5">Ziyaretçi Konumu &amp; IP</th>
+                          <th className="py-4 px-5">Geliş Kaynağı &amp; Kelime</th>
+                          <th className="py-4 px-5">Cihaz &amp; Tarayıcı</th>
+                          <th className="py-4 px-5 text-right">Aksiyonlar</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#21262d] text-xs">
+                        {leads.map((lead: any, idx: number) => {
+                          const m = lead.metadata || {};
+                          const isMobile = m.device === 'mobile';
+                          const refSrc = (m.refererSource || 'direct').toLowerCase();
+                          const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(lead.createdAt).getTime()) / 1000));
+                          const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : elapsedSec < 3600 ? `${Math.floor(elapsedSec / 60)} dk önce` : `${Math.floor(elapsedSec / 3600)} sa önce`;
 
-                let refIcon = '🔗';
-                let refName = 'Direkt Giriş';
-                let refBadge = 'bg-slate-800 text-slate-300 border-white/5';
+                          let refIcon = '🔗';
+                          let refName = 'Direkt Giriş';
+                          let refBadge = 'bg-slate-800 text-slate-300 border-white/5';
 
-                if (refSrc === 'yandex' || (m.referer || '').includes('yandex')) {
-                  refIcon = '🇷🇺';
-                  refName = 'Yandex Arama';
-                  refBadge = 'bg-red-500/15 text-red-400 border-red-500/30';
-                } else if (refSrc === 'google' || (m.referer || '').includes('google')) {
-                  refIcon = '🌐';
-                  refName = 'Google Arama';
-                  refBadge = 'bg-blue-500/15 text-blue-400 border-blue-500/30';
-                } else if (refSrc === 'x' || (m.referer || '').includes('t.co')) {
-                  refIcon = '🐦';
-                  refName = 'X (Twitter)';
-                  refBadge = 'bg-sky-500/15 text-sky-400 border-sky-500/30';
-                } else if (refSrc === 'whatsapp') {
-                  refIcon = '💬';
-                  refName = 'WhatsApp';
-                  refBadge = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
-                }
+                          if (refSrc === 'yandex' || (m.referer || '').includes('yandex')) {
+                            refIcon = '🇷🇺';
+                            refName = 'Yandex Arama';
+                            refBadge = 'bg-red-500/15 text-red-300 border-red-500/30';
+                          } else if (refSrc === 'google' || (m.referer || '').includes('google')) {
+                            refIcon = '🌐';
+                            refName = 'Google Arama';
+                            refBadge = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+                          } else if (refSrc === 'x' || (m.referer || '').includes('t.co')) {
+                            refIcon = '🐦';
+                            refName = 'X (Twitter)';
+                            refBadge = 'bg-sky-500/15 text-sky-300 border-sky-500/30';
+                          } else if (refSrc === 'whatsapp') {
+                            refIcon = '💬';
+                            refName = 'WhatsApp';
+                            refBadge = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+                          }
 
-                return (
-                  <div
-                    key={lead._id || idx}
-                    className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] hover:border-emerald-500/50 transition-all flex flex-col gap-3.5 shadow-xl"
-                  >
-                    {/* Üst Başlık: Zaman, Kaynak ve Konum */}
-                    <div className="flex items-center justify-between gap-2 flex-wrap text-xs border-b border-[#21262d] pb-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="relative flex h-2.5 w-2.5">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                        </span>
-                        <span className="font-mono text-emerald-400 font-bold">
-                          🟢 {timeStr}
-                        </span>
-                        <span className="text-[#8b949e] font-mono">
-                          ({new Date(lead.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })})
-                        </span>
-                      </div>
+                          return (
+                            <tr 
+                              key={lead._id || idx}
+                              className="hover:bg-[#0d1117]/60 transition-colors group"
+                            >
+                              {/* Zaman Damgası */}
+                              <td className="py-4 px-5">
+                                <div className="flex flex-col gap-1">
+                                  <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-black border border-emerald-500/20 flex items-center gap-1.5 w-fit">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                                    {timeStr}
+                                  </span>
+                                  <span className="text-[11px] text-[#8b949e] font-mono">
+                                    {new Date(lead.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                  </span>
+                                </div>
+                              </td>
 
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`px-2.5 py-0.5 rounded-xl text-[11px] font-mono font-bold border ${refBadge}`}>
-                          {refIcon} {refName}
-                        </span>
-                        <span className="px-2.5 py-0.5 rounded-xl bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[11px] font-bold flex items-center gap-1">
-                          <MapPin className="w-3 h-3 text-blue-400" />
-                          <span>{m.city || lead.targetCity || 'İstanbul'}</span>
-                        </span>
-                      </div>
-                    </div>
+                              {/* Hedef İlan & Telefon */}
+                              <td className="py-4 px-5">
+                                <div className="flex flex-col gap-1 max-w-xs">
+                                  <div className="flex items-center gap-1.5">
+                                    <Crown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                                    <span className="font-bold text-white text-xs truncate group-hover:text-amber-300 transition-colors">
+                                      {lead.targetTitle || 'İlan'}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-2 text-[11px] font-mono text-[#8b949e]">
+                                    {m.listingLocation && (
+                                      <span>📍 {m.listingLocation.toUpperCase()}</span>
+                                    )}
+                                    {m.listingPhone && (
+                                      <>
+                                        <span>•</span>
+                                        <span className="text-emerald-400 font-bold">📞 {m.listingPhone}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
 
-                    {/* Ana Gövde: Sol İlan Bilgisi & Sağ Ziyaretçi İstihbaratı */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                      
-                      {/* Sol: Tıklanan İlan */}
-                      <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col justify-between gap-2">
-                        <div className="flex flex-col min-w-0">
-                          <span className="text-[10px] text-amber-400 font-mono font-bold uppercase tracking-wider">
-                            👑 Tıklanan İlan &amp; Numara:
+                              {/* Ziyaretçi Konumu & IP */}
+                              <td className="py-4 px-5">
+                                <div className="flex flex-col gap-1">
+                                  <span className="font-bold text-white flex items-center gap-1.5">
+                                    <span className="text-sm">📍</span>
+                                    <span>{m.city || lead.targetCity || 'İstanbul'}</span>
+                                  </span>
+                                  <span className="text-[11px] font-mono text-[#8b949e] bg-[#0d1117] px-2 py-0.5 rounded-md border border-[#30363d] w-fit">
+                                    {lead.ip || '127.0.0.1'}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* Geliş Kaynağı & Kelime */}
+                              <td className="py-4 px-5">
+                                <div className="flex flex-col gap-1.5">
+                                  <span className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border w-fit ${refBadge}`}>
+                                    {refIcon} {refName}
+                                  </span>
+
+                                  {m.searchKeyword ? (
+                                    <span className="text-[11px] text-cyan-300 font-mono bg-cyan-500/10 border border-cyan-500/20 px-2 py-0.5 rounded-md w-fit flex items-center gap-1">
+                                      <Search className="w-3 h-3 text-cyan-400" />
+                                      <span>&quot;{m.searchKeyword}&quot;</span>
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] text-[#484f58] font-mono">Doğrudan Tıklama</span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Cihaz & Tarayıcı */}
+                              <td className="py-4 px-5">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1.5 text-slate-200 font-bold">
+                                    {isMobile ? <Smartphone className="w-3.5 h-3.5 text-purple-400" /> : <Monitor className="w-3.5 h-3.5 text-blue-400" />}
+                                    <span>{isMobile ? 'Mobil' : 'Masaüstü'}</span>
+                                  </div>
+                                  <span className="text-[11px] text-[#8b949e] font-mono">
+                                    {m.browser || 'Browser'} • {m.os || 'OS'}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* Aksiyonlar */}
+                              <td className="py-4 px-5 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  {m.listingPhone && (
+                                    <a
+                                      href={`https://wa.me/${m.listingPhone.replace(/\D/g, '')}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/30 text-xs font-bold font-heading flex items-center gap-1.5 transition-all shadow-sm"
+                                      title="WhatsApp Görüşmesi Başlat"
+                                    >
+                                      <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-current" />
+                                      <span>WhatsApp</span>
+                                    </a>
+                                  )}
+
+                                  {m.listingSlug ? (
+                                    <Link
+                                      href={`/ilan/${m.listingSlug}`}
+                                      target="_blank"
+                                      className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-amber-500/30 text-xs font-bold font-heading flex items-center gap-1 transition-all"
+                                      title="İlanı Görüntüle"
+                                    >
+                                      <span>İlan</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </Link>
+                                  ) : (
+                                    <Link
+                                      href={lead.path || '#'}
+                                      target="_blank"
+                                      className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-slate-300 text-xs font-bold font-heading flex items-center gap-1 transition-all"
+                                      title="Sayfayı Görüntüle"
+                                    >
+                                      <span>Sayfa</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </Link>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* 2. MOBİL GÖRÜNÜM (Kart Yapısı - lg:hidden) */}
+                <div className="grid grid-cols-1 gap-3.5 lg:hidden">
+                  {leads.map((lead: any, idx: number) => {
+                    const m = lead.metadata || {};
+                    const isMobile = m.device === 'mobile';
+                    const refSrc = (m.refererSource || 'direct').toLowerCase();
+                    const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(lead.createdAt).getTime()) / 1000));
+                    const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : elapsedSec < 3600 ? `${Math.floor(elapsedSec / 60)} dk önce` : `${Math.floor(elapsedSec / 3600)} sa önce`;
+
+                    let refIcon = '🔗';
+                    let refName = 'Direkt Giriş';
+                    let refBadge = 'bg-slate-800 text-slate-300 border-white/5';
+
+                    if (refSrc === 'yandex' || (m.referer || '').includes('yandex')) {
+                      refIcon = '🇷🇺';
+                      refName = 'Yandex Arama';
+                      refBadge = 'bg-red-500/15 text-red-300 border-red-500/30';
+                    } else if (refSrc === 'google' || (m.referer || '').includes('google')) {
+                      refIcon = '🌐';
+                      refName = 'Google Arama';
+                      refBadge = 'bg-blue-500/15 text-blue-300 border-blue-500/30';
+                    } else if (refSrc === 'x' || (m.referer || '').includes('t.co')) {
+                      refIcon = '🐦';
+                      refName = 'X (Twitter)';
+                      refBadge = 'bg-sky-500/15 text-sky-300 border-sky-500/30';
+                    } else if (refSrc === 'whatsapp') {
+                      refIcon = '💬';
+                      refName = 'WhatsApp';
+                      refBadge = 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+                    }
+
+                    return (
+                      <div
+                        key={lead._id || idx}
+                        className="p-4 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-lg"
+                      >
+                        <div className="flex items-center justify-between gap-2 border-b border-[#21262d] pb-2.5">
+                          <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-black border border-emerald-500/20 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                            {timeStr}
                           </span>
-                          <span className="text-sm font-black text-white font-heading truncate mt-0.5">
-                            {lead.targetTitle || 'İlan'}
+                          <span className={`px-2.5 py-0.5 rounded-xl text-[11px] font-mono font-bold border ${refBadge}`}>
+                            {refIcon} {refName}
                           </span>
-                          {m.listingLocation && (
-                            <span className="text-xs text-[#8b949e] font-mono mt-0.5">
-                              📍 Konum: {m.listingLocation.toUpperCase()}
-                            </span>
-                          )}
                         </div>
 
-                        {m.listingPhone && (
-                          <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
-                            <span className="text-xs font-mono font-bold text-emerald-400">
-                              📞 {m.listingPhone}
-                            </span>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-bold text-white text-xs">{lead.targetTitle || 'İlan'}</span>
+                          <div className="flex items-center justify-between text-[11px] text-[#8b949e] font-mono">
+                            <span>📍 {m.city || lead.targetCity || 'İstanbul'}</span>
+                            <span className="text-emerald-400 font-bold">{m.listingPhone}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
+                          <span className="text-[10px] text-[#8b949e] font-mono">
+                            {isMobile ? '📱 Mobil' : '💻 PC'} • {lead.ip || '127.0.0.1'}
+                          </span>
+                          {m.listingPhone && (
                             <a
                               href={`https://wa.me/${m.listingPhone.replace(/\D/g, '')}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 font-bold text-[11px] flex items-center gap-1 transition-colors"
+                              className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-1"
                             >
-                              <OfficialWhatsAppIcon className="w-3 h-3 fill-current" />
+                              <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-current" />
                               <span>Yaz</span>
                             </a>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Sağ: Ziyaretçi Profili */}
-                      <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col justify-between gap-2 text-xs font-mono">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">
-                            👤 Ziyaretçi Cihaz &amp; Bağlantı:
-                          </span>
-                          
-                          <div className="flex items-center justify-between text-[#8b949e] text-[11px]">
-                            <span>Cihaz:</span>
-                            <span className="text-white font-bold flex items-center gap-1">
-                              {isMobile ? <Smartphone className="w-3 h-3 text-purple-400" /> : <Monitor className="w-3 h-3 text-blue-400" />}
-                              {isMobile ? 'Mobil' : 'Masaüstü'} ({m.os || 'OS'} • {m.browser || 'Browser'})
-                            </span>
-                          </div>
-
-                          <div className="flex items-center justify-between text-[#8b949e] text-[11px]">
-                            <span>IP Adresi:</span>
-                            <span className="text-slate-300 font-bold">{lead.ip || '127.0.0.1'}</span>
-                          </div>
-
-                          {m.searchKeyword && (
-                            <div className="flex items-center justify-between text-[#8b949e] text-[11px]">
-                              <span>Arama Kelimesi:</span>
-                              <span className="text-cyan-400 font-bold truncate max-w-[180px]">&quot;{m.searchKeyword}&quot;</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Sayfa Linki */}
-                        <div className="flex items-center justify-between pt-2 border-t border-[#21262d] text-[11px]">
-                          <span className="text-[#8b949e] truncate max-w-[150px]">
-                            Sayfa: {lead.path}
-                          </span>
-                          {m.listingSlug && (
-                            <Link
-                              href={`/ilan/${m.listingSlug}`}
-                              target="_blank"
-                              className="text-amber-400 hover:underline font-bold flex items-center gap-1"
-                            >
-                              <span>İlanı Gör</span>
-                              <ExternalLink className="w-3 h-3" />
-                            </Link>
                           )}
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
 
-                    </div>
-                  </div>
-                );
-              });
-            })()}
-          </div>
+              </div>
+            );
+          })()}
 
         </div>
       )}
