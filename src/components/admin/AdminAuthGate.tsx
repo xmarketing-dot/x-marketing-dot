@@ -26,7 +26,8 @@ import {
   Menu,
   X,
   Megaphone,
-  Link2
+  Link2,
+  Gift
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 
@@ -57,6 +58,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     bannersBadge: number;
     guvenlikBadge: number;
     kullanicilarBadge: number;
+    ucretsizlerBadge: number;
   }>({
     pendingListings: 0,
     expiredListings: 0,
@@ -72,6 +74,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     bannersBadge: 0,
     guvenlikBadge: 0,
     kullanicilarBadge: 0,
+    ucretsizlerBadge: 0,
   });
 
   const pathname = usePathname();
@@ -416,6 +419,26 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             </Link>
 
             <Link
+              href="/bms-secure-portal/ucretsizler"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/ucretsizler')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Gift className="w-4 h-4 text-[#FF6A3D]" />
+                <span>Ücretsiz Kampanyalar</span>
+              </div>
+              {badgeCounts.ucretsizlerBadge > 0 ? (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-[#FF6A3D] text-white shadow-lg shadow-[#FF6A3D]/40 animate-pulse border border-[#FF6A3D]/50 shrink-0">
+                  +{badgeCounts.ucretsizlerBadge}
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-[#21262d] text-[#8b949e]">
+                  24S
+                </span>
+              )}
+            </Link>
+
+            <Link
               href="/bms-secure-portal/banners"
               prefetch={false}
               className={`${getNavClass('/bms-secure-portal/banners')} justify-between`}
@@ -633,6 +656,25 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                   </div>
                 </div>
                 <span>2. İlan Moderasyonu</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/ucretsizler"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-gradient-to-br from-[#1c1407] to-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#FF6A3D]/40 relative col-span-2 shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-[#FF6A3D]" />
+                    <span className="font-black text-amber-300">🎁 Ücretsiz Kampanyalar (İlan & Banner)</span>
+                  </div>
+                  {badgeCounts.ucretsizlerBadge > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#FF6A3D] text-white text-[9px] font-black animate-pulse">
+                      +{badgeCounts.ucretsizlerBadge} YENİ
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] text-[#9AA3B2] font-normal">24 saatlik hediye vitrin ve banner başvurularını yönetin &amp; onaylayın</span>
               </Link>
 
               <Link

@@ -29,7 +29,10 @@ import {
   KeyRound,
   LayoutDashboard,
   Info,
-  ChevronLeft
+  ChevronLeft,
+  Copy,
+  ExternalLink,
+  Check
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
@@ -67,6 +70,9 @@ export default function CreateListingPage() {
   const [uploading, setUploading] = useState(false);
   const [createdListing, setCreatedListing] = useState<any>(null);
   const [generatedPassword, setGeneratedPassword] = useState<string>('');
+  const [copiedUser, setCopiedUser] = useState(false);
+  const [copiedPass, setCopiedPass] = useState(false);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   // Var olan 3 adet örnek görsel (Sadece örnek referans olarak durur, forma eklenmez)
   const existingSamplePhotos = [
@@ -241,6 +247,18 @@ export default function CreateListingPage() {
         if (data.panelSifresi) {
           setGeneratedPassword(data.panelSifresi);
           localStorage.setItem('my_listing_panel_password', data.panelSifresi);
+          try {
+            const cleanPhone = formData.whatsappNumara.replace(/\D/g, '');
+            localStorage.setItem('panel_user_session', JSON.stringify({
+              identifier: cleanPhone || formData.whatsappNumara,
+              password: data.panelSifresi,
+              panelSifresi: data.panelSifresi,
+              kullaniciAdi: formData.baslik,
+              telefon: formData.whatsappNumara,
+              ad: formData.baslik,
+              type: 'user'
+            }));
+          } catch (_) {}
         }
 
         if (data.chatThreadId) {
@@ -315,14 +333,70 @@ export default function CreateListingPage() {
           <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
             <div className="flex items-center gap-2 text-amber-400 font-heading font-black text-sm">
               <KeyRound className="w-4 h-4" />
-              <span>İlan Düzenleme Şifreniz:</span>
+              <span>Müşteri Paneli Giriş Bilgileriniz</span>
             </div>
-            <span className="px-3 py-1 rounded-xl bg-amber-500 text-slate-950 font-mono font-black text-sm border border-amber-400 shadow-md">
-              {generatedPassword || '849201'}
+            <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono font-bold text-[10px]">
+              Kaydediniz
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-[#f0f6fc] leading-relaxed font-medium">
-            🔑 Bu 6 haneli şifre ile istediğiniz zaman <strong className="text-amber-300">İlan Düzenle</strong> sayfasına girip fotoğraf, açıklama ve telefon bilgilerinizi anında güncelleyebilirsiniz.
+
+          {/* Kullanıcı Adı / Telefon */}
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-[#0d1117] border border-[#30363d]">
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] text-[#8b949e] uppercase tracking-wider font-bold">Kullanıcı Adı / Telefon</span>
+              <span className="text-sm font-mono font-bold text-emerald-400 truncate">{formData.whatsappNumara}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(formData.whatsappNumara);
+                setCopiedUser(true);
+                setTimeout(() => setCopiedUser(false), 2000);
+              }}
+              className="px-3 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 active:scale-95 cursor-pointer font-heading"
+            >
+              {copiedUser ? <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copiedUser ? 'Kopyalandı!' : 'Kopyala'}</span>
+            </button>
+          </div>
+
+          {/* Panel Giriş Şifresi */}
+          <div className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-[#0d1117] border border-[#30363d]">
+            <div className="flex flex-col min-w-0">
+              <span className="text-[10px] text-[#8b949e] uppercase tracking-wider font-bold">İlan Düzenleme Şifreniz</span>
+              <span className="text-base font-mono font-black text-amber-400">{generatedPassword || '849201'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(generatedPassword || '849201');
+                setCopiedPass(true);
+                setTimeout(() => setCopiedPass(false), 2000);
+              }}
+              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shrink-0 active:scale-95 cursor-pointer font-heading"
+            >
+              {copiedPass ? <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copiedPass ? 'Kopyalandı!' : 'Kopyala'}</span>
+            </button>
+          </div>
+
+          {/* Tek Tıkla Tüm Bilgileri Kopyala */}
+          <button
+            type="button"
+            onClick={() => {
+              const allText = `Best Eskort Panel Giriş Bilgilerim:\nKullanıcı Adı: ${formData.whatsappNumara}\nŞifre: ${generatedPassword || '849201'}\nPanel Linki: https://www.besteskort.online/panelim`;
+              navigator.clipboard.writeText(allText);
+              setCopiedAll(true);
+              setTimeout(() => setCopiedAll(false), 2000);
+            }}
+            className="w-full py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 text-xs font-bold flex items-center justify-center gap-1.5 border border-amber-500/20 active:scale-98 transition-all cursor-pointer font-heading"
+          >
+            {copiedAll ? <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+            <span>{copiedAll ? 'Tüm Bilgiler Kopyalandı!' : 'Tek Tıkla Giriş Bilgilerini Kopyala'}</span>
+          </button>
+
+          <p className="text-xs sm:text-sm text-[#c9d1d9] leading-relaxed font-medium">
+            🔑 Bu bilgiler ile istediğiniz zaman <strong className="text-amber-300">Müşteri Panelim</strong> sayfasına girip fotoğraf, açıklama ve telefon bilgilerinizi anında güncelleyebilirsiniz.
           </p>
         </div>
 
@@ -346,13 +420,16 @@ export default function CreateListingPage() {
             <span>Site İçi Canlı Destek &amp; Ödeme</span>
           </button>
 
-          <Link
+          <a
             href="/panelim"
-            className="w-full py-3 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-bold text-xs border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-2"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-3 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-bold text-xs border border-[#363b42] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <KeyRound className="w-4 h-4 text-amber-400" />
-            <span>Panelim / İlanlarımı Yönet</span>
-          </Link>
+            <span>Müşteri Panelime Git (Ayrı Sekme)</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-[#8b949e]">

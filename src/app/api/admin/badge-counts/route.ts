@@ -21,6 +21,8 @@ export async function GET() {
       expiredListings,
       unreadChatThreads,
       pendingBanners,
+      pendingPromoListings,
+      pendingPromoBanners,
     ] = await Promise.all([
       ListingModel.countDocuments({ status: 'onay_bekliyor' }).catch(() => 0),
       ListingModel.countDocuments({
@@ -31,7 +33,14 @@ export async function GET() {
       }).catch(() => 0),
       ChatThreadModel.countDocuments({ okunmadiAdminSayisi: { $gt: 0 } }).catch(() => 0),
       BannerAdModel.countDocuments({ durum: 'onay_bekliyor' }).catch(() => 0),
+      ListingModel.countDocuments({ isPromo: true, status: 'onay_bekliyor' }).catch(() => 0),
+      BannerAdModel.countDocuments({
+        $or: [{ isPromo: true }, { odemeYontemi: 'promosyon' }],
+        durum: 'onay_bekliyor'
+      }).catch(() => 0),
     ]);
+
+    const ucretsizlerBadge = pendingPromoListings + pendingPromoBanners;
 
     return NextResponse.json({
       success: true,
@@ -51,6 +60,7 @@ export async function GET() {
         bannersBadge: pendingBanners,
         guvenlikBadge: 0,
         kullanicilarBadge: 0,
+        ucretsizlerBadge,
       },
       timestamp: new Date().toISOString(),
     });

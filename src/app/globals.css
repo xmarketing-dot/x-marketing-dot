@@ -79,8 +79,47 @@ html[data-keyboard-open="true"] .fixed.bottom-0:not(.chat-input-bar):not(.keyboa
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
-/* Ensure smooth transition when keyboard closes */
-.fixed.bottom-0 {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+/* ── Native Classifieds Spec Tokens & Shimmer ── */
+:root {
+  --bg-primary: #0B0E14;
+  --bg-surface: #141824;
+  --bg-elevated: #1C2233;
+  --accent-primary: #FF6A3D;
+  --accent-secondary: #00E0A4;
+  --text-primary: #F5F6FA;
+  --text-secondary: #9AA3B2;
+  --border-subtle: #252B3B;
+  --danger: #FF4757;
+}
+
+@keyframes goldShimmerSweep {
+  0% {
+    transform: translateX(-100%) skewX(-15deg);
+  }
+  50%, 100% {
+    transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+.animate-gold-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-gold-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  animation: goldShimmerSweep 2.5s ease-in-out infinite;
+  pointer-events: none;
 }
 

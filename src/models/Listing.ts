@@ -63,6 +63,11 @@ export interface IListing extends Document {
   hakkindaBiyografi?: string;
   anonimYorumlar?: IComment[];
 
+  // 24 Saatlik / 1 Günlük Ücretsiz Promosyon Alanları
+  isPromo?: boolean;
+  promoType?: '1gunluk_ucretsiz' | '3gunluk_ucretsiz' | 'ozel_kampanya';
+  promoBitisTarihi?: Date;
+
   visitorId?: string;
   creatorIp?: string;
 
@@ -143,6 +148,11 @@ const ListingSchema = new Schema<IListing>(
     hizmetMekanlari: [{ type: String }],
     hakkindaBiyografi: { type: String, default: null },
     anonimYorumlar: [CommentSchema],
+
+    // 3 Günlük Ücretsiz Promosyon
+    isPromo: { type: Boolean, default: false, index: true },
+    promoType: { type: String, default: null },
+    promoBitisTarihi: { type: Date, index: true },
 
     visitorId: { type: String, index: true },
     creatorIp: { type: String, index: true },

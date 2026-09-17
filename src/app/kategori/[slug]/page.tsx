@@ -155,11 +155,20 @@ export default async function CategoryDetailPage({ params }: Props) {
   ]);
 
   // Filter listings by this specific tier (combining ultravip into vip)
-  const categoryListings = allListings.filter((l: any) => {
+  // KURAL: 3 Günlük ücretsiz promosyon ilanları ilk 3 sıraya oturmaz, 4. sıradan itibaren listelenir
+  const rawCategoryListings = allListings.filter((l: any) => {
     if (slug === 'vip') return l.rozet === 'vip' || l.rozet === 'ultravip';
     if (slug === 'silver') return l.rozet === 'silver' || !l.rozet || l.rozet === 'standart';
     return l.rozet === slug;
   });
+
+  const categoryListings = slug === 'vip'
+    ? (() => {
+        const paid = rawCategoryListings.filter((l: any) => !l.isPromo);
+        const promo = rawCategoryListings.filter((l: any) => l.isPromo);
+        return [...paid.slice(0, 3), ...paid.slice(3), ...promo];
+      })()
+    : rawCategoryListings;
 
   // Bu kategorinin en çok görüntülenen 1-2 vitrin ilanı
   const showcaseSlides = getTopShowcaseSlides(categoryListings, 2);

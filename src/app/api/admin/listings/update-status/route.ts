@@ -23,11 +23,15 @@ export async function POST(req: NextRequest) {
       const now = Date.now();
       const duration = listing.yayinSuresi || 'haftalik';
       let days = 7;
-      if (duration === 'gunluk') days = 1;
-      if (duration === 'aylik') days = 30;
+      if (listing.isPromo) days = 1;
+      else if (duration === 'gunluk') days = 1;
+      else if (duration === 'aylik') days = 30;
 
       listing.onaylanmaTarihi = new Date(now);
       listing.paketBitisTarihi = new Date(now + days * 24 * 60 * 60 * 1000);
+      if (listing.isPromo) {
+        listing.promoBitisTarihi = listing.paketBitisTarihi;
+      }
     }
 
     await listing.save();

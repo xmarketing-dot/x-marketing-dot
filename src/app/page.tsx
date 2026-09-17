@@ -90,19 +90,31 @@ export default async function HomePage() {
     getActiveBanner('anasayfa'),
   ]);
 
-  // Sort all listings strictly by Tier Priority (VIP -> Gold -> Silver) and then by Date
+  // Sort all listings strictly by Tier Priority (VIP -> Gold -> Silver), Paid first, and then by Date
+  // NOT: 3 Günlük ücretsiz promosyon ilanları ilk 3 sıraya oturmaz, 4. sıradan itibaren listelenir
   const allSortedListings = [...rawListings].sort((a: any, b: any) => {
     const orderA = TIER_ORDER[a.rozet || 'silver'] || 4;
     const orderB = TIER_ORDER[b.rozet || 'silver'] || 4;
     if (orderA !== orderB) return orderA - orderB;
+
+    // Normal ücretli VIP ilanları promosyonlu (ücretsiz) ilanların önüne geçer
+    const isPromoA = a.isPromo ? 1 : 0;
+    const isPromoB = b.isPromo ? 1 : 0;
+    if (isPromoA !== isPromoB) return isPromoA - isPromoB;
+
     return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
   });
 
   // Süresi dolmuş vitrin ilanlarını anında temizle ve kullanıcıları bilgilendir
   await checkAndExpireShowcases().catch(() => {});
 
-  // Group listings by package tier
-  const vipListings = allSortedListings.filter((l: any) => l.rozet === 'vip' || l.rozet === 'ultravip');
+  // Group listings by package tier (Ücretsiz promosyonlar ilk 3'e oturmaz, ücretli ilk 3 önde durur)
+  const paidVipListings = allSortedListings.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && !l.isPromo);
+  const promoVipListings = allSortedListings.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && l.isPromo);
+  
+  // İlk 3'ü kesinlikle ücretlilerden oluştur, varsa 4. sıradan itibaren promosyonları ekle
+  const vipListings = [...paidVipListings.slice(0, 3), ...paidVipListings.slice(3), ...promoVipListings];
+
   const goldListings = allSortedListings.filter((l: any) => l.rozet === 'gold');
   const silverListings = allSortedListings.filter((l: any) => l.rozet === 'silver' || !l.rozet || l.rozet === 'standart');
 

@@ -199,7 +199,7 @@ export async function GET(req: Request) {
       ]),
       // 13. İlan Dokümanları
       ListingModel.find({})
-        .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf.url goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi status createdAt')
+        .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf.url goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi status isPromo promoType promoBitisTarihi paketBitisTarihi createdAt')
         .lean(),
       // 14. Domain Bazlı Ziyaretçi Dağılımı
       AnalyticsVisitorModel.aggregate([

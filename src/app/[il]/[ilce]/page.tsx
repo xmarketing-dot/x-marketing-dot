@@ -156,7 +156,11 @@ export default async function DistrictPage({ params }: Props) {
   const districtShowcaseSlides = getTopShowcaseSlides(listings, 2);
 
   // Kategorilere göre listeleri ayır (VIP, Gold, Silver)
-  const vipListings = listings.filter((l: any) => l.rozet === 'vip' || l.rozet === 'ultravip');
+  // KURAL: 3 Günlük ücretsiz promosyon ilanları ilk 3 sıraya oturmaz, 4. sıradan itibaren listelenir
+  const rawVipListings = listings.filter((l: any) => l.rozet === 'vip' || l.rozet === 'ultravip');
+  const paidVip = rawVipListings.filter((l: any) => !l.isPromo);
+  const promoVip = rawVipListings.filter((l: any) => l.isPromo);
+  const vipListings = [...paidVip.slice(0, 3), ...paidVip.slice(3), ...promoVip];
   const goldListings = listings.filter((l: any) => l.rozet === 'gold');
   const silverListings = listings.filter((l: any) => l.rozet === 'silver' || !l.rozet || l.rozet === 'standart');
 

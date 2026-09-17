@@ -28,6 +28,7 @@ import {
   Phone,
   Layers,
   Copy,
+  KeyRound,
   SlidersHorizontal,
   PauseCircle,
   PlayCircle
@@ -368,7 +369,7 @@ export default function AdminBannerManagementPage() {
                 </div>
 
                 {/* ── 3. DETAYLI MÜŞTERİ & HEDEF BİLGİ KARTLARI ──────────────── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                   {/* Müşteri İletişim */}
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
                     <div className="flex items-center gap-2 min-w-0">
@@ -376,19 +377,51 @@ export default function AdminBannerManagementPage() {
                         <Phone className="w-3.5 h-3.5" />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-[#8b949e]">Müşteri Telefonu:</span>
+                        <span className="text-[10px] text-[#8b949e]">Giriş / Telefon:</span>
                         <strong className="text-emerald-300 font-mono truncate">{b.musteriIletisim}</strong>
                       </div>
                     </div>
-                    <a
-                      href={`https://wa.me/${(b.musteriIletisim || '').replace(/[^0-9]/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 text-[11px] font-bold font-heading flex items-center gap-1 transition-colors shrink-0"
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(b.musteriIletisim, `${b._id}_phone`)}
+                        className="p-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white text-[11px] font-bold transition-colors"
+                        title="Telefonu Kopyala"
+                      >
+                        {copiedId === `${b._id}_phone` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                      <a
+                        href={`https://wa.me/${(b.musteriIletisim || '').replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 text-[11px] font-bold font-heading flex items-center gap-0.5 transition-colors shrink-0"
+                      >
+                        <OfficialWhatsAppIcon className="w-3 h-3 fill-current" />
+                        <span>WA</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Panel Giriş Şifresi */}
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                        <KeyRound className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[10px] text-[#8b949e]">Panel Şifresi:</span>
+                        <strong className="text-amber-400 font-mono text-xs">{b.panelSifresi || '123456'}</strong>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(b.panelSifresi || '123456', `${b._id}_pass`)}
+                      className="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors shrink-0"
+                      title="Şifreyi Kopyala"
                     >
-                      <OfficialWhatsAppIcon className="w-3 h-3 fill-current" />
-                      <span>WhatsApp</span>
-                    </a>
+                      {copiedId === `${b._id}_pass` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedId === `${b._id}_pass` ? 'Kopyalandı' : 'Kopyala'}</span>
+                    </button>
                   </div>
 
                   {/* Hedef URL */}
@@ -399,7 +432,7 @@ export default function AdminBannerManagementPage() {
                       </div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-[10px] text-[#8b949e]">Hedef Link:</span>
-                        <span className="text-blue-300 font-mono truncate max-w-[140px] sm:max-w-[200px]">{b.hedefUrl}</span>
+                        <span className="text-blue-300 font-mono truncate max-w-[120px] sm:max-w-[140px]">{b.hedefUrl}</span>
                       </div>
                     </div>
                     <button

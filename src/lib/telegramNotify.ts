@@ -25,6 +25,21 @@ export async function sendTelegramNotification(text: string): Promise<any> {
       }),
     });
     const data = await res.json();
+    if (!data.ok) {
+      // Fallback: Strip HTML tags and send as plain text so notification NEVER drops
+      const plainText = text.replace(/<[^>]*>/g, '');
+      const retryRes = await fetch(`${TELEGRAM_API}/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: plainText,
+          disable_web_page_preview: true,
+        }),
+      });
+      const retryData = await retryRes.json();
+      return retryData.ok ? retryData.result : null;
+    }
     return data.ok ? data.result : null;
   } catch (err) {
     console.error('Telegram notification failed (non-critical):', err);

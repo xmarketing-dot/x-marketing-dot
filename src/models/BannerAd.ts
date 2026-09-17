@@ -15,6 +15,10 @@ export interface IBannerAd extends Document {
   goruntulenmeSayisi: number;
   tiklamaSayisi: number;
   redNedeni?: string;
+  isPromo?: boolean;
+  promoType?: string;
+  fitMode?: 'cover' | 'contain';
+  panelSifresi?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,6 +50,10 @@ const BannerAdSchema = new Schema<IBannerAd>(
     goruntulenmeSayisi: { type: Number, default: 0 },
     tiklamaSayisi: { type: Number, default: 0 },
     redNedeni: { type: String },
+    isPromo: { type: Boolean, default: false, index: true },
+    promoType: { type: String, default: null },
+    fitMode: { type: String, enum: ['cover', 'contain'], default: 'cover' },
+    panelSifresi: { type: String, trim: true },
   },
   { timestamps: true, autoIndex: false }
 );

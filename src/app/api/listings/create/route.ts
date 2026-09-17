@@ -79,9 +79,31 @@ export async function POST(req: NextRequest) {
       ? fotograflar
       : [{ url: imageUrl }];
 
-    // Yayın Bitiş Tarihi Hesaplama
-    const durationDays = yayinSuresi === 'gunluk' ? 1 : yayinSuresi === 'aylik' ? 30 : 7;
+    // Yayın Bitiş Tarihi Hesaplama (Promosyonlar 24 Saat / 1 Gündür)
+    const isPromo = body.isPromo === true || body.promoType === '1gunluk_ucretsiz' || body.promoType === '3gunluk_ucretsiz';
+    const durationDays = isPromo ? 1 : (yayinSuresi === 'gunluk' ? 1 : yayinSuresi === 'aylik' ? 30 : 7);
     const paketBitisTarihi = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+
+    // ── KÖTÜYE KULLANIM ENGELİ: Aynı kişi / telefon / IP 1'den fazla ücretsiz ilan veremez ──
+    if (isPromo) {
+      const cleanPhoneDigits = whatsappNumara.replace(/\D/g, '');
+      const last10Digits = cleanPhoneDigits.length >= 10 ? cleanPhoneDigits.slice(-10) : cleanPhoneDigits;
+
+      const existingPromoListing = await ListingModel.findOne({
+        isPromo: true,
+        $or: [
+          ...(last10Digits ? [{ whatsappNumara: { $regex: last10Digits + '$' } }] : []),
+          ...(clientIp && clientIp !== '127.0.0.1' && clientIp !== '::1' ? [{ creatorIp: clientIp }] : []),
+          ...(visitorId ? [{ visitorId }] : [])
+        ]
+      }).lean();
+
+      if (existingPromoListing) {
+        return NextResponse.json({
+          error: 'Bu telefon numarası veya cihaz ile daha önce 24 saatlik ücretsiz VIP deneme hakkı kullanılmıştır. İlanınızı yayınlamak için avantajlı VIP paketlerimizi tercih edebilirsiniz.'
+        }, { status: 400 });
+      }
+    }
 
     // 6 Haneli Kolay Düzenleme Şifresi Üret
     const generatedPassword = Math.floor(100000 + Math.random() * 900000).toString();
@@ -152,7 +174,7 @@ export async function POST(req: NextRequest) {
       fiyat: fiyat ? Number(fiyat) : 0,
       paraBirimi: 'TL',
       rozet: rozet || 'vip',
-      yayinSuresi: yayinSuresi || 'haftalik',
+      yayinSuresi: isPromo ? 'gunluk' : (yayinSuresi || 'haftalik'),
       paketBitisTarihi,
       chatThreadId: chatThreadId || null,
       kullaniciId: resolvedUserId,
@@ -161,7 +183,12 @@ export async function POST(req: NextRequest) {
       panelSifresi: resolvedPassword,
       vitrinIstegi: hasVitrin,
       status: 'onay_bekliyor',
+      isPromo: Boolean(isPromo),
+      promoType: isPromo ? '1gunluk_ucretsiz' : undefined,
+      promoBitisTarihi: isPromo ? paketBitisTarihi : undefined,
     });
+
+    const listingObj: any = newListing;
 
     // ── CANLI CHAT VE İLK MESAJI OTOMATİK OLUŞTUR ──
     let finalThreadId = chatThreadId;
@@ -177,10 +204,10 @@ export async function POST(req: NextRequest) {
 
       if (finalThreadId) {
         await ChatThreadModel.findByIdAndUpdate(finalThreadId, {
-          listingId: newListing._id.toString(),
-          listingBaslik: newListing.baslik,
-          listingSlug: newListing.slug,
-          kullaniciAdi: `👑 ${newListing.baslik}`,
+          listingId: (listingObj._id || listingObj.id)?.toString(),
+          listingBaslik: listingObj.baslik,
+          listingSlug: listingObj.slug,
+          kullaniciAdi: `👑 ${listingObj.baslik}`,
           kullaniciTelefon: whatsappNumara,
           password: resolvedPassword,
           sonMesajOzeti: welcomeMsg,
@@ -188,19 +215,19 @@ export async function POST(req: NextRequest) {
         }).catch(() => {});
       } else {
         const newThread = await ChatThreadModel.create({
-          kullaniciAdi: `👑 ${newListing.baslik}`,
+          kullaniciAdi: `👑 ${listingObj.baslik}`,
           kullaniciTelefon: whatsappNumara,
           ip: clientIp,
-          listingId: newListing._id.toString(),
-          listingBaslik: newListing.baslik,
-          listingSlug: newListing.slug,
+          listingId: (listingObj._id || listingObj.id)?.toString(),
+          listingBaslik: listingObj.baslik,
+          listingSlug: listingObj.slug,
           password: resolvedPassword,
           sonMesajOzeti: welcomeMsg,
           okunmadiAdminSayisi: 1,
           okunmadiKullaniciSayisi: 0,
         });
         finalThreadId = newThread._id.toString();
-        await ListingModel.findByIdAndUpdate(newListing._id, { chatThreadId: finalThreadId });
+        await ListingModel.findByIdAndUpdate(listingObj._id, { chatThreadId: finalThreadId });
       }
 
       // 1. Kullanıcının ilk başvuru mesajı
@@ -242,16 +269,16 @@ export async function POST(req: NextRequest) {
       const ilceText = ilceSlug.charAt(0).toUpperCase() + ilceSlug.slice(1);
       const ilText = ilSlug.charAt(0).toUpperCase() + ilSlug.slice(1);
       const notif = [
-        `👑 <b>YENİ İLAN BAŞVURUSU!</b>`,
+        isPromo ? `🎁 <b>24 SAATLİK (1 GÜN) ÜCRETSİZ VIP PROMOSYON İLAN BAŞVURUSU!</b>` : `👑 <b>YENİ İLAN BAŞVURUSU!</b>`,
         `━━━━━━━━━━━━━━━━━━`,
         `🏷️ <b>Başlık:</b> ${baslik}`,
         `📍 <b>Bölge:</b> ${ilText} / ${ilceText}`,
-        `💎 <b>Paket:</b> ${rozet?.toUpperCase() || 'VIP'} (${yayinSuresi?.toUpperCase() || 'HAFTALIK'})`,
+        `💎 <b>Paket:</b> ${rozet?.toUpperCase() || 'VIP'} (${isPromo ? '🎁 24 SAAT (1 GÜN) ÜCRETSİZ HEDİYE' : yayinSuresi?.toUpperCase() || 'HAFTALIK'})`,
         hasVitrin ? (body.vitrinPaketi === 'gunluk' ? `🔥 <b>ANASAYFA VİTRİN:</b> GÜNLÜK (2.000 TL)` : `🔥 <b>ANASAYFA VİTRİN:</b> HAFTALIK KAMPANYALI (6.000 TL)`) : `⚪ <b>ANASAYFA VİTRİN:</b> Yok`,
         `📱 <b>WhatsApp:</b> <code>${whatsappNumara}</code>`,
         `🔑 <b>İlan Düzenleme Şifresi:</b> <code>${generatedPassword}</code>`,
         `━━━━━━━━━━━━━━━━━━`,
-        `👉 <a href="${getSiteUrl()}/bms-secure-portal">Yönetici Panelinden İncele & Onayla</a>`,
+        `👉 <a href="${getSiteUrl()}/bms-secure-portal${isPromo ? '/ucretsizler' : ''}">Yönetici Panelinden İncele & Onayla</a>`,
       ].join('\n');
       sendTelegramNotification(notif).catch(() => {});
     } catch (e) {

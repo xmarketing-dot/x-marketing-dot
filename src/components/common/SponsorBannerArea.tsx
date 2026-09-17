@@ -21,6 +21,7 @@ export interface BannerAdData {
   gorselUrl: string;
   hedefUrl: string;
   konum: string;
+  fitMode?: 'cover' | 'contain';
 }
 
 interface Props {
@@ -83,7 +84,7 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
           target="_blank"
           rel="noopener noreferrer"
           onClick={handleBannerClick}
-          className="block relative w-full h-32 sm:h-40 md:h-44 overflow-hidden border-y border-amber-500/50 shadow-xl shadow-amber-500/10 hover:border-amber-400 transition-all duration-300"
+          className="block relative w-full h-32 sm:h-40 md:h-44 overflow-hidden border-y border-amber-500/50 shadow-xl shadow-amber-500/10 hover:border-amber-400 transition-all duration-300 bg-black"
         >
           {/* Banner Görseli (unoptimized sayesinde hareketli GIF'ler donmadan sonsuz döngüde oynar) */}
           <Image
@@ -92,7 +93,7 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
             fill
             unoptimized={banner.gorselUrl?.includes('.gif') || banner.gorselUrl?.startsWith('data:image/gif') || true}
             sizes="100vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            className={`${banner.fitMode === 'contain' ? 'object-contain' : 'object-cover'} group-hover:scale-105 transition-transform duration-700 ease-out`}
           />
         </a>
       </div>

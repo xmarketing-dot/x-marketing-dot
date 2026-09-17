@@ -71,19 +71,12 @@ export default function MobileShell({ children }: MobileShellProps) {
     );
   }
 
-  // Reklam Ver & İlan Ver gibi özel form sayfaları desktopta ajans ana sayfası yerine kendi form içeriklerini gösterir
-  const isDedicatedFormPage = pathname === '/reklam-ver' || pathname === '/ilan-ver';
-  if (isDedicatedFormPage) {
-    return (
-      <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans overflow-x-hidden flex flex-col">
-        <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8">
-          {children}
-        </main>
-        <SeoBacklinkFooter />
-        <GlobalChatNotification />
-      </div>
-    );
-  }
+  // Reklam Ver, İlan Ver ve Ücretsiz Tanıtım sayfaları masaüstünde kurumsal ajans yerine formu gösterir
+  const isDedicatedFormPage =
+    pathname === '/reklam-ver' ||
+    pathname === '/ilan-ver' ||
+    pathname === '/ucretsiz-ilan' ||
+    pathname === '/ucretsiz-reklam';
 
   // Panelim route renders dedicated clean dashboard without public website header/ticker
   if (isPanelimPage) {
@@ -98,15 +91,25 @@ export default function MobileShell({ children }: MobileShellProps) {
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden">
       
-      {/* ── 1. DESKTOP KURUMSAL YAZILIM, SEO & BÖLGESEL DİJİTAL AJANS GÖRÜNÜMÜ (LIGHT MODE, 100% AYRI) ──────────────── */}
+      {/* ── 1. DESKTOP GÖRÜNÜMÜ ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
-        <CorporateWebHome />
+        {isDedicatedFormPage ? (
+          <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans overflow-x-hidden flex flex-col w-full">
+            <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8">
+              {children}
+            </main>
+            <SeoBacklinkFooter />
+            <GlobalChatNotification />
+          </div>
+        ) : (
+          <CorporateWebHome />
+        )}
       </div>
 
       {/* ── 2. MOBİL UYGULAMA GÖRÜNÜMÜ (MOBILE-FIRST APP SHELL) ──────────────── */}
       <div className="md:hidden min-h-[100dvh] bg-[#0d1117] flex flex-col relative w-full max-w-full overflow-x-clip">
 
-        {/* STICKY TOP HEADER BAR (Always visible, never disappears during page transitions) */}
+        {/* STICKY TOP HEADER BAR (Always visible) */}
         <div id="app-sticky-header" className="sticky top-0 z-40 bg-[#0d1117]/95 backdrop-blur-md">
           {/* TOP ANNOUNCEMENT TICKER */}
           <HeaderTicker />

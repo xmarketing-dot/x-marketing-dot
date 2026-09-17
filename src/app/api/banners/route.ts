@@ -73,18 +73,61 @@ export async function POST(req: NextRequest) {
 
     await connectToDatabase();
 
-    const gun = Math.max(1, Number(sureGun) || 7);
+    const isPromo = body.isPromo === true || body.promoType === '1gunluk_ucretsiz' || body.promoType === '3gunluk_ucretsiz';
+    const gun = isPromo ? 1 : Math.max(1, Number(sureGun) || 7);
+
+    // ── KÖTÜYE KULLANIM ENGELİ: Aynı kişi / telefon 1'den fazla ücretsiz banner veremez ──
+    if (isPromo) {
+      const cleanPhoneDigits = musteriIletisim.replace(/\D/g, '');
+      const last10Digits = cleanPhoneDigits.length >= 10 ? cleanPhoneDigits.slice(-10) : cleanPhoneDigits;
+
+      const existingPromoBanner = await BannerAdModel.findOne({
+        isPromo: true,
+        $or: [
+          ...(last10Digits ? [{ musteriIletisim: { $regex: last10Digits + '$' } }] : []),
+        ]
+      }).lean();
+
+      if (existingPromoBanner) {
+        return NextResponse.json({
+          error: 'Bu telefon numarası ile daha önce 24 saatlik ücretsiz banner reklam hakkı kullanılmıştır. Yeni reklamınız için avantajlı paketlerimizi tercih edebilirsiniz.'
+        }, { status: 400 });
+      }
+    }
     
     // Dinamik ve Avantajlı Fiyatlandırma:
     // 1 Gün: 750 TL (750 TL/gün), 7 Gün: 3.850 TL (550 TL/gün), 15 Gün: 7.000 TL (466 TL/gün), 30 Gün: 12.000 TL (400 TL/gün)
-    let fiyat = gun * 600;
-    if (gun === 1) fiyat = 750;
-    else if (gun === 7) fiyat = 3850;
-    else if (gun === 15) fiyat = 7000;
-    else if (gun === 30) fiyat = 12000;
-    else if (gun > 30) fiyat = Math.round(gun * 400);
-    else if (gun >= 15) fiyat = Math.round(gun * 466);
-    else if (gun >= 7) fiyat = Math.round(gun * 500);
+    let fiyat = isPromo ? 0 : gun * 600;
+    if (!isPromo) {
+      if (gun === 1) fiyat = 750;
+      else if (gun === 7) fiyat = 3850;
+      else if (gun === 15) fiyat = 7000;
+      else if (gun === 30) fiyat = 12000;
+      else if (gun > 30) fiyat = Math.round(gun * 400);
+      else if (gun >= 15) fiyat = Math.round(gun * 466);
+      else if (gun >= 7) fiyat = Math.round(gun * 500);
+    }
+
+    // 6 Haneli Giriş ve Düzenleme Şifresi Üret (Müşteri Panelim için)
+    const generatedPassword = Math.floor(100000 + Math.random() * 900000).toString();
+    let resolvedPassword = generatedPassword;
+
+    try {
+      const ListingModel = (await import('@/models/Listing')).default;
+      const cleanPhone = musteriIletisim.replace(/\D/g, '');
+      const existingListing = await ListingModel.findOne({
+        $or: [
+          { whatsappNumara: musteriIletisim.trim() },
+          { whatsappNumara: cleanPhone },
+          ...(cleanPhone.length >= 10 ? [{ whatsappNumara: { $regex: cleanPhone.slice(-10) + '$' } }] : [])
+        ],
+        panelSifresi: { $exists: true, $ne: null }
+      }).lean();
+
+      if (existingListing && (existingListing as any).panelSifresi) {
+        resolvedPassword = (existingListing as any).panelSifresi;
+      }
+    } catch (e) {}
 
     const newBanner = await BannerAdModel.create({
       konum: konum || 'her_ikisi',
@@ -94,10 +137,14 @@ export async function POST(req: NextRequest) {
       sureGun: gun,
       fiyatTL: fiyat,
       musteriIletisim: musteriIletisim.trim(),
-      odemeYontemi: odemeYontemi || 'kripto',
+      odemeYontemi: isPromo ? 'promosyon' : (odemeYontemi || 'kripto'),
       durum: 'onay_bekliyor',
       goruntulenmeSayisi: 0,
       tiklamaSayisi: 0,
+      isPromo: Boolean(isPromo),
+      promoType: isPromo ? '1gunluk_ucretsiz' : undefined,
+      fitMode: body.fitMode === 'contain' ? 'contain' : 'cover',
+      panelSifresi: resolvedPassword,
     });
 
     // 🔔 TELEGRAM BİLDİRİMİ: Admin'in cebine anında alarm
@@ -105,23 +152,26 @@ export async function POST(req: NextRequest) {
       konum === 'anasayfa' ? 'Anasayfa' : konum === 'ilan_detay' ? 'İlan Detay' : 'Tüm Sayfalar (Anasayfa + Detay)';
 
     const notifText = [
-      `📣 <b>YENİ BANNER REKLAM TALEBİ!</b>`,
+      isPromo ? `🎁 <b>24 SAATLİK (1 GÜN) ÜCRETSİZ PROMOSYON BANNER REKLAM TALEBİ!</b>` : `📣 <b>YENİ BANNER REKLAM TALEBİ!</b>`,
       `━━━━━━━━━━━━━━━━━━`,
       `🏷️ <b>Başlık:</b> ${baslik.trim()}`,
       `📍 <b>Alan:</b> ${konumText}`,
-      `⏱️ <b>Süre:</b> ${gun} Gün (${fiyat.toLocaleString('tr-TR')} ₺)`,
+      `⏱️ <b>Süre:</b> ${gun} Gün (${isPromo ? '🎁 0 TL - 24 SAAT ÜCRETSİZ DENEME' : `${fiyat.toLocaleString('tr-TR')} ₺`})`,
       `📱 <b>İletişim:</b> <code>${musteriIletisim.trim()}</code>`,
+      `🔑 <b>Panel Şifresi:</b> <code>${resolvedPassword}</code>`,
       `🔗 <b>Hedef Link:</b> ${hedefUrl.trim()}`,
       `━━━━━━━━━━━━━━━━━━`,
-      `👑 <a href="${getSiteUrl()}/bms-secure-portal">Yönetici Panelinden Onayla</a>`,
+      `👑 <a href="${getSiteUrl()}/bms-secure-portal${isPromo ? '/ucretsizler' : ''}">Yönetici Panelinden Onayla</a>`,
     ].join('\n');
 
     sendTelegramNotification(notifText).catch(() => {});
 
     return NextResponse.json({
       success: true,
-      bannerId: newBanner._id.toString(),
+      bannerId: ((newBanner as any)?._id || (newBanner as any)?.id)?.toString(),
       fiyatTL: fiyat,
+      panelSifresi: resolvedPassword,
+      identifier: musteriIletisim.trim(),
     });
   } catch (error: any) {
     console.error('Banner create error:', error);

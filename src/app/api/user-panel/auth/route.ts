@@ -225,6 +225,32 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // 3. Eğer UserModel ve ListingModel'de bulunamadıysa -> BannerAdModel'de (musteriIletisim + panelSifresi) ara
+    const bannerMatches = await BannerAdModel.find({
+      $or: [
+        { musteriIletisim: rawIdent },
+        { musteriIletisim: cleanPhone },
+        ...(cleanPhone.length >= 10 ? [{ musteriIletisim: { $regex: cleanPhone.slice(-10) + '$' } }] : []),
+      ],
+      panelSifresi: cleanPass,
+    }).sort({ createdAt: -1 });
+
+    if (bannerMatches.length > 0) {
+      const matchedBanner = bannerMatches[0];
+      return NextResponse.json({
+        success: true,
+        user: {
+          _id: matchedBanner._id,
+          ad: matchedBanner.baslik || 'Reklam Veren',
+          identifier: rawIdent,
+          telefon: matchedBanner.musteriIletisim || rawIdent,
+          type: 'banner',
+        },
+        listings: [],
+        banners: JSON.parse(JSON.stringify(bannerMatches)),
+      });
+    }
+
     // Eşleşme bulunamadı
     return NextResponse.json({
       error: 'Girilen bilgilere ait kayıt bulunamadı. Lütfen kullanıcı adı / telefon ve şifrenizi kontrol ediniz.',

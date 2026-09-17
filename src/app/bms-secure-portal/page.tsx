@@ -22,9 +22,11 @@ export default function BmsSecurePortalDashboard() {
   const [listingSearchTerm, setListingSearchTerm] = useState('');
   const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'yandex' | 'x'>('views');
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'whatsapp_leads' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'whatsapp_leads' | 'promos' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
   const [whatsappLeadSearchTerm, setWhatsappLeadSearchTerm] = useState('');
+  const [promoFilterType, setPromoFilterType] = useState<'all' | 'listing' | 'banner'>('all');
+  const [promoStatusFilter, setPromoStatusFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
 
   // Online Users State
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
@@ -90,6 +92,41 @@ export default function BmsSecurePortalDashboard() {
       alert('Hata: ' + err.message);
     } finally {
       setSavingListingEdit(false);
+    }
+  };
+
+  const handleUpdateListingStatus = async (listingId: string, status: string) => {
+    try {
+      const res = await fetch('/api/admin/listings/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listingId, status }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchAnalytics();
+      } else {
+        alert(data.error || 'İşlem başarısız');
+      }
+    } catch (e: any) {
+      alert('Hata: ' + e.message);
+    }
+  };
+
+  const handleDeleteListing = async (id: string) => {
+    if (!confirm('Bu ilanı tamamen silmek istediğinize emin misiniz?')) return;
+    try {
+      const res = await fetch(`/api/admin/listings?id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchAnalytics();
+      } else {
+        alert(data.error || 'Silme başarısız');
+      }
+    } catch (e: any) {
+      alert('Hata: ' + e.message);
     }
   };
 
@@ -694,37 +731,50 @@ export default function BmsSecurePortalDashboard() {
         </div>
       </div>
 
-      {/* ── 2. TAB NAVİGASYON (MOBİLDE GRID, MASAÜSTÜNDE 5'Lİ ÇUBUK) ──────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-        {[
-          { id: 'overview', icon: '📊', label: 'Genel Bakış', count: null },
-          { id: 'whatsapp_leads', icon: '💬', label: 'WhatsApp Randevu', count: (recentWhatsappClicks && recentWhatsappClicks.length > 0) ? recentWhatsappClicks.length : (eventCounts.whatsappClicks || null) },
-          { id: 'seo_rankings', icon: '🎯', label: 'Yandex Sıralama', count: keywordList.length > 0 ? keywordList.length : null },
-          { id: 'listings', icon: '👑', label: 'İlan Performans', count: filteredListings.length },
-          { id: 'live_visitors', icon: '⚡', label: 'Canlı Ziyaretçi', count: recentVisitors.length },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`p-3 rounded-2xl font-black text-xs font-heading transition-all flex items-center justify-between gap-2 border ${
-              activeTab === tab.id
-                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20 scale-[1.01]'
-                : 'bg-[#161b22] text-[#8b949e] hover:text-white border-[#30363d] hover:border-amber-400/40'
-            }`}
-          >
-            <div className="flex items-center gap-2 truncate">
-              <span>{tab.icon}</span>
-              <span className="truncate">{tab.label}</span>
-            </div>
-            {tab.count !== null && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${
-                activeTab === tab.id ? 'bg-slate-950/30 text-slate-950' : 'bg-[#21262d] text-amber-400'
-              }`}>
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
+      {/* ── 2. TAB NAVİGASYON (MOBİLDE GRID, MASAÜSTÜNDE 6'LI ÇUBUK) ──────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        {(() => {
+          const promoListingsCount = (detailedListingReports as any[] || []).filter((l: any) => l.isPromo).length;
+          const promoBannersCount = (bannerList || []).filter((b: any) => b.isPromo).length;
+          const totalPromosCount = promoListingsCount + promoBannersCount;
+
+          return [
+            { id: 'overview', icon: '📊', label: 'Genel Bakış', count: null },
+            { id: 'whatsapp_leads', icon: '💬', label: 'WhatsApp Randevu', count: (recentWhatsappClicks && recentWhatsappClicks.length > 0) ? recentWhatsappClicks.length : (eventCounts.whatsappClicks || null) },
+            { id: 'promos', icon: '🎁', label: '24S Ücretsiz Kampanya', count: totalPromosCount > 0 ? totalPromosCount : null, highlight: totalPromosCount > 0 },
+            { id: 'seo_rankings', icon: '🎯', label: 'Yandex Sıralama', count: keywordList.length > 0 ? keywordList.length : null },
+            { id: 'listings', icon: '👑', label: 'İlan Performans', count: filteredListings.length },
+            { id: 'live_visitors', icon: '⚡', label: 'Canlı Ziyaretçi', count: recentVisitors.length },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`p-3 rounded-2xl font-black text-xs font-heading transition-all flex items-center justify-between gap-2 border ${
+                activeTab === tab.id
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20 scale-[1.01]'
+                  : tab.highlight
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                  : 'bg-[#161b22] text-[#8b949e] hover:text-white border-[#30363d] hover:border-amber-400/40'
+              }`}
+            >
+              <div className="flex items-center gap-2 truncate">
+                <span>{tab.icon}</span>
+                <span className="truncate">{tab.label}</span>
+              </div>
+              {tab.count !== null && (
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${
+                  activeTab === tab.id 
+                    ? 'bg-slate-950/30 text-slate-950' 
+                    : tab.highlight
+                    ? 'bg-emerald-500 text-slate-950 font-black animate-pulse'
+                    : 'bg-[#21262d] text-amber-400'
+                }`}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ));
+        })()}
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
@@ -1979,6 +2029,551 @@ export default function BmsSecurePortalDashboard() {
             );
           })()}
 
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SEKME: 🎁 3 GÜNLÜK ÜCRETSİZ PROMOSYON & KAMPANYA YÖNETİM MERKEZİ ─ */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'promos' && (
+        <div className="flex flex-col gap-6 animate-fadeIn">
+          {(() => {
+            const rawListings = (detailedListingReports as any[] || []).filter((l: any) => l.isPromo);
+            const rawBanners = (bannerList || []).filter((b: any) => b.isPromo);
+
+            const filteredPromoListings = rawListings.filter((l: any) => {
+              if (promoStatusFilter === 'all') return true;
+              return l.status === promoStatusFilter;
+            });
+
+            const filteredPromoBanners = rawBanners.filter((b: any) => {
+              if (promoStatusFilter === 'all') return true;
+              if (promoStatusFilter === 'onay_bekliyor') return b.durum === 'beklemede';
+              if (promoStatusFilter === 'yayinda') return b.durum === 'yayinda';
+              if (promoStatusFilter === 'suresi_doldu') return b.durum === 'suresi_doldu' || b.durum === 'pasif';
+              return true;
+            });
+
+            const activeListingsCount = rawListings.filter((l: any) => l.status === 'yayinda').length;
+            const pendingListingsCount = rawListings.filter((l: any) => l.status === 'onay_bekliyor').length;
+            const expiredListingsCount = rawListings.filter((l: any) => l.status === 'suresi_doldu' || l.status === 'pasif').length;
+
+            const activeBannersCount = rawBanners.filter((b: any) => b.durum === 'yayinda').length;
+            const pendingBannersCount = rawBanners.filter((b: any) => b.durum === 'beklemede').length;
+            const expiredBannersCount = rawBanners.filter((b: any) => b.durum === 'suresi_doldu' || b.durum === 'pasif').length;
+
+            const totalActive = activeListingsCount + activeBannersCount;
+            const totalPending = pendingListingsCount + pendingBannersCount;
+            const totalExpired = expiredListingsCount + expiredBannersCount;
+            const grandTotal = rawListings.length + rawBanners.length;
+
+            return (
+              <>
+                {/* ── KAMPANYA BİLGİ & DUYURU KARTI ── */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#161b22] to-emerald-500/15 border-2 border-amber-500/40 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black shrink-0 shadow-lg">
+                      <Sparkles className="w-7 h-7 animate-pulse text-amber-300" />
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="font-black text-base sm:text-xl text-white font-heading tracking-tight">
+                          🎁 24 Saatlik (1 Gün) Ücretsiz Promosyon Kampanyası
+                        </h2>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black font-heading shrink-0">
+                          ÖZEL VİTRİN KURALI AKTİF (4. SIRADAN BAŞLAR)
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#8b949e] mt-1 leading-relaxed">
+                        Ücretsiz başvuru yapan modeller &amp; reklam verenler burada toplanır. 24 saat (1 gün) sonunda sistem otomatik süre bitirir ve tek tıkla WhatsApp üzerinden haftalık VIP paket teklifi gönderebilirsiniz.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Link
+                      href="/ucretsiz-ilan"
+                      target="_blank"
+                      className="px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 text-xs font-bold font-heading border border-[#30363d] flex items-center gap-1.5 transition-all shadow-md"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>İlan Başvuru Sayfası</span>
+                    </Link>
+                    <Link
+                      href="/ucretsiz-reklam"
+                      target="_blank"
+                      className="px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-emerald-400 text-xs font-bold font-heading border border-[#30363d] flex items-center gap-1.5 transition-all shadow-md"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Reklam Başvuru Sayfası</span>
+                    </Link>
+                  </div>
+                </div>
+
+                {/* ── 4 KPI İSTATİSTİK KARTI ── */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {/* Toplam Başvuru */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col justify-between">
+                    <div className="flex items-center justify-between text-[#8b949e] text-xs font-heading font-black">
+                      <span>TOPLAM 24S PROMO</span>
+                      <Tag className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div className="mt-3">
+                      <span className="font-black text-2xl sm:text-3xl text-white font-mono">{grandTotal}</span>
+                      <div className="flex items-center gap-2 mt-1 text-[11px] text-[#8b949e]">
+                        <span>{rawListings.length} İlan</span>
+                        <span>•</span>
+                        <span>{rawBanners.length} Banner</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Onay Bekleyenler */}
+                  <div className={`p-4 sm:p-5 rounded-2xl bg-[#161b22] border shadow-lg flex flex-col justify-between ${
+                    totalPending > 0 ? 'border-amber-500/50 bg-amber-950/10' : 'border-[#30363d]'
+                  }`}>
+                    <div className="flex items-center justify-between text-amber-400 text-xs font-heading font-black">
+                      <span>ONAY BEKLEYEN</span>
+                      <Clock className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div className="mt-3">
+                      <span className="font-black text-2xl sm:text-3xl text-amber-400 font-mono">{totalPending}</span>
+                      <div className="flex items-center gap-2 mt-1 text-[11px] text-amber-400/80">
+                        <span>{pendingListingsCount} İlan</span>
+                        <span>•</span>
+                        <span>{pendingBannersCount} Banner</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Aktif Yayındakiler */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-emerald-500/30 shadow-lg flex flex-col justify-between">
+                    <div className="flex items-center justify-between text-emerald-400 text-xs font-heading font-black">
+                      <span>AKTİF YAYINDA (24S)</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    </div>
+                    <div className="mt-3">
+                      <span className="font-black text-2xl sm:text-3xl text-emerald-400 font-mono">{totalActive}</span>
+                      <div className="flex items-center gap-2 mt-1 text-[11px] text-emerald-400/80">
+                        <span>{activeListingsCount} İlan</span>
+                        <span>•</span>
+                        <span>{activeBannersCount} Banner</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Süresi Dolanlar / Satış Fırsatları */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-rose-500/30 shadow-lg flex flex-col justify-between">
+                    <div className="flex items-center justify-between text-rose-400 text-xs font-heading font-black">
+                      <span>SÜRESİ BİTEN (SATIŞ)</span>
+                      <Megaphone className="w-4 h-4 text-rose-400" />
+                    </div>
+                    <div className="mt-3">
+                      <span className="font-black text-2xl sm:text-3xl text-rose-400 font-mono">{totalExpired}</span>
+                      <div className="flex items-center gap-2 mt-1 text-[11px] text-rose-400/80">
+                        <span>{expiredListingsCount} İlan</span>
+                        <span>•</span>
+                        <span>{expiredBannersCount} Banner</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── FİLTRE VE ARAMA ÇUBUĞU ── */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#161b22] border border-[#30363d] p-3 sm:p-4 rounded-2xl">
+                  {/* Tür Filtreleri */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                    {[
+                      { id: 'all', label: 'Tüm Promosyonlar', count: grandTotal },
+                      { id: 'listing', label: '🎁 24S İlanlar', count: rawListings.length },
+                      { id: 'banner', label: '🖼️ 24S Banner Reklamlar', count: rawBanners.length },
+                    ].map((btn) => (
+                      <button
+                        key={btn.id}
+                        onClick={() => setPromoFilterType(btn.id as any)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-black font-heading shrink-0 transition-all border ${
+                          promoFilterType === btn.id
+                            ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md'
+                            : 'bg-[#0d1117] text-[#8b949e] hover:text-white border-[#30363d]'
+                        }`}
+                      >
+                        {btn.label} ({btn.count})
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Durum Filtreleri */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto">
+                    {[
+                      { id: 'all', label: 'Tüm Durumlar' },
+                      { id: 'onay_bekliyor', label: '🟡 Onay Bekliyor', count: totalPending },
+                      { id: 'yayinda', label: '🟢 Yayında', count: totalActive },
+                      { id: 'suresi_doldu', label: '🔴 Süresi Doldu', count: totalExpired },
+                    ].map((st) => (
+                      <button
+                        key={st.id}
+                        onClick={() => setPromoStatusFilter(st.id as any)}
+                        className={`px-2.5 py-1 rounded-xl text-[11px] font-bold font-heading shrink-0 transition-all border ${
+                          promoStatusFilter === st.id
+                            ? 'bg-white/10 text-white border-white/30'
+                            : 'bg-[#0d1117] text-[#8b949e] hover:text-white border-[#30363d]'
+                        }`}
+                      >
+                        {st.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── BÖLÜM 1: 24 SAATLİK ÜCRETSİZ İLANLAR LİSTESİ ── */}
+                {(promoFilterType === 'all' || promoFilterType === 'listing') && (
+                  <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+                    <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+                      <div className="flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-amber-400" />
+                        <h3 className="font-black text-sm sm:text-base text-white font-heading">
+                          24 Saatlik Ücretsiz VIP İlanlar ({filteredPromoListings.length})
+                        </h3>
+                      </div>
+                      <span className="text-xs text-amber-400 font-mono font-bold">
+                        Anasayfa Sıralaması: 4. Sıradan İtibaren
+                      </span>
+                    </div>
+
+                    {filteredPromoListings.length === 0 ? (
+                      <div className="py-12 text-center text-xs text-[#8b949e]">
+                        Bu filtreye uygun 24 saatlik ücretsiz promosyon ilan kaydı bulunamadı.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-3.5">
+                        {filteredPromoListings.map((l: any) => {
+                          const now = Date.now();
+                          const expiryTime = l.paketBitisTarihi ? new Date(l.paketBitisTarihi).getTime() : 0;
+                          const remainingHours = expiryTime > now ? Math.round((expiryTime - now) / (1000 * 60 * 60)) : 0;
+                          const isExpired = l.status === 'suresi_doldu' || (expiryTime > 0 && expiryTime <= now);
+                          const isLive = l.status === 'yayinda' && !isExpired;
+                          const isPending = l.status === 'onay_bekliyor';
+                          const cleanPhone = (l.whatsappNumara || '').replace(/\D/g, '');
+
+                          // WhatsApp Satış & Bilgilendirme Mesajları
+                          const salesMsg = encodeURIComponent(
+                            `Merhaba ${l.baslik}! 👑\n\nwww.besteskort.online üzerindeki 24 saatlik ücretsiz VIP vitrin deneme süreniz tamamlandı.\n\nİlanınızın anasayfada ve ${(l.ilSlug || 'şehir').toUpperCase()} vitrininde kesintisiz yer alması, Google ve Yandex aramalarından gelen müşterileri kaçırmamak için avantajlı haftalık VIP paketlerimizi aktif edebiliriz.\n\n💎 Haftalık VIP Vitrin Paketlerimizi incelemek ve hemen yenilemek ister misiniz?\nPaneliniz: https://www.besteskort.online/panelim`
+                          );
+
+                          const liveNoticeMsg = encodeURIComponent(
+                            `Merhaba ${l.baslik}! 🎉\n\n24 saatlik ücretsiz VIP vitrin ilanınız ONAYLANDI ve yayına alındı!\n\n🔗 Canlı İlan Linkiniz: https://www.besteskort.online/ilan/${l.slug}\n🔑 İlan Yönetim Paneliniz: https://www.besteskort.online/panelim\n\nBol kazançlar dileriz! 🚀`
+                          );
+
+                          return (
+                            <div
+                              key={l.id || l._id}
+                              className={`p-4 rounded-2xl border transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-lg ${
+                                isPending
+                                  ? 'bg-amber-950/20 border-amber-500/40'
+                                  : isLive
+                                  ? 'bg-[#0d1117] border-emerald-500/30'
+                                  : 'bg-[#0d1117]/80 border-[#30363d]'
+                              }`}
+                            >
+                              {/* İlan Detayları */}
+                              <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                                <div className="relative w-14 h-20 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                                  <Image
+                                    src={l.fotoUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
+                                    alt={l.baslik}
+                                    fill
+                                    sizes="64px"
+                                    className="object-cover"
+                                  />
+                                </div>
+
+                                <div className="flex flex-col min-w-0 gap-1">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-black text-xs sm:text-sm text-white truncate font-heading hover:text-amber-400 transition-colors">
+                                      {l.baslik}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[10px] font-black font-mono">
+                                      🎁 24S ÜCRETSİZ
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 text-[11px] text-[#8b949e] font-mono flex-wrap">
+                                    <span className="text-slate-300 font-bold">📍 {(l.ilSlug || 'TR').toUpperCase()} {l.ilceSlug ? `/ ${l.ilceSlug.toUpperCase()}` : ''}</span>
+                                    <span>•</span>
+                                    <span className="text-emerald-400 font-bold">📞 {l.whatsappNumara}</span>
+                                    <span>•</span>
+                                    <span>👁️ {l.totalViews || 0} İzlenme</span>
+                                    <span>•</span>
+                                    <span className="text-emerald-400 font-bold">💬 {l.whatsappClicks || 0} WA Tıklama</span>
+                                  </div>
+
+                                  {/* Kalan Süre & Durum Rozeti */}
+                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                    {isPending && (
+                                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[11px] font-black flex items-center gap-1 animate-pulse">
+                                        <Clock className="w-3 h-3" /> Onay Bekliyor
+                                      </span>
+                                    )}
+                                    {isLive && (
+                                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-black flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3" /> Yayında ({remainingHours} Saat Kaldı)
+                                      </span>
+                                    )}
+                                    {isExpired && (
+                                      <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[11px] font-black flex items-center gap-1">
+                                        <Clock className="w-3 h-3" /> Süresi Doldu / Pasif
+                                      </span>
+                                    )}
+                                    {l.panelSifresi && (
+                                      <span className="px-2 py-0.5 rounded-md bg-[#21262d] text-[#8b949e] border border-[#30363d] text-[10px] font-mono">
+                                        🔑 Şifre: {l.panelSifresi}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Eylem Butonları */}
+                              <div className="flex items-center gap-2 shrink-0 flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-[#21262d]">
+                                {/* WhatsApp Satış / Bilgi Butonu */}
+                                {cleanPhone && (
+                                  <a
+                                    href={`https://wa.me/${cleanPhone}?text=${isExpired ? salesMsg : liveNoticeMsg}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`px-3 py-2 rounded-xl text-xs font-black font-heading flex items-center gap-1.5 transition-all shadow-md ${
+                                      isExpired
+                                        ? 'bg-rose-500 text-white hover:bg-rose-600 animate-pulse'
+                                        : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
+                                    }`}
+                                  >
+                                    <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
+                                    <span>{isExpired ? 'Paket Sat (WhatsApp)' : 'WhatsApp Yaz'}</span>
+                                  </a>
+                                )}
+
+                                {/* Onayla Butonu */}
+                                {isPending && (
+                                  <button
+                                    onClick={() => handleUpdateListingStatus(l.id || l._id, 'yayinda')}
+                                    className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center gap-1 transition-all shadow-md"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>24 Saatlik Başlat (Onayla)</span>
+                                  </button>
+                                )}
+
+                                {/* Pasife Al Butonu */}
+                                {isLive && (
+                                  <button
+                                    onClick={() => handleUpdateListingStatus(l.id || l._id, 'suresi_doldu')}
+                                    className="px-3 py-2 rounded-xl bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 border border-[#30363d] font-bold text-xs transition-all"
+                                    title="İlanın süresini bitirip pasife alır"
+                                  >
+                                    Süreyi Bitir
+                                  </button>
+                                )}
+
+                                {/* Yeniden Yayına Al */}
+                                {isExpired && (
+                                  <button
+                                    onClick={() => handleUpdateListingStatus(l.id || l._id, 'yayinda')}
+                                    className="px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/40 font-bold text-xs transition-all"
+                                  >
+                                    +24 Saat Uzat
+                                  </button>
+                                )}
+
+                                {/* İlanı Gör */}
+                                <Link
+                                  href={`/ilan/${l.slug}`}
+                                  target="_blank"
+                                  className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white transition-all border border-[#30363d]"
+                                  title="Canlı İlanı Görüntüle"
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </Link>
+
+                                {/* Sil */}
+                                <button
+                                  onClick={() => handleDeleteListing(l.id || l._id)}
+                                  className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-all border border-rose-500/20"
+                                  title="İlanı Tamamen Sil"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── BÖLÜM 2: 24 SAATLİK ÜCRETSİZ REKLAM BANNERLARI LİSTESİ ── */}
+                {(promoFilterType === 'all' || promoFilterType === 'banner') && (
+                  <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+                    <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+                      <div className="flex items-center gap-2">
+                        <Megaphone className="w-5 h-5 text-emerald-400" />
+                        <h3 className="font-black text-sm sm:text-base text-white font-heading">
+                          24 Saatlik Ücretsiz Banner Reklamlar ({filteredPromoBanners.length})
+                        </h3>
+                      </div>
+                      <span className="text-xs text-emerald-400 font-mono font-bold">
+                        21:9 Ultra Geniş Masaüstü &amp; Mobil Vitrin
+                      </span>
+                    </div>
+
+                    {filteredPromoBanners.length === 0 ? (
+                      <div className="py-12 text-center text-xs text-[#8b949e]">
+                        Bu filtreye uygun 24 saatlik ücretsiz reklam bannerı bulunamadı.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 gap-3.5">
+                        {filteredPromoBanners.map((b: any) => {
+                          const now = Date.now();
+                          const expiryTime = b.bitisTarihi ? new Date(b.bitisTarihi).getTime() : 0;
+                          const remainingHours = expiryTime > now ? Math.round((expiryTime - now) / (1000 * 60 * 60)) : 0;
+                          const isExpired = b.durum === 'suresi_doldu' || (expiryTime > 0 && expiryTime <= now);
+                          const isLive = b.durum === 'yayinda' && !isExpired;
+                          const isPending = b.durum === 'beklemede';
+                          const cleanPhone = (b.reklamVerenTelefon || '').replace(/\D/g, '');
+
+                          const bannerSalesMsg = encodeURIComponent(
+                            `Merhaba ${b.reklamVerenAd || ''}! 🖼️\n\nwww.besteskort.online üzerindeki 24 saatlik ücretsiz 21:9 ultra geniş banner reklam süreniz tamamlandı.\n\nReklamınızın anasayfa ve ilan detaylarında en üstte kesintisiz yayında kalması ve yüz binlerce müşteriye ulaşması için haftalık/aylık paketlerimiz hakkında bilgi almak ister misiniz?`
+                          );
+
+                          return (
+                            <div
+                              key={b._id}
+                              className={`p-4 rounded-2xl border transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-lg ${
+                                isPending
+                                  ? 'bg-amber-950/20 border-amber-500/40'
+                                  : isLive
+                                  ? 'bg-[#0d1117] border-emerald-500/30'
+                                  : 'bg-[#0d1117]/80 border-[#30363d]'
+                              }`}
+                            >
+                              <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                                {/* Banner Görsel Önizleme */}
+                                <div className="relative w-36 h-16 sm:w-44 sm:h-20 rounded-xl overflow-hidden bg-slate-900 border border-[#30363d] shrink-0">
+                                  {b.gorselUrl ? (
+                                    <Image
+                                      src={b.gorselUrl}
+                                      alt={b.hedefUrl || 'Banner'}
+                                      fill
+                                      sizes="180px"
+                                      className="object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8b949e]">
+                                      Görsel Yok
+                                    </div>
+                                  )}
+                                  <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[8px] font-mono text-white">
+                                    21:9
+                                  </span>
+                                </div>
+
+                                <div className="flex flex-col min-w-0 gap-1">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-bold text-xs sm:text-sm text-white truncate font-heading">
+                                      {b.reklamVerenAd || 'Reklam Veren'}
+                                    </span>
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-[10px] font-black font-mono">
+                                      🎁 24S REKLAM
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 text-[11px] text-[#8b949e] font-mono flex-wrap">
+                                    <span className="text-emerald-400 font-bold">📞 {b.reklamVerenTelefon}</span>
+                                    <span>•</span>
+                                    <a
+                                      href={b.hedefUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-amber-400 hover:underline truncate max-w-[200px]"
+                                    >
+                                      🔗 {b.hedefUrl}
+                                    </a>
+                                    <span>•</span>
+                                    <span>👆 {b.tiklamaSayisi || 0} Tıklama</span>
+                                  </div>
+
+                                  {/* Kalan Süre & Durum Rozeti */}
+                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                    {isPending && (
+                                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[11px] font-black flex items-center gap-1 animate-pulse">
+                                        <Clock className="w-3 h-3" /> Onay Bekliyor
+                                      </span>
+                                    )}
+                                    {isLive && (
+                                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-black flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3" /> Yayında ({remainingHours} Saat Kaldı)
+                                      </span>
+                                    )}
+                                    {isExpired && (
+                                      <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[11px] font-black flex items-center gap-1">
+                                        <Clock className="w-3 h-3" /> Süresi Doldu
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Eylem Butonları */}
+                              <div className="flex items-center gap-2 shrink-0 flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-[#21262d]">
+                                {cleanPhone && (
+                                  <a
+                                    href={`https://wa.me/${cleanPhone}?text=${bannerSalesMsg}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/40 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
+                                  >
+                                    <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
+                                    <span>WhatsApp Yaz</span>
+                                  </a>
+                                )}
+
+                                {isPending && (
+                                  <button
+                                    onClick={() => handleBannerAction(b._id, 'onayla')}
+                                    className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center gap-1 transition-all shadow-md"
+                                  >
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>Onayla (24S Yayına Al)</span>
+                                  </button>
+                                )}
+
+                                {isLive && (
+                                  <button
+                                    onClick={() => handleBannerAction(b._id, 'pasife_al')}
+                                    className="px-3 py-2 rounded-xl bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 border border-[#30363d] font-bold text-xs transition-all"
+                                  >
+                                    Durdur
+                                  </button>
+                                )}
+
+                                <button
+                                  onClick={() => handleBannerAction(b._id, 'delete')}
+                                  className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-all border border-rose-500/20"
+                                  title="Bannerı Sil"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
 

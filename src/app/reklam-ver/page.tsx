@@ -15,7 +15,9 @@ import {
   Copy,
   Scissors,
   Flame,
-  Sparkles
+  Sparkles,
+  KeyRound,
+  ExternalLink
 } from 'lucide-react';
 import ImageCropModal from '@/components/common/ImageCropModal';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
@@ -101,9 +103,14 @@ export default function ReklamVerPage() {
   const [hedefUrl, setHedefUrl] = useState('');
   const [musteriIletisim, setMusteriIletisim] = useState('');
   const [gorselUrl, setGorselUrl] = useState('');
+  const [bannerFitMode, setBannerFitMode] = useState<'cover' | 'contain'>('contain');
+  const [bannerScale, setBannerScale] = useState<number>(1);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [panelPassword, setPanelPassword] = useState('');
+  const [copiedUser, setCopiedUser] = useState(false);
+  const [copiedPass, setCopiedPass] = useState(false);
 
   // Kırpma Modal Durumları
   const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -193,11 +200,26 @@ export default function ReklamVerPage() {
           hedefUrl: hedefUrl.trim(),
           sureGun: activeDays,
           musteriIletisim: musteriIletisim.trim(),
+          fitMode: bannerFitMode,
         }),
       });
 
       const data = await res.json();
       if (data.success) {
+        const pwd = data.panelSifresi || '123456';
+        setPanelPassword(pwd);
+        try {
+          const cleanDigits = musteriIletisim.replace(/\D/g, '');
+          localStorage.setItem('panel_user_session', JSON.stringify({
+            identifier: cleanDigits || musteriIletisim,
+            password: pwd,
+            panelSifresi: pwd,
+            kullaniciAdi: baslik || 'Banner Müşterisi',
+            telefon: musteriIletisim,
+            ad: baslik || 'Banner Müşterisi',
+            type: 'banner'
+          }));
+        } catch (_) {}
         setStep('payment');
       } else {
         alert(data.error || 'Başvuru alınamadı.');
@@ -265,7 +287,16 @@ export default function ReklamVerPage() {
 
             <div className="relative w-full h-28 sm:h-36 rounded-xl overflow-hidden bg-black/60 border border-amber-500/40 flex items-center justify-center">
               {gorselUrl ? (
-                <Image src={gorselUrl} alt="Önizleme" fill unoptimized className="object-cover" />
+                <img
+                  src={gorselUrl}
+                  alt="Önizleme"
+                  style={{
+                    objectFit: bannerFitMode,
+                    transform: `scale(${bannerScale})`,
+                    transition: 'transform 0.15s ease-out',
+                  }}
+                  className={`w-full h-full ${bannerFitMode === 'contain' ? 'bg-[#0B0E14]' : ''}`}
+                />
               ) : (
                 <div className="flex flex-col items-center gap-1 text-center p-4">
                   <Flame className="w-7 h-7 text-amber-400/60 animate-bounce" />
@@ -278,6 +309,53 @@ export default function ReklamVerPage() {
                 </div>
               )}
             </div>
+
+            {/* Görsel Boyutlandırma / Daraltma / Sığdırma Kontrolleri */}
+            {gorselUrl && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-[#0d1117] border border-amber-500/30">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[11px] font-bold text-[#8b949e]">Görsel / GIF Boyutu:</span>
+                  <button
+                    type="button"
+                    onClick={() => { setBannerFitMode('contain'); setBannerScale(1); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      bannerFitMode === 'contain'
+                        ? 'bg-amber-400 text-slate-950 shadow-sm font-black'
+                        : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#30363d]'
+                    }`}
+                  >
+                    Tam Sığdır (Boyunu Daralt)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setBannerFitMode('cover'); setBannerScale(1); }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      bannerFitMode === 'cover'
+                        ? 'bg-amber-500 text-slate-950 shadow-sm font-black'
+                        : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#30363d]'
+                    }`}
+                  >
+                    Alanı Doldur (Cover)
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-[#8b949e] font-mono">Ölçek:</span>
+                  <input
+                    type="range"
+                    min="0.4"
+                    max="1.5"
+                    step="0.05"
+                    value={bannerScale}
+                    onChange={(e) => setBannerScale(parseFloat(e.target.value))}
+                    className="w-24 h-1.5 bg-[#161b22] rounded-lg appearance-none cursor-pointer accent-amber-400"
+                  />
+                  <span className="text-[10px] font-mono font-bold text-amber-400 w-8 text-right">
+                    %{Math.round(bannerScale * 100)}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ── 1. SÜRE SEÇİMİ (4 NET KART + İSTEDİĞİN GÜNÜ SEÇ SLIDER/INPUT) ──────────────── */}
@@ -626,10 +704,63 @@ export default function ReklamVerPage() {
               </div>
             </div>
 
+            {/* Müşteri Panel Giriş Bilgileri Kartı */}
+            <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-2.5 text-left">
+              <div className="flex items-center justify-between border-b border-[#30363d] pb-2">
+                <div className="flex items-center gap-1.5 text-amber-400 font-heading font-black text-xs">
+                  <KeyRound className="w-3.5 h-3.5" />
+                  <span>Müşteri Paneli Giriş Bilgileriniz</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono font-bold">
+                  Kaydediniz
+                </span>
+              </div>
+
+              {/* Tel / Kullanıcı Adı */}
+              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] text-[#8b949e] uppercase font-bold">Kullanıcı Adı / Tel</span>
+                  <span className="text-xs font-mono font-bold text-emerald-400 truncate">{musteriIletisim}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(musteriIletisim);
+                    setCopiedUser(true);
+                    setTimeout(() => setCopiedUser(false), 2000);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-bold flex items-center gap-1 transition-all shrink-0 active:scale-95 cursor-pointer font-heading"
+                >
+                  {copiedUser ? <Check className="w-3 h-3 text-emerald-400 stroke-[3]" /> : <Copy className="w-3 h-3" />}
+                  <span>{copiedUser ? 'Kopyalandı' : 'Kopyala'}</span>
+                </button>
+              </div>
+
+              {/* Şifre */}
+              <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] text-[#8b949e] uppercase font-bold">Panel Şifreniz</span>
+                  <span className="text-sm font-mono font-black text-amber-400">{panelPassword || '123456'}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(panelPassword || '123456');
+                    setCopiedPass(true);
+                    setTimeout(() => setCopiedPass(false), 2000);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-xs font-bold flex items-center gap-1 transition-all shrink-0 active:scale-95 cursor-pointer font-heading"
+                >
+                  {copiedPass ? <Check className="w-3 h-3 text-emerald-400 stroke-[3]" /> : <Copy className="w-3 h-3" />}
+                  <span>{copiedPass ? 'Kopyalandı' : 'Kopyala'}</span>
+                </button>
+              </div>
+            </div>
+
             <div className="flex flex-col gap-3">
               <a
                 href={getAdminWhatsAppUrl(
-                  `Merhaba, Best Eskort için ${activeDays} Günlük (${currentPricing.fiyat.toLocaleString('tr-TR')} ₺) VIP Banner reklam başvurusu yaptım. Onay ve dekont iletmek istiyorum.`
+                  `Merhaba, Best Eskort için ${activeDays} Günlük (${currentPricing.fiyat.toLocaleString('tr-TR')} ₺) VIP Banner reklam başvurusu yaptım. Şifrem: ${panelPassword}. Onay ve dekont iletmek istiyorum.`
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -638,9 +769,21 @@ export default function ReklamVerPage() {
                 <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
                 <span>WhatsApp ile Dekont / Hızlı Onay Al</span>
               </a>
+
+              <a
+                href="/panelim"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-heading font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-[#30363d] transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <KeyRound className="w-4 h-4 text-amber-400" />
+                <span>Müşteri Panelime Git (Ayrı Sekme)</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+
               <Link
                 href="/chat"
-                className="w-full py-3.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-2 border border-[#30363d] transition-all active:scale-[0.98]"
+                className="w-full py-3 rounded-2xl bg-transparent hover:bg-[#21262d] text-white font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-2 border border-[#30363d]/50 transition-all active:scale-[0.98]"
               >
                 <MessageSquare className="w-4 h-4 text-amber-400" />
                 <span>Site İçi Canlı Destek</span>
@@ -669,12 +812,77 @@ export default function ReklamVerPage() {
               Yönetici ekibimiz ödemenizi ve görselinizi onayladıktan sonra banner'ınız anında yayına girecektir.
             </p>
           </div>
-          <Link
-            href="/"
-            className="mt-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs uppercase tracking-wider shadow-lg transition-all"
-          >
-            Anasayfaya Dön
-          </Link>
+
+          {/* Müşteri Panel Giriş Bilgileri */}
+          <div className="w-full max-w-md p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-2.5 text-left">
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-2">
+              <div className="flex items-center gap-1.5 text-amber-400 font-heading font-black text-xs">
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Müşteri Paneli Giriş Bilgileriniz</span>
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono font-bold">
+                Kaydediniz
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-[#8b949e] uppercase font-bold">Kullanıcı Adı / Tel</span>
+                <span className="text-xs font-mono font-bold text-emerald-400 truncate">{musteriIletisim}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(musteriIletisim);
+                  setCopiedUser(true);
+                  setTimeout(() => setCopiedUser(false), 2000);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-bold flex items-center gap-1 transition-all shrink-0 active:scale-95 cursor-pointer font-heading"
+              >
+                {copiedUser ? <Check className="w-3 h-3 text-emerald-400 stroke-[3]" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedUser ? 'Kopyalandı' : 'Kopyala'}</span>
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-[#161b22] border border-[#30363d]">
+              <div className="flex flex-col min-w-0">
+                <span className="text-[10px] text-[#8b949e] uppercase font-bold">Panel Şifreniz</span>
+                <span className="text-sm font-mono font-black text-amber-400">{panelPassword || '123456'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(panelPassword || '123456');
+                  setCopiedPass(true);
+                  setTimeout(() => setCopiedPass(false), 2000);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 text-xs font-bold flex items-center gap-1 transition-all shrink-0 active:scale-95 cursor-pointer font-heading"
+              >
+                {copiedPass ? <Check className="w-3 h-3 text-emerald-400 stroke-[3]" /> : <Copy className="w-3 h-3" />}
+                <span>{copiedPass ? 'Kopyalandı' : 'Kopyala'}</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md">
+            <a
+              href="/panelim"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-3.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 font-heading font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 border border-[#30363d] transition-all cursor-pointer"
+            >
+              <KeyRound className="w-4 h-4 text-amber-400" />
+              <span>Müşteri Panelime Git</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
+            <Link
+              href="/"
+              className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs uppercase tracking-wider shadow-lg transition-all text-center"
+            >
+              Anasayfaya Dön
+            </Link>
+          </div>
         </div>
       )}
 
