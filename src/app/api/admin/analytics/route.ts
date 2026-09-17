@@ -62,7 +62,8 @@ export async function GET(req: Request) {
       listingEventsAgg,
       rawListings,
       domainVisitorsAgg,
-      domainEventsAgg
+      domainEventsAgg,
+      recentWhatsappClicks
     ] = await Promise.all([
       // 1. Ziyaretçi ve Cihaz/Referrer Dağılımı (Tek gruplamada)
       AnalyticsVisitorModel.aggregate([
@@ -236,7 +237,15 @@ export async function GET(req: Request) {
             whatsappClicks: 1,
           }
         }
-      ])
+      ]),
+      // 16. Son WhatsApp Tıklama İstihbaratı (Ziyaretçi & İlan detaylı lead akışı)
+      AnalyticsEventModel.find({
+        ...dateQuery,
+        eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] }
+      })
+        .sort({ createdAt: -1 })
+        .limit(200)
+        .lean()
     ]);
 
     // Özet verileri çözümle
@@ -596,6 +605,7 @@ export async function GET(req: Request) {
         totalWhatsappClicks,
         totalShares,
         recentVisitors,
+        recentWhatsappClicks,
       },
     });
   } catch (error: any) {

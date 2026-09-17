@@ -9,18 +9,20 @@ export async function GET() {
   try {
     await connectToDatabase();
     
-    // Gerçek canlılık için son 2 dakikada heartbeat göndermiş olması şarttır
-    const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+    // Gerçek canlılık için son 5 dakikada aktif olmuş / heartbeat göndermiş olması şarttır
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     
-    // Sekmeyi kapatıp çıkan ve 2 dakikadır sinyal göndermeyenleri otomatik offline yap
+    // Sekmeyi kapatıp çıkan ve 5 dakikadır sinyal göndermeyenleri offline yap
     await UserModel.updateMany(
-      { isOnline: true, $or: [{ lastActiveAt: { $lt: twoMinutesAgo } }, { lastActiveAt: { $exists: false } }] },
+      { isOnline: true, $or: [{ lastActiveAt: { $lt: fiveMinutesAgo } }, { lastActiveAt: { $exists: false } }] },
       { $set: { isOnline: false } }
-    );
+    ).catch(() => {});
     
     const onlineUsers = await UserModel.find({
-      isOnline: true,
-      lastActiveAt: { $gte: twoMinutesAgo }
+      $or: [
+        { isOnline: true, lastActiveAt: { $gte: fiveMinutesAgo } },
+        { lastActiveAt: { $gte: fiveMinutesAgo } }
+      ]
     })
       .select('kullaniciAdi telefon ad isOnline lastActiveAt sessionStartedAt lastLogoutAt currentTab')
       .sort({ lastActiveAt: -1 })

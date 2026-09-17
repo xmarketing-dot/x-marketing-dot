@@ -24,7 +24,20 @@ export async function GET(req: NextRequest) {
         }
       };
 
+      const whatsappClickListener = (clickData: any) => {
+        try {
+          if (clickData) {
+            controller.enqueue(
+              encoder.encode(`event: admin_whatsapp_click\ndata: ${JSON.stringify(clickData)}\n\n`)
+            );
+          }
+        } catch (err) {
+          // Closed stream
+        }
+      };
+
       chatEmitter.on('new_message', messageListener);
+      chatEmitter.on('whatsapp_click', whatsappClickListener);
 
       // Heartbeat ping every 25s to keep connection alive
       const interval = setInterval(() => {
@@ -38,6 +51,7 @@ export async function GET(req: NextRequest) {
       req.signal.addEventListener('abort', () => {
         clearInterval(interval);
         chatEmitter.off('new_message', messageListener);
+        chatEmitter.off('whatsapp_click', whatsappClickListener);
       });
     },
   });

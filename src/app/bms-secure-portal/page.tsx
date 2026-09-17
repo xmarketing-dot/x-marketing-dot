@@ -22,8 +22,9 @@ export default function BmsSecurePortalDashboard() {
   const [listingSearchTerm, setListingSearchTerm] = useState('');
   const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'yandex' | 'x'>('views');
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'whatsapp_leads' | 'seo_rankings' | 'listings' | 'live_visitors'>('overview');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
+  const [whatsappLeadSearchTerm, setWhatsappLeadSearchTerm] = useState('');
 
   // Online Users State
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
@@ -294,6 +295,7 @@ export default function BmsSecurePortalDashboard() {
       topGoogleDistricts: [],
     },
     recentVisitors = [],
+    recentWhatsappClicks = [],
     domainBreakdown = [],
   } = data || {};
 
@@ -635,10 +637,11 @@ export default function BmsSecurePortalDashboard() {
         </div>
       </div>
 
-      {/* ── 2. TAB NAVİGASYON (MOBİLDE 2x2 GRID, MASAÜSTÜNDE 4'LÜ ÇUBUK) ──────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+      {/* ── 2. TAB NAVİGASYON (MOBİLDE GRID, MASAÜSTÜNDE 5'Lİ ÇUBUK) ──────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
         {[
           { id: 'overview', icon: '📊', label: 'Genel Bakış', count: null },
+          { id: 'whatsapp_leads', icon: '💬', label: 'WhatsApp Randevu', count: (recentWhatsappClicks && recentWhatsappClicks.length > 0) ? recentWhatsappClicks.length : (eventCounts.whatsappClicks || null) },
           { id: 'seo_rankings', icon: '🎯', label: 'Yandex Sıralama', count: keywordList.length > 0 ? keywordList.length : null },
           { id: 'listings', icon: '👑', label: 'İlan Performans', count: filteredListings.length },
           { id: 'live_visitors', icon: '⚡', label: 'Canlı Ziyaretçi', count: recentVisitors.length },
@@ -765,10 +768,13 @@ export default function BmsSecurePortalDashboard() {
             </div>
 
             {/* 3. WhatsApp İletişim Tıklamaları */}
-            <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-emerald-500/50 transition-colors">
+            <div 
+              onClick={() => setActiveTab('whatsapp_leads')}
+              className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-emerald-400 cursor-pointer transition-all group"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] uppercase tracking-wider font-heading truncate">WhatsApp Hit</span>
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center shrink-0">
+                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] group-hover:text-emerald-300 uppercase tracking-wider font-heading truncate">WhatsApp Hit</span>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
                   <OfficialWhatsAppIcon className="w-4 h-4 fill-[#25D366]" />
                 </div>
               </div>
@@ -776,8 +782,9 @@ export default function BmsSecurePortalDashboard() {
                 <span className="font-black text-xl sm:text-2xl text-[#25D366] font-heading">{eventCounts.whatsappClicks.toLocaleString()}</span>
                 <span className="text-[10px] sm:text-xs text-emerald-400 font-bold">Dönüşüm</span>
               </div>
-              <span className="text-[10px] text-[#8b949e] border-t border-[#30363d] pt-1.5 truncate">
-                CTR: %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
+              <span className="text-[10px] text-[#8b949e] group-hover:text-emerald-400/90 border-t border-[#30363d] pt-1.5 truncate flex items-center justify-between">
+                <span>CTR: %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}</span>
+                <span className="font-bold hidden sm:inline">Lead Akışı →</span>
               </span>
             </div>
 
@@ -1441,6 +1448,297 @@ export default function BmsSecurePortalDashboard() {
               <OfficialWhatsAppIcon className="w-4 h-4 fill-emerald-400" />
               <span>Tüm WhatsApp &amp; İlan Etkileşim Raporunu Aç ({topContactedListings.length}) →</span>
             </button>
+          </div>
+
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SEKME: CANLI WHATSAPP RANDEVU & İLETİŞİM İSTİHBARATI (LEAD CENTER) ─ */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'whatsapp_leads' && (
+        <div className="flex flex-col gap-6 animate-fadeIn">
+          
+          {/* ── BAŞLIK & ÖZET KARTLARI ── */}
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161b22] via-[#064e3b]/30 to-[#161b22] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-black shadow-lg shadow-emerald-500/10">
+                  <OfficialWhatsAppIcon className="w-6 h-6 fill-emerald-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-black text-lg sm:text-xl text-white font-heading">
+                      Canlı WhatsApp Randevu &amp; Lead Akışı
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      CANLI DİNLEME AKTİF
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#8b949e] mt-0.5">
+                    Sitedeki tüm ilanların WhatsApp butonlarına basan ziyaretçilerin anlık tıklama kayıtları, konumları ve istihbaratı.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="px-3.5 py-1.5 rounded-2xl bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-bold">
+                  Toplam: {eventCounts.whatsappClicks} Tıklama
+                </span>
+              </div>
+            </div>
+
+            {/* 4 KPI Kartı (WhatsApp Lead İstihbaratı) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col gap-1">
+                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
+                  <OfficialWhatsAppIcon className="w-4 h-4 fill-emerald-400" />
+                  Toplam Randevu / Tık
+                </span>
+                <span className="font-black text-2xl text-white font-heading">
+                  {eventCounts.whatsappClicks}
+                </span>
+                <span className="text-[10px] text-[#8b949e]">Seçili dönemde WhatsApp'a basanlar</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-1">
+                <span className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
+                  <Crown className="w-4 h-4 text-amber-400" />
+                  Lider İlan
+                </span>
+                <span className="font-black text-sm text-amber-300 font-heading truncate">
+                  {topContactedListings[0]?._id || 'Kayıt Bekleniyor'}
+                </span>
+                <span className="text-[10px] text-[#8b949e] font-mono">
+                  {topContactedListings[0]?.whatsappClicks || 0} WhatsApp İletişimi
+                </span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-1">
+                <span className="text-xs text-blue-400 font-bold flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-blue-400" />
+                  En Çok İletişim Alan İl
+                </span>
+                <span className="font-black text-2xl text-blue-400 font-heading">
+                  {topCities[0]?._id ? `📍 ${topCities[0]._id}` : 'Türkiye'}
+                </span>
+                <span className="text-[10px] text-[#8b949e]">Lider müşteri lokasyonu</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-purple-500/30 flex flex-col gap-1">
+                <span className="text-xs text-purple-400 font-bold flex items-center gap-1.5">
+                  <TrendingUp className="w-4 h-4 text-purple-400" />
+                  Dönüşüm Oranı (CTR)
+                </span>
+                <span className="font-black text-2xl text-purple-300 font-heading">
+                  %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
+                </span>
+                <span className="text-[10px] text-[#8b949e]">Tekil ziyaretçi randevu oranı</span>
+              </div>
+            </div>
+
+            {/* Arama ve Filtre Çubuğu */}
+            <div className="relative w-full">
+              <input
+                type="text"
+                placeholder="İlan adı, telefon, ziyaretçi şehri, IP veya arama kelimesi ara..."
+                value={whatsappLeadSearchTerm}
+                onChange={(e) => setWhatsappLeadSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-emerald-400 focus:outline-none transition-colors"
+              />
+              <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3.5" />
+              {whatsappLeadSearchTerm && (
+                <button
+                  onClick={() => setWhatsappLeadSearchTerm('')}
+                  className="absolute right-3.5 top-3 text-xs text-[#8b949e] hover:text-white"
+                >
+                  ✕ Temizle
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── CANLI WHATSAPP TIKLAMA AKIŞ KARTLARI LİSTESİ ── */}
+          <div className="flex flex-col gap-3">
+            {(() => {
+              const leads = (recentWhatsappClicks as any[] || []).filter((item: any) => {
+                if (!whatsappLeadSearchTerm) return true;
+                const term = whatsappLeadSearchTerm.toLowerCase();
+                const m = item.metadata || {};
+                return (
+                  (item.targetTitle || '').toLowerCase().includes(term) ||
+                  (item.targetCity || '').toLowerCase().includes(term) ||
+                  (m.city || '').toLowerCase().includes(term) ||
+                  (m.listingPhone || '').includes(term) ||
+                  (m.searchKeyword || '').toLowerCase().includes(term) ||
+                  (item.ip || '').includes(term) ||
+                  (item.path || '').toLowerCase().includes(term)
+                );
+              });
+
+              if (leads.length === 0) {
+                return (
+                  <div className="p-12 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3">
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                      <OfficialWhatsAppIcon className="w-7 h-7 fill-emerald-400" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-white font-bold text-sm">Henüz WhatsApp Tıklaması Kaydedilmedi</span>
+                      <span className="text-xs text-[#8b949e]">Kullanıcılar ilanlardaki WhatsApp butonuna tıkladıkça canlı istihbarat burada belirecektir.</span>
+                    </div>
+                  </div>
+                );
+              }
+
+              return leads.map((lead: any, idx: number) => {
+                const m = lead.metadata || {};
+                const isMobile = m.device === 'mobile';
+                const refSrc = (m.refererSource || 'direct').toLowerCase();
+                const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(lead.createdAt).getTime()) / 1000));
+                const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : elapsedSec < 3600 ? `${Math.floor(elapsedSec / 60)} dk önce` : `${Math.floor(elapsedSec / 3600)} sa önce`;
+
+                let refIcon = '🔗';
+                let refName = 'Direkt Giriş';
+                let refBadge = 'bg-slate-800 text-slate-300 border-white/5';
+
+                if (refSrc === 'yandex' || (m.referer || '').includes('yandex')) {
+                  refIcon = '🇷🇺';
+                  refName = 'Yandex Arama';
+                  refBadge = 'bg-red-500/15 text-red-400 border-red-500/30';
+                } else if (refSrc === 'google' || (m.referer || '').includes('google')) {
+                  refIcon = '🌐';
+                  refName = 'Google Arama';
+                  refBadge = 'bg-blue-500/15 text-blue-400 border-blue-500/30';
+                } else if (refSrc === 'x' || (m.referer || '').includes('t.co')) {
+                  refIcon = '🐦';
+                  refName = 'X (Twitter)';
+                  refBadge = 'bg-sky-500/15 text-sky-400 border-sky-500/30';
+                } else if (refSrc === 'whatsapp') {
+                  refIcon = '💬';
+                  refName = 'WhatsApp';
+                  refBadge = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+                }
+
+                return (
+                  <div
+                    key={lead._id || idx}
+                    className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] hover:border-emerald-500/50 transition-all flex flex-col gap-3.5 shadow-xl"
+                  >
+                    {/* Üst Başlık: Zaman, Kaynak ve Konum */}
+                    <div className="flex items-center justify-between gap-2 flex-wrap text-xs border-b border-[#21262d] pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="relative flex h-2.5 w-2.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        </span>
+                        <span className="font-mono text-emerald-400 font-bold">
+                          🟢 {timeStr}
+                        </span>
+                        <span className="text-[#8b949e] font-mono">
+                          ({new Date(lead.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })})
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`px-2.5 py-0.5 rounded-xl text-[11px] font-mono font-bold border ${refBadge}`}>
+                          {refIcon} {refName}
+                        </span>
+                        <span className="px-2.5 py-0.5 rounded-xl bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[11px] font-bold flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-blue-400" />
+                          <span>{m.city || lead.targetCity || 'İstanbul'}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Ana Gövde: Sol İlan Bilgisi & Sağ Ziyaretçi İstihbaratı */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                      
+                      {/* Sol: Tıklanan İlan */}
+                      <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col justify-between gap-2">
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-[10px] text-amber-400 font-mono font-bold uppercase tracking-wider">
+                            👑 Tıklanan İlan &amp; Numara:
+                          </span>
+                          <span className="text-sm font-black text-white font-heading truncate mt-0.5">
+                            {lead.targetTitle || 'İlan'}
+                          </span>
+                          {m.listingLocation && (
+                            <span className="text-xs text-[#8b949e] font-mono mt-0.5">
+                              📍 Konum: {m.listingLocation.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+
+                        {m.listingPhone && (
+                          <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
+                            <span className="text-xs font-mono font-bold text-emerald-400">
+                              📞 {m.listingPhone}
+                            </span>
+                            <a
+                              href={`https://wa.me/${m.listingPhone.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 font-bold text-[11px] flex items-center gap-1 transition-colors"
+                            >
+                              <OfficialWhatsAppIcon className="w-3 h-3 fill-current" />
+                              <span>Yaz</span>
+                            </a>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Sağ: Ziyaretçi Profili */}
+                      <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col justify-between gap-2 text-xs font-mono">
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] text-purple-400 font-bold uppercase tracking-wider">
+                            👤 Ziyaretçi Cihaz &amp; Bağlantı:
+                          </span>
+                          
+                          <div className="flex items-center justify-between text-[#8b949e] text-[11px]">
+                            <span>Cihaz:</span>
+                            <span className="text-white font-bold flex items-center gap-1">
+                              {isMobile ? <Smartphone className="w-3 h-3 text-purple-400" /> : <Monitor className="w-3 h-3 text-blue-400" />}
+                              {isMobile ? 'Mobil' : 'Masaüstü'} ({m.os || 'OS'} • {m.browser || 'Browser'})
+                            </span>
+                          </div>
+
+                          <div className="flex items-center justify-between text-[#8b949e] text-[11px]">
+                            <span>IP Adresi:</span>
+                            <span className="text-slate-300 font-bold">{lead.ip || '127.0.0.1'}</span>
+                          </div>
+
+                          {m.searchKeyword && (
+                            <div className="flex items-center justify-between text-[#8b949e] text-[11px]">
+                              <span>Arama Kelimesi:</span>
+                              <span className="text-cyan-400 font-bold truncate max-w-[180px]">&quot;{m.searchKeyword}&quot;</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Sayfa Linki */}
+                        <div className="flex items-center justify-between pt-2 border-t border-[#21262d] text-[11px]">
+                          <span className="text-[#8b949e] truncate max-w-[150px]">
+                            Sayfa: {lead.path}
+                          </span>
+                          {m.listingSlug && (
+                            <Link
+                              href={`/ilan/${m.listingSlug}`}
+                              target="_blank"
+                              className="text-amber-400 hover:underline font-bold flex items-center gap-1"
+                            >
+                              <span>İlanı Gör</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
 
         </div>
@@ -3165,7 +3463,7 @@ export default function BmsSecurePortalDashboard() {
         </div>
       )}
 
-      {/* SİTEDEKİ AKTİF ZİYARETÇİLER VE İNCELENEN İLANLAR CANLI MODAL */}
+      {/* SİTEDEKİ AKTİF ZİYARETÇİLER VE İNCELENEN İLANLAR CANLI MODAL — SENIOR LEVEL PRO UI */}
       {showActiveVisitorsModal && (() => {
         const fiveMinAgoMs = Date.now() - 5 * 60 * 1000;
         const activeMap = new Map<string, any>();
@@ -3179,54 +3477,99 @@ export default function BmsSecurePortalDashboard() {
 
         const activeList = activeMap.size > 0 
           ? Array.from(activeMap.values())
-          : (recentVisitors as any[] || []).slice(0, 15);
+          : (recentVisitors as any[] || []).slice(0, 30);
+
+        const listingViewingCount = activeList.filter((v: any) => v.path && v.path.startsWith('/ilan/')).length;
+        const searchCount = activeList.filter((v: any) => v.searchKeyword || (v.path && v.path.startsWith('/ara'))).length;
+        const mobileViewers = activeList.filter((v: any) => v.device === 'mobile').length;
 
         return (
           <div 
             onClick={() => setShowActiveVisitorsModal(false)}
-            className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
           >
             <div 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl bg-[#161b22] border border-[#30363d] rounded-[32px] p-5 sm:p-6 shadow-2xl flex flex-col gap-4 text-left animate-in zoom-in-95 duration-200 max-h-[85vh]"
+              className="w-full max-w-5xl bg-gradient-to-b from-[#161b22] via-[#0d1117] to-[#0d1117] border border-[#30363d] rounded-[36px] shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col gap-0 text-left animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-hidden"
             >
-              {/* Modal Başlığı */}
-              <div className="flex items-center justify-between border-b border-[#30363d] pb-4 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/20">
-                    <Activity className="w-5 h-5" />
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-black text-base sm:text-lg text-white font-heading">
-                        Canlı Ziyaretçiler &amp; İncelenen İlanlar
-                      </h3>
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        {activeList.length} Aktif
+              {/* Modal Başlığı & Canlı Radar Başlığı */}
+              <div className="p-5 sm:p-7 border-b border-[#30363d] bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-transparent shrink-0 flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/30">
+                        <Activity className="w-6 h-6 animate-pulse" />
+                      </div>
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[#161b22]"></span>
                       </span>
                     </div>
-                    <span className="text-xs text-[#8b949e]">
-                      Şu an sitede bulunan ziyaretçilerin hangi sayfada veya ilanda olduğunu anlık olarak görün.
+
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h3 className="font-black text-lg sm:text-2xl text-white font-heading tracking-tight">
+                          Canlı Ziyaretçi &amp; İlan İzleme Radarı
+                        </h3>
+                        <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-black flex items-center gap-1.5 shadow-sm">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                          {activeList.length} Canlı Ziyaretçi
+                        </span>
+                      </div>
+                      <span className="text-xs sm:text-sm text-[#8b949e] mt-0.5">
+                        Ziyaretçilerin şu an sitede hangi ilanı, kategoriyi veya aramayı gerçek zamanlı incelediğini izleyin.
+                      </span>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setShowActiveVisitorsModal(false)} 
+                    className="p-2.5 rounded-2xl bg-[#21262d] text-[#8b949e] hover:text-white hover:bg-[#30363d] transition-all shrink-0 border border-[#30363d]"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Hızlı Canlı Metrik Hapları */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
+                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-amber-400" /> İlan Bakan
+                    </span>
+                    <span className="text-sm font-black text-amber-400 font-mono">{listingViewingCount}</span>
+                  </div>
+                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
+                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                      <Search className="w-3.5 h-3.5 text-cyan-400" /> Arama Yapan
+                    </span>
+                    <span className="text-sm font-black text-cyan-400 font-mono">{searchCount}</span>
+                  </div>
+                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
+                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 text-purple-400" /> Mobil Cihaz
+                    </span>
+                    <span className="text-sm font-black text-purple-300 font-mono">
+                      %{activeList.length > 0 ? Math.round((mobileViewers / activeList.length) * 100) : 100}
                     </span>
                   </div>
+                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
+                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                      <Activity className="w-3.5 h-3.5 text-emerald-400" /> Yenileme
+                    </span>
+                    <span className="text-xs font-bold text-emerald-400 font-mono">Otomatik (15s)</span>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => setShowActiveVisitorsModal(false)} 
-                  className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
 
               {/* Ziyaretçi Kartları Listesi */}
-              <div className="overflow-y-auto flex-1 flex flex-col gap-3 pr-1 custom-scrollbar">
+              <div className="overflow-y-auto flex-1 p-5 sm:p-7 flex flex-col gap-3.5 custom-scrollbar bg-[#090d13]">
                 {activeList.length === 0 ? (
-                  <div className="py-12 text-center text-xs text-[#8b949e] flex flex-col items-center gap-2">
-                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
-                      <Activity className="w-6 h-6 text-emerald-400" />
+                  <div className="py-20 text-center text-xs text-[#8b949e] flex flex-col items-center justify-center gap-3">
+                    <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                      <Activity className="w-8 h-8 text-emerald-400 animate-pulse" />
                     </div>
-                    <span>Şu an canlı ziyaretçi akışı bekleniyor...</span>
+                    <span className="text-sm font-bold text-white">Canlı Ziyaretçi Bekleniyor</span>
+                    <span className="text-xs text-[#8b949e] max-w-sm">Ziyaretçiler siteye girdiğinde anlık olarak burada listelenecektir.</span>
                   </div>
                 ) : (
                   activeList.map((v: any, idx: number) => {
@@ -3238,24 +3581,24 @@ export default function BmsSecurePortalDashboard() {
                     const refSrc = (v.refererSource || 'direct').toLowerCase();
                     let refIcon = '🔗';
                     let refName = 'Direkt Giriş';
-                    let refBadge = 'bg-slate-800 text-slate-300 border-white/5';
+                    let refBadge = 'bg-slate-800/80 text-slate-300 border-white/10';
 
                     if (refSrc === 'yandex' || (v.referer || '').includes('yandex')) {
                       refIcon = '🇷🇺';
                       refName = 'Yandex Arama';
-                      refBadge = 'bg-red-500/15 text-red-400 border-red-500/30';
+                      refBadge = 'bg-red-500/20 text-red-300 border-red-500/30';
                     } else if (refSrc === 'google' || (v.referer || '').includes('google')) {
                       refIcon = '🌐';
                       refName = 'Google Arama';
-                      refBadge = 'bg-blue-500/15 text-blue-400 border-blue-500/30';
+                      refBadge = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
                     } else if (refSrc === 'x' || (v.referer || '').includes('t.co')) {
                       refIcon = '🐦';
                       refName = 'X (Twitter)';
-                      refBadge = 'bg-sky-500/15 text-sky-400 border-sky-500/30';
+                      refBadge = 'bg-sky-500/20 text-sky-300 border-sky-500/30';
                     } else if (refSrc === 'whatsapp') {
                       refIcon = '💬';
                       refName = 'WhatsApp';
-                      refBadge = 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
+                      refBadge = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
                     }
 
                     const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(v.createdAt).getTime()) / 1000));
@@ -3264,84 +3607,99 @@ export default function BmsSecurePortalDashboard() {
                     return (
                       <div 
                         key={v._id || idx} 
-                        className={`p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border transition-all flex flex-col gap-2.5 shadow-md ${
-                          isListing ? 'border-amber-500/40 hover:border-amber-400' : 'border-[#30363d] hover:border-emerald-500/40'
+                        className={`p-4 sm:p-5 rounded-3xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg hover:shadow-2xl group ${
+                          isListing 
+                            ? 'border-amber-500/30 hover:border-amber-400/80 bg-gradient-to-r from-amber-500/5 via-[#161b22] to-transparent' 
+                            : 'border-[#30363d] hover:border-emerald-500/50 bg-[#161b22]'
                         }`}
                       >
-                        {/* Üst Satır: Ziyaretçi Cihazı, Şehir, IP & Canlı Süre */}
-                        <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
-                          <div className="flex items-center gap-2">
-                            <span className="relative flex h-2.5 w-2.5">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                            </span>
-                            <span className="font-bold text-white flex items-center gap-1">
-                              📍 {v.city || 'İstanbul'}
-                            </span>
-                            <span className="text-[10px] text-[#8b949e] font-mono">
-                              ({v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} • {v.browser || 'Chrome'})
-                            </span>
+                        {/* Üst Bar: Ziyaretçi Profili + Canlı Süre + Kaynak */}
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-[#21262d] border border-[#30363d] flex items-center justify-center shrink-0">
+                              {v.device === 'mobile' ? (
+                                <Smartphone className="w-4 h-4 text-purple-400" />
+                              ) : (
+                                <Monitor className="w-4 h-4 text-blue-400" />
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-black text-sm text-white flex items-center gap-1.5 font-heading">
+                                <span>📍 {v.city || 'İstanbul'}</span>
+                              </span>
+                              <span className="text-[11px] text-[#8b949e] font-mono">
+                                • {v.browser || 'Tarayıcı'} / {v.os || (v.device === 'mobile' ? 'Mobile OS' : 'Desktop')}
+                              </span>
+                              {v.ip && (
+                                <span className="text-[10px] text-[#8b949e] font-mono px-2 py-0.5 rounded-lg bg-[#0d1117] border border-[#30363d]">
+                                  {v.ip}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono text-emerald-400 font-bold">
-                              🟢 {timeStr}
+                            <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-black border border-emerald-500/20 flex items-center gap-1.5 shadow-sm">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                              {timeStr}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold border ${refBadge}`}>
+                            <span className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border ${refBadge}`}>
                               {refIcon} {refName}
                             </span>
                           </div>
                         </div>
 
-                        {/* Orta Satır: Hangi Sayfada / Hangi İlanı İnceliyor */}
-                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#21262d] flex items-center justify-between gap-3">
+                        {/* Alt Bar: Ziyaret Edilen Sayfa & Detaylar */}
+                        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between gap-3 group-hover:border-[#30363d] transition-colors">
                           <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
                               {isListing ? (
-                                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-black font-heading tracking-wider">
-                                  👑 İLAN İNCELİYOR
+                                <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
+                                  <Crown className="w-3 h-3" /> İLAN İNCELİYOR
                                 </span>
                               ) : isSearch ? (
-                                <span className="px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[9px] font-black font-heading tracking-wider">
-                                  🔍 SİTE İÇİ ARAMA
+                                <span className="px-2.5 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
+                                  <Search className="w-3 h-3" /> SİTE İÇİ ARAMA
                                 </span>
                               ) : isCity ? (
-                                <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-black font-heading tracking-wider">
-                                  📍 İL / İLÇE VİTRİNİ
+                                <span className="px-2.5 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" /> ŞEHİR / İLÇE VİTRİNİ
                                 </span>
                               ) : isHome ? (
-                                <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black font-heading tracking-wider">
-                                  🏠 ANA SAYFA
+                                <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black font-heading tracking-wider">
+                                  🏠 ANA SAYFA VİTRİNİ
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded-md bg-slate-700 text-slate-300 text-[9px] font-bold">
+                                <span className="px-2.5 py-0.5 rounded-lg bg-slate-800 text-slate-300 text-[10px] font-bold">
                                   📄 SAYFA
                                 </span>
                               )}
 
-                              <span className="font-mono text-[11px] text-amber-400 font-bold truncate">
+                              <span className="font-mono text-xs text-amber-400 font-bold truncate max-w-[280px] sm:max-w-md">
                                 {v.path}
                               </span>
                             </div>
 
-                            <span className="text-xs text-white font-bold truncate mt-1">
+                            <span className="text-xs sm:text-sm text-white font-bold truncate">
                               {v.pageTitle || 'Best Eskort Vitrini'}
                             </span>
 
                             {v.searchKeyword && (
-                              <span className="text-[10px] text-cyan-400 font-mono mt-0.5">
-                                Aranan Kelime: &quot;{v.searchKeyword}&quot;
-                              </span>
+                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-cyan-300 font-mono bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-xl w-fit">
+                                <Search className="w-3 h-3 text-cyan-400" />
+                                <span>Aranan Anahtar Kelime: <strong>&quot;{v.searchKeyword}&quot;</strong></span>
+                              </div>
                             )}
                           </div>
 
                           <Link 
                             href={v.path || '#'} 
                             target="_blank"
-                            className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-amber-500/30 text-xs font-bold font-heading shrink-0 flex items-center gap-1 transition-all"
+                            className="px-4 py-2 rounded-2xl bg-amber-500/15 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/30 text-xs font-black font-heading shrink-0 flex items-center gap-1.5 transition-all shadow-md group-hover:scale-105"
                           >
                             <span>Sayfayı Aç</span>
-                            <ExternalLink className="w-3 h-3" />
+                            <ExternalLink className="w-3.5 h-3.5" />
                           </Link>
                         </div>
                       </div>
@@ -3350,19 +3708,21 @@ export default function BmsSecurePortalDashboard() {
                 )}
               </div>
 
-              {/* Modal Altı */}
-              <div className="pt-3 border-t border-[#30363d] flex items-center justify-between shrink-0">
-                <span className="text-[11px] text-[#8b949e]">
-                  Otomatik 15 saniyede bir güncellenir.
+              {/* Modal Alt Footer Bar */}
+              <div className="p-4 sm:p-5 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between shrink-0">
+                <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Sistem her 15 saniyede bir yeni ziyaretçi hareketlerini otomatik çeker.</span>
                 </span>
                 <button
                   onClick={() => {
                     setShowActiveVisitorsModal(false);
                     setActiveTab('live_visitors');
                   }}
-                  className="text-xs text-amber-400 font-bold flex items-center gap-1 hover:underline font-heading"
+                  className="px-4 py-2 rounded-2xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/30 text-xs font-black font-heading flex items-center gap-1.5 transition-all"
                 >
-                  Tüm Canlı Akış Loglarına Git →
+                  <span>Tüm Canlı Akış Loglarına Git</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
