@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -35,7 +35,11 @@ import {
   ZoomIn,
   Calendar,
   Globe,
-  AtSign
+  AtSign,
+  ArrowUpDown,
+  SlidersHorizontal,
+  Flame,
+  MessageCircle
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 
@@ -43,6 +47,8 @@ export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
+  const [sortBy, setSortBy] = useState<'expiry_asc' | 'created_desc' | 'city_asc' | 'views_desc' | 'whatsapp_desc' | 'title_asc'>('created_desc');
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Detaylı İnceleme Modalı (Full Inspection Modal)
   const [inspectItem, setInspectItem] = useState<any | null>(null);
@@ -615,13 +621,80 @@ export default function AdminListingsPage() {
     return false;
   }).length;
 
-  const filteredListings = listings.filter((l) => {
-    if (filter === 'all') return true;
-    if (filter === 'suresi_doldu') {
-      return l.status === 'suresi_doldu' || (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now());
-    }
-    return l.status === filter;
-  });
+  const filteredListings = useMemo(() => {
+    let list = listings.filter((l) => {
+      // 1. Status Filter
+      if (filter === 'onay_bekliyor') {
+        if (l.status !== 'onay_bekliyor') return false;
+      } else if (filter === 'yayinda') {
+        if (l.status !== 'yayinda' || (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now())) return false;
+      } else if (filter === 'suresi_doldu') {
+        const isExpired = l.status === 'suresi_doldu' || (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now());
+        if (!isExpired) return false;
+      }
+
+      // 2. Search Query
+      if (searchTerm.trim()) {
+        const query = searchTerm.toLowerCase().trim();
+        const matchTitle = (l.baslik || '').toLowerCase().includes(query);
+        const matchName = (l.tamAd || '').toLowerCase().includes(query);
+        const matchCity = (l.ilSlug || '').toLowerCase().includes(query);
+        const matchDistrict = (l.ilceSlug || '').toLowerCase().includes(query);
+        const matchPhone = (l.whatsappNumara || '').toLowerCase().includes(query);
+        const matchUser = (
+          l.kullaniciAdi ||
+          (typeof l.kullaniciId === 'object' ? l.kullaniciId?.kullaniciAdi : '') ||
+          ''
+        ).toLowerCase().includes(query);
+
+        if (!matchTitle && !matchName && !matchCity && !matchDistrict && !matchPhone && !matchUser) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // 3. Sorting
+    list = [...list].sort((a, b) => {
+      if (sortBy === 'expiry_asc') {
+        // En az süresi kalan (veya süresi geçmiş olanlar) en üstte
+        const timeA = a.paketBitisTarihi ? new Date(a.paketBitisTarihi).getTime() : 9999999999999;
+        const timeB = b.paketBitisTarihi ? new Date(b.paketBitisTarihi).getTime() : 9999999999999;
+        return timeA - timeB;
+      }
+      if (sortBy === 'created_desc') {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      }
+      if (sortBy === 'city_asc') {
+        const cityA = (a.ilSlug || '').toLowerCase();
+        const cityB = (b.ilSlug || '').toLowerCase();
+        const comp = cityA.localeCompare(cityB, 'tr');
+        if (comp !== 0) return comp;
+        return (a.ilceSlug || '').toLowerCase().localeCompare((b.ilceSlug || '').toLowerCase(), 'tr');
+      }
+      if (sortBy === 'views_desc') {
+        const vA = Number(a.goruntulenmeSayisi || 0);
+        const vB = Number(b.goruntulenmeSayisi || 0);
+        return vB - vA;
+      }
+      if (sortBy === 'whatsapp_desc') {
+        const wA = Number(a.whatsappTiklamaSayisi || 0);
+        const wB = Number(b.whatsappTiklamaSayisi || 0);
+        return wB - wA;
+      }
+      if (sortBy === 'title_asc') {
+        const tA = (a.baslik || '').toLowerCase();
+        const tB = (b.baslik || '').toLowerCase();
+        return tA.localeCompare(tB, 'tr');
+      }
+      return 0;
+    });
+
+    return list;
+  }, [listings, filter, searchTerm, sortBy]);
 
   return (
     <div className="flex flex-col gap-3 sm:gap-6 w-full max-w-full px-1 sm:px-0 pb-24 sm:pb-8">
@@ -669,55 +742,174 @@ export default function AdminListingsPage() {
         </div>
       </div>
 
-      {/* ── 2. FILTER TABS (MOBİLDE KAYDIRILABİLİR SEGMENTED BAR) ──────────────── */}
-      <div className="p-1 rounded-xl bg-[#161b22] border border-[#30363d] flex items-center gap-1 overflow-x-auto no-scrollbar shadow-md">
-        <button
-          onClick={() => setFilter('all')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-            }`}
-        >
-          <span>Tüm İlanlar</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-amber-400'}`}>
-            {listings.length}
-          </span>
-        </button>
-
-        <button
-          onClick={() => setFilter('onay_bekliyor')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-            }`}
-        >
-          <span>⏳ Onay Bekleyenler</span>
-          {pendingCount > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse">
-              {pendingCount}
+      {/* ── 2. FILTER TABS & SEARCH & SORT CONTROLS ──────────────── */}
+      <div className="flex flex-col gap-2.5 p-3 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg">
+        {/* Filter Tabs */}
+        <div className="p-1 rounded-xl bg-[#0d1117] border border-[#30363d]/60 flex items-center gap-1 overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              }`}
+          >
+            <span>Tüm İlanlar</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#161b22] text-amber-400'}`}>
+              {listings.length}
             </span>
-          )}
-        </button>
+          </button>
 
-        <button
-          onClick={() => setFilter('yayinda')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'yayinda' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-            }`}
-        >
-          <span>🟢 Yayındakiler</span>
-          <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'yayinda' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-emerald-400'}`}>
-            {listings.filter((l) => l.status === 'yayinda' && (!l.paketBitisTarihi || new Date(l.paketBitisTarihi).getTime() >= Date.now())).length}
-          </span>
-        </button>
+          <button
+            onClick={() => setFilter('onay_bekliyor')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              }`}
+          >
+            <span>⏳ Onay Bekleyenler</span>
+            {pendingCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse">
+                {pendingCount}
+              </span>
+            )}
+          </button>
 
-        <button
-          onClick={() => setFilter('suresi_doldu')}
-          className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'suresi_doldu' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-            }`}
-        >
-          <span>⏰ Süresi Dolanlar</span>
-          {expiredCount > 0 && (
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'suresi_doldu' ? 'bg-slate-950/30 text-slate-950' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'}`}>
-              {expiredCount}
+          <button
+            onClick={() => setFilter('yayinda')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'yayinda' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              }`}
+          >
+            <span>🟢 Yayındakiler</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'yayinda' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#161b22] text-emerald-400'}`}>
+              {listings.filter((l) => l.status === 'yayinda' && (!l.paketBitisTarihi || new Date(l.paketBitisTarihi).getTime() >= Date.now())).length}
             </span>
-          )}
-        </button>
+          </button>
+
+          <button
+            onClick={() => setFilter('suresi_doldu')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'suresi_doldu' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              }`}
+          >
+            <span>⏰ Süresi Dolanlar</span>
+            {expiredCount > 0 && (
+              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'suresi_doldu' ? 'bg-slate-950/30 text-slate-950' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'}`}>
+                {expiredCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Search Bar & Sorting Toolbar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
+          {/* Arama Kutusu */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="İlan ara: Model adı, şehir, ilçe, tel no veya kullanıcı..."
+              className="w-full pl-9 pr-8 py-2 text-xs bg-[#0d1117] border border-[#30363d] rounded-xl text-white placeholder:text-[#8b949e]/60 focus:outline-none focus:border-amber-500 transition-colors"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-[#8b949e] hover:text-white hover:bg-[#21262d]"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Sıralama Seçenekleri (Sorting Toolbar) */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
+            <div className="flex items-center gap-1.5 text-xs text-[#8b949e] font-heading font-semibold whitespace-nowrap">
+              <ArrowUpDown className="w-3.5 h-3.5 text-amber-400" />
+              <span className="hidden lg:inline">Sırala:</span>
+            </div>
+
+            {/* Desktop / Tablet Quick Sort Pills */}
+            <div className="hidden sm:flex items-center gap-1 bg-[#0d1117] p-1 rounded-xl border border-[#30363d]/60">
+              <button
+                onClick={() => setSortBy('expiry_asc')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  sortBy === 'expiry_asc'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                }`}
+                title="Süresi en az kalan veya bitmiş ilanlar en üstte"
+              >
+                <Clock className="w-3 h-3" />
+                <span>Az Zamanı Kalan</span>
+              </button>
+
+              <button
+                onClick={() => setSortBy('created_desc')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  sortBy === 'created_desc'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                }`}
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>En Yeni</span>
+              </button>
+
+              <button
+                onClick={() => setSortBy('city_asc')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  sortBy === 'city_asc'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                }`}
+              >
+                <MapPin className="w-3 h-3" />
+                <span>Şehir (A-Z)</span>
+              </button>
+
+              <button
+                onClick={() => setSortBy('views_desc')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  sortBy === 'views_desc'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                }`}
+              >
+                <Flame className="w-3 h-3" />
+                <span>Hit / Ziyaret</span>
+              </button>
+
+              <button
+                onClick={() => setSortBy('whatsapp_desc')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  sortBy === 'whatsapp_desc'
+                    ? 'bg-amber-500 text-slate-950 shadow-sm'
+                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                }`}
+              >
+                <MessageCircle className="w-3 h-3" />
+                <span>WhatsApp</span>
+              </button>
+            </div>
+
+            {/* Mobile / Compact Select Dropdown */}
+            <div className="sm:hidden flex-1">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="w-full py-2 px-3 text-xs bg-[#0d1117] border border-[#30363d] rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
+              >
+                <option value="expiry_asc">⏳ Az Zamanı Kalan (Önce Bitenler)</option>
+                <option value="created_desc">🆕 En Yeni Eklenen</option>
+                <option value="city_asc">🏙️ Şehir &amp; İlçe (A-Z)</option>
+                <option value="views_desc">🔥 En Çok Ziyaret Edilen (Hit)</option>
+                <option value="whatsapp_desc">💬 En Çok WhatsApp Tıklaması</option>
+                <option value="title_asc">🔤 İlan Adı (A-Z)</option>
+              </select>
+            </div>
+
+            {/* Total Results Count Badge */}
+            <div className="hidden xl:flex items-center px-2.5 py-1 rounded-lg bg-[#0d1117] border border-[#30363d]/50 text-[11px] font-mono text-[#8b949e] whitespace-nowrap">
+              <span>Sonuç: <strong className="text-amber-400">{filteredListings.length}</strong> ilan</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ── 3. LISTINGS DISPLAY (MASAÜSTÜ İÇİN TABLO & MOBİL İÇİN NATIVE KARTLAR) ──────────────── */}
