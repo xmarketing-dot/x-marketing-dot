@@ -1254,6 +1254,34 @@ export default function BmsSecurePortalDashboard() {
                   <span className="font-black text-lg sm:text-xl text-emerald-400 font-heading">{specialAdStats?.whatsappClicks || 0}</span>
                 </div>
               </div>
+
+              {/* Çoklu Popup İstatistik Kırılımı */}
+              {Array.isArray(specialAdStats?.breakdown) && specialAdStats.breakdown.length > 0 && (
+                <div className="pt-2 border-t border-white/5 flex flex-col gap-2">
+                  <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider">
+                    📍 Aktif & Yayındaki Popup Reklamlarının Ayrı Ayrı Dağılımı ({specialAdStats.breakdown.length})
+                  </span>
+                  <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                    {specialAdStats.breakdown.map((item: any, idx: number) => (
+                      <div key={idx} className="p-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-bold text-white truncate text-xs">{item.title}</span>
+                          <span className="text-[10px] text-amber-400 font-mono">Hedef: {item.targetCity}</span>
+                        </div>
+                        <div className="flex items-center gap-3 font-mono text-[11px] shrink-0">
+                          <span className="text-white" title="Gösterim">👁️ {item.impressions}</span>
+                          <span className="text-amber-300" title="Tekil Ziyaretçi">👤 {item.uniqueVisitors}</span>
+                          <span className="text-cyan-400" title="Profil Tıklama">🖱️ {item.clicks}</span>
+                          <span className="text-emerald-400 font-bold" title="WhatsApp Tıklama">💬 {item.whatsappClicks}</span>
+                          <span className="bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20 font-black" title="Dönüşüm Oranı">
+                            %{item.ctr}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Cihaz Dağılımı */}

@@ -38,6 +38,7 @@ export default function MobileShell({ children }: MobileShellProps) {
   const isSecurePortal = pathname?.startsWith('/bms-secure-portal');
   const isChatPage = pathname === '/chat';
   const isPanelimPage = pathname === '/panelim';
+  const isPromoPage = pathname === '/ucretsiz-ilan' || pathname === '/ucretsiz-reklam';
   const [activeRegion, setActiveRegion] = useState<string>('marmara');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 

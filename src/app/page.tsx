@@ -27,6 +27,7 @@ import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CategorizedListingsSection from '@/components/home/CategorizedListingsSection';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import FreePromoFooterBanner from '@/components/common/FreePromoFooterBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -366,111 +367,80 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* ── 6. E-E-A-T SEO REHBERİ VE SSS AKORDİYON (TOPİCAL AUTHORITY) ──────────────── */}
-      <section className="px-2 sm:px-4 mt-3 sm:mt-4">
-        <div className="p-5 sm:p-6 rounded-[28px] bg-gradient-to-b from-[#161b22] to-[#0d1117] border border-[#30363d] flex flex-col gap-4 shadow-2xl">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
-              <Award className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="font-heading font-black text-sm text-white">
-                Türkiye Eskort (Escort) &amp; VIP Model Rehberi
-              </h2>
-              <p className="text-[11px] text-[#8b949e]">
-                Doğrulanmış profiller, güvenli iletişim ve bölgesel katalog standartları
-              </p>
-            </div>
+      {/* ── 5.1 24 SAAT %100 ÜCRETSİZ TANITIM KAMPANYASI (VIP İLAN & BANNER) ──────────────── */}
+      <FreePromoFooterBanner />
+
+      {/* ── 6. E-E-A-T SEO REHBERİ (NATIVE TRUST POINTS) ──────────────── */}
+      <section className="px-3 sm:px-4 mt-4">
+        <div className="rounded-2xl bg-[#161b22] border border-[#30363d] p-4 sm:p-5 text-center flex flex-col items-center">
+          <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mb-2.5">
+            <Award className="w-5 h-5" />
           </div>
+          <h2 className="font-heading font-black text-base sm:text-lg text-white">
+            Türkiye Eskort (Escort) &amp; VIP Model Rehberi
+          </h2>
+          <p className="text-xs text-[#8b949e] mt-1 max-w-xl">
+            Doğrulanmış profiller, birebir fotoğraf teyidi ve güvenli bölgesel katalog standartları.
+          </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-[#8b949e] leading-relaxed">
-            <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-1.5">
-              <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
-                <BadgeCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Doğrulanmış İlan Garantisi
-              </h4>
-              <p className="text-[11px]">
-                Best Eskort üzerindeki tüm bağımsız ve ajans profilleri birebir fotoğraf teyidi ve iletişim kontrolünden geçer. Sahte görsellere ve kapora talep eden yanıltıcı ilanlara izin verilmez.
-              </p>
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4 text-left">
+            <div className="p-3.5 rounded-xl bg-[#0d1117]/80 border border-[#21262d] flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400 shrink-0">
+                <BadgeCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-bold text-xs text-white">Doğrulanmış İlan Güvencesi</h3>
+                <p className="text-[11px] text-[#8b949e] mt-0.5 leading-relaxed">
+                  Tüm profiller manuel onay ve iletişim kontrolünden geçer. Sahte görsellere ve kapora talep eden yanıltıcı profillere izin verilmez.
+                </p>
+              </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-1.5">
-              <h4 className="font-bold text-white text-xs flex items-center gap-1.5">
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
-                VIP &amp; Bağımsız Modeller
-              </h4>
-              <p className="text-[11px]">
-                İstanbul, Ankara, İzmir, Antalya ve 81 ilde kendi evinde veya otelde hizmet veren bağımsız bayanlar, üniversiteli modeller ve VIP vitrin seçeneklerine tek tıkla ulaşın.
-              </p>
+            <div className="p-3.5 rounded-xl bg-[#0d1117]/80 border border-[#21262d] flex items-start gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400 shrink-0">
+                <Crown className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-bold text-xs text-white">VIP &amp; Bağımsız Modeller</h3>
+                <p className="text-[11px] text-[#8b949e] mt-0.5 leading-relaxed">
+                  İstanbul, Ankara, İzmir, Antalya ve 81 il genelinde kendi evinde veya otelde hizmet veren bağımsız ve VIP vitrin seçenekleri.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── 7. TÜRKİYE 81 İL CRAWLER MATRİSİ (BÖLGESEL LINK AĞI - WEX/ELITEGIRLS MODELİ) ──────────────── */}
-      <footer className="px-4 mt-6">
-        <div className="p-6 rounded-[32px] bg-[#161b22] border border-[#30363d] flex flex-col gap-5 shadow-2xl text-xs text-[#8b949e] leading-relaxed">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+      {/* ── 7. TÜRKİYE 81 İL CRAWLER MATRİSİ (SEO DİZİNİ - DARALTILMIŞ / NATIVE KOMPAKT) ──────────────── */}
+      <footer className="px-3 sm:px-4 mt-4 pb-8">
+        <div className="rounded-2xl bg-[#161b22] border border-[#30363d] p-4 sm:p-5 flex flex-col gap-3.5">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
             <div>
-              <h3 className="font-black text-sm text-white font-heading uppercase tracking-wider">
+              <h3 className="font-heading font-black text-xs sm:text-sm text-white uppercase tracking-wide">
                 Türkiye 81 İl Eskort &amp; Escort Şehir Kataloğu
               </h3>
-              <p className="text-[10px] text-[#6e7681] mt-0.5">
-                Tüm il ve ilçelere doğrudan hızlı erişim matrisi
-              </p>
+              <p className="text-[10px] text-[#6e7681]">Google &amp; Arama Motorları Bölgesel Dizin Ağı</p>
             </div>
-            <span className="text-amber-400 font-mono text-[11px] font-bold px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30">
+            <span className="text-amber-400 font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
               81 İl Canlı
             </span>
           </div>
 
-          {/* BÖLGE BÖLGE 81 İL LİNKLERİ */}
-          <div className="flex flex-col gap-4">
-            {Object.entries(regionalHubs).map(([regionName, cityList]) => (
-              <div key={regionName} className="flex flex-col gap-1.5">
-                <span className="text-[11px] font-bold text-white/90 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                  {regionName}
-                </span>
-                <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[11px]">
-                  {cityList.map((loc: any) => {
-                    const cityName = loc.il || (loc.ilSlug.charAt(0).toUpperCase() + loc.ilSlug.slice(1));
-                    return (
-                      <Link
-                        key={loc.ilSlug}
-                        href={`/${loc.ilSlug}`}
-                        className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
-                      >
-                        {cityName} Eskort
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* POPÜLER KATEGORİLER & ETİKETLER */}
-          <div className="pt-3 border-t border-[#30363d] flex flex-wrap gap-2 text-[11px]">
-            <Link href="/kategori/vip" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-amber-400 font-bold border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-all">
+          {/* Quick Categories */}
+          <div className="flex flex-wrap gap-1.5 text-[11px]">
+            <Link href="/kategori/vip" className="px-2 py-1 rounded-lg bg-[#0d1117] text-amber-400 font-bold border border-amber-500/20 hover:border-amber-400">
               👑 VIP Eskort
             </Link>
-            <Link href="/kategori/gold" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-yellow-300 font-bold border border-yellow-500/30 hover:bg-yellow-400 hover:text-slate-950 transition-all">
+            <Link href="/kategori/gold" className="px-2 py-1 rounded-lg bg-[#0d1117] text-yellow-300 font-bold border border-yellow-500/20 hover:border-yellow-400">
               ⭐ Gold Escort
             </Link>
-            <Link href="/kategori/turbanli" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-purple-300 font-bold border border-purple-500/30 hover:bg-purple-400 hover:text-slate-950 transition-all">
+            <Link href="/kategori/turbanli" className="px-2 py-1 rounded-lg bg-[#0d1117] text-purple-300 font-bold border border-purple-500/20 hover:border-purple-400">
               🧕 Türbanlı Eskort
             </Link>
-            <Link href="/kategori/amator" className="px-2.5 py-1 rounded-lg bg-[#21262d] text-emerald-300 font-bold border border-emerald-500/30 hover:bg-emerald-400 hover:text-slate-950 transition-all">
+            <Link href="/kategori/amator" className="px-2 py-1 rounded-lg bg-[#0d1117] text-emerald-300 font-bold border border-emerald-500/20 hover:border-emerald-400">
               🌿 Amatör Eskort
             </Link>
-            <Link href="/sehirler" className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 transition-all ml-auto">
-              → Tüm Şehirleri Görüntüle
-            </Link>
-          </div>
-
-          <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-[#6e7681]">
-            <span>&copy; {new Date().getFullYear()} Best Eskort &amp; Escort Kataloğu. Tüm hakları saklıdır.</span>
             <span>E-E-A-T Doğrulanmış Güvenlik ve Gizlilik Standartları</span>
           </div>
         </div>

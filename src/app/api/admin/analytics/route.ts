@@ -137,18 +137,21 @@ export async function GET(req: Request) {
         { $sort: { totalInteractions: -1 } },
         { $limit: 15 },
       ]),
-      // 9. Özel Popup Reklam Performansı (Tek aggregation)
+      // 9. Özel Popup Reklam Performansı (Her reklam bazında ayrı ayrı kırılım)
       AnalyticsEventModel.aggregate([
         { $match: { ...dateQuery, eventType: { $regex: '^special_ad_' } } },
         {
           $group: {
-            _id: null,
+            _id: { $ifNull: ["$targetId", "Genel"] },
+            title: { $first: "$targetTitle" },
+            targetCity: { $first: "$targetCity" },
             impressions: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_impression"] }, 1, 0] } },
-            clicks: { $sum: { $cond: [{ $in: ["$eventType", ["special_ad_click", "special_ad_whatsapp_click"]] }, 1, 0] } },
+            clicks: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_click"] }, 1, 0] } },
             whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_whatsapp_click"] }, 1, 0] } },
             uniqueVisitors: { $addToSet: { $cond: [{ $eq: ["$eventType", "special_ad_impression"] }, "$visitorId", "$$REMOVE"] } }
           }
-        }
+        },
+        { $sort: { impressions: -1 } }
       ]),
       // 10. Canlı Ziyaretçi Logu (Tüm kayıtlar - eksiksiz akış)
       AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(5000).lean(),
@@ -286,11 +289,37 @@ export async function GET(req: Request) {
       eventCounts[e._id] = e.count;
     });
 
-    const specialAd = specialAdAggResult[0] || {};
-    const specialAdImpressions = specialAd.impressions || 0;
-    const specialAdClicks = specialAd.clicks || 0;
-    const specialAdWhatsappClicks = specialAd.whatsappClicks || 0;
-    const specialAdUniqueVisitors = (specialAd.uniqueVisitors || []).length;
+    let specialAdImpressions = 0;
+    let specialAdClicks = 0;
+    let specialAdWhatsappClicks = 0;
+    const allSpecialAdVisitors = new Set<string>();
+
+    const specialAdBreakdown = (specialAdAggResult || []).map((st: any) => {
+      const imp = st.impressions || 0;
+      const clk = st.clicks || 0;
+      const wa = st.whatsappClicks || 0;
+      const uCount = Array.isArray(st.uniqueVisitors) ? st.uniqueVisitors.length : 0;
+      (st.uniqueVisitors || []).forEach((v: string) => allSpecialAdVisitors.add(v));
+      specialAdImpressions += imp;
+      specialAdClicks += (clk + wa);
+      specialAdWhatsappClicks += wa;
+      const totalClicks = clk + wa;
+      const ctr = imp > 0 ? ((totalClicks / imp) * 100).toFixed(1) : '0.0';
+
+      return {
+        targetId: st._id,
+        title: st.title || 'Sponsorlu Popup İlanı',
+        targetCity: st.targetCity || 'Türkiye',
+        impressions: imp,
+        uniqueVisitors: uCount,
+        clicks: clk,
+        whatsappClicks: wa,
+        totalClicks,
+        ctr,
+      };
+    });
+
+    const specialAdUniqueVisitors = allSpecialAdVisitors.size;
     const specialAdCtr = specialAdImpressions > 0 ? ((specialAdClicks / specialAdImpressions) * 100).toFixed(1) : '0.0';
 
     // İlan bazlı ziyaretçi haritası
@@ -589,6 +618,7 @@ export async function GET(req: Request) {
           clicks: specialAdClicks,
           whatsappClicks: specialAdWhatsappClicks,
           ctr: specialAdCtr,
+          breakdown: specialAdBreakdown,
         },
         eventCounts: {
           whatsappClicks: eventCounts.whatsapp_click || 0,

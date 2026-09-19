@@ -164,6 +164,22 @@ export default function AdminHomepageConfigPage() {
 
   // Multiple Special Ads State (Çoklu Sponsorlu Popup Reklamları)
   const [ozelIlanReklamlar, setOzelIlanReklamlar] = useState<SpecialAdEntry[]>([]);
+  const [popupStatsMap, setPopupStatsMap] = useState<Record<string, {
+    impressions: number;
+    uniqueVisitors: number;
+    clicks: number;
+    whatsappClicks: number;
+    totalClicks: number;
+    ctr: string;
+  }>>({});
+  const [totalPopupStats, setTotalPopupStats] = useState<{
+    impressions: number;
+    uniqueVisitors: number;
+    clicks: number;
+    whatsappClicks: number;
+    totalClicks: number;
+    ctr: string;
+  }>({ impressions: 0, uniqueVisitors: 0, clicks: 0, whatsappClicks: 0, totalClicks: 0, ctr: '0.0' });
 
   // New Ad Form State
   const [newAdIlanId, setNewAdIlanId] = useState<string>('');
@@ -263,6 +279,12 @@ export default function AdminHomepageConfigPage() {
       }
       if (data.allLocations) {
         setAllLocations(data.allLocations);
+      }
+      if (data.popupStatsMap) {
+        setPopupStatsMap(data.popupStatsMap);
+      }
+      if (data.totalPopupStats) {
+        setTotalPopupStats(data.totalPopupStats);
       }
     } catch (e) {
       // Silent
@@ -1954,10 +1976,42 @@ export default function AdminHomepageConfigPage() {
               </button>
             </div>
 
+            {/* Toplam Popup Performans Özeti (Mini Dashboard) */}
+            {totalPopupStats.impressions > 0 && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#0d1117] to-amber-500/5 border border-amber-500/30 flex flex-col gap-2">
+                <div className="flex items-center justify-between text-xs font-bold text-amber-300">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Popup Reklamları Toplam Performansı</span>
+                  </span>
+                  <span className="font-mono text-emerald-400">CTR: %{totalPopupStats.ctr}</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                  <div className="p-2 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col">
+                    <span className="text-[9px] text-[#8b949e]">Gösterim</span>
+                    <span className="font-black text-white font-mono text-xs sm:text-sm">{totalPopupStats.impressions}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col">
+                    <span className="text-[9px] text-[#8b949e]">Tekil Kişi</span>
+                    <span className="font-black text-amber-300 font-mono text-xs sm:text-sm">{totalPopupStats.uniqueVisitors}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col">
+                    <span className="text-[9px] text-[#8b949e]">Profil Tık</span>
+                    <span className="font-black text-cyan-400 font-mono text-xs sm:text-sm">{totalPopupStats.clicks}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col">
+                    <span className="text-[9px] text-[#8b949e]">WhatsApp</span>
+                    <span className="font-black text-emerald-400 font-mono text-xs sm:text-sm">{totalPopupStats.whatsappClicks}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Tanımlı Reklam Listesi */}
-            <div className="flex flex-col gap-2.5 max-h-80 overflow-y-auto pr-1">
+            <div className="flex flex-col gap-3 max-h-96 overflow-y-auto pr-1">
               <span className="text-xs font-black text-white uppercase tracking-wider font-heading flex items-center justify-between">
                 <span>Aktif Reklam Havuzu ({ozelIlanReklamlar.length})</span>
+                <span className="text-[10px] text-[#8b949e] font-normal lowercase">Ayrı Ayrı İstatistikler</span>
               </span>
 
               {ozelIlanReklamlar.length === 0 ? (
@@ -1967,24 +2021,38 @@ export default function AdminHomepageConfigPage() {
               ) : (
                 ozelIlanReklamlar.map((ad, idx) => {
                   const listing = getListingById(ad.ilanId);
+                  const stats = (ad.ilanId && popupStatsMap[ad.ilanId]) || (ad._id && popupStatsMap[ad._id]) || {
+                    impressions: 0,
+                    uniqueVisitors: 0,
+                    clicks: 0,
+                    whatsappClicks: 0,
+                    totalClicks: 0,
+                    ctr: '0.0',
+                  };
+
                   return (
                     <div
                       key={ad._id || idx}
-                      className={`p-3 rounded-2xl border transition-all flex flex-col gap-2 ${ad.aktif
-                          ? 'bg-[#0d1117] border-amber-500/50 shadow-sm'
+                      className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${ad.aktif
+                          ? 'bg-[#0d1117] border-amber-500/50 shadow-md'
                           : 'bg-[#0d1117]/60 border-[#30363d] opacity-60'
                         }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-amber-300 font-bold uppercase bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">
-                          {ad.rozet}
-                        </span>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="text-[10px] text-amber-300 font-bold uppercase bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 truncate">
+                            {ad.rozet}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono px-1.5 py-0.5 rounded bg-[#161b22] border border-[#30363d]">
+                            #{idx + 1}
+                          </span>
+                        </div>
 
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
                             onClick={() => handleToggleAdActive(idx)}
-                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase transition-all ${ad.aktif ? 'bg-emerald-500 text-slate-950' : 'bg-[#21262d] text-[#8b949e]'
+                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase transition-all ${ad.aktif ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-[#21262d] text-[#8b949e]'
                               }`}
                           >
                             {ad.aktif ? '● AKTİF' : '○ PASİF'}
@@ -1992,7 +2060,8 @@ export default function AdminHomepageConfigPage() {
                           <button
                             type="button"
                             onClick={() => handleRemoveSpecialAd(idx)}
-                            className="p-1 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white"
+                            className="p-1 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                            title="Reklamı Sil"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -2000,26 +2069,58 @@ export default function AdminHomepageConfigPage() {
                       </div>
 
                       {listing ? (
-                        <div className="flex items-center gap-2 text-xs">
-                          <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0">
+                        <div className="flex items-center gap-2.5 text-xs">
+                          <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/10 shadow-sm">
                             <Image
                               src={listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=50'}
                               alt={listing.baslik}
                               fill
-                              sizes="32px"
+                              sizes="40px"
                               className="object-cover"
                             />
                           </div>
                           <div className="flex flex-col min-w-0 flex-1">
-                            <span className="font-bold text-white truncate">{listing.baslik}</span>
-                            <span className="text-[10px] text-amber-400 uppercase">
-                              Hedef: {ad.hedefIlSlug} | {ad.gecikmeSaniye}s
+                            <span className="font-bold text-white truncate text-xs">{listing.baslik}</span>
+                            <span className="text-[10px] text-amber-400 font-mono">
+                              🎯 Hedef: <strong className="text-white uppercase">{ad.hedefIlSlug}</strong> • {ad.gecikmeSaniye}sn
                             </span>
                           </div>
                         </div>
                       ) : (
                         <span className="text-[10px] text-red-400 font-mono">⚠️ İlan silinmiş</span>
                       )}
+
+                      {/* ── BU POPUP REKLAMINA ÖZEL AYRI İSTATİSTİKLER ── */}
+                      <div className="pt-2 border-t border-white/5 flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="font-bold text-[#8b949e] uppercase tracking-wider flex items-center gap-1">
+                            📊 Bu Reklamın İstatistikleri:
+                          </span>
+                          <span className="font-mono font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                            Dönüşüm: %{stats.ctr}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-1.5 bg-[#161b22] p-2 rounded-xl border border-[#21262d] text-center">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-[#8b949e]">Gösterim</span>
+                            <span className="font-mono text-xs font-black text-white">{stats.impressions}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-[#8b949e]">Tekil Kişi</span>
+                            <span className="font-mono text-xs font-black text-amber-300">{stats.uniqueVisitors}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-[#8b949e]">Profil Tık</span>
+                            <span className="font-mono text-xs font-black text-cyan-400">{stats.clicks}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-[#8b949e]">WhatsApp</span>
+                            <span className="font-mono text-xs font-black text-emerald-400">{stats.whatsappClicks}</span>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
                   );
                 })

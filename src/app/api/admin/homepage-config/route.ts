@@ -4,6 +4,7 @@ import HomepageConfigModel from '@/models/HomepageConfig';
 import ListingModel from '@/models/Listing';
 import LocationModel from '@/models/Location';
 import UserModel from '@/models/User';
+import AnalyticsEventModel from '@/models/AnalyticsEvent';
 import {
   checkAndExpireShowcases,
   assignListingToShowcase,
@@ -78,7 +79,7 @@ export async function GET() {
       config.bosVitrinSliderlar = DEFAULT_PROMOS;
     }
 
-    const [allListings, allLocations, allUsers] = await Promise.all([
+    const [allListings, allLocations, allUsers, popupStatsAgg] = await Promise.all([
       ListingModel.find({})
         .select('_id baslik slug ilSlug ilceSlug rozet vitrinIstegi isVitrin vitrinPaketi vitrinBaslangicTarihi vitrinBitisTarihi status whatsappNumara anaFotograf fotograflar createdAt paketBitisTarihi kullaniciId panelSifresi')
         .sort({ createdAt: -1 })
@@ -88,7 +89,58 @@ export async function GET() {
         .sort({ il: 1 })
         .lean(),
       UserModel.find({}).select('_id kullaniciAdi telefon email ad').lean().catch(() => []),
+      AnalyticsEventModel.aggregate([
+        { $match: { eventType: { $regex: '^special_ad_' } } },
+        {
+          $group: {
+            _id: "$targetId",
+            impressions: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_impression"] }, 1, 0] } },
+            clicks: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_click"] }, 1, 0] } },
+            whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_whatsapp_click"] }, 1, 0] } },
+            uniqueVisitors: { $addToSet: { $cond: [{ $eq: ["$eventType", "special_ad_impression"] }, "$visitorId", "$$REMOVE"] } }
+          }
+        }
+      ]).catch(() => []),
     ]);
+
+    const popupStatsMap: Record<string, any> = {};
+    let totalPopupImpressions = 0;
+    let totalPopupClicks = 0;
+    let totalPopupWa = 0;
+    const allPopupUniqueSet = new Set<string>();
+
+    (popupStatsAgg || []).forEach((st: any) => {
+      if (st._id) {
+        const uList = Array.isArray(st.uniqueVisitors) ? st.uniqueVisitors : [];
+        uList.forEach((v: string) => allPopupUniqueSet.add(v));
+        const uniqueCount = uList.length;
+        const totalClicks = (st.clicks || 0) + (st.whatsappClicks || 0);
+        const ctr = st.impressions > 0 ? ((totalClicks / st.impressions) * 100).toFixed(1) : '0.0';
+        
+        popupStatsMap[st._id.toString()] = {
+          impressions: st.impressions || 0,
+          uniqueVisitors: uniqueCount,
+          clicks: st.clicks || 0,
+          whatsappClicks: st.whatsappClicks || 0,
+          totalClicks,
+          ctr,
+        };
+        totalPopupImpressions += st.impressions || 0;
+        totalPopupClicks += st.clicks || 0;
+        totalPopupWa += st.whatsappClicks || 0;
+      }
+    });
+
+    const totalPopupClicksAll = totalPopupClicks + totalPopupWa;
+    const totalPopupCtr = totalPopupImpressions > 0 ? ((totalPopupClicksAll / totalPopupImpressions) * 100).toFixed(1) : '0.0';
+    const totalPopupStats = {
+      impressions: totalPopupImpressions,
+      uniqueVisitors: allPopupUniqueSet.size,
+      clicks: totalPopupClicks,
+      whatsappClicks: totalPopupWa,
+      totalClicks: totalPopupClicksAll,
+      ctr: totalPopupCtr,
+    };
 
     const userMapById: Record<string, any> = {};
     const userMapByPhone: Record<string, any> = {};
@@ -120,6 +172,8 @@ export async function GET() {
       config: JSON.parse(JSON.stringify(config)),
       allListings: JSON.parse(JSON.stringify(enrichedListings)),
       allLocations: JSON.parse(JSON.stringify(allLocations)),
+      popupStatsMap,
+      totalPopupStats,
     });
   } catch (error: any) {
     return NextResponse.json({ error: 'Config get error' }, { status: 500 });
