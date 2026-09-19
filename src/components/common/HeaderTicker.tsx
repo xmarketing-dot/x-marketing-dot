@@ -12,13 +12,23 @@ interface TickerItem {
 
 const DEFAULT_ANNOUNCEMENTS: TickerItem[] = [
   {
+    badge: '🎁 ÜCRETSİZ İLAN',
+    text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!',
+    link: '/ilan-ver',
+  },
+  {
+    badge: '🚀 ÜCRETSİZ REKLAM',
+    text: 'ÜCRETSİZ REKLAM FIRSATIYLA ŞEHRİNİZDE HEMEN ÖNE ÇIKIN!',
+    link: '/ilan-ver',
+  },
+  {
     badge: '👑 LİDER REHBER',
-    text: '81 İl ve İlçede Türkiye\'nin En Büyük İlan Platformu',
+    text: "81 İl ve İlçede Türkiye'nin En Büyük İlan Platformu",
     link: '/ilan-ver',
   },
   {
     badge: '🔥 ANINDA MÜŞTERİ',
-    text: 'İlan Verin, WhatsApp ile Müşterilere Ulaşın!',
+    text: 'İlan Verin, WhatsApp ile Müşterilere Anında Ulaşın!',
     link: '/ilan-ver',
   },
   {

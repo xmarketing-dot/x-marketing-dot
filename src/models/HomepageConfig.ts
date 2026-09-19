@@ -118,8 +118,18 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
       type: [TickerItemSchema],
       default: [
         {
+          badge: '🎁 ÜCRETSİZ İLAN',
+          text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!',
+          link: '/ilan-ver',
+        },
+        {
+          badge: '🚀 ÜCRETSİZ REKLAM',
+          text: 'ÜCRETSİZ REKLAM FIRSATIYLA ŞEHRİNİZDE HEMEN ÖNE ÇIKIN!',
+          link: '/ilan-ver',
+        },
+        {
           badge: '👑 LİDER REHBER',
-          text: '81 İl ve İlçede Türkiye\'nin En Büyük İlan Platformu',
+          text: "81 İl ve İlçede Türkiye'nin En Büyük İlan Platformu",
           link: '/ilan-ver',
         },
         {

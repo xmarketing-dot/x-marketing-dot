@@ -128,6 +128,7 @@ const POPULAR_CITIES = [
 export default function AdminHomepageConfigPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingTicker, setSavingTicker] = useState(false);
   const [savingAd, setSavingAd] = useState(false);
   const [savingGifs, setSavingGifs] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
@@ -143,10 +144,12 @@ export default function AdminHomepageConfigPage() {
 
   // Rotating Ticker Announcements
   const [duyurular, setDuyurular] = useState<TickerItem[]>([
-    { badge: '👑 LİDER REHBER', text: '81 İl ve İlçede Türkiye\'nin En Büyük İlan Platformu', link: '/ilan-ver' },
-    { badge: '🔥 ANINDA MÜŞTERİ', text: 'İlan Verin, WhatsApp ile Müşterilere Ulaşın!', link: '/ilan-ver' },
-    { badge: '💎 VIP VİTRİN', text: 'Google Aramalarında En Üst Sırada Yer Alın', link: '/ilan-ver' },
-    { badge: '⚡ CANLI DESTEK', text: '%100 Güvenli & 7/24 Canlı Müşteri Desteği', link: '/chat' },
+    { badge: '🎁 ÜCRETSİZ İLAN', text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!', link: '/ilan-ver' },
+    { badge: '🚀 ÜCRETSİZ REKLAM', text: 'ÜCRETSİZ REKLAM FIRSATIYLA ŞEHRİNİZDE HEMEN ÖNE ÇIKIN!', link: '/ilan-ver' },
+    { badge: '👑 LİDER REHBER', text: '81 İL VE İLÇEDE TÜRKİYE\'NİN EN BÜYÜK İLAN PLATFORMU', link: '/ilan-ver' },
+    { badge: '🔥 ANINDA MÜŞTERİ', text: 'İLAN VERİN, WHATSAPP İLE MÜŞTERİLERE ANINDA ULAŞIN!', link: '/ilan-ver' },
+    { badge: '💎 VIP VİTRİN', text: 'GOOGLE ARAMALARINDA EN ÜST SIRADA YER ALIN', link: '/ilan-ver' },
+    { badge: '⚡ CANLI DESTEK', text: '%100 GÜVENLİ & 7/24 CANLI MÜŞTERİ DESTEĞİ', link: '/chat' },
   ]);
 
   // Vitrin Boşken Dönecek GIF Havuzu
@@ -210,7 +213,7 @@ export default function AdminHomepageConfigPage() {
         headers: { 'Cache-Control': 'no-cache' }
       });
       const data = await res.json();
-      if (data.config) {
+      if (data.config && isInitial) {
         setHeroBaslik(data.config.hero?.baslik || 'Türkiye\'nin En Güvenilir VIP Eskort İlan Platformu');
         setHeroAltBaslik(data.config.hero?.altBaslik || '81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları.');
         setBannerMetin(data.config.aktifBanner?.metin || '🎉 İlan verin, WhatsApp ile müşterilere anında ulaşın!');
@@ -626,8 +629,12 @@ export default function AdminHomepageConfigPage() {
     }
   };
 
-  const handleAddAnnouncement = () => {
-    setDuyurular([...duyurular, { badge: '⭐ DUYURU', text: 'Yeni kampanya duyurusu...', link: '/ilan-ver' }]);
+  const handleAddAnnouncement = (preset?: { badge: string; text: string; link: string }) => {
+    if (preset) {
+      setDuyurular([...duyurular, preset]);
+    } else {
+      setDuyurular([...duyurular, { badge: '🎁 ÜCRETSİZ İLAN', text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!', link: '/ilan-ver' }]);
+    }
   };
 
   const handleRemoveAnnouncement = (index: number) => {
@@ -638,6 +645,32 @@ export default function AdminHomepageConfigPage() {
     const updated = [...duyurular];
     updated[index] = { ...updated[index], [field]: value };
     setDuyurular(updated);
+  };
+
+  const handleSaveTickerOnly = async () => {
+    setSavingTicker(true);
+    setMessage(null);
+    try {
+      const res = await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          duyurular,
+        }),
+      });
+
+      if (res.ok) {
+        setMessage({ type: 'success', text: `Kayan duyuru şeridi (${duyurular.length} Adet duyuru) başarıyla kaydedildi ve anında yayına alındı!` });
+        fetchConfig(true);
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        setMessage({ type: 'error', text: errJson.error || 'Duyurular kaydedilemedi.' });
+      }
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e.message || 'Bağlantı hatası' });
+    } finally {
+      setSavingTicker(false);
+    }
   };
 
   // ── ÇOKLU ÖZEL REKLAM YÖNETİMİ FONKSİYONLARI ──
@@ -1996,31 +2029,61 @@ export default function AdminHomepageConfigPage() {
 
           {/* ── 5. KAYAN DUYURU ŞERİDİ (TICKER) ──────────────── */}
           <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+            <div className="flex flex-wrap items-center justify-between border-b border-[#30363d] pb-3 gap-2">
               <div className="flex items-center gap-2">
                 <Megaphone className="w-5 h-5 text-amber-400" />
                 <h2 className="font-black text-base text-white font-heading">Kayan Duyuru Şeridi</h2>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono">
+                  {duyurular.length} Duyuru
+                </span>
               </div>
-              <button
-                type="button"
-                onClick={handleAddAnnouncement}
-                className="px-2.5 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-xs uppercase font-heading flex items-center gap-1 active:scale-95"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Ekle</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleAddAnnouncement({ badge: '🎁 ÜCRETSİZ İLAN', text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!', link: '/ilan-ver' })}
+                  className="px-2 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px] border border-amber-500/40 active:scale-95 transition-all"
+                  title="Ücretsiz İlan Duyurusu Ekle"
+                >
+                  + ÜCRETSİZ İLAN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddAnnouncement({ badge: '🚀 ÜCRETSİZ REKLAM', text: 'ÜCRETSİZ REKLAM FIRSATIYLA ŞEHRİNİZDE HEMEN ÖNE ÇIKIN!', link: '/ilan-ver' })}
+                  className="px-2 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-[11px] border border-emerald-500/40 active:scale-95 transition-all"
+                  title="Ücretsiz Reklam Duyurusu Ekle"
+                >
+                  + ÜCRETSİZ REKLAM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddAnnouncement()}
+                  className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1 active:scale-95 border border-[#30363d]"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Ekle</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveTickerOnly}
+                  disabled={savingTicker}
+                  className="px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase font-heading flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+                >
+                  {savingTicker ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  <span>{savingTicker ? 'Kaydediliyor...' : 'Şeridi Kaydet'}</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-col gap-2.5 max-h-72 overflow-y-auto pr-1">
               {duyurular.map((item, idx) => (
-                <div key={idx} className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-2">
+                <div key={idx} className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-2 hover:border-amber-500/40 transition-colors">
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
                       value={item.badge}
                       onChange={(e) => handleUpdateAnnouncement(idx, 'badge', e.target.value)}
-                      placeholder="👑 DUYURU"
-                      className="w-28 px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-amber-300 font-bold text-xs"
+                      placeholder="🎁 ÜCRETSİZ İLAN"
+                      className="w-36 px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-amber-300 font-bold text-xs"
                     />
                     <input
                       type="text"
@@ -2032,7 +2095,8 @@ export default function AdminHomepageConfigPage() {
                     <button
                       type="button"
                       onClick={() => handleRemoveAnnouncement(idx)}
-                      className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white"
+                      className="p-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                      title="Duyuruyu Sil"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -2041,7 +2105,7 @@ export default function AdminHomepageConfigPage() {
                     type="text"
                     value={item.text}
                     onChange={(e) => handleUpdateAnnouncement(idx, 'text', e.target.value)}
-                    placeholder="Duyuru metni..."
+                    placeholder="HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!"
                     className="w-full px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs"
                   />
                 </div>
