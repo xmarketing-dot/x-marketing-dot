@@ -314,3 +314,146 @@ export async function extendListingVitrinDuration(
 
   return updated;
 }
+
+/**
+ * Süresi dolmuş Özel Modal Popup reklamlarını kontrol eder,
+ * HomepageConfig'den ve ilanın kendisinden pasife çeker.
+ */
+export async function checkAndExpirePopups(): Promise<number> {
+  try {
+    await connectToDatabase();
+    const now = new Date();
+
+    const expiredPopups = await ListingModel.find({
+      isPopupActive: true,
+      popupBitisTarihi: { $exists: true, $lte: now }
+    });
+
+    if (expiredPopups.length === 0) return 0;
+
+    const expiredIds = expiredPopups.map(l => l._id.toString());
+
+    // HomepageConfig ozelIlanReklamlar içindeki aktifliğini kapat
+    const config = await HomepageConfigModel.findOne({ key: 'singleton' });
+    if (config && Array.isArray(config.ozelIlanReklamlar)) {
+      let changed = false;
+      const updatedAds = config.ozelIlanReklamlar.map((ad: any) => {
+        if (ad.ilanId && expiredIds.includes(ad.ilanId.toString()) && ad.aktif) {
+          changed = true;
+          return { ...ad, aktif: false };
+        }
+        return ad;
+      });
+
+      if (changed) {
+        await HomepageConfigModel.updateOne(
+          { key: 'singleton' },
+          { $set: { ozelIlanReklamlar: updatedAds } }
+        );
+      }
+    }
+
+    // İlanları güncelle
+    for (const listing of expiredPopups) {
+      await ListingModel.findByIdAndUpdate(listing._id, {
+        $set: {
+          isPopupActive: false,
+          popupTalepEdildi: false,
+          popupSuresiDolduBildirildi: true,
+        }
+      });
+    }
+
+    return expiredPopups.length;
+  } catch (err) {
+    console.error('Popup süre kontrol hatası:', err);
+    return 0;
+  }
+}
+
+/**
+ * Bir ilanı Özel Modal Popup reklam havuzuna ekler, süresini başlatır ve HomepageConfig'e kaydeder.
+ */
+export async function assignListingToPopup(
+  listingId: string,
+  days: number = 1,
+  hedefSehir: string = 'tum_turkiye'
+) {
+  await connectToDatabase();
+  const listing = await ListingModel.findById(listingId);
+  if (!listing) throw new Error('İlan bulunamadı.');
+
+  const now = new Date();
+  const popupBitisTarihi = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+
+  // 1. İlanı güncelle
+  await ListingModel.findByIdAndUpdate(listingId, {
+    $set: {
+      isPopupActive: true,
+      popupTalepEdildi: false,
+      popupGun: days,
+      popupHedefSehir: hedefSehir,
+      popupBaslangicTarihi: now,
+      popupBitisTarihi: popupBitisTarihi,
+      popupSuresiDolduBildirildi: false,
+    }
+  });
+
+  // 2. HomepageConfig ozelIlanReklamlar içine ekle / güncelle
+  const config = await HomepageConfigModel.findOne({ key: 'singleton' });
+  const currentAds = Array.isArray(config?.ozelIlanReklamlar) ? [...config.ozelIlanReklamlar] : [];
+
+  const existingIdx = currentAds.findIndex((ad: any) => ad.ilanId && ad.ilanId.toString() === listingId);
+  const rozetText = `🔥 ${hedefSehir === 'tum_turkiye' ? 'TÜRKİYE GENELİ' : hedefSehir.toUpperCase()} VIP ÖZEL İLAN`;
+
+  const newEntry = {
+    _id: `popup-${listingId}-${Date.now()}`,
+    aktif: true,
+    ilanId: new mongoose.Types.ObjectId(listingId),
+    hedefIlSlug: hedefSehir,
+    gecikmeSaniye: 3,
+    baslik: '👑 GÜNÜN ÖZEL VIP İLANI',
+    spotMetin: 'Bu Geceye Özel Seçkin Hizmet & Anında WhatsApp İletişim Hattı',
+    rozet: rozetText,
+  };
+
+  if (existingIdx >= 0) {
+    currentAds[existingIdx] = { ...currentAds[existingIdx], ...newEntry };
+  } else {
+    currentAds.unshift(newEntry);
+  }
+
+  await HomepageConfigModel.findOneAndUpdate(
+    { key: 'singleton' },
+    { $set: { ozelIlanReklamlar: currentAds } },
+    { upsert: true }
+  );
+
+  return { success: true, bitisTarihi: popupBitisTarihi };
+}
+
+/**
+ * Popup süresini uzatır.
+ */
+export async function extendListingPopupDuration(listingId: string, extraDays: number = 1) {
+  await connectToDatabase();
+  const listing = await ListingModel.findById(listingId);
+  if (!listing) throw new Error('İlan bulunamadı.');
+
+  const now = new Date();
+  const baseDate = listing.popupBitisTarihi && new Date(listing.popupBitisTarihi) > now
+    ? new Date(listing.popupBitisTarihi)
+    : now;
+
+  const newBitisTarihi = new Date(baseDate.getTime() + extraDays * 24 * 60 * 60 * 1000);
+
+  await ListingModel.findByIdAndUpdate(listingId, {
+    $set: {
+      isPopupActive: true,
+      popupBitisTarihi: newBitisTarihi,
+      popupSuresiDolduBildirildi: false,
+    }
+  });
+
+  return { success: true, bitisTarihi: newBitisTarihi };
+}

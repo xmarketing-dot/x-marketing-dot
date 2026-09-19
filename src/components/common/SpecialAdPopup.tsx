@@ -268,30 +268,30 @@ export default function SpecialAdPopup() {
   return (
     <div 
       onClick={handleClose}
-      className="md:hidden fixed inset-0 z-[999999] bg-black/85 backdrop-blur-md flex items-center justify-center p-3.5 sm:p-4 animate-in fade-in duration-300 select-none overflow-y-auto"
+      className="md:hidden fixed inset-0 z-[999999] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-300 select-none overflow-y-auto"
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-[320px] sm:max-w-[340px] rounded-[32px] overflow-hidden bg-[#161b22] border-2 border-amber-400 shadow-[0_0_80px_rgba(245,158,11,0.6)] flex flex-col animate-in zoom-in-95 duration-300 my-auto"
+        className="relative w-full max-w-[360px] sm:max-w-[380px] rounded-[32px] overflow-hidden bg-[#12161f] border-2 border-amber-400 shadow-[0_0_90px_rgba(245,158,11,0.7)] flex flex-col animate-in zoom-in-95 duration-300 my-auto"
       >
         
         {/* Kapat Butonu (Sağ Üst) */}
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-3.5 right-3.5 z-30 w-8 h-8 rounded-full bg-black/80 text-white hover:text-amber-400 border border-white/20 flex items-center justify-center backdrop-blur-md active:scale-90 transition-all shadow-lg"
+          className="absolute top-4 right-4 z-30 w-9 h-9 rounded-full bg-black/80 text-white hover:text-amber-400 border border-white/20 flex items-center justify-center backdrop-blur-md active:scale-90 transition-all shadow-xl"
           title="Kapat"
         >
-          <X className="w-4 h-4 stroke-[2.5]" />
+          <X className="w-5 h-5 stroke-[2.5]" />
         </button>
 
-        {/* ── 1. DİKEY (PORTRAIT) 3/4 FOTOĞRAF ALANI ──────────────── */}
+        {/* ── 1. DİKEY (PORTRAIT) FOTOĞRAF ALANI ──────────────── */}
         <div 
           onClick={handleGoToAd}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="relative aspect-[3/4] w-full bg-[#0d1117] overflow-hidden cursor-pointer group"
+          className="relative aspect-[4/5] w-full bg-[#0d1117] overflow-hidden cursor-pointer group"
         >
           {photos.map((src, idx) => (
             <div
@@ -304,31 +304,31 @@ export default function SpecialAdPopup() {
                 src={src}
                 alt={`${displayTitle} - Foto ${idx + 1}`}
                 fill
-                sizes="(max-width: 640px) 100vw, 360px"
-                className="object-cover group-hover:scale-105 transition-transform duration-700 brightness-[1.02]"
+                sizes="(max-width: 640px) 100vw, 400px"
+                className="object-cover group-hover:scale-105 transition-transform duration-700 brightness-[1.03]"
                 loading="lazy"
               />
             </div>
           ))}
 
           {/* Sol Üst Sponsorlu Rozeti */}
-          <div className="absolute top-3 left-3 z-20">
-            <span className="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md text-amber-400 font-black text-[9px] uppercase font-heading tracking-wider shadow-lg flex items-center gap-1 border border-amber-400/30">
-              <Crown className="w-3 h-3 fill-amber-400" />
+          <div className="absolute top-3.5 left-3.5 z-20">
+            <span className="px-3 py-1.5 rounded-full bg-black/80 backdrop-blur-md text-amber-400 font-black text-xs uppercase font-heading tracking-wide shadow-lg flex items-center gap-1.5 border border-amber-400/40">
+              <Crown className="w-3.5 h-3.5 fill-amber-400" />
               <span>{currentAd.rozet || '🔥 GÜNÜN ÖZEL VIP İLANI'}</span>
             </span>
           </div>
 
           {/* Fotoğraf Slide Nokta Göstergeleri */}
           {photos.length > 1 && (
-            <div className="absolute bottom-2.5 left-0 right-0 z-20 flex items-center justify-center gap-1 pointer-events-none">
+            <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none">
               {photos.map((_, dotIdx) => (
                 <span
                   key={dotIdx}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                  className={`h-2 rounded-full transition-all duration-300 ${
                     dotIdx === activePhotoIdx
-                      ? 'w-4 bg-amber-400 shadow-sm shadow-black'
-                      : 'w-1.5 bg-white/50 backdrop-blur-sm'
+                      ? 'w-5 bg-amber-400 shadow-md shadow-black'
+                      : 'w-2 bg-white/60 backdrop-blur-sm'
                   }`}
                 />
               ))}
@@ -336,23 +336,23 @@ export default function SpecialAdPopup() {
           )}
         </div>
 
-        {/* ── 2. ALT BİLGİ & DÖNÜŞÜM ALANI ──────────────── */}
-        <div className="p-4 pt-3 flex flex-col gap-2.5 text-center bg-[#161b22]">
+        {/* ── 2. ALT BİLGİ & DÖNÜŞÜM ALANI (Büyük Puntolar & Net Ayrım) ──────────────── */}
+        <div className="p-5 pt-4 flex flex-col gap-3.5 text-center bg-[#12161f]">
           
-          <div className="flex flex-col gap-0.5">
-            <div className="flex items-center justify-center gap-1.5 text-xs text-amber-400 font-bold">
-              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>{displayLocation}</span>
-              <span className="text-emerald-400 font-mono text-[9px]">● Doğrulandı</span>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-center gap-2 text-sm text-amber-400 font-bold">
+              <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-heading tracking-wide text-amber-300">{displayLocation}</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono text-[11px] font-bold">● Doğrulandı</span>
             </div>
 
-            <h2 className="font-black text-sm sm:text-base text-white font-heading tracking-tight leading-snug drop-shadow-md text-amber-300 line-clamp-2">
+            <h2 className="font-black text-base sm:text-lg text-white font-heading tracking-tight leading-snug drop-shadow-md text-amber-300 line-clamp-2 px-1">
               {displayTitle}
             </h2>
           </div>
 
-          {/* Aksiyon Butonları */}
-          <div className="flex flex-col gap-2 pt-0.5 font-heading">
+          {/* Aksiyon Butonları (Büyük, Kolay Tıklanır) */}
+          <div className="flex flex-col gap-2.5 pt-1 font-heading">
             {waUrl && (
               <a
                 href={waUrl}
@@ -368,9 +368,9 @@ export default function SpecialAdPopup() {
                     });
                   }
                 }}
-                className="w-full py-2.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-all"
+                className="w-full py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2.5 active:scale-95 transition-all"
               >
-                <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-slate-950 shrink-0" />
+                <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950 shrink-0" />
                 <span>WhatsApp ile Hemen Yaz</span>
               </a>
             )}
@@ -378,17 +378,17 @@ export default function SpecialAdPopup() {
             <button
               type="button"
               onClick={handleGoToAd}
-              className="w-full py-2 px-4 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white font-bold text-xs border border-[#30363d] flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+              className="w-full py-3 px-4 rounded-2xl bg-[#1c222e] hover:bg-[#252d3d] text-white font-bold text-sm border border-white/10 flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
               <span>Profili &amp; Fotoğrafları İncele</span>
-              <ChevronRight className="w-3.5 h-3.5 text-amber-400 stroke-[3]" />
+              <ChevronRight className="w-4 h-4 text-amber-400 stroke-[3]" />
             </button>
           </div>
 
           <button
             type="button"
             onClick={handleClose}
-            className="text-[10px] text-[#8b949e] hover:text-white transition-colors"
+            className="text-xs text-[#8b949e] hover:text-white transition-colors py-1 font-medium"
           >
             Kapat ve Devam Et
           </button>

@@ -8,7 +8,10 @@ import AnalyticsEventModel from '@/models/AnalyticsEvent';
 import {
   checkAndExpireShowcases,
   assignListingToShowcase,
-  extendListingVitrinDuration
+  extendListingVitrinDuration,
+  checkAndExpirePopups,
+  assignListingToPopup,
+  extendListingPopupDuration,
 } from '@/lib/vitrinManager';
 
 export const dynamic = 'force-dynamic';
@@ -18,8 +21,11 @@ export async function GET() {
   try {
     await connectToDatabase();
 
-    // 1. Süresi dolmuş vitrin ilanlarını otomatik temizle ve kullanıcılara bildir
-    await checkAndExpireShowcases();
+    // 1. Süresi dolmuş vitrin ve popup ilanlarını otomatik temizle ve kullanıcılara bildir
+    await Promise.all([
+      checkAndExpireShowcases(),
+      checkAndExpirePopups()
+    ]);
 
     let config = await HomepageConfigModel.findOne({ key: 'singleton' }).lean();
     if (!config) {
@@ -81,7 +87,7 @@ export async function GET() {
 
     const [allListings, allLocations, allUsers, popupStatsAgg] = await Promise.all([
       ListingModel.find({})
-        .select('_id baslik slug ilSlug ilceSlug rozet vitrinIstegi isVitrin vitrinPaketi vitrinBaslangicTarihi vitrinBitisTarihi status whatsappNumara anaFotograf fotograflar createdAt paketBitisTarihi kullaniciId panelSifresi')
+        .select('_id baslik slug ilSlug ilceSlug rozet vitrinIstegi isVitrin vitrinPaketi vitrinBaslangicTarihi vitrinBitisTarihi popupTalepEdildi popupGun popupHedefSehir isPopupActive popupBaslangicTarihi popupBitisTarihi status whatsappNumara anaFotograf fotograflar createdAt paketBitisTarihi kullaniciId panelSifresi')
         .sort({ createdAt: -1 })
         .lean(),
       LocationModel.find({})
@@ -113,70 +119,69 @@ export async function GET() {
       if (st._id) {
         const uList = Array.isArray(st.uniqueVisitors) ? st.uniqueVisitors : [];
         uList.forEach((v: string) => allPopupUniqueSet.add(v));
-        const uniqueCount = uList.length;
-        const totalClicks = (st.clicks || 0) + (st.whatsappClicks || 0);
-        const ctr = st.impressions > 0 ? ((totalClicks / st.impressions) * 100).toFixed(1) : '0.0';
-        
+        const impr = st.impressions || 0;
+        const clk = st.clicks || 0;
+        const wac = st.whatsappClicks || 0;
+        const totClicks = clk + wac;
+        const ctr = impr > 0 ? ((totClicks / impr) * 100).toFixed(1) : '0.0';
+
         popupStatsMap[st._id.toString()] = {
-          impressions: st.impressions || 0,
-          uniqueVisitors: uniqueCount,
-          clicks: st.clicks || 0,
-          whatsappClicks: st.whatsappClicks || 0,
-          totalClicks,
-          ctr,
+          impressions: impr,
+          uniqueVisitors: uList.length,
+          clicks: clk,
+          whatsappClicks: wac,
+          totalClicks: totClicks,
+          ctr: ctr,
         };
-        totalPopupImpressions += st.impressions || 0;
-        totalPopupClicks += st.clicks || 0;
-        totalPopupWa += st.whatsappClicks || 0;
+
+        totalPopupImpressions += impr;
+        totalPopupClicks += clk;
+        totalPopupWa += wac;
       }
     });
 
-    const totalPopupClicksAll = totalPopupClicks + totalPopupWa;
-    const totalPopupCtr = totalPopupImpressions > 0 ? ((totalPopupClicksAll / totalPopupImpressions) * 100).toFixed(1) : '0.0';
+    const totalPopupOverallClicks = totalPopupClicks + totalPopupWa;
+    const totalPopupCtr = totalPopupImpressions > 0 
+      ? ((totalPopupOverallClicks / totalPopupImpressions) * 100).toFixed(1)
+      : '0.0';
+
     const totalPopupStats = {
       impressions: totalPopupImpressions,
       uniqueVisitors: allPopupUniqueSet.size,
       clicks: totalPopupClicks,
       whatsappClicks: totalPopupWa,
-      totalClicks: totalPopupClicksAll,
+      totalClicks: totalPopupOverallClicks,
       ctr: totalPopupCtr,
     };
 
-    const userMapById: Record<string, any> = {};
-    const userMapByPhone: Record<string, any> = {};
-
-    allUsers.forEach((u: any) => {
-      userMapById[u._id.toString()] = u;
-      if (u.telefon) {
-        const clean = u.telefon.replace(/\D/g, '');
-        if (clean) userMapByPhone[clean] = u;
+    // Kullanıcı adlarını ilanlara iliştir
+    const listingsWithUsernames = allListings.map((l: any) => {
+      let kullaniciAdi = null;
+      if (l.kullaniciId) {
+        const matchedUser = allUsers.find((u: any) => u._id.toString() === l.kullaniciId.toString());
+        if (matchedUser) {
+          kullaniciAdi = matchedUser.kullaniciAdi || matchedUser.ad || null;
+        }
       }
-    });
-
-    const enrichedListings = allListings.map((l: any) => {
-      let matchedUser = (l.kullaniciId && userMapById[l.kullaniciId.toString()]) || null;
-      if (!matchedUser && l.whatsappNumara) {
-        const clean = l.whatsappNumara.replace(/\D/g, '');
-        if (clean) matchedUser = userMapByPhone[clean] || null;
-      }
-
       return {
         ...l,
-        kullaniciAdi: matchedUser?.kullaniciAdi || (l as any).kullaniciAdi || null,
-        kullaniciTelefon: matchedUser?.telefon || l.whatsappNumara || null,
-        kullaniciObj: matchedUser || null,
+        kullaniciAdi,
       };
     });
 
     return NextResponse.json({
-      config: JSON.parse(JSON.stringify(config)),
-      allListings: JSON.parse(JSON.stringify(enrichedListings)),
-      allLocations: JSON.parse(JSON.stringify(allLocations)),
+      config,
+      allListings: listingsWithUsernames,
+      allLocations,
       popupStatsMap,
       totalPopupStats,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Config get error' }, { status: 500 });
+    console.error('HomepageConfig GET error:', error);
+    return NextResponse.json(
+      { error: 'Konfigürasyon alınırken bir hata oluştu.' },
+      { status: 500 }
+    );
   }
 }
 
@@ -186,6 +191,7 @@ export async function POST(req: NextRequest) {
     const {
       heroBaslik,
       heroAltBaslik,
+      heroGorselUrl,
       bannerMetin,
       bannerLink,
       bannerAktif,
@@ -200,6 +206,10 @@ export async function POST(req: NextRequest) {
       assignVitrinDuration, // { listingId, days, paketi }
       extendVitrinDuration, // { listingId, extraDays }
       removeVitrinListingId, // listingId
+      assignPopupDuration, // { listingId, days, hedefSehir }
+      extendPopupDuration, // { listingId, extraDays }
+      removePopupListingId, // listingId
+      approvePopupListingId, // listingId
     } = body;
 
     const mongoose = await connectToDatabase();
@@ -255,10 +265,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 5. Popup Reklam Onay / Atama / Süre İşlemleri (Günlük 1.000 TL)
+    if (assignPopupDuration && assignPopupDuration.listingId) {
+      await assignListingToPopup(
+        assignPopupDuration.listingId,
+        Number(assignPopupDuration.days) || 1,
+        assignPopupDuration.hedefSehir || 'tum_turkiye'
+      );
+    }
+
+    if (approvePopupListingId) {
+      const days = Number(body.popupGun) || 1;
+      const hedef = body.popupHedefSehir || 'tum_turkiye';
+      await assignListingToPopup(approvePopupListingId, days, hedef);
+    }
+
+    if (extendPopupDuration && extendPopupDuration.listingId) {
+      await extendListingPopupDuration(
+        extendPopupDuration.listingId,
+        Number(extendPopupDuration.extraDays) || 1
+      );
+    }
+
+    if (removePopupListingId) {
+      await ListingModel.findByIdAndUpdate(removePopupListingId, {
+        $set: {
+          isPopupActive: false,
+          popupTalepEdildi: false,
+        }
+      });
+      const cfg = await HomepageConfigModel.findOne({ key: 'singleton' });
+      if (cfg && Array.isArray(cfg.ozelIlanReklamlar)) {
+        const filtered = cfg.ozelIlanReklamlar.filter(
+          (ad: any) => !ad.ilanId || ad.ilanId.toString() !== removePopupListingId
+        );
+        await HomepageConfigModel.updateOne(
+          { key: 'singleton' },
+          { $set: { ozelIlanReklamlar: filtered } }
+        );
+      }
+    }
+
     const updateData: any = {};
 
     if (heroBaslik !== undefined) updateData['hero.baslik'] = heroBaslik;
     if (heroAltBaslik !== undefined) updateData['hero.altBaslik'] = heroAltBaslik;
+    if (heroGorselUrl !== undefined) updateData['hero.gorselUrl'] = heroGorselUrl;
     if (bannerMetin !== undefined) updateData['aktifBanner.metin'] = bannerMetin;
     if (bannerLink !== undefined) updateData['aktifBanner.link'] = bannerLink;
     if (bannerAktif !== undefined) updateData['aktifBanner.aktif'] = Boolean(bannerAktif);

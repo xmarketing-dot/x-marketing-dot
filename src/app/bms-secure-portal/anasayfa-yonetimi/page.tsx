@@ -192,13 +192,17 @@ export default function AdminHomepageConfigPage() {
   const [allLocations, setAllLocations] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [listingFilter, setListingFilter] = useState<'all' | 'vip' | 'gold' | 'selected'>('all');
-  const [onayMasasiTab, setOnayMasasiTab] = useState<'talepler' | 'vip' | 'tumu'>('talepler');
+  const [onayMasasiTab, setOnayMasasiTab] = useState<'talepler' | 'popup' | 'vip' | 'tumu'>('talepler');
 
   const selectedListingForAd = allListings.find((l) => l._id === newAdIlanId);
 
-  // Vitrin talebi olan (satın almış veya bekleyen) ilanlar
+  // Vitrin ve Popup talebi olan ilanlar
   const vitrinRequests = useMemo(() => {
     return allListings.filter((l) => Boolean(l.vitrinIstegi));
+  }, [allListings]);
+
+  const popupRequests = useMemo(() => {
+    return allListings.filter((l) => Boolean(l.popupTalepEdildi) || Boolean(l.isPopupActive));
   }, [allListings]);
 
   // VIP & UltraVIP İlanlar
@@ -208,10 +212,11 @@ export default function AdminHomepageConfigPage() {
 
   // Onay Masasında Gösterilecek İlanlar
   const displayedOnayListings = useMemo(() => {
+    if (onayMasasiTab === 'popup') return popupRequests;
     if (onayMasasiTab === 'vip') return vipListings;
     if (onayMasasiTab === 'tumu') return allListings;
     return vitrinRequests;
-  }, [onayMasasiTab, vipListings, allListings, vitrinRequests]);
+  }, [onayMasasiTab, popupRequests, vipListings, allListings, vitrinRequests]);
 
   useEffect(() => {
     fetchConfig(true);
@@ -478,6 +483,85 @@ export default function AdminHomepageConfigPage() {
       }
     } catch (e: any) {
       setMessage({ type: 'error', text: 'Süre uzatılamadı.' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Popup Reklamını Süreli Onaylama (Günlük 1.000 TL)
+  const handleApprovePopupWithDuration = async (listingId: string, days: number = 1, hedefSehir: string = 'tum_turkiye') => {
+    setActionLoadingId(listingId);
+    try {
+      const res = await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assignPopupDuration: {
+            listingId,
+            days,
+            hedefSehir
+          }
+        }),
+      });
+
+      if (res.ok) {
+        setMessage({
+          type: 'success',
+          text: `⚡ İlan ${days} Günlük (${(days * 1000).toLocaleString('tr-TR')} ₺) Modal Popup Reklamı olarak yayına alındı!`
+        });
+        fetchConfig(false);
+      } else {
+        setMessage({ type: 'error', text: 'Popup onaylanırken hata oluştu.' });
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err.message || 'Bağlantı hatası' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Popup Süresini Uzatma
+  const handleExtendPopupDuration = async (listingId: string, extraDays: number) => {
+    setActionLoadingId(listingId);
+    try {
+      const res = await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          extendPopupDuration: {
+            listingId,
+            extraDays
+          }
+        }),
+      });
+      if (res.ok) {
+        setMessage({ type: 'success', text: `⚡ Popup süresi +${extraDays} gün uzatıldı!` });
+        fetchConfig(false);
+      }
+    } catch (e: any) {
+      setMessage({ type: 'error', text: 'Popup süresi uzatılamadı.' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Popup Reklamından Çıkarma
+  const handleRemoveFromPopup = async (listingId: string) => {
+    setActionLoadingId(listingId);
+    try {
+      const res = await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          removePopupListingId: listingId
+        }),
+      });
+      if (res.ok) {
+        setMessage({ type: 'success', text: 'İlan popup reklam havuzundan çıkarıldı.' });
+        fetchConfig(false);
+      }
+    } catch (e: any) {
+      setMessage({ type: 'error', text: 'Popup kaldırılamadı.' });
     } finally {
       setActionLoadingId(null);
     }
@@ -987,7 +1071,7 @@ export default function AdminHomepageConfigPage() {
               </div>
 
               {/* Filtre Tabları */}
-              <div className="flex items-center gap-1.5 bg-[#0d1117] p-1 rounded-xl border border-[#30363d] self-start sm:self-center">
+              <div className="flex items-center gap-1.5 bg-[#0d1117] p-1 rounded-xl border border-[#30363d] self-start sm:self-center flex-wrap">
                 <button
                   type="button"
                   onClick={() => setOnayMasasiTab('talepler')}
@@ -996,7 +1080,17 @@ export default function AdminHomepageConfigPage() {
                       : 'text-[#8b949e] hover:text-white'
                     }`}
                 >
-                  🔥 Talepler ({vitrinRequests.length})
+                  🔥 Vitrin Talepleri ({vitrinRequests.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOnayMasasiTab('popup')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${onayMasasiTab === 'popup'
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white font-black shadow-sm'
+                      : 'text-purple-400 hover:text-white'
+                    }`}
+                >
+                  ⚡ Popup Talepleri ({popupRequests.length})
                 </button>
                 <button
                   type="button"
@@ -1125,6 +1219,18 @@ export default function AdminHomepageConfigPage() {
                                 {formatVitrinCountdown(reqListing.vitrinBitisTarihi).text}
                               </span>
                             )}
+
+                            {/* Popup Kalan Süre / Talep Rozeti */}
+                            {reqListing.isPopupActive && reqListing.popupBitisTarihi && (
+                              <span className={`px-2 py-0.5 rounded-lg border text-[10px] font-bold bg-purple-500/15 border-purple-500/30 text-purple-300 font-mono`}>
+                                ⚡ Popup: {formatVitrinCountdown(reqListing.popupBitisTarihi).text}
+                              </span>
+                            )}
+                            {reqListing.popupTalepEdildi && !reqListing.isPopupActive && (
+                              <span className="px-2 py-0.5 rounded-lg border text-[10px] font-black bg-gradient-to-r from-purple-500 to-pink-500 text-white font-mono animate-pulse">
+                                ⚡ POPUP İSTİYOR ({reqListing.popupGun || 1} GÜN - {((reqListing.popupGun || 1) * 1000).toLocaleString('tr-TR')} ₺)
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1140,76 +1246,143 @@ export default function AdminHomepageConfigPage() {
                           <Eye className="w-4 h-4" />
                         </Link>
 
-                        {isAlreadyInVitrin ? (
+                        {/* POPUP ONAY / SÜRE BUTONLARI (onayMasasiTab === 'popup' VEYA popupTalepEdildi) */}
+                        {onayMasasiTab === 'popup' || reqListing.popupTalepEdildi || reqListing.isPopupActive ? (
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <button
-                              type="button"
-                              onClick={() => handleExtendDuration(reqListing._id.toString(), 1)}
-                              disabled={isLoadingAction}
-                              className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[11px] font-black transition-all border border-amber-500/30"
-                              title="Vitrin süresine +1 Gün ekle"
-                            >
-                              +1 Gün
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleExtendDuration(reqListing._id.toString(), 7)}
-                              disabled={isLoadingAction}
-                              className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[11px] font-black transition-all border border-amber-500/30"
-                              title="Vitrin süresine +7 Gün ekle"
-                            >
-                              +7 Gün
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveFromVitrin(reqListing._id.toString())}
-                              disabled={isLoadingAction}
-                              className="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500 text-red-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1"
-                            >
-                              {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
-                              <span>Çıkar</span>
-                            </button>
+                            {reqListing.isPopupActive ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleExtendPopupDuration(reqListing._id.toString(), 1)}
+                                  disabled={isLoadingAction}
+                                  className="px-2.5 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500 text-purple-300 hover:text-white text-[11px] font-black transition-all border border-purple-500/30"
+                                  title="Popup süresine +1 Gün (1.000 ₺) ekle"
+                                >
+                                  +1G Popup (1.000 ₺)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleExtendPopupDuration(reqListing._id.toString(), 3)}
+                                  disabled={isLoadingAction}
+                                  className="px-2.5 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500 text-purple-300 hover:text-white text-[11px] font-black transition-all border border-purple-500/30"
+                                  title="Popup süresine +3 Gün (3.000 ₺) ekle"
+                                >
+                                  +3G Popup (3.000 ₺)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveFromPopup(reqListing._id.toString())}
+                                  disabled={isLoadingAction}
+                                  className="px-2.5 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500 text-red-400 hover:text-white text-xs font-bold transition-all"
+                                >
+                                  Popup&apos;tan Çıkar
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleApprovePopupWithDuration(reqListing._id.toString(), reqListing.popupGun || 1, reqListing.popupHedefSehir || reqListing.ilSlug || 'tum_turkiye')}
+                                  disabled={isLoadingAction}
+                                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 hover:from-purple-500 hover:to-amber-300 text-white font-heading font-black text-xs uppercase shadow-md active:scale-95 flex items-center gap-1.5"
+                                >
+                                  {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Flame className="w-3.5 h-3.5" />}
+                                  <span>⚡ {reqListing.popupGun || 1} Günlük Popup Onayla ({((reqListing.popupGun || 1) * 1000).toLocaleString('tr-TR')} ₺)</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleApprovePopupWithDuration(reqListing._id.toString(), 3, reqListing.popupHedefSehir || reqListing.ilSlug || 'tum_turkiye')}
+                                  disabled={isLoadingAction}
+                                  className="px-2.5 py-2 rounded-xl bg-[#21262d] hover:bg-purple-600 text-purple-300 hover:text-white font-bold text-xs border border-[#30363d]"
+                                >
+                                  3 Gün (3.000 ₺)
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleApprovePopupWithDuration(reqListing._id.toString(), 7, reqListing.popupHedefSehir || reqListing.ilSlug || 'tum_turkiye')}
+                                  disabled={isLoadingAction}
+                                  className="px-2.5 py-2 rounded-xl bg-[#21262d] hover:bg-purple-600 text-purple-300 hover:text-white font-bold text-xs border border-[#30363d]"
+                                >
+                                  7 Gün (7.000 ₺)
+                                </button>
+                              </>
+                            )}
                           </div>
-                        ) : (
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {/* Günlük Onay Butonu */}
-                            <button
-                              type="button"
-                              onClick={() => handleApproveWithDuration(reqListing._id.toString(), 1, 'gunluk')}
-                              disabled={isLoadingAction}
-                              className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase font-heading transition-all shadow-md active:scale-95 flex items-center gap-1.5 ${reqListing.vitrinPaketi === 'gunluk'
-                                  ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-slate-950 ring-2 ring-amber-300 shadow-amber-500/30 scale-105'
-                                  : 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border border-[#30363d]'
-                                }`}
-                            >
-                              {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                              <span>👑 1 Günlük Onayla (2.000 ₺)</span>
-                            </button>
+                        ) : null}
 
-                            {/* Haftalık Onay Butonu */}
-                            <button
-                              type="button"
-                              onClick={() => handleApproveWithDuration(reqListing._id.toString(), 7, 'haftalik')}
-                              disabled={isLoadingAction}
-                              className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase font-heading transition-all shadow-md active:scale-95 flex items-center gap-1.5 ${reqListing.vitrinPaketi === 'haftalik'
-                                  ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white ring-2 ring-purple-300 shadow-purple-500/30 scale-105'
-                                  : 'bg-[#21262d] hover:bg-[#30363d] text-purple-300 border border-[#30363d]'
-                                }`}
-                            >
-                              {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crown className="w-3.5 h-3.5" />}
-                              <span>💎 1 Haftalık Onayla (6.000 ₺)</span>
-                            </button>
+                        {/* VİTRİN BUTONLARI */}
+                        {onayMasasiTab !== 'popup' && (
+                          isAlreadyInVitrin ? (
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <button
+                                type="button"
+                                onClick={() => handleExtendDuration(reqListing._id.toString(), 1)}
+                                disabled={isLoadingAction}
+                                className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[11px] font-black transition-all border border-amber-500/30"
+                                title="Vitrin süresine +1 Gün ekle"
+                              >
+                                +1 Gün Vitrin
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleExtendDuration(reqListing._id.toString(), 7)}
+                                disabled={isLoadingAction}
+                                className="px-2.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[11px] font-black transition-all border border-amber-500/30"
+                                title="Vitrin süresine +7 Gün ekle"
+                              >
+                                +7 Gün Vitrin
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveFromVitrin(reqListing._id.toString())}
+                                disabled={isLoadingAction}
+                                className="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500 text-red-400 hover:text-white text-xs font-bold transition-all flex items-center gap-1"
+                              >
+                                {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                                <span>Vitrinden Çıkar</span>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {/* Günlük Onay Butonu */}
+                              <button
+                                type="button"
+                                onClick={() => handleApproveWithDuration(reqListing._id.toString(), 1, 'gunluk')}
+                                disabled={isLoadingAction}
+                                className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase font-heading transition-all shadow-md active:scale-95 flex items-center gap-1.5 ${reqListing.vitrinPaketi === 'gunluk'
+                                    ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-slate-950 ring-2 ring-amber-300 shadow-amber-500/30 scale-105'
+                                    : 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border border-[#30363d]'
+                                  }`}
+                              >
+                                {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                                <span>👑 1 Günlük Vitrin (2.000 ₺)</span>
+                              </button>
 
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveFromVitrin(reqListing._id.toString())}
-                              disabled={isLoadingAction}
-                              className="p-2.5 rounded-xl bg-[#21262d] hover:bg-red-500/20 text-[#8b949e] hover:text-red-400 border border-[#30363d] transition-colors"
-                              title="Vitrin Talebini Reddet"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
+                              {/* Haftalık Onay Butonu */}
+                              <button
+                                type="button"
+                                onClick={() => handleApproveWithDuration(reqListing._id.toString(), 7, 'haftalik')}
+                                disabled={isLoadingAction}
+                                className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase font-heading transition-all shadow-md active:scale-95 flex items-center gap-1.5 ${reqListing.vitrinPaketi === 'haftalik'
+                                    ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white ring-2 ring-purple-300 shadow-purple-500/30 scale-105'
+                                    : 'bg-[#21262d] hover:bg-[#30363d] text-purple-300 border border-[#30363d]'
+                                  }`}
+                              >
+                                {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crown className="w-3.5 h-3.5" />}
+                                <span>💎 1 Haftalık Vitrin (6.000 ₺)</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveFromVitrin(reqListing._id.toString())}
+                                disabled={isLoadingAction}
+                                className="p-2.5 rounded-xl bg-[#21262d] hover:bg-red-500/20 text-[#8b949e] hover:text-red-400 border border-[#30363d] transition-colors"
+                                title="Talebi Reddet"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )
                         )}
                       </div>
                     </div>

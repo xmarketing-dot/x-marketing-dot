@@ -3,12 +3,20 @@ import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/mongodb';
 import HomepageConfigModel from '@/models/HomepageConfig';
 import ListingModel from '@/models/Listing';
+import { checkAndExpireShowcases, checkAndExpirePopups } from '@/lib/vitrinManager';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
     await connectToDatabase();
+
+    // Süresi dolan vitrin ve popup reklamlarını kontrol et
+    await Promise.all([
+      checkAndExpireShowcases().catch(() => {}),
+      checkAndExpirePopups().catch(() => {}),
+    ]);
+
     let config: any = await HomepageConfigModel.findOne({ key: 'singleton' }).lean();
     if (!config) {
       const created = await HomepageConfigModel.create({ key: 'singleton' });

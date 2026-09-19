@@ -47,6 +47,15 @@ export interface IListing extends Document {
   vitrinBaslangicTarihi?: Date;
   vitrinBitisTarihi?: Date;
   vitrinSuresiDolduBildirildi?: boolean;
+
+  // Özel Modal Popup Reklam Alanları (Günlük 1.000 TL)
+  popupTalepEdildi?: boolean;
+  popupGun?: number;
+  popupHedefSehir?: string;
+  isPopupActive?: boolean;
+  popupBaslangicTarihi?: Date;
+  popupBitisTarihi?: Date;
+  popupSuresiDolduBildirildi?: boolean;
   
   // %100 Doğrulanmış Özel Profil Alanları
   isVerifiedProfile: boolean;
@@ -133,6 +142,15 @@ const ListingSchema = new Schema<IListing>(
     vitrinBaslangicTarihi: { type: Date },
     vitrinBitisTarihi: { type: Date, index: true },
     vitrinSuresiDolduBildirildi: { type: Boolean, default: false },
+
+    // Özel Modal Popup Reklam Alanları (Günlük 1.000 TL)
+    popupTalepEdildi: { type: Boolean, default: false, index: true },
+    popupGun: { type: Number, default: 1 },
+    popupHedefSehir: { type: String, default: 'tum_turkiye' },
+    isPopupActive: { type: Boolean, default: false, index: true },
+    popupBaslangicTarihi: { type: Date },
+    popupBitisTarihi: { type: Date, index: true },
+    popupSuresiDolduBildirildi: { type: Boolean, default: false },
 
     // Özel Profil ve Yorum Sistemi
     isVerifiedProfile: { type: Boolean, default: false, index: true },

@@ -70,6 +70,13 @@ export default function PanelimPage() {
   const [vitrinLoading, setVitrinLoading] = useState(false);
   const [vitrinSuccessMsg, setVitrinSuccessMsg] = useState('');
 
+  // Modal Popup Reklam Satın Alma Modal State (Günlük 1.000 TL)
+  const [selectedPopupListing, setSelectedPopupListing] = useState<any | null>(null);
+  const [popupGunSecimi, setPopupGunSecimi] = useState<number>(1);
+  const [popupHedefSehirSecimi, setPopupHedefSehirSecimi] = useState<string>('tum_turkiye');
+  const [popupLoading, setPopupLoading] = useState(false);
+  const [popupSuccessMsg, setPopupSuccessMsg] = useState('');
+
   // Direct Phone + Password Login State
   const [telefon, setTelefon] = useState('');
   const [panelSifresi, setPanelSifresi] = useState('');
@@ -612,7 +619,7 @@ export default function PanelimPage() {
 
   const menuItems = [
     { id: 'ilanlarim', label: 'İlanlarım', count: listings.length, icon: Star },
-    { id: 'reklam_ver', label: 'VIP Reklam', badge: '🔥 %300', icon: Crown },
+    { id: 'reklam_ver', label: 'Öne Çıkart', badge: '🔥 %570', icon: Flame },
     { id: 'ilan_ver', label: 'İlan Ekle', icon: Plus },
     { id: 'odeme', label: 'Ödeme / Süre', icon: CreditCard },
     { id: 'chat', label: 'Destek', badge: '7/24', icon: Headphones },
@@ -874,7 +881,7 @@ export default function PanelimPage() {
                               hakkindaBiyografi: item.hakkindaBiyografi || '',
                             });
                           }}
-                          className="py-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-heading font-bold text-xs flex items-center justify-center gap-1 transition-all"
+                          className="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-heading font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-amber-400" />
                           <span>Düzenle</span>
@@ -885,7 +892,7 @@ export default function PanelimPage() {
                             setSelectedVitrinListing(item);
                             setVitrinSuccessMsg('');
                           }}
-                          className="py-2 px-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1 transition-all shadow-md shadow-amber-500/20"
+                          className="py-2.5 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-md shadow-amber-500/20"
                         >
                           <Crown className="w-3.5 h-3.5 fill-slate-950" />
                           <span>{isVitrinActive ? 'Vitrini Uzat' : 'Vitrine Al'}</span>
@@ -894,7 +901,7 @@ export default function PanelimPage() {
                         <Link
                           href={`/ilan/${item.slug}`}
                           target="_blank"
-                          className="py-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-cyan-300 font-heading font-bold text-xs flex items-center justify-center gap-1 transition-all text-center"
+                          className="py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-cyan-300 font-heading font-bold text-xs flex items-center justify-center gap-1 transition-all text-center"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           <span>Gör</span>
@@ -992,10 +999,97 @@ export default function PanelimPage() {
         )}
 
         {/* ══════════════════════════════════════════════════
-            TAB 2: SPONSORLU REKLAM
+            TAB 2: SPONSORLU REKLAM & POPUP
         ══════════════════════════════════════════════════ */}
         {activeTab === 'reklam_ver' && (
           <div className="flex flex-col gap-3.5 animate-fadeIn">
+
+            {/* ── 1. ÖZEL MODAL POPUP REKLAMI (TAM EKRAN DÖNÜŞÜM CANAVARI) ──────────────── */}
+            <div className="p-5 rounded-3xl bg-gradient-to-b from-[#1c1328] via-[#12161f] to-[#12161f] border-2 border-purple-500/40 flex flex-col gap-3.5 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-purple-300 font-heading font-black text-sm sm:text-base">
+                  <Flame className="w-5 h-5 text-pink-500 fill-pink-500 animate-pulse" />
+                  <span>Özel Modal Popup Reklamı</span>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-mono font-black text-[10px] uppercase shadow-md">
+                  ⚡ %570 Kümülatif Artış
+                </span>
+              </div>
+
+              {/* Pazarlama & Tahrik Edici Metin */}
+              <p className="text-xs text-[#c9d1d9] leading-relaxed">
+                Siteye giren <strong className="text-white">on binlerce müşterinin ekranına ilk saniyede tam boy fotoğraflı popup olarak doğrudan siz düşün!</strong> Kimse aşağı kaydırmadan, aramadan doğrudan profilinizi görüp WhatsApp hattınıza mesaj atsın.
+              </p>
+
+              {/* İkna Edici KPI Şeridi */}
+              <div className="grid grid-cols-3 gap-2 py-1 text-center">
+                <div className="p-2.5 rounded-2xl bg-black/50 border border-purple-500/20 flex flex-col">
+                  <span className="text-[9px] text-[#8b949e] font-bold">GÖSTERİM</span>
+                  <span className="font-heading font-black text-xs sm:text-sm text-purple-300 mt-0.5">50.000+ / Gün</span>
+                </div>
+                <div className="p-2.5 rounded-2xl bg-black/50 border border-pink-500/20 flex flex-col">
+                  <span className="text-[9px] text-pink-400 font-bold">WHATSAPP</span>
+                  <span className="font-heading font-black text-xs sm:text-sm text-pink-400 mt-0.5">+%570 Tık</span>
+                </div>
+                <div className="p-2.5 rounded-2xl bg-black/50 border border-amber-500/20 flex flex-col">
+                  <span className="text-[9px] text-amber-300 font-bold">GÜNLÜK FİYAT</span>
+                  <span className="font-heading font-black text-xs sm:text-sm text-amber-300 mt-0.5">1.000 ₺ / Gün</span>
+                </div>
+              </div>
+
+              {/* Hızlı Popup Başlat Butonu */}
+              {listings.length > 0 ? (
+                <div className="flex flex-col gap-2 pt-1">
+                  <span className="text-[11px] font-bold text-[#8b949e]">Hangi İlanınız Popup Olarak Çıksın?</span>
+                  <div className="flex flex-col gap-2">
+                    {listings.map((item) => (
+                      <div
+                        key={item._id}
+                        className="p-3 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-between gap-2 hover:border-purple-400/40 transition-all"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=100'}
+                            alt=""
+                            className="w-10 h-10 rounded-xl object-cover shrink-0"
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-heading font-bold text-xs text-white truncate">{item.baslik}</span>
+                            <span className="text-[10px] text-purple-300 font-mono">📍 {item.ilSlug?.toUpperCase()}</span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setSelectedPopupListing(item);
+                            setPopupGunSecimi(1);
+                            setPopupHedefSehirSecimi(item.ilSlug || 'tum_turkiye');
+                            setPopupSuccessMsg('');
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 active:scale-95 text-white font-heading font-black text-xs shrink-0 shadow-md flex items-center gap-1.5"
+                        >
+                          <Flame className="w-3.5 h-3.5" />
+                          <span>Popup Yap (1.000 ₺/g)</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setActiveTab('ilan_ver')}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-heading font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 mt-1 active:scale-95 shadow-lg shadow-purple-500/20"
+                >
+                  <span>Önce İlanınızı Ekleyin</span>
+                  <ArrowRight className="w-4 h-4 stroke-[3]" />
+                </button>
+              )}
+            </div>
+
+            {/* ── 2. ANASAYFA SABİT BANNER ALANI ──────────────── */}
             <div className="p-5 rounded-3xl bg-[#12161f] border border-white/5 flex flex-col gap-3">
               <div className="flex items-center gap-2 text-amber-400 font-heading font-black text-sm">
                 <Crown className="w-5 h-5 fill-amber-400" />
@@ -1516,6 +1610,245 @@ export default function PanelimPage() {
                 >
                   <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
                   <span>WhatsApp ile Hızlı Onay Al</span>
+                </a>
+              </>
+            )}
+
+          </div>
+        </div>
+      )}
+
+      {/* ── NATIVE BOTTOM SHEET / MODAL: ÖZEL MODAL POPUP SATIN ALMA (GÜNLÜK 1.000 TL) ──────────────── */}
+      {selectedPopupListing && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
+          <div className="w-full max-w-lg bg-[#12161f] border-t sm:border border-purple-500/40 rounded-t-3xl sm:rounded-3xl p-6 flex flex-col gap-5 shadow-2xl max-h-[90vh] overflow-y-auto text-left relative">
+            
+            <div className="flex items-center justify-between border-b border-white/10 pb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center">
+                  <Flame className="w-5 h-5 fill-pink-500" />
+                </div>
+                <span className="font-heading font-black text-base sm:text-lg text-white">Özel Modal Popup Reklamı</span>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedPopupListing(null);
+                  setPopupSuccessMsg('');
+                }}
+                className="p-1.5 text-[#8b949e] hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {popupSuccessMsg ? (
+              <div className="py-8 flex flex-col items-center justify-center text-center gap-3 text-emerald-400">
+                <CheckCircle2 className="w-14 h-14 text-emerald-400" />
+                <span className="font-heading font-black text-lg text-white">Talep Başarıyla Alındı!</span>
+                <p className="text-sm text-[#8b949e] max-w-xs">{popupSuccessMsg}</p>
+                <button
+                  onClick={() => {
+                    setSelectedPopupListing(null);
+                    setPopupSuccessMsg('');
+                  }}
+                  className="mt-4 px-8 py-3 rounded-2xl bg-purple-500 hover:bg-purple-400 text-white font-heading font-black text-sm uppercase"
+                >
+                  Tamam
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* İlan Bilgi Kartı */}
+                <div className="flex items-center gap-4 p-4 bg-black/60 rounded-2xl border border-white/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={selectedPopupListing.anaFotograf?.url || selectedPopupListing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=200'}
+                    alt=""
+                    className="w-16 h-16 rounded-2xl object-cover shrink-0 border border-purple-500/30"
+                  />
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <span className="font-heading font-black text-base sm:text-lg text-white truncate">{selectedPopupListing.baslik}</span>
+                    <span className="text-xs sm:text-sm text-pink-300 font-mono font-bold mt-1">📍 {selectedPopupListing.ilSlug?.toUpperCase()} / {selectedPopupListing.ilceSlug?.toUpperCase()}</span>
+                  </div>
+                </div>
+
+                {/* Pazarlama Vurgusu (Büyük ve Net Punto) */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-purple-500/25 via-pink-500/20 to-purple-900/10 border border-purple-500/40 flex flex-col gap-2">
+                  <span className="text-sm sm:text-base font-black text-purple-200 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-pink-400 shrink-0" />
+                    <span>+%570 Kümülatif Dönüşüm &amp; Kesintisiz Müşteri</span>
+                  </span>
+                  <p className="text-xs sm:text-sm text-gray-200 leading-relaxed font-medium">
+                    Ziyaretçiler siteye girdiğinde ilk saniyede tam boy fotoğraflı popup olarak ekranlarına çıkarsınız. Her gün <strong>1.000 ₺</strong> olarak hesaplanır.
+                  </p>
+                </div>
+
+                {/* Süre Seçimi (1 Gün, 2 Gün, 3 Gün, 7 Gün - Büyük Butonlar) */}
+                <div className="flex flex-col gap-2.5">
+                  <label className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wide">1. Yayın Süresi Seçin</label>
+                  <div className="grid grid-cols-4 gap-2 sm:gap-2.5">
+                    {[
+                      { days: 1, label: '1 Gün (24S)', price: '1.000 ₺' },
+                      { days: 2, label: '2 Gün', price: '2.000 ₺' },
+                      { days: 3, label: '3 Gün', price: '3.000 ₺' },
+                      { days: 7, label: '7 Gün', price: '7.000 ₺' },
+                    ].map((opt) => (
+                      <button
+                        key={opt.days}
+                        type="button"
+                        onClick={() => setPopupGunSecimi(opt.days)}
+                        className={`py-3.5 px-2 rounded-2xl border text-center transition-all ${
+                          popupGunSecimi === opt.days
+                            ? 'bg-gradient-to-b from-purple-600 to-pink-600 border-pink-400 text-white font-black shadow-lg shadow-purple-500/40 scale-102 ring-2 ring-pink-400'
+                            : 'bg-black/50 border-white/10 text-gray-300 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        <span className="text-xs sm:text-sm font-bold uppercase block leading-tight">{opt.label}</span>
+                        <span className="font-heading font-black text-sm sm:text-base mt-1.5 block text-white">{opt.price}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Hedef Gösterim Bölgesi (Büyük Punto Seçenek Kartları) */}
+                <div className="flex flex-col gap-2.5">
+                  <label className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wide">2. Hedef Gösterim Bölgesi</label>
+                  <div className="flex flex-col gap-3">
+                    
+                    {/* Seçenek 1: Sadece İlanın İlçesi / Bölgesi (Varsa) */}
+                    {selectedPopupListing.ilSlug && selectedPopupListing.ilceSlug && (
+                      <button
+                        type="button"
+                        onClick={() => setPopupHedefSehirSecimi(`${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}`)}
+                        className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
+                          popupHedefSehirSecimi === `${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}`
+                            ? 'bg-purple-500/30 border-pink-400 ring-2 ring-pink-400 text-white shadow-lg'
+                            : 'bg-black/50 border-white/10 text-gray-300 hover:border-white/30'
+                        }`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-heading font-black text-sm sm:text-base text-white flex items-center gap-1.5">
+                            <span>🎯 SADECE İLANIN BÖLGESİ</span>
+                          </span>
+                          <span className="text-xs sm:text-sm text-pink-300 font-mono mt-1 font-semibold">
+                            {selectedPopupListing.ilSlug.toUpperCase()} / {selectedPopupListing.ilceSlug.toUpperCase()} sayfalarına girenler görür
+                          </span>
+                        </div>
+                        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          popupHedefSehirSecimi === `${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}`
+                            ? 'border-pink-400 bg-pink-500 text-white'
+                            : 'border-white/30'
+                        }`}>
+                          {popupHedefSehirSecimi === `${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}` && <Check className="w-4 h-4 stroke-[3]" />}
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Seçenek 2: Sadece İlanın Tüm Şehri */}
+                    {selectedPopupListing.ilSlug && (
+                      <button
+                        type="button"
+                        onClick={() => setPopupHedefSehirSecimi(selectedPopupListing.ilSlug)}
+                        className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
+                          popupHedefSehirSecimi === selectedPopupListing.ilSlug
+                            ? 'bg-purple-500/30 border-pink-400 ring-2 ring-pink-400 text-white shadow-lg'
+                            : 'bg-black/50 border-white/10 text-gray-300 hover:border-white/30'
+                        }`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-heading font-black text-sm sm:text-base text-white flex items-center gap-1.5">
+                            <span>📍 TÜM {selectedPopupListing.ilSlug.toUpperCase()} GENELİ</span>
+                          </span>
+                          <span className="text-xs sm:text-sm text-purple-300 font-mono mt-1 font-semibold">
+                            {selectedPopupListing.ilSlug.toUpperCase()} ve tüm ilçelerindeki ziyaretçiler görür
+                          </span>
+                        </div>
+                        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          popupHedefSehirSecimi === selectedPopupListing.ilSlug
+                            ? 'border-pink-400 bg-pink-500 text-white'
+                            : 'border-white/30'
+                        }`}>
+                          {popupHedefSehirSecimi === selectedPopupListing.ilSlug && <Check className="w-4 h-4 stroke-[3]" />}
+                        </div>
+                      </button>
+                    )}
+
+                    {/* Seçenek 3: Tüm Türkiye (Anasayfa & Tüm Şehirler) */}
+                    <button
+                      type="button"
+                      onClick={() => setPopupHedefSehirSecimi('tum_turkiye')}
+                      className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
+                        popupHedefSehirSecimi === 'tum_turkiye'
+                          ? 'bg-purple-500/30 border-pink-400 ring-2 ring-pink-400 text-white shadow-lg'
+                          : 'bg-black/50 border-white/10 text-gray-300 hover:border-white/30'
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-heading font-black text-sm sm:text-base text-white flex items-center gap-1.5">
+                          <span>🇹🇷 TÜM SİTE &amp; TÜRKİYE GENELİ</span>
+                        </span>
+                        <span className="text-xs sm:text-sm text-amber-300 font-mono mt-1 font-semibold">
+                          Anasayfa + 81 İlin tamamındaki tüm ziyaretçilere tam ekran çıkar
+                        </span>
+                      </div>
+                      <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        popupHedefSehirSecimi === 'tum_turkiye'
+                          ? 'border-pink-400 bg-pink-500 text-white'
+                          : 'border-white/30'
+                      }`}>
+                        {popupHedefSehirSecimi === 'tum_turkiye' && <Check className="w-4 h-4 stroke-[3]" />}
+                      </div>
+                    </button>
+
+                  </div>
+                </div>
+
+                {/* Satın Alma Butonu (Büyük & Vurgulu) */}
+                <button
+                  disabled={popupLoading}
+                  onClick={async () => {
+                    setPopupLoading(true);
+                    try {
+                      const res = await fetch('/api/user-panel/popup-reklam', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          listingId: selectedPopupListing._id,
+                          gun: popupGunSecimi,
+                          hedefSehir: popupHedefSehirSecimi,
+                          telefon: currentUser?.telefon || selectedPopupListing.whatsappNumara,
+                        }),
+                      });
+                      const data = await res.json();
+                      if (data.success) {
+                        setPopupSuccessMsg(`${popupGunSecimi} günlük modal popup talebiniz alındı ve yönetici onayına iletildi.`);
+                        if (currentUser) {
+                          fetchListings(currentUser.identifier, currentUser.password);
+                        }
+                      } else {
+                        alert(data.error || 'Popup talebi iletilemedi.');
+                      }
+                    } catch (err) {
+                      alert('Bağlantı hatası.');
+                    } finally {
+                      setPopupLoading(false);
+                    }
+                  }}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 hover:from-purple-500 hover:to-amber-300 text-white font-heading font-black text-sm sm:text-base uppercase tracking-wider shadow-xl shadow-purple-500/30 active:scale-95 transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 mt-2"
+                >
+                  {popupLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Flame className="w-5 h-5 fill-white" />}
+                  <span>{popupGunSecimi} Günlük Popup Reklamı Başlat ({(popupGunSecimi * 1000).toLocaleString('tr-TR')} ₺)</span>
+                </button>
+
+                {/* WhatsApp ile Doğrudan Hızlı Onay */}
+                <a
+                  href={getAdminWhatsAppUrl(`Merhaba, ${selectedPopupListing.baslik} ilanım için ${popupGunSecimi} GÜNLÜK (${(popupGunSecimi * 1000).toLocaleString('tr-TR')} ₺) ÖZEL MODAL POPUP REKLAMI satın almak istiyorum.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 rounded-2xl bg-[#22c55e] hover:bg-emerald-600 text-white font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-2 text-center shadow-lg transition-all"
+                >
+                  <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
+                  <span>WhatsApp ile Anında Canlı Yayına Al</span>
                 </a>
               </>
             )}
