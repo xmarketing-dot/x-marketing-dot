@@ -144,8 +144,8 @@ export default function AdminHomepageConfigPage() {
 
   // Rotating Ticker Announcements
   const [duyurular, setDuyurular] = useState<TickerItem[]>([
-    { badge: '🎁 ÜCRETSİZ İLAN', text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!', link: '/ilan-ver' },
-    { badge: '🚀 ÜCRETSİZ REKLAM', text: 'ÜCRETSİZ REKLAM FIRSATIYLA ŞEHRİNİZDE HEMEN ÖNE ÇIKIN!', link: '/ilan-ver' },
+    { badge: '🎁 24 SAAT ÜCRETSİZ İLAN', text: '24 SAAT BOYUNCA %100 ÜCRETSİZ VIP İLAN VERİN, ANINDA MÜŞTERİ KAZANIN!', link: '/ucretsiz-ilan' },
+    { badge: '🚀 24 SAAT ÜCRETSİZ REKLAM', text: '24 SAAT %100 ÜCRETSİZ BANNER REKLAMIYLA ZİRVEDE YERİNİZİ ALIN!', link: '/ucretsiz-reklam' },
     { badge: '👑 LİDER REHBER', text: '81 İL VE İLÇEDE TÜRKİYE\'NİN EN BÜYÜK İLAN PLATFORMU', link: '/ilan-ver' },
     { badge: '🔥 ANINDA MÜŞTERİ', text: 'İLAN VERİN, WHATSAPP İLE MÜŞTERİLERE ANINDA ULAŞIN!', link: '/ilan-ver' },
     { badge: '💎 VIP VİTRİN', text: 'GOOGLE ARAMALARINDA EN ÜST SIRADA YER ALIN', link: '/ilan-ver' },
@@ -2040,19 +2040,19 @@ export default function AdminHomepageConfigPage() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => handleAddAnnouncement({ badge: '🎁 ÜCRETSİZ İLAN', text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!', link: '/ilan-ver' })}
+                  onClick={() => handleAddAnnouncement({ badge: '🎁 24 SAAT ÜCRETSİZ İLAN', text: '24 SAAT BOYUNCA %100 ÜCRETSİZ VIP İLAN VERİN, ANINDA MÜŞTERİ KAZANIN!', link: '/ucretsiz-ilan' })}
                   className="px-2 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-[11px] border border-amber-500/40 active:scale-95 transition-all"
-                  title="Ücretsiz İlan Duyurusu Ekle"
+                  title="24 Saatlik Ücretsiz İlan Duyurusu Ekle"
                 >
-                  + ÜCRETSİZ İLAN
+                  + 24 SAAT ÜCRETSİZ İLAN
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleAddAnnouncement({ badge: '🚀 ÜCRETSİZ REKLAM', text: 'ÜCRETSİZ REKLAM FIRSATIYLA ŞEHRİNİZDE HEMEN ÖNE ÇIKIN!', link: '/ilan-ver' })}
+                  onClick={() => handleAddAnnouncement({ badge: '🚀 24 SAAT ÜCRETSİZ REKLAM', text: '24 SAAT %100 ÜCRETSİZ BANNER REKLAMIYLA ZİRVEDE YERİNİZİ ALIN!', link: '/ucretsiz-reklam' })}
                   className="px-2 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-[11px] border border-emerald-500/40 active:scale-95 transition-all"
-                  title="Ücretsiz Reklam Duyurusu Ekle"
+                  title="24 Saatlik Ücretsiz Banner Reklam Duyurusu Ekle"
                 >
-                  + ÜCRETSİZ REKLAM
+                  + 24 SAAT ÜCRETSİZ REKLAM
                 </button>
                 <button
                   type="button"

@@ -118,14 +118,14 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
       type: [TickerItemSchema],
       default: [
         {
-          badge: '🎁 ÜCRETSİZ İLAN',
-          text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!',
-          link: '/ilan-ver',
+          badge: '🎁 24 SAAT ÜCRETSİZ İLAN',
+          text: '24 SAAT BOYUNCA %100 ÜCRETSİZ VIP İLAN VERİN, ANINDA MÜŞTERİ KAZANIN!',
+          link: '/ucretsiz-ilan',
         },
         {
-          badge: '🚀 ÜCRETSİZ REKLAM',
-          text: 'ÜCRETSİZ REKLAM FIRSATIYLA ŞEHRİNİZDE HEMEN ÖNE ÇIKIN!',
-          link: '/ilan-ver',
+          badge: '🚀 24 SAAT ÜCRETSİZ REKLAM',
+          text: '24 SAAT %100 ÜCRETSİZ BANNER REKLAMIYLA ZİRVEDE YERİNİZİ ALIN!',
+          link: '/ucretsiz-reklam',
         },
         {
           badge: '👑 LİDER REHBER',

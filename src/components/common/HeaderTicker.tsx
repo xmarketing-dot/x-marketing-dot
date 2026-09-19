@@ -12,14 +12,14 @@ interface TickerItem {
 
 const DEFAULT_ANNOUNCEMENTS: TickerItem[] = [
   {
-    badge: '🎁 ÜCRETSİZ İLAN',
-    text: 'HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!',
-    link: '/ilan-ver',
+    badge: '🎁 24 SAAT ÜCRETSİZ İLAN',
+    text: '24 SAAT BOYUNCA %100 ÜCRETSİZ VIP İLAN VERİN, ANINDA MÜŞTERİ KAZANIN!',
+    link: '/ucretsiz-ilan',
   },
   {
-    badge: '🚀 ÜCRETSİZ REKLAM',
-    text: 'ÜCRETSİZ REKLAM FIRSATIYLA ŞEHRİNİZDE HEMEN ÖNE ÇIKIN!',
-    link: '/ilan-ver',
+    badge: '🚀 24 SAAT ÜCRETSİZ REKLAM',
+    text: '24 SAAT %100 ÜCRETSİZ BANNER REKLAMIYLA ZİRVEDE YERİNİZİ ALIN!',
+    link: '/ucretsiz-reklam',
   },
   {
     badge: '👑 LİDER REHBER',
@@ -52,32 +52,31 @@ export default function HeaderTicker() {
       .then((res) => res.json())
       .then((data) => {
         if (data.config) {
-          const list: TickerItem[] = [];
-
-          // 1. If active banner is enabled by admin, show it as first priority item
-          if (data.config.aktifBanner?.aktif && data.config.aktifBanner?.metin) {
-            list.push({
-              badge: data.config.aktifBanner.rozet || '👑 VIP DUYURU',
-              text: data.config.aktifBanner.metin,
-              link: data.config.aktifBanner.link || '/ilan-ver',
-            });
-          }
-
-          // 2. Custom ticker announcements from admin panel
+          // 1. Admin panelinden gelen duyurular listesi varsa doğrudan tek kaynak olarak kullan
           if (Array.isArray(data.config.duyurular) && data.config.duyurular.length > 0) {
-            data.config.duyurular.forEach((d: any) => {
-              if (d.text) {
-                list.push({
-                  badge: d.badge || '👑 DUYURU',
-                  text: d.text,
-                  link: d.link || '/ilan-ver',
-                });
-              }
-            });
+            const list: TickerItem[] = data.config.duyurular
+              .filter((d: any) => d && d.text && String(d.text).trim())
+              .map((d: any) => ({
+                badge: d.badge || '👑 DUYURU',
+                text: String(d.text).trim(),
+                link: d.link || '/ilan-ver',
+              }));
+
+            if (list.length > 0) {
+              setAnnouncements(list);
+              return;
+            }
           }
 
-          if (list.length > 0) {
-            setAnnouncements(list);
+          // 2. Eğer duyurular boşsa ve aktif banner varsa göster
+          if (data.config.aktifBanner?.aktif && data.config.aktifBanner?.metin) {
+            setAnnouncements([
+              {
+                badge: data.config.aktifBanner.rozet || '👑 VIP DUYURU',
+                text: data.config.aktifBanner.metin,
+                link: data.config.aktifBanner.link || '/ilan-ver',
+              },
+            ]);
           }
         }
       })
