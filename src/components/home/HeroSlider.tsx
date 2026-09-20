@@ -194,63 +194,23 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
     setActiveIdx((prev) => (prev - 1 + fiveSlots.length) % fiveSlots.length);
   }, [fiveSlots.length]);
 
-  // ── AGGRESSIVE CLIENT-SIDE GIF & IMAGE CACHE PRELOADER ──────────
-  // Tüm vitrin GIF'lerini ve ilan fotoğraflarını istemcinin (telefon/PC)
-  // tarayıcı belleğine ve GPU'suna anında önbellekler.
-  // Kullanıcı slaytlar arasında dönerken download beklemez, anında gösterilir.
+  // ── MOBİL & DÜŞÜK GÜÇLÜ CİHAZ DOSTU ÖNBELLEKLEME ──────────
+  // Sadece aktif ve bir sonraki slaytın görselini hafifçe hazırlar,
+  // telefonun GPU'sunu ve ağ kanalını kitlemez.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Toplanacak tüm medya URL'leri (5 slot + tüm aktif havuz GIF'leri)
-    const urlsToPreload = new Set<string>();
+    const nextIdx = (activeIdx + 1) % fiveSlots.length;
+    const targets = [fiveSlots[activeIdx], fiveSlots[nextIdx]].filter(Boolean);
 
-    // 1. 5 slotun içerikleri
-    fiveSlots.forEach((slot) => {
-      if (slot.type === 'listing' && slot.data.anaFotograf?.url) {
-        urlsToPreload.add(slot.data.anaFotograf.url);
-      } else if (slot.type === 'empty_promo' && slot.promoData?.gifUrl) {
-        urlsToPreload.add(slot.promoData.gifUrl);
-      }
-    });
-
-    // 2. Yedek havuzdaki tüm aktif GIF'ler
-    effectivePromoSlides.forEach((p) => {
-      if (p.gifUrl) urlsToPreload.add(p.gifUrl);
-    });
-
-    urlsToPreload.forEach((url) => {
+    targets.forEach((slot) => {
+      const url = slot.type === 'listing' ? slot.data.anaFotograf?.url : slot.promoData?.gifUrl;
       if (!url) return;
 
-      // A) <link rel="preload" as="image"> ekle (Tarayıcı en yüksek ağ önceliğiyle indirir ve disk önbelleğine yazar)
-      try {
-        const linkId = `preload-vitrin-${encodeURIComponent(url).slice(0, 32)}`;
-        if (!document.getElementById(linkId)) {
-          const link = document.createElement('link');
-          link.id = linkId;
-          link.rel = 'preload';
-          link.as = 'image';
-          link.href = url;
-          document.head.appendChild(link);
-        }
-      } catch (e) {}
-
-      // B) new Image() nesnesi oluşturup GPU belleğine (.decode) çöz (Render anında 0 ms gecikme)
-      try {
-        const img = new window.Image();
-        img.src = url;
-        if (typeof img.decode === 'function') {
-          img.decode().catch(() => {});
-        }
-      } catch (e) {}
-
-      // C) HTTP force-cache fetch ile tarayıcının yerel önbellek havuzuna zorla
-      try {
-        if (typeof fetch === 'function') {
-          fetch(url, { mode: 'no-cors', cache: 'force-cache' }).catch(() => {});
-        }
-      } catch (e) {}
+      const img = new window.Image();
+      img.src = url;
     });
-  }, [fiveSlots, effectivePromoSlides]);
+  }, [activeIdx, fiveSlots]);
 
   useEffect(() => {
     if (fiveSlots.length <= 1) return;
@@ -280,6 +240,9 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
       {/* ── 1. 5 SLOT ARKA PLANLARI (Canlı İlan Fotoğrafları VEYA Parlak GIF'ler) ──────────────── */}
       {fiveSlots.map((slot, idx) => {
         const isCurrent = idx === activeIdx;
+        // Mobilde GPU şişmesini önlemek için sadece aktif ve hemen yanındaki slayt DOM'a basılır
+        const shouldMount = isCurrent || Math.abs(idx - activeIdx) <= 1 || (idx === 0 && activeIdx === fiveSlots.length - 1);
+        if (!shouldMount) return null;
 
         if (slot.type === 'listing') {
           return (
@@ -293,9 +256,8 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
                 src={slot.data.anaFotograf?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=1200'}
                 alt={slot.data.baslik}
                 fill
-                unoptimized
-                priority
-                loading="eager"
+                priority={isCurrent}
+                loading={isCurrent ? 'eager' : 'lazy'}
                 sizes="(max-width: 640px) 100vw, 1200px"
                 className="object-cover object-top sm:object-center brightness-105 contrast-105"
               />
@@ -328,8 +290,8 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
               alt={slot.promoData.title}
               fill
               unoptimized
-              priority
-              loading="eager"
+              priority={isCurrent}
+              loading={isCurrent ? 'eager' : 'lazy'}
               sizes="(max-width: 640px) 100vw, 1200px"
               className="object-cover object-center brightness-100 contrast-105"
             />

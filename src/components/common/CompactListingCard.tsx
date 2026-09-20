@@ -49,12 +49,33 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   }, [listing.anaFotograf, listing.fotograflar]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
 
-  // Otomatik Görüntülenme / Gösterim (Impression) Takibi (Anasayfa, İl, İlçe, Kategori, Arama)
+  // IntersectionObserver: Yalnızca ekranda görünen kartlar timer çalıştırsın (CPU & Pil tasarrufu)
   useEffect(() => {
-    if (!listing || !listing._id) return;
+    if (!cardRef.current || typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        setIsVisible(entry.isIntersecting);
+      },
+      { rootMargin: '100px', threshold: 0.15 }
+    );
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  // Otomatik Görüntülenme / Gösterim (Impression) Takibi (Yalnızca ekranda görününce)
+  useEffect(() => {
+    if (!isVisible || !listing || !listing._id) return;
     if (typeof window !== 'undefined' && window.trackListingImpression) {
       window.trackListingImpression({
         listingId: listing._id,
@@ -63,22 +84,22 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
         city: `${listing.ilSlug || ''}/${listing.ilceSlug || ''}`,
       });
     }
-  }, [listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
+  }, [isVisible, listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
 
-  // Auto-slide images periodically if multiple images exist
+  // Auto-slide images periodically ONLY IF VISIBLE on screen
   useEffect(() => {
-    if (!allImages || allImages.length <= 1) return;
+    if (!isVisible || !allImages || allImages.length <= 1) return;
 
-    // Staggered interval between 2.2s and 3.0s
+    // Staggered interval between 2.8s and 3.6s
     const hash = (listing.slug || listing._id || 'a').charCodeAt(0);
-    const intervalTime = 2200 + (hash % 800);
+    const intervalTime = 2800 + (hash % 800);
 
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % allImages.length);
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [allImages.length, listing.slug, listing._id]);
+  }, [isVisible, allImages.length, listing.slug, listing._id]);
 
   // Touch Swipe Handlers for Mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -140,6 +161,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
 
   return (
     <div
+      ref={cardRef}
       className={`group relative aspect-[3/4.8] sm:aspect-[3/4.5] w-full rounded-lg sm:rounded-xl overflow-hidden bg-[#0d1117] border transition-all duration-300 shadow-md hover:shadow-xl select-none ${
         isVip
           ? 'border-amber-500/75 hover:border-amber-400 shadow-amber-500/10 ring-1 ring-amber-500/20'
@@ -153,24 +175,30 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     >
       {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar) ──────────────── */}
       <Link href={`/ilan/${listing.slug}`} className="absolute inset-0 block w-full h-full z-0">
-        {allImages.map((imgUrl, idx) => (
-          <div
-            key={idx}
-            className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-              idx === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-            }`}
-          >
-            <Image
-              src={imgUrl}
-              alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
-              fill
-              unoptimized
-              loading="lazy"
-              className="object-cover object-top"
-              sizes="(max-width: 640px) 33vw, 240px"
-            />
-          </div>
-        ))}
+        {allImages.map((imgUrl, idx) => {
+          const isCurrent = idx === currentIndex;
+          // Sadece aktif ve sonraki fotoğrafı DOM'da tut (Bellek ve GPU rahatlatması)
+          const shouldRender = isCurrent || Math.abs(idx - currentIndex) <= 1 || (idx === 0 && currentIndex === allImages.length - 1);
+          if (!shouldRender) return null;
+
+          return (
+            <div
+              key={idx}
+              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
+                isCurrent ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+              }`}
+            >
+              <Image
+                src={imgUrl}
+                alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
+                fill
+                loading="lazy"
+                sizes="(max-width: 640px) 33vw, 240px"
+                className="object-cover object-top"
+              />
+            </div>
+          );
+        })}
       </Link>
 
       {/* Üst Rozetler */}
