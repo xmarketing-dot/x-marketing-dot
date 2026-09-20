@@ -2897,7 +2897,14 @@ export default function BmsSecurePortalDashboard() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-emerald-500/20">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 border-t border-emerald-500/20">
+                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
+                    <span className="text-[10px] text-[#8b949e] font-mono">⚡ Google Indexing API</span>
+                    <span className="text-xs font-bold text-blue-400 font-mono mt-0.5">
+                      {boostPingResult.googleIndexingResult ? `✅ ${boostPingResult.googleIndexingResult.successCount} URL İletildi` : '⚠️ Yapılandırılmadı'}
+                    </span>
+                  </div>
+
                   <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
                     <span className="text-[10px] text-[#8b949e] font-mono">🟡 Yandex IndexNow</span>
                     <span className="text-xs font-bold text-emerald-400 font-mono mt-0.5">
@@ -2920,7 +2927,7 @@ export default function BmsSecurePortalDashboard() {
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
-                    <span className="text-[10px] text-[#8b949e] font-mono">🚀 Gönderilen URL</span>
+                    <span className="text-[10px] text-[#8b949e] font-mono">🚀 Toplam Sayfa</span>
                     <span className="text-xs font-bold text-amber-400 font-mono mt-0.5">
                       {boostPingResult.pingResult?.submittedCount || 0} Adet Sayfa
                     </span>

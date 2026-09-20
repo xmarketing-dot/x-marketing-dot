@@ -103,15 +103,39 @@ export async function POST(req: NextRequest) {
       });
 
       const uniqueUrls = Array.from(new Set(urlsToSubmit));
+
+      // A. IndexNow (Yandex, Bing) & Sitemap Ping
       pingResult = await submitToIndexNow(uniqueUrls);
+
+      // B. Google Official Indexing API (Anlık Googlebot Taraması)
+      let googleIndexingResult = null;
+      try {
+        const { batchPublishUrlsToGoogle } = await import('@/lib/googleIndexing');
+        googleIndexingResult = await batchPublishUrlsToGoogle(uniqueUrls.slice(0, 200));
+      } catch (gErr: any) {
+        console.error('Google Indexing API error in boost-and-ping:', gErr);
+      }
+
+      return NextResponse.json({
+        success: true,
+        updatedLikesCount,
+        pingResult,
+        googleIndexingResult: googleIndexingResult ? {
+          total: googleIndexingResult.total,
+          successCount: googleIndexingResult.successCount,
+          failCount: googleIndexingResult.failCount,
+        } : null,
+        timestamp: new Date().toISOString(),
+        message: `Süper Admin SEO Güçlendirici: ${uniqueUrls.length} URL IndexNow (Yandex/Bing) ve Resmi Google Indexing API'ye anında iletildi!`,
+      });
     }
 
     return NextResponse.json({
       success: true,
       updatedLikesCount,
-      pingResult,
+      pingResult: null,
       timestamp: new Date().toISOString(),
-      message: 'Süper Admin SEO Güçlendirici ve IndexNow motoru başarıyla çalıştırıldı.',
+      message: 'Beğeniler başarıyla güçlendirildi.',
     });
   } catch (error: any) {
     console.error('Boost and ping admin API error:', error);
