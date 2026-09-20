@@ -37,32 +37,29 @@ const EXACT_OUR_DOMAINS = new Set([
   'besteskort.online',
   'www.besteskort.online',
   'besteskort.devs.surf',
+  'www.besteskort.devs.surf',
   'istanbuleskort.devs.surf',
   'beylikduzueskort.devs.surf',
+  'beylikduzuescort.devs.surf',
+  'izmireskort.devs.surf',
   'bestescort.vercel.app',
   'besteskort.vercel.app',
 ]);
 
 /**
- * Domain'in kesin ve net olarak sadece bizim sitemize ait olduğunu doğrular.
- * Sadece birebir bizim olan alan adlarını kabul eder.
+ * Domain'in kesin ve net olarak sadece bizim belirlediğimiz listedeki domainlere ait olduğunu doğrular.
+ * Hiçbir genel/harici uzantıyı kabul etmez; sadece bu tam eşleşmeler geçerlidir.
  */
 function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
   const host = hostname.toLowerCase().replace(/^www\./, '').trim();
   const rawHost = hostname.toLowerCase().trim();
-  const primary = getPrimaryDomain();
 
-  // 1. Kesin birebir bizim domainlerimiz
-  if (
-    EXACT_OUR_DOMAINS.has(rawHost) ||
-    EXACT_OUR_DOMAINS.has(host) ||
-    host === 'besteskort.online' ||
-    host.endsWith('.besteskort.online')
-  ) {
+  // 1. Kesin olarak sadece bizim sahip olduğumuz tam domain listesi
+  if (EXACT_OUR_DOMAINS.has(rawHost) || EXACT_OUR_DOMAINS.has(host)) {
     return true;
   }
 
-  // 2. Belirtilen hedef domain (birebir eşleşme)
+  // 2. Takip kaydında özel olarak belirtilmiş spesifik hedef domain varsa
   if (targetDomain) {
     const cleanTarget = targetDomain
       .replace(/^https?:\/\//, '')
@@ -71,14 +68,9 @@ function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
       .replace(/^www\./, '')
       .trim();
 
-    if (cleanTarget && host === cleanTarget) {
+    if (cleanTarget && (host === cleanTarget || rawHost === cleanTarget)) {
       return true;
     }
-  }
-
-  // 3. Primary sistem domaini
-  if (primary && host === primary) {
-    return true;
   }
 
   return false;
@@ -190,8 +182,8 @@ async function scrapeYandexSerp(
   let rankCounter = 1;
 
   const yandexUrls = [
+    `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508`,
     `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`,
-    `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508`
   ];
 
   for (const yandexUrl of yandexUrls) {
@@ -199,16 +191,10 @@ async function scrapeYandexSerp(
       const res = await fetch(yandexUrl, {
         headers: {
           'User-Agent':
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
           'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Sec-Ch-Ua': '"Google Chrome";v="129", "Not=A?Brand";v="8", "Chromium";v="129"',
-          'Sec-Ch-Ua-Mobile': '?0',
-          'Sec-Ch-Ua-Platform': '"Windows"',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Sec-Fetch-User': '?1',
+          'Sec-Ch-Ua-Mobile': '?1',
           'Upgrade-Insecure-Requests': '1',
         },
       });
@@ -216,7 +202,6 @@ async function scrapeYandexSerp(
       if (res.ok) {
         const html = await res.text();
         if (html.includes('SmartCaptcha') || html.includes('Verification') || html.length < 50000) {
-          // Captcha veya kısa verification sayfası ise diğer endpoint'i dene
           continue;
         }
 
@@ -265,7 +250,7 @@ async function scrapeYandexSerp(
         }
       }
     } catch (err) {
-      // Silent
+      // Devam et
     }
   }
 
