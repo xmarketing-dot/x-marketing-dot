@@ -443,11 +443,80 @@ export default async function HomePage() {
             </Link>
             <span>E-E-A-T Doğrulanmış Güvenlik ve Gizlilik Standartları</span>
           </div>
+
+          {/* ── TÜM İL LİNKLERİ: Googlebot homepage'den 1 hop'ta tüm il sayfalarına ulaşır ── */}
+          <div className="pt-2 border-t border-white/5">
+            <p className="text-[10px] text-[#6e7681] mb-2 font-bold uppercase tracking-wider">Tüm İller</p>
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
+              {locations.map((loc: any) => (
+                <Link
+                  key={loc.ilSlug}
+                  href={`/${loc.ilSlug}`}
+                  className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
+                >
+                  {loc.il} Eskort
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* ── POPÜLER İLÇE LİNKLERİ: Homepage'den direkt ilçe linklemesi — crawl budget optimizasyonu ── */}
+          <div className="pt-2 border-t border-white/5">
+            <p className="text-[10px] text-[#6e7681] mb-2 font-bold uppercase tracking-wider">Popüler İlçeler</p>
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
+              {[
+                { il: 'istanbul', ilce: 'beylikduzu', ad: 'Beylikdüzü' },
+                { il: 'istanbul', ilce: 'kadikoy', ad: 'Kadıköy' },
+                { il: 'istanbul', ilce: 'sisli', ad: 'Şişli' },
+                { il: 'istanbul', ilce: 'besiktas', ad: 'Beşiktaş' },
+                { il: 'istanbul', ilce: 'bakirkoy', ad: 'Bakırköy' },
+                { il: 'istanbul', ilce: 'esenyurt', ad: 'Esenyurt' },
+                { il: 'istanbul', ilce: 'avcilar', ad: 'Avcılar' },
+                { il: 'istanbul', ilce: 'buyukcekmece', ad: 'Büyükçekmece' },
+                { il: 'istanbul', ilce: 'basaksehir', ad: 'Başakşehir' },
+                { il: 'istanbul', ilce: 'umraniye', ad: 'Ümraniye' },
+                { il: 'istanbul', ilce: 'pendik', ad: 'Pendik' },
+                { il: 'istanbul', ilce: 'maltepe', ad: 'Maltepe' },
+                { il: 'istanbul', ilce: 'kartal', ad: 'Kartal' },
+                { il: 'istanbul', ilce: 'bagcilar', ad: 'Bağcılar' },
+                { il: 'istanbul', ilce: 'bahcelievler', ad: 'Bahçelievler' },
+                { il: 'istanbul', ilce: 'fatih', ad: 'Fatih' },
+                { il: 'istanbul', ilce: 'gaziosmanpasa', ad: 'Gaziosmanpaşa' },
+                { il: 'izmir', ilce: 'konak', ad: 'Konak' },
+                { il: 'izmir', ilce: 'karsiyaka', ad: 'Karşıyaka' },
+                { il: 'izmir', ilce: 'bornova', ad: 'Bornova' },
+                { il: 'izmir', ilce: 'buca', ad: 'Buca' },
+                { il: 'izmir', ilce: 'alsancak', ad: 'Alsancak' },
+                { il: 'izmir', ilce: 'balcova', ad: 'Balçova' },
+                { il: 'ankara', ilce: 'cankaya', ad: 'Çankaya' },
+                { il: 'ankara', ilce: 'kecioren', ad: 'Keçiören' },
+                { il: 'ankara', ilce: 'mamak', ad: 'Mamak' },
+                { il: 'ankara', ilce: 'etimesgut', ad: 'Etimesgut' },
+                { il: 'ankara', ilce: 'sincan', ad: 'Sincan' },
+                { il: 'antalya', ilce: 'muratpasa', ad: 'Muratpaşa' },
+                { il: 'antalya', ilce: 'kepez', ad: 'Kepez' },
+                { il: 'antalya', ilce: 'konyaalti', ad: 'Konyaaltı' },
+                { il: 'bursa', ilce: 'osmangazi', ad: 'Osmangazi' },
+                { il: 'bursa', ilce: 'nilufer', ad: 'Nilüfer' },
+                { il: 'bursa', ilce: 'yildirim', ad: 'Yıldırım' },
+                { il: 'kayseri', ilce: 'melikgazi', ad: 'Melikgazi' },
+                { il: 'trabzon', ilce: 'ortahisar', ad: 'Ortahisar' },
+              ].map(({ il, ilce, ad }) => (
+                <Link
+                  key={`${il}-${ilce}`}
+                  href={`/${il}/${ilce}`}
+                  className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
+                >
+                  {ad} Escort
+                </Link>
+              ))}
+            </div>
+          </div>
+
         </div>
       </footer>
 
     </div>
   );
-}
 
 
