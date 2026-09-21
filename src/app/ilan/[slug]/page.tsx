@@ -131,8 +131,10 @@ export default async function ListingDetailPage({ params }: Props) {
   const siteUrl = await getRequestSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
 
-  const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');
-  const ilceAdi = listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' ');
+  const ilSlugSafe = listing.ilSlug || 'istanbul';
+  const ilceSlugSafe = listing.ilceSlug || 'merkez';
+  const ilAdi = ilSlugSafe.charAt(0).toUpperCase() + ilSlugSafe.slice(1).replace(/-/g, ' ');
+  const ilceAdi = ilceSlugSafe.charAt(0).toUpperCase() + ilceSlugSafe.slice(1).replace(/-/g, ' ');
   const metaTitle = `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort`;
 
   // Google thin content fix: Her ilan için deterministik 300+ kelimeli benzersiz SEO içeriği

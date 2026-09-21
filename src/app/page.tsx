@@ -28,6 +28,7 @@ import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CategorizedListingsSection from '@/components/home/CategorizedListingsSection';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import FreePromoFooterBanner from '@/components/common/FreePromoFooterBanner';
+import { turkeyProvinces } from '@/data/turkeyLocations';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,12 +108,12 @@ export default async function HomePage() {
   });
 
   // Süresi dolmuş vitrin ilanlarını anında temizle ve kullanıcıları bilgilendir
-  await checkAndExpireShowcases().catch(() => {});
+  await checkAndExpireShowcases().catch(() => { });
 
   // Group listings by package tier (Ücretsiz promosyonlar ilk 3'e oturmaz, ücretli ilk 3 önde durur)
   const paidVipListings = allSortedListings.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && !l.isPromo);
   const promoVipListings = allSortedListings.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && l.isPromo);
-  
+
   // İlk 3'ü kesinlikle ücretlilerden oluştur, varsa 4. sıradan itibaren promosyonları ekle
   const vipListings = [...paidVipListings.slice(0, 3), ...paidVipListings.slice(3), ...promoVipListings];
 
@@ -148,9 +149,9 @@ export default async function HomePage() {
       .filter(Boolean);
   } else if (!hasConfig) {
     // Sadece ilk kurulumda config yoksa varsayılan vitrin taleplerini veya ilk VIP'leri al
-    const paidVitrinListings = allSortedListings.filter((l: any) => 
-      l.vitrinIstegi === true && 
-      l.status === 'yayinda' && 
+    const paidVitrinListings = allSortedListings.filter((l: any) =>
+      l.vitrinIstegi === true &&
+      l.status === 'yayinda' &&
       (!l.vitrinBitisTarihi || new Date(l.vitrinBitisTarihi) > now)
     );
     if (paidVitrinListings.length > 0) {
@@ -288,10 +289,10 @@ export default async function HomePage() {
 
       {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları / Yoksa VIP Reklam Alanı) */}
       <section className="w-full">
-        <HeroSlider 
-          slides={formattedShowcaseListings} 
+        <HeroSlider
+          slides={formattedShowcaseListings}
           promoSlides={homepageConfig?.bosVitrinSliderlar}
-          banner={activeBanner} 
+          banner={activeBanner}
         />
       </section>
 
@@ -444,72 +445,41 @@ export default async function HomePage() {
             <span>E-E-A-T Doğrulanmış Güvenlik ve Gizlilik Standartları</span>
           </div>
 
-          {/* ── TÜM İL LİNKLERİ: Googlebot homepage'den 1 hop'ta tüm il sayfalarına ulaşır ── */}
+          {/* ── TÜM İL LİNKLERİ (81 İL): Homepage'den 1 hop doğrudan erişim ── */}
           <div className="pt-2 border-t border-white/5">
-            <p className="text-[10px] text-[#6e7681] mb-2 font-bold uppercase tracking-wider">Tüm İller</p>
+            <p className="text-[10px] text-[#6e7681] mb-2 font-bold uppercase tracking-wider">
+              Türkiye 81 İl Eskort Rehberi
+            </p>
             <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
-              {locations.map((loc: any) => (
+              {turkeyProvinces.map((prov) => (
                 <Link
-                  key={loc.ilSlug}
-                  href={`/${loc.ilSlug}`}
+                  key={prov.ilSlug}
+                  href={`/${prov.ilSlug}`}
                   className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
                 >
-                  {loc.il} Eskort
+                  {prov.il} Eskort
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* ── POPÜLER İLÇE LİNKLERİ: Homepage'den direkt ilçe linklemesi — crawl budget optimizasyonu ── */}
+          {/* ── TÜM İLÇE LİNKLERİ (474 İLÇE): Tüm Türkiye ilçeleri tek tek indeksleme ── */}
           <div className="pt-2 border-t border-white/5">
-            <p className="text-[10px] text-[#6e7681] mb-2 font-bold uppercase tracking-wider">Popüler İlçeler</p>
-            <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
-              {[
-                { il: 'istanbul', ilce: 'beylikduzu', ad: 'Beylikdüzü' },
-                { il: 'istanbul', ilce: 'kadikoy', ad: 'Kadıköy' },
-                { il: 'istanbul', ilce: 'sisli', ad: 'Şişli' },
-                { il: 'istanbul', ilce: 'besiktas', ad: 'Beşiktaş' },
-                { il: 'istanbul', ilce: 'bakirkoy', ad: 'Bakırköy' },
-                { il: 'istanbul', ilce: 'esenyurt', ad: 'Esenyurt' },
-                { il: 'istanbul', ilce: 'avcilar', ad: 'Avcılar' },
-                { il: 'istanbul', ilce: 'buyukcekmece', ad: 'Büyükçekmece' },
-                { il: 'istanbul', ilce: 'basaksehir', ad: 'Başakşehir' },
-                { il: 'istanbul', ilce: 'umraniye', ad: 'Ümraniye' },
-                { il: 'istanbul', ilce: 'pendik', ad: 'Pendik' },
-                { il: 'istanbul', ilce: 'maltepe', ad: 'Maltepe' },
-                { il: 'istanbul', ilce: 'kartal', ad: 'Kartal' },
-                { il: 'istanbul', ilce: 'bagcilar', ad: 'Bağcılar' },
-                { il: 'istanbul', ilce: 'bahcelievler', ad: 'Bahçelievler' },
-                { il: 'istanbul', ilce: 'fatih', ad: 'Fatih' },
-                { il: 'istanbul', ilce: 'gaziosmanpasa', ad: 'Gaziosmanpaşa' },
-                { il: 'izmir', ilce: 'konak', ad: 'Konak' },
-                { il: 'izmir', ilce: 'karsiyaka', ad: 'Karşıyaka' },
-                { il: 'izmir', ilce: 'bornova', ad: 'Bornova' },
-                { il: 'izmir', ilce: 'buca', ad: 'Buca' },
-                { il: 'izmir', ilce: 'alsancak', ad: 'Alsancak' },
-                { il: 'izmir', ilce: 'balcova', ad: 'Balçova' },
-                { il: 'ankara', ilce: 'cankaya', ad: 'Çankaya' },
-                { il: 'ankara', ilce: 'kecioren', ad: 'Keçiören' },
-                { il: 'ankara', ilce: 'mamak', ad: 'Mamak' },
-                { il: 'ankara', ilce: 'etimesgut', ad: 'Etimesgut' },
-                { il: 'ankara', ilce: 'sincan', ad: 'Sincan' },
-                { il: 'antalya', ilce: 'muratpasa', ad: 'Muratpaşa' },
-                { il: 'antalya', ilce: 'kepez', ad: 'Kepez' },
-                { il: 'antalya', ilce: 'konyaalti', ad: 'Konyaaltı' },
-                { il: 'bursa', ilce: 'osmangazi', ad: 'Osmangazi' },
-                { il: 'bursa', ilce: 'nilufer', ad: 'Nilüfer' },
-                { il: 'bursa', ilce: 'yildirim', ad: 'Yıldırım' },
-                { il: 'kayseri', ilce: 'melikgazi', ad: 'Melikgazi' },
-                { il: 'trabzon', ilce: 'ortahisar', ad: 'Ortahisar' },
-              ].map(({ il, ilce, ad }) => (
-                <Link
-                  key={`${il}-${ilce}`}
-                  href={`/${il}/${ilce}`}
-                  className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
-                >
-                  {ad} Escort
-                </Link>
-              ))}
+            <p className="text-[10px] text-[#6e7681] mb-2 font-bold uppercase tracking-wider">
+              Tüm İlçeler ve Semtler (Doğrulanmış Escort İlanları)
+            </p>
+            <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[11px] leading-relaxed max-h-[320px] overflow-y-auto pr-1">
+              {turkeyProvinces.flatMap((prov) =>
+                prov.ilceler.map((ilce) => (
+                  <Link
+                    key={`${prov.ilSlug}-${ilce.slug}`}
+                    href={`/${prov.ilSlug}/${ilce.slug}`}
+                    className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
+                  >
+                    {ilce.ad} Escort
+                  </Link>
+                ))
+              )}
             </div>
           </div>
 
@@ -519,4 +489,4 @@ export default async function HomePage() {
     </div>
   );
 
-
+}

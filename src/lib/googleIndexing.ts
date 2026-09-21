@@ -15,20 +15,7 @@ let cachedAccessToken: { token: string; expiresAt: number } | null = null;
  */
 function getServiceAccountCredentials(): ServiceAccountKey | null {
   try {
-    // 1. Proje ana dizinindeki JSON dosyasını ara
-    const possiblePaths = [
-      path.join(process.cwd(), 'besteskort-seo-6b9b77a0e04c.json'),
-      path.join(process.cwd(), 'google-service-account.json'),
-    ];
-
-    for (const p of possiblePaths) {
-      if (fs.existsSync(p)) {
-        const raw = fs.readFileSync(p, 'utf-8');
-        return JSON.parse(raw);
-      }
-    }
-
-    // 2. Veya ENV üzerinden oku
+    // 1. Vercel & Production: Ortam değişkenlerinden (ENV) oku
     if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
       return JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
     }
@@ -38,6 +25,15 @@ function getServiceAccountCredentials(): ServiceAccountKey | null {
         private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
         token_uri: 'https://oauth2.googleapis.com/token',
       };
+    }
+
+    // 2. Local geliştirme ortamı için (Vercel production build'de tüm projeyi trace etmesini önler)
+    if (process.env.NODE_ENV !== 'production') {
+      const p = path.join(process.cwd(), 'besteskort-seo-6b9b77a0e04c.json');
+      if (fs.existsSync(p)) {
+        const raw = fs.readFileSync(p, 'utf-8');
+        return JSON.parse(raw);
+      }
     }
   } catch (err) {
     console.error('Service account key read error:', err);
