@@ -419,9 +419,9 @@ export default async function HomePage() {
           <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
             <div>
               <h3 className="font-heading font-black text-xs sm:text-sm text-white uppercase tracking-wide">
-                Türkiye 81 İl Eskort &amp; Escort Şehir Kataloğu
+                81 İl ve Tüm İlçeler Eskort Rehberi
               </h3>
-              <p className="text-[10px] text-[#6e7681]">Google &amp; Arama Motorları Bölgesel Dizin Ağı</p>
+              <p className="text-[10px] text-[#6e7681]">Doğrulanmış VIP ve Bağımsız Escort Kataloğu</p>
             </div>
             <span className="text-amber-400 font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
               81 İl Canlı
@@ -429,52 +429,48 @@ export default async function HomePage() {
           </div>
 
           {/* Quick Categories */}
-          <div className="flex flex-wrap gap-1.5 text-[11px]">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
             <Link href="/kategori/vip" className="px-2 py-1 rounded-lg bg-[#0d1117] text-amber-400 font-bold border border-amber-500/20 hover:border-amber-400">
               👑 VIP Eskort
             </Link>
             <Link href="/kategori/gold" className="px-2 py-1 rounded-lg bg-[#0d1117] text-yellow-300 font-bold border border-yellow-500/20 hover:border-yellow-400">
               ⭐ Gold Escort
             </Link>
-            <Link href="/kategori/turbanli" className="px-2 py-1 rounded-lg bg-[#0d1117] text-purple-300 font-bold border border-purple-500/20 hover:border-purple-400">
-              🧕 Türbanlı Eskort
+            <Link href="/kategori/silver" className="px-2 py-1 rounded-lg bg-[#0d1117] text-slate-300 font-bold border border-slate-500/20 hover:border-slate-400">
+              🥈 Silver Escort
             </Link>
-            <Link href="/kategori/amator" className="px-2 py-1 rounded-lg bg-[#0d1117] text-emerald-300 font-bold border border-emerald-500/20 hover:border-emerald-400">
-              🌿 Amatör Eskort
+            <Link href="/sehirler" className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 transition-all ml-auto">
+              → Tüm Şehirleri Görüntüle
             </Link>
-            <span>E-E-A-T Doğrulanmış Güvenlik ve Gizlilik Standartları</span>
           </div>
 
-          {/* ── TÜM İL LİNKLERİ (81 İL): Homepage'den 1 hop doğrudan erişim ── */}
-          <div className="pt-2 border-t border-white/5">
-            <p className="text-[10px] text-[#6e7681] mb-2 font-bold uppercase tracking-wider">
-              Türkiye 81 İl Eskort Rehberi
+          {/* ── 81 İL VE TÜM İLÇELER: Tek birleşik rehber & 1-hop dizin ── */}
+          <div className="pt-2 border-t border-white/5 flex flex-col gap-2.5">
+            <p className="text-[10px] text-[#6e7681] font-bold uppercase tracking-wider">
+              81 İl ve Tüm İlçeler
             </p>
+
+            {/* İller */}
             <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
               {turkeyProvinces.map((prov) => (
                 <Link
                   key={prov.ilSlug}
                   href={`/${prov.ilSlug}`}
-                  className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
+                  className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline font-medium"
                 >
                   {prov.il} Eskort
                 </Link>
               ))}
             </div>
-          </div>
 
-          {/* ── TÜM İLÇE LİNKLERİ (474 İLÇE): Tüm Türkiye ilçeleri tek tek indeksleme ── */}
-          <div className="pt-2 border-t border-white/5">
-            <p className="text-[10px] text-[#6e7681] mb-2 font-bold uppercase tracking-wider">
-              Tüm İlçeler ve Semtler (Doğrulanmış Escort İlanları)
-            </p>
-            <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[11px] leading-relaxed max-h-[320px] overflow-y-auto pr-1">
+            {/* İlçeler */}
+            <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[10.5px] leading-relaxed max-h-[300px] overflow-y-auto pr-1 border-t border-white/5 pt-2">
               {turkeyProvinces.flatMap((prov) =>
                 prov.ilceler.map((ilce) => (
                   <Link
                     key={`${prov.ilSlug}-${ilce.slug}`}
                     href={`/${prov.ilSlug}/${ilce.slug}`}
-                    className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline"
+                    className="text-[#6e7681] hover:text-amber-400 transition-colors hover:underline"
                   >
                     {ilce.ad} Escort
                   </Link>
