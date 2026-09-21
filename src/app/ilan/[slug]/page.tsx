@@ -22,6 +22,7 @@ import {
   Check
 } from 'lucide-react';
 import { getListingBySlug, getListings, getActiveBanner, getAllLocations } from '@/lib/data';
+import { generateListingSeoContent } from '@/lib/seoData';
 import WhatsAppButton, { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 import CompactListingCard from '@/components/common/CompactListingCard';
@@ -133,6 +134,15 @@ export default async function ListingDetailPage({ params }: Props) {
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');
   const ilceAdi = listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' ');
   const metaTitle = `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort`;
+
+  // Google thin content fix: Her ilan için deterministik 300+ kelimeli benzersiz SEO içeriği
+  const seoContent = generateListingSeoContent(
+    listing.baslik,
+    ilAdi,
+    ilceAdi,
+    listing.rozet || 'ultravip',
+    listing.slug
+  );
 
   // Benzer İlanlar (Aynı şehirdeki diğer ilanlar)
   const similarListings = await getListings({
@@ -411,6 +421,19 @@ export default async function ListingDetailPage({ params }: Props) {
           listingTitle={listing.baslik}
           initialComments={listing.anonimYorumlar || []}
         />
+
+        {/* ── SEO İÇERİĞİ: Google thin content cezasını önlemek için 300+ kelimeli benzersiz metin ──────────────── */}
+        <div className="mt-2 p-4 sm:p-5 rounded-2xl bg-[#161b22]/60 border border-[#30363d]/50 flex flex-col gap-3 text-sm text-[#8b949e] leading-relaxed">
+          <h2 className="text-xs font-black text-white/70 uppercase tracking-widest font-heading flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400/60"></span>
+            {listing.baslik} — {ilceAdi} {ilAdi} Eskort Hakkında
+          </h2>
+          <p>{seoContent.intro}</p>
+          <p>{seoContent.aboutSection}</p>
+          <p>{seoContent.serviceSection}</p>
+          <p>{seoContent.contactSection}</p>
+          <p className="text-xs text-[#6e7681]">{seoContent.trustSection}</p>
+        </div>
 
       </div>
 

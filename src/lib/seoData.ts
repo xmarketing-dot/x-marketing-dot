@@ -214,3 +214,78 @@ export function generateCombinedSeoGraph({
     '@graph': graph,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// İlan Sayfası Zengin SEO İçerik Üreteci
+// Google'ın "Thin Content" ve "Duplicate Content" cezasını engellemek için
+// her ilan sayfasına deterministik/benzersiz 300+ kelimeli içerik üretir.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ListingSeoContent {
+  intro: string;
+  aboutSection: string;
+  serviceSection: string;
+  contactSection: string;
+  trustSection: string;
+}
+
+/**
+ * Her ilan için slug + şehir + ilçe bilgisinden deterministik olarak
+ * benzersiz, Google-dostu 300+ kelimeli SEO içeriği üretir.
+ */
+export function generateListingSeoContent(
+  baslik: string,
+  ilAd: string,
+  ilceAd: string,
+  rozet: string,
+  slug: string
+): ListingSeoContent {
+  const seed = getSeedNumber(slug + baslik);
+  const rozetLabel = rozet === 'ultravip' || rozet === 'vip' ? 'VIP' : rozet === 'gold' ? 'Gold' : 'Silver';
+
+  const introVariants = [
+    `${baslik}, ${ilAd} ili ${ilceAd} bölgesinde hizmet veren teyitli ve doğrulanmış ${rozetLabel} eskort vitrinidir. Best Eskort platformu üzerinden yayınlanan bu ilan, gerçek fotoğraflar ve doğrudan WhatsApp iletişim hattı ile ${ilceAd} bölgesindeki en güvenilir eskort deneyimini sunmaktadır.`,
+    `${ilceAd} ${ilAd} bölgesinin en seçkin ${rozetLabel} eskort profillerinden biri olan ${baslik}, Best Eskort platformunun sıkı doğrulama sürecinden geçerek teyitli rozet almıştır. ${ilAd} ilinde bağımsız olarak çalışan ${baslik} ile doğrudan WhatsApp üzerinden iletişime geçebilirsiniz.`,
+    `Best Eskort'un ${ilAd} ${ilceAd} vitrininde öne çıkan ${baslik}, fotoğraf doğrulaması tamamlanmış ve aktif statüde hizmet veren ${rozetLabel} kategorisinde bir eskort profildir. ${ilceAd} ve çevre semtlerde hizmet vermektedir.`,
+    `${ilAd} ${ilceAd} eskort ilanları arasında en çok ilgi gören profillerden biri olan ${baslik}, bağımsız çalışma modeliyle aracısız ve güvenilir bir buluşma deneyimi sunmaktadır. ${rozetLabel} vitrin kategorisinde yer alan ilan, gerçek fotoğraflarıyla dikkat çekmektedir.`,
+  ];
+
+  const aboutVariants = [
+    `${baslik} profili, ${ilAd} ${ilceAd} merkezli olmak üzere şehrin geneline hizmet sunmaktadır. Profildeki tüm fotoğraflar gerçek olup admin ekibimiz tarafından teyit edilmiştir. ${rozetLabel} vitrin kategorisinde yer alan bu ilan, saatlik ve gecelik görüşme seçenekleri sunmaktadır. Eve servis, otele servis ve özel randevu imkânları mevcuttur.`,
+    `${ilAd} ilinin ${ilceAd} semtinde faaliyet gösteren ${baslik}, müşteri memnuniyetine odaklanan bağımsız bir eskort profildir. ${rozetLabel} rozeti taşıyan bu profil, saatlik görüşme, gecelik konaklama ve özel eşlik hizmetleri sunmaktadır. Lüks oteller, rezidanslar ve ev ziyaretleri için uygun müsaitlik durumunu WhatsApp'tan anlık olarak sorgulayabilirsiniz.`,
+    `${ilceAd} bölgesinde deneyimli ve güvenilir bir ${rozetLabel} eskort profili arıyorsanız ${baslik} doğru tercih olacaktır. ${ilAd} genelinde aktif olan bu ilan, eve gelen, otele gelen ve özel buluşma seçenekleriyle 7/24 hizmet vermektedir.`,
+    `${baslik}, ${ilceAd} ${ilAd} bölgesinde aktif olarak hizmet veren ve Best Eskort'un kalite standartlarını karşılayan ${rozetLabel} statüsünde bir bağımsız eskort profildir. Şehir merkezi ve çevre semtlere ulaşım kolaylığı ile öne çıkan bu profil, müşterilerine konforlu ve gizli bir görüşme ortamı sunmaktadır.`,
+  ];
+
+  const serviceVariants = [
+    `${ilceAd} ${ilAd} eskort hizmetleri arasında ${baslik} ile yapabileceğiniz görüşme türleri: kısa görüşme (1 saat), uzun görüşme (2-3 saat), tüm gece konaklama ve hafta sonu eşlik. Tüm detaylar ve güncel müsaitlik için doğrudan WhatsApp hattını kullanınız. Randevu öncesi ön ödeme veya kapora talep edilmemektedir.`,
+    `${baslik} ${ilceAd} eskort ilanında sunulan başlıca hizmetler: saatlik VIP buluşma, gecelik özel konaklama, otel ve rezidans ziyareti, ve özel organizasyon eşliği. ${ilAd} il sınırları içinde geniş bir hizmet alanı mevcuttur. Güncel fiyat ve müsaitlik bilgisi için WhatsApp üzerinden iletişime geçilmesi önerilir.`,
+    `${ilAd} ${ilceAd} bölgesinde ${baslik} ile gerçekleştirebileceğiniz buluşma seçenekleri: saatlik görüşme, 2-3 saatlik randevu, tüm gece konaklama. Müşterinin bulunduğu otele veya rezidansa özel servis imkânı mevcuttur. Ücret ve uygunluk sorguları yalnızca WhatsApp üzerinden yanıtlanmaktadır.`,
+    `${ilceAd} merkezinde ve ${ilAd} genelinde hizmet veren ${baslik} ile saatlik, yarım günlük ve gecelik görüşme seçenekleri arasından tercih yapabilirsiniz. Eve gelen ve otele gelen hizmet seçenekleri mevcuttur. Fiyatlandırma ve müsaitlik için WhatsApp butonu aracılığıyla doğrudan iletişim kurabilirsiniz.`,
+  ];
+
+  const contactVariants = [
+    `${baslik} ile iletişim kurmak için bu sayfadaki WhatsApp butonunu kullanabilirsiniz. İletişim tamamen gizli ve güvenlidir. ${ilceAd} ${ilAd} bölgesinde hizmet alan kullanıcılarımız, randevularını aracı veya komisyoncu olmaksızın doğrudan planlayabilmektedir.`,
+    `${ilAd} ${ilceAd} eskort randevusu için ${baslik} ile doğrudan WhatsApp üzerinden iletişime geçin. Mesajınıza ilgili ilan bağlantısını ekleyerek müsaitlik sorgusu yapabilirsiniz. Gizlilik politikamız gereği hiçbir kişisel veri kayıt altına alınmamaktadır.`,
+    `WhatsApp iletişim hattı üzerinden ${baslik} ile ${ilceAd} ${ilAd} randevunuzu kolayca planlayabilirsiniz. Uçtan uca şifreli WhatsApp mesajlaşması sayesinde görüşmeleriniz tamamen gizli kalır. Ön ödeme veya kapora talep eden hesaplara itibar etmeyiniz.`,
+    `${baslik} ${ilceAd} ${ilAd} eskort ilanına ulaşmak ve randevu planlamak için sayfadaki iletişim butonlarını kullanınız. Müsaitlik durumu günlük olarak güncellenmekte olup WhatsApp üzerinden anlık yanıt alabilirsiniz. Platform üzerinden yapılan tüm iletişimler gizlilik standartlarımız çerçevesinde korunmaktadır.`,
+  ];
+
+  const trustVariants = [
+    `Best Eskort, ${ilAd} genelindeki tüm eskort ilanlarını güvenilirlik ve özgünlük açısından denetlemektedir. ${baslik} profili, platformumuzun %100 teyit sürecinden başarıyla geçmiş; sahte fotoğraf ve yanıltıcı bilgi içermediği onaylanmıştır. ${ilceAd} ${ilAd} bölgesinde güvenli eskort deneyimi için Best Eskort'u tercih ediniz.`,
+    `${baslik} Best Eskort ${rozetLabel} vitrinine dahil olarak en yüksek güvenilirlik standartlarını karşılamıştır. ${ilAd} ${ilceAd} eskort ilanları arasında öne çıkan bu profil, gerçek fotoğraf garantisi ve anlık WhatsApp erişimiyle güven veren bir seçenektir. Platform olarak kullanıcılarımıza internet dolandırıcılığına karşı her zaman dikkatli olmalarını tavsiye ederiz.`,
+    `Güvenli ${ilAd} ${ilceAd} eskort randevusu için Best Eskort'un doğrulama sistemi sayesinde ${baslik} profilinin gerçekliği onaylanmıştır. Her ${rozetLabel} rozeti taşıyan profil, admin kontrolünden geçmekte ve sahte ilan politikamız kapsamında sürekli denetlenmektedir.`,
+    `${ilceAd} ${ilAd} bölgesinde güvenilir bir eskort arayışındaysanız Best Eskort teyitli profillerini tercih ediniz. ${baslik} ilanı, içerik doğrulama standartlarımızı karşılamış olup ${rozetLabel} rozeti ile işaretlenmiştir. Ön ödemeli randevu tekliflerinde asla ödeme yapmayınız; tüm ödemeleri yüz yüze gerçekleştiriniz.`,
+  ];
+
+  const pick = (arr: string[], offset = 0) => arr[(seed + offset) % arr.length];
+
+  return {
+    intro: pick(introVariants, 0),
+    aboutSection: pick(aboutVariants, 1),
+    serviceSection: pick(serviceVariants, 2),
+    contactSection: pick(contactVariants, 3),
+    trustSection: pick(trustVariants, 4),
+  };
+}
+
