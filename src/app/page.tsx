@@ -28,6 +28,7 @@ import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CategorizedListingsSection from '@/components/home/CategorizedListingsSection';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import FreePromoFooterBanner from '@/components/common/FreePromoFooterBanner';
+import { turkeyProvinces } from '@/data/turkeyLocations';
 
 export const dynamic = 'force-dynamic';
 
@@ -441,6 +442,45 @@ export default async function HomePage() {
             <Link href="/sehirler" className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-black hover:bg-amber-400 transition-all ml-auto">
               → Tüm Şehirleri Görüntüle
             </Link>
+          </div>
+
+          {/* ── 81 İL VE TÜM İLÇELER: Tüm iller ve tüm ilçelerin eksiksiz bağlantı listesi ── */}
+          <div className="pt-2 border-t border-white/5 flex flex-col gap-3">
+            <div>
+              <p className="text-[10px] text-[#6e7681] mb-1.5 font-bold uppercase tracking-wider">
+                81 İl Rehberi
+              </p>
+              <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
+                {turkeyProvinces.map((prov) => (
+                  <Link
+                    key={prov.ilSlug}
+                    href={`/${prov.ilSlug}`}
+                    className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline font-medium"
+                  >
+                    {prov.il} Eskort
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-white/5">
+              <p className="text-[10px] text-[#6e7681] mb-1.5 font-bold uppercase tracking-wider">
+                Tüm İlçeler ve Semtler (81 İl Kapsamında Tüm İlçeler)
+              </p>
+              <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[10.5px] leading-relaxed max-h-[360px] overflow-y-auto pr-1">
+                {turkeyProvinces.flatMap((prov) =>
+                  prov.ilceler.map((ilce) => (
+                    <Link
+                      key={`${prov.ilSlug}-${ilce.slug}`}
+                      href={`/${prov.ilSlug}/${ilce.slug}`}
+                      className="text-[#6e7681] hover:text-amber-400 transition-colors hover:underline"
+                    >
+                      {ilce.ad} Escort
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-[#6e7681]">
