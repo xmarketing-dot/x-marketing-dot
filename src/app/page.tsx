@@ -28,7 +28,6 @@ import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CategorizedListingsSection from '@/components/home/CategorizedListingsSection';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import FreePromoFooterBanner from '@/components/common/FreePromoFooterBanner';
-import { turkeyProvinces } from '@/data/turkeyLocations';
 
 export const dynamic = 'force-dynamic';
 
@@ -444,39 +443,9 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          {/* ── 81 İL VE TÜM İLÇELER: Tek birleşik rehber & 1-hop dizin ── */}
-          <div className="pt-2 border-t border-white/5 flex flex-col gap-2.5">
-            <p className="text-[10px] text-[#6e7681] font-bold uppercase tracking-wider">
-              81 İl ve Tüm İlçeler
-            </p>
-
-            {/* İller */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px]">
-              {turkeyProvinces.map((prov) => (
-                <Link
-                  key={prov.ilSlug}
-                  href={`/${prov.ilSlug}`}
-                  className="text-[#8b949e] hover:text-amber-400 transition-colors hover:underline font-medium"
-                >
-                  {prov.il} Eskort
-                </Link>
-              ))}
-            </div>
-
-            {/* İlçeler */}
-            <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[10.5px] leading-relaxed max-h-[300px] overflow-y-auto pr-1 border-t border-white/5 pt-2">
-              {turkeyProvinces.flatMap((prov) =>
-                prov.ilceler.map((ilce) => (
-                  <Link
-                    key={`${prov.ilSlug}-${ilce.slug}`}
-                    href={`/${prov.ilSlug}/${ilce.slug}`}
-                    className="text-[#6e7681] hover:text-amber-400 transition-colors hover:underline"
-                  >
-                    {ilce.ad} Escort
-                  </Link>
-                ))
-              )}
-            </div>
+          <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-[#6e7681]">
+            <span>&copy; {new Date().getFullYear()} Best Eskort &amp; Escort Kataloğu. Tüm hakları saklıdır.</span>
+            <span>E-E-A-T Doğrulanmış Güvenlik ve Gizlilik Standartları</span>
           </div>
 
         </div>
