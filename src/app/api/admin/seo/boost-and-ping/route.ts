@@ -116,6 +116,8 @@ export async function POST(req: NextRequest) {
         console.error('Google Indexing API error in boost-and-ping:', gErr);
       }
 
+      const firstGoogleError = googleIndexingResult?.results?.find((r: any) => !r.success)?.message;
+
       return NextResponse.json({
         success: true,
         updatedLikesCount,
@@ -124,6 +126,7 @@ export async function POST(req: NextRequest) {
           total: googleIndexingResult.total,
           successCount: googleIndexingResult.successCount,
           failCount: googleIndexingResult.failCount,
+          firstError: firstGoogleError,
         } : null,
         timestamp: new Date().toISOString(),
         message: `Süper Admin SEO Güçlendirici: ${uniqueUrls.length} URL IndexNow (Yandex/Bing) ve Resmi Google Indexing API'ye anında iletildi!`,
