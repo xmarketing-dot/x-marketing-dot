@@ -159,13 +159,13 @@ export default function CorporateWebHome() {
               <span>Yeni Nesil Kurumsal Dijital Çözümler</span>
             </div>
 
-            <h1 className="font-extrabold text-4xl sm:text-5xl lg:text-6xl text-slate-950 font-heading leading-[1.12] tracking-tight">
+            <h2 className="font-extrabold text-4xl sm:text-5xl lg:text-6xl text-slate-950 font-heading leading-[1.12] tracking-tight">
               Ölçeklenebilir Yazılım, <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
                 Lider SEO &amp; Mobil
               </span> <br />
               Uygulama Mimarisi
-            </h1>
+            </h2>
 
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl font-normal">
               Türkiye genelinde 81 ilde yerel ve global arama motorlarında organik hakimiyet kuran, ultra-yüksek hızlı web/mobil yazılımlar ve veri odaklı büyüme stratejileri geliştiriyoruz.

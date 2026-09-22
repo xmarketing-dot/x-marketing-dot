@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const ogImageUrl = `${siteUrl}/api/og/site`;
 
   return {
-    title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu | 81 İl',
+    title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
     description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları. Bağımsız eskortlar, VIP vitrin ilanları ve doğrudan WhatsApp iletişim hatları.',
     keywords: [
       'eskort ilanları', 'escort ilanları', 'eskort bayan', 'escort bayan',
@@ -66,6 +66,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+      site: '@besteskort',
+      creator: '@besteskort',
       title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
       description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları.',
       images: [ogImageUrl],

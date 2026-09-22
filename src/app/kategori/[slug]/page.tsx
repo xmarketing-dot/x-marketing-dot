@@ -126,6 +126,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+      site: '@besteskort',
+      creator: '@besteskort',
       title: `${tierInfo.title} | Best Eskort`,
       description: tierInfo.desc,
       images: [ogImageUrl],
