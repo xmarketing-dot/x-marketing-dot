@@ -213,20 +213,29 @@ async function scrapeYandexSerp(
 
     const browser = await puppeteerExtra.launch({
       headless: 'new' as any,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=1280,800']
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=390,844']
     });
 
     try {
       const page = await browser.newPage();
-      await page.setViewport({ width: 1280, height: 800 });
+      await page.setViewport({
+        width: 390,
+        height: 844,
+        isMobile: true,
+        hasTouch: true,
+        deviceScaleFactor: 3
+      });
+      await page.setUserAgent(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1'
+      );
 
-      const pages = [0, 1, 2, 3, 4]; // 5 Sayfa Tara (İlk 60-70 sonuç)
+      const pages = [0, 1, 2, 3, 4]; // 5 Sayfa Tara (İlk 60-70 mobil sonuç)
 
       for (const pageIdx of pages) {
         if (foundPosition > 0) break;
 
         const pageParam = pageIdx > 0 ? `&p=${pageIdx}` : '';
-        const url = `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`;
+        const url = `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`;
 
         try {
           await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
