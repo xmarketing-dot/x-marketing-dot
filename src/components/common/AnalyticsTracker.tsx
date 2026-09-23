@@ -92,6 +92,7 @@ export default function AnalyticsTracker() {
             path: window.location.pathname,
             impressions: toSend,
           }),
+          keepalive: true,
         }).catch(() => {});
       } catch (e) {}
     };
@@ -106,8 +107,13 @@ export default function AnalyticsTracker() {
       trackedListingsInPageRef.current.add(item.listingId);
       pendingImpressionsRef.current.push(item);
 
-      if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
-      impressionBatchTimerRef.current = setTimeout(flushImpressions, 400);
+      if (pendingImpressionsRef.current.length >= 3) {
+        if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
+        flushImpressions();
+      } else {
+        if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
+        impressionBatchTimerRef.current = setTimeout(flushImpressions, 150);
+      }
     };
 
     window.trackListingImpressions = (items) => {
@@ -125,9 +131,27 @@ export default function AnalyticsTracker() {
       }
 
       if (added) {
-        if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
-        impressionBatchTimerRef.current = setTimeout(flushImpressions, 400);
+        if (pendingImpressionsRef.current.length >= 3) {
+          if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
+          flushImpressions();
+        } else {
+          if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
+          impressionBatchTimerRef.current = setTimeout(flushImpressions, 150);
+        }
       }
+    };
+
+    const handleBeforeUnload = () => {
+      flushImpressions();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+      flushImpressions();
     };
 
     window.trackEvent = (eventType: string, payload: Record<string, any> = {}) => {

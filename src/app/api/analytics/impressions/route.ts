@@ -66,6 +66,13 @@ export async function POST(req: NextRequest) {
         { $inc: { goruntulenmeSayisi: 1 } }
       ).catch(() => {});
     }
+    const validSlugs: string[] = validItems.map(v => v.slug).filter((s): s is string => Boolean(s));
+    if (validSlugs.length > 0) {
+      await ListingModel.updateMany(
+        { slug: { $in: validSlugs }, _id: { $nin: validIds } },
+        { $inc: { goruntulenmeSayisi: 1 } }
+      ).catch(() => {});
+    }
 
     // 2. Analitik etkinliklerini kaydet (Dönemsel raporlar ve tekil ziyaretçi hesaplaması için)
     const eventDocs = validItems.map((item) => ({

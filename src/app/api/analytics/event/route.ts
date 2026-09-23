@@ -84,14 +84,26 @@ export async function POST(req: NextRequest) {
       ip: cleanIp,
     });
 
-    // 3. WhatsApp Tıklaması veya Paylaşım Sayısını Arttır
-    if (targetId && (eventType === 'whatsapp_click' || eventType === 'special_ad_whatsapp_click' || eventType === 'share_listing')) {
-      const isWaClick = eventType === 'whatsapp_click' || eventType === 'special_ad_whatsapp_click';
-      const updateField = isWaClick
-        ? { $inc: { whatsappTiklamaSayisi: 1 } }
-        : { $inc: { paylasimSayisi: 1 } };
-
-      await ListingModel.findByIdAndUpdate(targetId, updateField).catch(() => {});
+    // 3. WhatsApp Tıklaması, Paylaşım veya Gösterim/Görüntülenme Sayısını Arttır
+    if (targetId) {
+      if (eventType === 'whatsapp_click' || eventType === 'special_ad_whatsapp_click') {
+        await ListingModel.findByIdAndUpdate(targetId, { $inc: { whatsappTiklamaSayisi: 1 } }).catch(() => {});
+      } else if (eventType === 'share_listing') {
+        await ListingModel.findByIdAndUpdate(targetId, { $inc: { paylasimSayisi: 1 } }).catch(() => {});
+      } else if (
+        eventType === 'special_ad_impression' ||
+        eventType === 'listing_modal_view' ||
+        eventType === 'listing_view' ||
+        eventType === 'listing_impression' ||
+        eventType === 'hero_vitrin_impression' ||
+        eventType === 'popup_impression'
+      ) {
+        if (mongoose.Types.ObjectId.isValid(targetId)) {
+          await ListingModel.findByIdAndUpdate(targetId, { $inc: { goruntulenmeSayisi: 1 } }).catch(() => {});
+        } else {
+          await ListingModel.updateOne({ slug: targetId }, { $inc: { goruntulenmeSayisi: 1 } }).catch(() => {});
+        }
+      }
     }
 
     // 4. Yönetim Paneline Anlık Canlı Bildirim (SSE) Gönder

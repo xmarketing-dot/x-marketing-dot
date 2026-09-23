@@ -220,6 +220,20 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
 
   const currentSlot = fiveSlots[activeIdx] || fiveSlots[0];
 
+  // Canlı Vitrin İlanı Görüntülenme / Gösterim Takibi
+  useEffect(() => {
+    if (currentSlot && currentSlot.type === 'listing' && currentSlot.data) {
+      if (typeof window !== 'undefined' && (window as any).trackListingImpression) {
+        (window as any).trackListingImpression({
+          listingId: currentSlot.data._id,
+          slug: currentSlot.data.slug,
+          title: currentSlot.data.baslik,
+          city: `${currentSlot.data.ilSlug || ''}/${currentSlot.data.ilceSlug || ''}`,
+        });
+      }
+    }
+  }, [currentSlot]);
+
   const origin = typeof window !== 'undefined' && window.location.origin
     ? window.location.origin
     : (process.env.NEXT_PUBLIC_SITE_URL || '');

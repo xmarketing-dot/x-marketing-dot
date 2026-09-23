@@ -141,12 +141,29 @@ export default function SpecialAdPopup() {
       if (triggered || hasDismissedThisVisitRef.current) return;
       triggered = true;
       setIsOpen(true);
-      if (typeof window !== 'undefined' && (window as any).trackEvent) {
-        (window as any).trackEvent('special_ad_impression', {
-          listingId: currentAd?.ilan?._id || currentAd?.ilanId,
-          title: currentAd?.ilan?.baslik || currentAd?.baslik,
-          targetCity: currentAd?.hedefIlSlug || currentAd?.ilan?.ilSlug,
-        });
+
+      const lId = currentAd?.ilan?._id || currentAd?.ilanId;
+      const lSlug = currentAd?.ilan?.slug;
+      const lTitle = currentAd?.ilan?.baslik || currentAd?.baslik;
+      const lCity = currentAd?.hedefIlSlug || currentAd?.ilan?.ilSlug;
+
+      if (typeof window !== 'undefined') {
+        if ((window as any).trackEvent) {
+          (window as any).trackEvent('special_ad_impression', {
+            listingId: lId,
+            slug: lSlug,
+            title: lTitle,
+            targetCity: lCity,
+          });
+        }
+        if ((window as any).trackListingImpression && lId) {
+          (window as any).trackListingImpression({
+            listingId: lId,
+            slug: lSlug,
+            title: lTitle,
+            city: lCity,
+          });
+        }
       }
       if (timer) clearTimeout(timer);
       window.removeEventListener('scroll', handleScroll);
