@@ -89,7 +89,7 @@ function isNoiseDomain(host: string): boolean {
 }
 
 /**
- * GOOGLE SERP MOTORU (CANLI GOOGLE.COM.TR)
+ * GOOGLE SERP MOTORU (CANLI GOOGLE.COM.TR - ÇOK SAYFALI TARAMA)
  */
 async function scrapeGoogleSerp(
   keyword: string,
@@ -100,63 +100,68 @@ async function scrapeGoogleSerp(
   let foundUrl = '';
   let foundDomain = '';
   const seenDomains = new Set<string>();
-  let rankCounter = 1;
 
   try {
-    const serperUrl = `https://google.serper.dev/search`;
-    const res = await fetch(serperUrl, {
-      method: 'POST',
-      headers: {
-        'X-API-KEY': process.env.SERPER_API_KEY || '8078961d0c92f23ce765317915a6a500b20c2889',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        q: keyword,
-        gl: 'tr',
-        hl: 'tr',
-        num: 100
-      })
-    });
+    const pagesToScan = [1, 2]; // İlk 20 sonucu tara
 
-    if (res.ok) {
-      const data = await res.json();
-      const organicResults = data.organic || [];
+    for (const pageNum of pagesToScan) {
+      if (foundPosition > 0) break;
 
-      for (const result of organicResults) {
-        if (!result.link || !result.link.startsWith('http')) continue;
+      const serperUrl = `https://google.serper.dev/search`;
+      const res = await fetch(serperUrl, {
+        method: 'POST',
+        headers: {
+          'X-API-KEY': process.env.SERPER_API_KEY || '8078961d0c92f23ce765317915a6a500b20c2889',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          q: keyword,
+          gl: 'tr',
+          hl: 'tr',
+          page: pageNum
+        })
+      });
 
-        try {
-          const parsed = new URL(result.link);
-          const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+      if (res.ok) {
+        const data = await res.json();
+        const organicResults = data.organic || [];
 
-          if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
-            continue;
-          }
+        organicResults.forEach((result: any, idx: number) => {
+          if (!result.link || !result.link.startsWith('http')) return;
 
-          seenDomains.add(hostname);
+          try {
+            const parsed = new URL(result.link);
+            const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
-          const isOurSite = hostname.includes('besteskort') || hostname.includes('bestescort') || isOurSiteDomain(hostname, targetDomain);
-          const realPos = result.position || rankCounter;
-
-          if (isOurSite) {
-            if (foundPosition === 0) {
-              foundPosition = realPos;
-              foundUrl = result.link;
-              foundDomain = hostname;
+            if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
+              return;
             }
-          } else {
-            if (competitors.length < 3) {
-              competitors.push({
-                position: realPos,
-                domain: hostname,
-                title: result.title || hostname,
-              });
-            }
-          }
 
-          rankCounter++;
-          if (rankCounter > 100) break;
-        } catch (e) { }
+            seenDomains.add(hostname);
+
+            const realPos = (pageNum - 1) * 10 + (idx + 1);
+            const isOurSite =
+              hostname.includes('besteskort') ||
+              hostname.includes('bestescort') ||
+              isOurSiteDomain(hostname, targetDomain);
+
+            if (isOurSite) {
+              if (foundPosition === 0) {
+                foundPosition = realPos;
+                foundUrl = result.link;
+                foundDomain = hostname;
+              }
+            } else {
+              if (competitors.length < 3) {
+                competitors.push({
+                  position: realPos,
+                  domain: hostname,
+                  title: result.title || hostname,
+                });
+              }
+            }
+          } catch (e) { }
+        });
       }
     }
   } catch (err) {
@@ -172,13 +177,15 @@ async function scrapeGoogleSerp(
 async function scrapeYandexSerp(
   keyword: string,
   targetDomain: string
-): Promise<{ position: number; competitors: ICompetitor[]; foundUrl?: string; foundDomain?: string }> {
+): Promise<{ position: number; competitors: ICompetitor[]; foundUrl?: string; foundDomain?: string; isBlocked: boolean }> {
   const competitors: ICompetitor[] = [];
   let foundPosition = 0;
   let foundUrl = '';
   let foundDomain = '';
   const seenDomains = new Set<string>();
   let rankCounter = 1;
+  let isBlocked = false;
+  let scannedAnyValidPage = false;
 
   // Sayfa 1 ve Sayfa 2'yi tara (İlk 30-40 sonuç)
   const pages = [0, 1];
@@ -203,10 +210,14 @@ async function scrapeYandexSerp(
 
       if (res.ok) {
         const html = await res.text();
-        if (html.includes('SmartCaptcha') || html.includes('Verification') || html.length < 5000) {
+        const hasCaptcha = html.includes('SmartCaptcha') || html.includes('Verification') || html.includes('checkbox_captcha');
+
+        if (hasCaptcha || html.length < 5000) {
+          isBlocked = true;
           continue;
         }
 
+        scannedAnyValidPage = true;
         const linkRegex = /href="([^"]+)"/g;
         let m;
 
@@ -259,7 +270,12 @@ async function scrapeYandexSerp(
     }
   }
 
-  return { position: foundPosition, competitors, foundUrl, foundDomain };
+  // Eğer hiçbir geçerli sayfa taranamadıysa bloklanmış sayılır
+  if (!scannedAnyValidPage) {
+    isBlocked = true;
+  }
+
+  return { position: foundPosition, competitors, foundUrl, foundDomain, isBlocked };
 }
 
 function getReqDomain(req: NextRequest): string {
@@ -431,13 +447,20 @@ export async function PUT(req: NextRequest) {
       const yandexResult = await scrapeYandexSerp(item.keyword, cleanTarget);
       const googleResult = await scrapeGoogleSerp(item.keyword, cleanTarget);
 
-      // Yandex değişim hesabı
+      // Yandex değişim hesabı & Blokaj Koruması
       const prevY = item.yandexPosition || 0;
-      const currY = yandexResult.position || 0;
+      let currY = yandexResult.position || 0;
       let changeY = 0;
-      if (prevY > 0 && currY > 0) changeY = prevY - currY;
-      else if (prevY === 0 && currY > 0) changeY = currY;
-      else if (prevY > 0 && currY === 0) changeY = -prevY;
+
+      if (yandexResult.isBlocked && currY === 0 && prevY > 0) {
+        // Blokaj / Captcha durumunda eski başarıyı koru, sıfırlama!
+        currY = prevY;
+        changeY = 0;
+      } else {
+        if (prevY > 0 && currY > 0) changeY = prevY - currY;
+        else if (prevY === 0 && currY > 0) changeY = currY;
+        else if (prevY > 0 && currY === 0) changeY = -prevY;
+      }
 
       // Google değişim hesabı
       const prevG = item.currentPosition || 0;
@@ -450,9 +473,11 @@ export async function PUT(req: NextRequest) {
       item.previousYandexPosition = prevY;
       item.yandexPosition = currY;
       item.yandexChange = changeY;
-      item.yandexCompetitors = yandexResult.competitors;
-      item.yandexFoundUrl = yandexResult.foundUrl || '';
-      item.yandexFoundDomain = yandexResult.foundDomain || '';
+      if (yandexResult.competitors && yandexResult.competitors.length > 0) {
+        item.yandexCompetitors = yandexResult.competitors;
+      }
+      if (yandexResult.foundUrl) item.yandexFoundUrl = yandexResult.foundUrl;
+      if (yandexResult.foundDomain) item.yandexFoundDomain = yandexResult.foundDomain;
 
       item.previousPosition = prevG;
       item.currentPosition = currG;
