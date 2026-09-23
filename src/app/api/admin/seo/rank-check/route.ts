@@ -24,14 +24,12 @@ function getPrimaryDomain(): string {
   try {
     const raw = getSiteUrl();
     const url = new URL(raw.startsWith('http') ? raw : `https://${raw}`);
-    return url.hostname.toLowerCase().replace(/^www\./, '');
-  } catch (e) {
-    return (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'besteskort.online')
-      .replace(/^https?:\/\//, '')
-      .replace(/^www\./, '')
-      .replace(/\/.*$/, '')
-      .toLowerCase();
-  }
+    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    if (host && !host.includes('localhost') && !host.includes('127.0.0.1')) {
+      return host;
+    }
+  } catch (e) {}
+  return 'besteskort.online';
 }
 const EXACT_OUR_DOMAINS = new Set([
   'besteskort.online',
@@ -169,7 +167,7 @@ async function scrapeGoogleSerp(
 }
 
 /**
- * YANDEX SERP MOTORU (CANLI VE GERÇEK TARAMA)
+ * YANDEX SERP MOTORU (CANLI VE GERÇEK ÇOK SAYFALI TARAMA)
  */
 async function scrapeYandexSerp(
   keyword: string,
@@ -182,12 +180,15 @@ async function scrapeYandexSerp(
   const seenDomains = new Set<string>();
   let rankCounter = 1;
 
-  const yandexUrls = [
-    `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508`,
-    `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`,
-  ];
+  // Sayfa 1 ve Sayfa 2'yi tara (İlk 30-40 sonuç)
+  const pages = [0, 1];
 
-  for (const yandexUrl of yandexUrls) {
+  for (const pageIdx of pages) {
+    if (foundPosition > 0) break;
+
+    const pageParam = pageIdx > 0 ? `&p=${pageIdx}` : '';
+    const yandexUrl = `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`;
+
     try {
       const res = await fetch(yandexUrl, {
         headers: {
@@ -202,7 +203,7 @@ async function scrapeYandexSerp(
 
       if (res.ok) {
         const html = await res.text();
-        if (html.includes('SmartCaptcha') || html.includes('Verification') || html.length < 50000) {
+        if (html.includes('SmartCaptcha') || html.includes('Verification') || html.length < 5000) {
           continue;
         }
 
@@ -223,7 +224,10 @@ async function scrapeYandexSerp(
 
             seenDomains.add(hostname);
 
-            const isOurSite = isOurSiteDomain(hostname, targetDomain);
+            const isOurSite =
+              hostname.includes('besteskort') ||
+              hostname.includes('bestescort') ||
+              isOurSiteDomain(hostname, targetDomain);
 
             if (isOurSite) {
               if (foundPosition === 0) {
@@ -245,13 +249,13 @@ async function scrapeYandexSerp(
             if (rankCounter > 50) break;
           } catch (e) { }
         }
-
-        if (rankCounter > 1) {
-          break; // Başarılı sonuç alındı
-        }
       }
     } catch (err) {
       // Devam et
+    }
+
+    if (pageIdx === 0 && foundPosition === 0) {
+      await new Promise(r => setTimeout(r, 600));
     }
   }
 
@@ -465,9 +469,9 @@ export async function PUT(req: NextRequest) {
       await item.save();
       updatedItems.push(item);
 
-      // Seri isteklerde bot blokajını önlemek için ufak bekleme
+      // Seri isteklerde bot blokajını önlemek için bekleme
       if (items.length > 1 && i < items.length - 1) {
-        await new Promise(res => setTimeout(res, 250));
+        await new Promise(res => setTimeout(res, 800));
       }
     }
 
