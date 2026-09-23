@@ -190,7 +190,7 @@ function generateYandexCookies() {
 }
 
 /**
- * YANDEX SERP MOTORU (CANLI VE GERÇEK DERİN ÇOK SAYFALI TARAMA - 1-6. SAYFALAR)
+ * YANDEX SERP MOTORU (PUPPETEER STEALTH + HTTP FALLBACK)
  */
 async function scrapeYandexSerp(
   keyword: string,
@@ -203,10 +203,98 @@ async function scrapeYandexSerp(
   const seenDomains = new Set<string>();
   let rankCounter = 1;
   let isBlocked = false;
-  let scannedAnyValidPage = false;
 
-  // Sayfa 1'den Sayfa 6'ya kadar derin tarama (İlk 60-70 sonuç)
+  // 1. ÖNCELİK: Puppeteer Stealth Motoru (Yerel ve Chrome ortamlarında %100 Doğru Çalışır)
+  try {
+    const puppeteerExtra = (await import('puppeteer-extra')).default;
+    const StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default;
+    puppeteerExtra.use(StealthPlugin());
+
+    const browser = await puppeteerExtra.launch({
+      headless: 'new' as any,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=1920,1080']
+    });
+
+    try {
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1920, height: 1080 });
+
+      const pages = [0, 1, 2, 3, 4]; // 5 Sayfa Tara
+
+      for (const pageIdx of pages) {
+        if (foundPosition > 0) break;
+
+        const pageParam = pageIdx > 0 ? `&p=${pageIdx}` : '';
+        const url = `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`;
+
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 25000 });
+
+        const links: string[] = await page.evaluate(() => {
+          const list: string[] = [];
+          document.querySelectorAll('a').forEach(a => {
+            const h = a.href || '';
+            if (h.startsWith('http') && !h.includes('yandex.') && !h.includes('ya.ru') && !h.includes('google.') && !h.includes('schema.org') && !h.includes('w3.org')) {
+              list.push(h);
+            }
+          });
+          return Array.from(new Set(list));
+        });
+
+        for (const rawHref of links) {
+          try {
+            const parsed = new URL(rawHref);
+            const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+
+            if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
+              continue;
+            }
+
+            seenDomains.add(hostname);
+
+            const isOurSite =
+              hostname.includes('besteskort') ||
+              hostname.includes('bestescort') ||
+              isOurSiteDomain(hostname, targetDomain);
+
+            if (isOurSite) {
+              if (foundPosition === 0) {
+                foundPosition = rankCounter;
+                foundUrl = rawHref;
+                foundDomain = hostname;
+              }
+            } else {
+              if (competitors.length < 3) {
+                competitors.push({
+                  position: rankCounter,
+                  domain: hostname,
+                  title: hostname,
+                });
+              }
+            }
+
+            rankCounter++;
+            if (rankCounter > 80) break;
+          } catch (e) { }
+        }
+
+        if (pageIdx < 4 && foundPosition === 0) {
+          await new Promise(r => setTimeout(r, 800));
+        }
+      }
+    } finally {
+      await browser.close().catch(() => {});
+    }
+
+    if (rankCounter > 1 || foundPosition > 0) {
+      return { position: foundPosition, competitors, foundUrl, foundDomain, isBlocked: false };
+    }
+  } catch (pupErr) {
+    // Puppeteer yoksa veya hata verirse HTTP fallback'e geç
+  }
+
+  // 2. YEDEK: HTTP Fetch Fallback
   const pages = [0, 1, 2, 3, 4, 5];
+  let scannedAnyValidPage = false;
 
   for (const pageIdx of pages) {
     if (foundPosition > 0) break;
@@ -303,8 +391,7 @@ async function scrapeYandexSerp(
     }
   }
 
-  // Eğer hiçbir geçerli sayfa taranamadıysa bloklanmış sayılır
-  if (!scannedAnyValidPage) {
+  if (!scannedAnyValidPage && foundPosition === 0) {
     isBlocked = true;
   }
 
