@@ -80,7 +80,8 @@ const NOISE_DOMAINS = [
   'twitter.', 'x.com', 'facebook.', 'instagram.', 't.me', 'telegram.', 'reddit.', 'github.', 'wikipedia.',
   'cam.ac.uk', 'who.int', 'crazygames.', 'newsmax.', 'tanstack.', 'wordplays.', 'obsproject.', 'zhihu.',
   'baidu.', 'spotify.', 'safelinks.', 'outlook.', 'office.', 'cloudflare.', 'support.google', 'googleusercontent',
-  'mercadolivre', 'elevenforum', 'closeddownrestaurants', 'fitsmallbusiness', 'worldscholarshipforum', 'news12'
+  'mercadolivre', 'elevenforum', 'closeddownrestaurants', 'fitsmallbusiness', 'worldscholarshipforum', 'news12',
+  'vk.ru', 'vk.com', 'ok.ru'
 ];
 
 function isNoiseDomain(host: string): boolean {
@@ -212,14 +213,14 @@ async function scrapeYandexSerp(
 
     const browser = await puppeteerExtra.launch({
       headless: 'new' as any,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=1920,1080']
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=1280,800']
     });
 
     try {
       const page = await browser.newPage();
-      await page.setViewport({ width: 1920, height: 1080 });
+      await page.setViewport({ width: 1280, height: 800 });
 
-      const pages = [0, 1, 2, 3, 4]; // 5 Sayfa Tara
+      const pages = [0, 1, 2, 3, 4]; // 5 Sayfa Tara (İlk 60-70 sonuç)
 
       for (const pageIdx of pages) {
         if (foundPosition > 0) break;
@@ -227,58 +228,74 @@ async function scrapeYandexSerp(
         const pageParam = pageIdx > 0 ? `&p=${pageIdx}` : '';
         const url = `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`;
 
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 25000 });
+        try {
+          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
+          await page.waitForSelector('li.serp-item, .OrganicTitle-Link, a', { timeout: 8000 }).catch(() => {});
+          await new Promise(r => setTimeout(r, 1200));
 
-        const links: string[] = await page.evaluate(() => {
-          const list: string[] = [];
-          document.querySelectorAll('a').forEach(a => {
-            const h = a.href || '';
-            if (h.startsWith('http') && !h.includes('yandex.') && !h.includes('ya.ru') && !h.includes('google.') && !h.includes('schema.org') && !h.includes('w3.org')) {
-              list.push(h);
+          const links: string[] = await page.evaluate(() => {
+            const list: string[] = [];
+            const items = document.querySelectorAll('.OrganicTitle-Link, .organic__url, li.serp-item a.link, a[target="_blank"]');
+            items.forEach(a => {
+              const h = (a as HTMLAnchorElement).href || '';
+              if (h.startsWith('http') && !h.includes('yandex.') && !h.includes('ya.ru') && !h.includes('google.')) {
+                list.push(h);
+              }
+            });
+            if (list.length === 0) {
+              document.querySelectorAll('a').forEach(a => {
+                const h = (a as HTMLAnchorElement).href || '';
+                if (h.startsWith('http') && !h.includes('yandex.') && !h.includes('ya.ru') && !h.includes('google.') && !h.includes('w3.org')) {
+                  list.push(h);
+                }
+              });
             }
+            return Array.from(new Set(list));
           });
-          return Array.from(new Set(list));
-        });
 
-        for (const rawHref of links) {
-          try {
-            const parsed = new URL(rawHref);
-            const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+          for (const rawHref of links) {
+            try {
+              const parsed = new URL(rawHref);
+              const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
-            if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
-              continue;
-            }
-
-            seenDomains.add(hostname);
-
-            const isOurSite =
-              hostname.includes('besteskort') ||
-              hostname.includes('bestescort') ||
-              isOurSiteDomain(hostname, targetDomain);
-
-            if (isOurSite) {
-              if (foundPosition === 0) {
-                foundPosition = rankCounter;
-                foundUrl = rawHref;
-                foundDomain = hostname;
+              if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
+                continue;
               }
-            } else {
-              if (competitors.length < 3) {
-                competitors.push({
-                  position: rankCounter,
-                  domain: hostname,
-                  title: hostname,
-                });
-              }
-            }
 
-            rankCounter++;
-            if (rankCounter > 80) break;
-          } catch (e) { }
+              seenDomains.add(hostname);
+
+              const isOurSite =
+                rawHref.includes('besteskort') ||
+                rawHref.includes('bestescort') ||
+                rawHref.includes('devs.surf') ||
+                isOurSiteDomain(hostname, targetDomain);
+
+              if (isOurSite) {
+                if (foundPosition === 0) {
+                  foundPosition = rankCounter;
+                  foundUrl = rawHref;
+                  foundDomain = hostname;
+                }
+              } else {
+                if (competitors.length < 3) {
+                  competitors.push({
+                    position: rankCounter,
+                    domain: hostname,
+                    title: hostname,
+                  });
+                }
+              }
+
+              rankCounter++;
+              if (rankCounter > 80) break;
+            } catch (e) { }
+          }
+        } catch (pageErr) {
+          // Page error, continue to next page
         }
 
         if (pageIdx < 4 && foundPosition === 0) {
-          await new Promise(r => setTimeout(r, 800));
+          await new Promise(r => setTimeout(r, 600));
         }
       }
     } finally {
