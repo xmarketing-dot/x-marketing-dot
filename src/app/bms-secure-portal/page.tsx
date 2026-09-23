@@ -312,14 +312,16 @@ export default function BmsSecurePortalDashboard() {
       } else {
         // Akıllı Sıralı Kuyruk Sistemi: Kelimeleri 1'er 1'er insansı gecikmeyle tara
         const total = keywordList.length;
+        const targetQueue = keywordList.map(k => ({ _id: k._id, keyword: k.keyword }));
+
         for (let i = 0; i < total; i++) {
-          const kw = keywordList[i];
-          setScanProgress({ current: i + 1, total, keyword: kw.keyword });
+          const target = targetQueue[i];
+          setScanProgress({ current: i + 1, total, keyword: target.keyword });
           try {
             const res = await fetch('/api/admin/seo/rank-check', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: kw._id }),
+              body: JSON.stringify({ id: target._id }),
             });
             const json = await res.json();
             if (json.keywords) {
@@ -327,9 +329,9 @@ export default function BmsSecurePortalDashboard() {
             }
           } catch (e) { }
 
-          // İnsansı rastgele bekleme (3 - 4.5 sn jitter) - bot blokajını ve captchayı %100 önler
+          // İnsansı rastgele bekleme (2.2 - 3.2 sn jitter)
           if (i < total - 1) {
-            await new Promise(r => setTimeout(r, 3000 + Math.random() * 1500));
+            await new Promise(r => setTimeout(r, 2200 + Math.random() * 1000));
           }
         }
       }
@@ -3154,14 +3156,30 @@ export default function BmsSecurePortalDashboard() {
                       );
                     };
 
+                    const isScanningThis = scanProgress && scanProgress.keyword.toLowerCase() === item.keyword.toLowerCase();
+
                     return (
-                      <tr key={item._id} className="hover:bg-[#21262d]/40 transition-colors">
+                      <tr 
+                        key={item._id} 
+                        className={`transition-all ${
+                          isScanningThis 
+                            ? 'bg-amber-500/15 border-l-4 border-amber-400 shadow-inner' 
+                            : 'hover:bg-[#21262d]/40'
+                        }`}
+                      >
                         {/* Kelime Adı */}
                         <td className="py-3.5 px-3">
                           <span className="font-bold text-xs text-white capitalize font-heading block">
                             {item.keyword}
                           </span>
-                          <span className="text-[10px] text-[#8b949e]">Yandex / Google TR</span>
+                          {isScanningThis ? (
+                            <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1 mt-0.5 animate-pulse">
+                              <Zap className="w-3 h-3 text-amber-400 animate-spin" />
+                              Şu an Canlı Taranıyor...
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-[#8b949e]">Yandex / Google TR</span>
+                          )}
                         </td>
 
                         {/* Google Sırası */}
