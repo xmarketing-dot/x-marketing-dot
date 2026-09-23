@@ -116,7 +116,7 @@ async function scrapeGoogleSerp(
         q: keyword,
         gl: 'tr',
         hl: 'tr',
-        num: 40
+        num: 100
       })
     });
 
@@ -137,26 +137,27 @@ async function scrapeGoogleSerp(
 
           seenDomains.add(hostname);
 
-          const isOurSite = isOurSiteDomain(hostname, targetDomain);
+          const isOurSite = hostname.includes('besteskort') || hostname.includes('bestescort') || isOurSiteDomain(hostname, targetDomain);
+          const realPos = result.position || rankCounter;
 
           if (isOurSite) {
             if (foundPosition === 0) {
-              foundPosition = rankCounter;
+              foundPosition = realPos;
               foundUrl = result.link;
               foundDomain = hostname;
             }
           } else {
             if (competitors.length < 3) {
               competitors.push({
-                position: rankCounter,
+                position: realPos,
                 domain: hostname,
-                title: hostname,
+                title: result.title || hostname,
               });
             }
           }
 
           rankCounter++;
-          if (rankCounter > 30) break;
+          if (rankCounter > 100) break;
         } catch (e) { }
       }
     }
