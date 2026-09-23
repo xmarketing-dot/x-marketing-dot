@@ -122,14 +122,14 @@ export async function GET(req: Request) {
         { $match: dateQuery },
         { $group: { _id: "$eventType", count: { $sum: 1 } } },
       ]),
-      // 8. En Çok İletişim Alan İlanlar
+      // 8. En Çok İletişim Alan İlanlar (Normal ve Sponsorlu Popup tıklamalarının tamamı)
       AnalyticsEventModel.aggregate([
-        { $match: { ...dateQuery, eventType: { $in: ['whatsapp_click', 'share_listing'] }, targetTitle: { $exists: true, $ne: '' } } },
+        { $match: { ...dateQuery, eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click', 'share_listing'] }, targetTitle: { $exists: true, $ne: '' } } },
         { 
           $group: { 
             _id: "$targetTitle", 
             targetId: { $first: "$targetId" },
-            whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "whatsapp_click"] }, 1, 0] } },
+            whatsappClicks: { $sum: { $cond: [{ $in: ["$eventType", ["whatsapp_click", "special_ad_whatsapp_click"]] }, 1, 0] } },
             shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
             totalInteractions: { $sum: 1 }
           } 
@@ -178,12 +178,12 @@ export async function GET(req: Request) {
         { $sort: { periodViews: -1 } },
         { $limit: 1000 }
       ]),
-      // 12. İlan Etkinlik & Gösterim Dağılımı (Anasayfa, vitrin, şehir, arama ve detay gösterimlerini kapsar)
+      // 12. İlan Etkinlik & Gösterim Dağılımı (Anasayfa, vitrin, şehir, arama, popup ve detay gösterimlerini kapsar)
       AnalyticsEventModel.aggregate([
         {
           $match: {
             ...dateQuery,
-            eventType: { $in: ['whatsapp_click', 'share_listing', 'phone_call', 'listing_impression'] },
+            eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click', 'share_listing', 'phone_call', 'listing_impression'] },
           }
         },
         {
@@ -195,7 +195,7 @@ export async function GET(req: Request) {
             },
             impressions: { $sum: { $cond: [{ $eq: ["$eventType", "listing_impression"] }, 1, 0] } },
             uniqueImpressionVisitors: { $addToSet: "$visitorId" },
-            whatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "whatsapp_click"] }, 1, 0] } },
+            whatsappClicks: { $sum: { $cond: [{ $in: ["$eventType", ["whatsapp_click", "special_ad_whatsapp_click"]] }, 1, 0] } },
             shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
           }
         }
@@ -227,7 +227,7 @@ export async function GET(req: Request) {
       ]),
       // 15. Domain Bazlı WhatsApp Tıklamaları
       AnalyticsEventModel.aggregate([
-        { $match: { ...dateQuery, eventType: 'whatsapp_click' } },
+        { $match: { ...dateQuery, eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] } } },
         {
           $group: {
             _id: { $ifNull: ["$hostname", ""] },
@@ -621,7 +621,7 @@ export async function GET(req: Request) {
           breakdown: specialAdBreakdown,
         },
         eventCounts: {
-          whatsappClicks: eventCounts.whatsapp_click || 0,
+          whatsappClicks: (eventCounts.whatsapp_click || 0) + (eventCounts.special_ad_whatsapp_click || 0),
           shares: eventCounts.share_listing || 0,
           categoryClicks: eventCounts.category_click || 0,
           cityFilters: eventCounts.city_filter || 0,

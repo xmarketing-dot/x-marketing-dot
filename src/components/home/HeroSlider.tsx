@@ -395,9 +395,9 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
               {/* 2. ORTA: MODEL İSMİ VE BAŞLIK (AYRI TAM SATIR - ULTRA PREMİUM & ASLA ÇAKIŞMAZ) */}
               <div className="w-full pt-0.5">
                 <Link href={`/ilan/${current.slug}`} className="block group/title">
-                  <h1 className="font-heading font-black text-xl sm:text-3xl md:text-4xl text-white tracking-tight leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] group-hover/title:text-amber-300 transition-colors line-clamp-2">
+                  <p className="font-heading font-black text-xl sm:text-3xl md:text-4xl text-white tracking-tight leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] group-hover/title:text-amber-300 transition-colors line-clamp-2">
                     {current.baslik}
-                  </h1>
+                  </p>
                 </Link>
               </div>
 

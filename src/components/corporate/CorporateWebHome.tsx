@@ -159,13 +159,13 @@ export default function CorporateWebHome() {
               <span>Yeni Nesil Kurumsal Dijital Çözümler</span>
             </div>
 
-            <h1 className="font-extrabold text-4xl sm:text-5xl lg:text-6xl text-slate-950 font-heading leading-[1.12] tracking-tight">
+            <div className="font-extrabold text-4xl sm:text-5xl lg:text-6xl text-slate-950 font-heading leading-[1.12] tracking-tight">
               Ölçeklenebilir Yazılım, <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
                 Lider SEO &amp; Mobil
               </span> <br />
               Uygulama Mimarisi
-            </h1>
+            </div>
 
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-2xl font-normal">
               Türkiye genelinde 81 ilde yerel ve global arama motorlarında organik hakimiyet kuran, ultra-yüksek hızlı web/mobil yazılımlar ve veri odaklı büyüme stratejileri geliştiriyoruz.
@@ -304,9 +304,9 @@ export default function CorporateWebHome() {
               <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-heading">
                 Kurumsal Hizmet Portföyümüz
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 font-heading">
+              <div className="text-3xl sm:text-4xl font-extrabold text-slate-950 font-heading">
                 Uçtan Uca Dijital Mühendislik &amp; Organik Büyüme
-              </h2>
+              </div>
               <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
                 Yalnızca kod yazmıyor; işletmenizin dijital ekosistemini, arama motorlarındaki yerini ve kullanıcı dönüşüm hunilerini en üst düzeye taşıyoruz.
               </p>
@@ -354,9 +354,9 @@ export default function CorporateWebHome() {
                       </span>
                     </div>
 
-                    <h3 className="font-bold text-xl text-slate-950 font-heading group-hover:text-blue-600 transition-colors">
+                    <div className="font-bold text-xl text-slate-950 font-heading group-hover:text-blue-600 transition-colors">
                       {srv.title}
-                    </h3>
+                    </div>
 
                     <p className="text-sm text-slate-600 leading-relaxed font-normal">
                       {srv.description}
@@ -385,9 +385,9 @@ export default function CorporateWebHome() {
             <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-heading">
               Gelişmiş Teknoloji Altyapımız
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 font-heading">
+            <div className="text-3xl sm:text-4xl font-extrabold text-slate-950 font-heading">
               En Son Nesil Yazılım Mimarisi
-            </h2>
+            </div>
             <p className="text-slate-600 text-sm sm:text-base">
               Yüksek trafik, sıfır kesinti ve en yüksek güvenlik standartlarını karşılayan modern kurumsal teknoloji bileşenleri.
             </p>
@@ -398,7 +398,7 @@ export default function CorporateWebHome() {
               <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
                 <Code2 className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 font-heading">Modern Frontend &amp; PWA</h3>
+              <div className="text-lg font-bold text-slate-900 font-heading">Modern Frontend &amp; PWA</div>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Next.js 15, React 19, TypeScript ve Tailwind CSS ile hazırlanan reaktif, ultra-hızlı ve SEO dostu kullanıcı arayüzleri.
               </p>
@@ -419,7 +419,7 @@ export default function CorporateWebHome() {
               <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
                 <Server className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 font-heading">Güçlü Backend &amp; Mikroservisler</h3>
+              <div className="text-lg font-bold text-slate-900 font-heading">Güçlü Backend &amp; Mikroservisler</div>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Node.js, Express, MongoDB Atlas kümeleme, Redis önbellekleme ve SSE (Server-Sent Events) canlı akış protokolleri.
               </p>
@@ -440,7 +440,7 @@ export default function CorporateWebHome() {
               <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
                 <Globe className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 font-heading">Akıllı SEO &amp; Çoklu Domain Ağı</h3>
+              <div className="text-lg font-bold text-slate-900 font-heading">Akıllı SEO &amp; Çoklu Domain Ağı</div>
               <p className="text-sm text-slate-600 leading-relaxed">
                 Tümleşik Vercel Edge sunucuları ile 81 il ve ilçe bazlı dinamik domain çözümleme, otomatik sitemap ve robots.txt entegrasyonu.
               </p>
@@ -469,9 +469,9 @@ export default function CorporateWebHome() {
             <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-heading">
               Geliştirme &amp; Başarı Adımları
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 font-heading">
+            <div className="text-3xl sm:text-4xl font-extrabold text-slate-950 font-heading">
               Fikirden Organik Liderliğe 4 Adım
-            </h2>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -501,9 +501,9 @@ export default function CorporateWebHome() {
                 <span className="font-mono text-3xl font-black text-blue-600/30">
                   {item.step}
                 </span>
-                <h3 className="font-bold text-lg text-slate-900 font-heading">
+                <div className="font-bold text-lg text-slate-900 font-heading">
                   {item.title}
-                </h3>
+                </div>
                 <p className="text-xs text-slate-600 leading-relaxed">
                   {item.desc}
                 </p>
@@ -526,9 +526,9 @@ export default function CorporateWebHome() {
                 <span>Kurumsal İletişim &amp; İş Birliği</span>
               </div>
 
-              <h2 className="font-extrabold text-3xl sm:text-5xl font-heading leading-tight tracking-tight">
+              <div className="font-extrabold text-3xl sm:text-5xl font-heading leading-tight tracking-tight">
                 Projenizi Bir Üst Seviyeye Taşımaya Hazır mısınız?
-              </h2>
+              </div>
 
               <p className="text-slate-300 text-base leading-relaxed">
                 Yazılım geliştirme, SEO danışmanlığı, çoklu domain ağ kurulumu ve özel dijital çözümler için uzman mühendis ekibimizle hemen iletişime geçin.

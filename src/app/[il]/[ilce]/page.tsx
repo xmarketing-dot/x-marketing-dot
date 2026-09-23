@@ -117,6 +117,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
+      site: '@besteskort',
+      creator: '@besteskort',
       title: `${districtName} Escort ❤️ | ${il} VIP Eskort — Best Eskort`,
       description: `${il} ${districtName} teyitli escort ilanları. VIP, bağımsız, WhatsApp escort.`,
       images: [`${siteUrl}/api/og/site?il=${location.ilSlug}&ilce=${ilceSlug}`],

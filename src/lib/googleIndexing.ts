@@ -27,12 +27,19 @@ function getServiceAccountCredentials(): ServiceAccountKey | null {
       };
     }
 
-    // 2. Local geliştirme ortamı için (Vercel production build'de tüm projeyi trace etmesini önler)
+    // 2. Local geliştirme ortamı için JSON dosyasını ara
     if (process.env.NODE_ENV !== 'production') {
-      const p = path.join(process.cwd(), 'besteskort-seo-6b9b77a0e04c.json');
-      if (fs.existsSync(p)) {
-        const raw = fs.readFileSync(p, 'utf-8');
-        return JSON.parse(raw);
+      const rootDir = process.cwd();
+      const files = fs.readdirSync(rootDir);
+      const jsonKeyFile = files.find(
+        (f) => f.endsWith('.json') && !['package.json', 'package-lock.json', 'tsconfig.json'].includes(f)
+      );
+      if (jsonKeyFile) {
+        const raw = fs.readFileSync(path.join(rootDir, jsonKeyFile), 'utf-8');
+        const parsed = JSON.parse(raw);
+        if (parsed.client_email && parsed.private_key) {
+          return parsed;
+        }
       }
     }
   } catch (err) {

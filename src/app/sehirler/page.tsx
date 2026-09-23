@@ -24,6 +24,23 @@ export const metadata: Metadata = {
     'all cities escort turkey',
   ],
   alternates: { canonical: `${siteUrl}/sehirler` },
+  openGraph: {
+    title: 'Türkiye Şehirleri Eskort İlanları — Tüm İller ve İlçeler',
+    description: 'Türkiye\'nin 81 ilinde doğrulanmış güncel eskort ilanları.',
+    url: `${siteUrl}/sehirler`,
+    type: 'website',
+    locale: 'tr_TR',
+    siteName: 'Best Eskort',
+    images: [`${siteUrl}/api/og/site`],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@besteskort',
+    creator: '@besteskort',
+    title: 'Türkiye Şehirleri Eskort İlanları — Tüm İller ve İlçeler',
+    description: 'Türkiye\'nin 81 ilinde doğrulanmış güncel eskort ilanları.',
+    images: [`${siteUrl}/api/og/site`],
+  },
 };
 
 export default async function SehirlerPage() {

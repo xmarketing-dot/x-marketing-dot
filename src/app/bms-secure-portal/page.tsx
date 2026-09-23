@@ -2901,7 +2901,11 @@ export default function BmsSecurePortalDashboard() {
                   <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
                     <span className="text-[10px] text-[#8b949e] font-mono">⚡ Google Indexing API</span>
                     <span className="text-xs font-bold text-blue-400 font-mono mt-0.5">
-                      {boostPingResult.googleIndexingResult ? `✅ ${boostPingResult.googleIndexingResult.successCount} URL İletildi` : '⚠️ Yapılandırılmadı'}
+                      {!boostPingResult.googleIndexingResult
+                        ? '⚠️ Anahtar Bulunamadı'
+                        : boostPingResult.googleIndexingResult.failCount > 0
+                        ? `${boostPingResult.googleIndexingResult.successCount > 0 ? `✅ ${boostPingResult.googleIndexingResult.successCount} İletildi / ` : ''}⚠️ ${boostPingResult.googleIndexingResult.failCount} (Günlük 200 Kota Dolu)`
+                        : `✅ ${boostPingResult.googleIndexingResult.successCount} URL İletildi`}
                     </span>
                   </div>
 
@@ -2933,6 +2937,12 @@ export default function BmsSecurePortalDashboard() {
                     </span>
                   </div>
                 </div>
+
+                {boostPingResult.googleIndexingResult?.firstError && (
+                  <div className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 font-mono flex items-center justify-between">
+                    <span>ℹ️ Google Notu: {boostPingResult.googleIndexingResult.firstError.includes('Quota exceeded') ? 'Google Indexing API günlük 200 URL istek kotası doldu (Gece 03:00\'te sıfırlanır).' : boostPingResult.googleIndexingResult.firstError}</span>
+                  </div>
+                )}
 
                 {boostPingResult.updatedLikesCount > 0 && (
                   <div className="text-[11px] text-emerald-300/80 font-mono flex items-center gap-1.5">

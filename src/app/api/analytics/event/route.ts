@@ -85,8 +85,9 @@ export async function POST(req: NextRequest) {
     });
 
     // 3. WhatsApp Tıklaması veya Paylaşım Sayısını Arttır
-    if (targetId && (eventType === 'whatsapp_click' || eventType === 'share_listing')) {
-      const updateField = eventType === 'whatsapp_click' 
+    if (targetId && (eventType === 'whatsapp_click' || eventType === 'special_ad_whatsapp_click' || eventType === 'share_listing')) {
+      const isWaClick = eventType === 'whatsapp_click' || eventType === 'special_ad_whatsapp_click';
+      const updateField = isWaClick
         ? { $inc: { whatsappTiklamaSayisi: 1 } }
         : { $inc: { paylasimSayisi: 1 } };
 
