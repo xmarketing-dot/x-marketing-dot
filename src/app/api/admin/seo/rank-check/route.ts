@@ -102,7 +102,7 @@ async function scrapeGoogleSerp(
   const seenDomains = new Set<string>();
 
   try {
-    const pagesToScan = [1, 2]; // İlk 20 sonucu tara
+    const pagesToScan = [1, 2, 3, 4, 5]; // İlk 50 sonucu derinlemesine tara
 
     for (const pageNum of pagesToScan) {
       if (foundPosition > 0) break;
@@ -190,7 +190,7 @@ function generateYandexCookies() {
 }
 
 /**
- * YANDEX SERP MOTORU (CANLI VE GERÇEK ÇOK SAYFALI TARAMA)
+ * YANDEX SERP MOTORU (CANLI VE GERÇEK DERİN ÇOK SAYFALI TARAMA - 1-6. SAYFALAR)
  */
 async function scrapeYandexSerp(
   keyword: string,
@@ -205,8 +205,8 @@ async function scrapeYandexSerp(
   let isBlocked = false;
   let scannedAnyValidPage = false;
 
-  // Sayfa 1 ve Sayfa 2'yi tara (İlk 30-40 sonuç)
-  const pages = [0, 1];
+  // Sayfa 1'den Sayfa 6'ya kadar derin tarama (İlk 60-70 sonuç)
+  const pages = [0, 1, 2, 3, 4, 5];
 
   for (const pageIdx of pages) {
     if (foundPosition > 0) break;
@@ -289,7 +289,7 @@ async function scrapeYandexSerp(
               }
 
               rankCounter++;
-              if (rankCounter > 50) break;
+              if (rankCounter > 80) break;
             } catch (e) { }
           }
         }
@@ -298,8 +298,8 @@ async function scrapeYandexSerp(
       }
     }
 
-    if (pageIdx === 0 && foundPosition === 0) {
-      await new Promise(r => setTimeout(r, 600));
+    if (pageIdx < 5 && foundPosition === 0) {
+      await new Promise(r => setTimeout(r, 400));
     }
   }
 
