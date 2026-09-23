@@ -117,17 +117,17 @@ export async function POST(req: NextRequest) {
       const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
       const cleanDomain = host ? host.split(':')[0].toLowerCase() : 'besteskort.online';
 
-      // 1. Önce görseli orantılı olarak yeniden boyutlandır (Maks. 1600x1600)
-      const resizedImage = sharp(inputBuffer)
+      // 1. Önce görseli orantılı olarak yeniden boyutlandır (Maks. 1600x1600) ve gerçek piksel boyutlarını al
+      const { data: resizedBuffer, info: resizedInfo } = await sharp(inputBuffer)
         .rotate()
-        .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true });
+        .resize(1600, 1600, { fit: 'inside', withoutEnlargement: true })
+        .toBuffer({ resolveWithObject: true });
 
-      const metadata = await resizedImage.metadata();
-      const finalWidth = metadata.width || 1200;
-      const finalHeight = metadata.height || 1200;
+      const finalWidth = resizedInfo.width;
+      const finalHeight = resizedInfo.height;
 
       // 2. Yeniden boyutlandırılmış gerçek piksele birebir uyan SVG filigranı oluştur
-      const fontSize = Math.max(22, Math.round(finalWidth * 0.07));
+      const fontSize = Math.max(20, Math.round(finalWidth * 0.065));
       const watermarkSvg = `
       <svg width="${finalWidth}" height="${finalHeight}" viewBox="0 0 ${finalWidth} ${finalHeight}" xmlns="http://www.w3.org/2000/svg">
         <g transform="rotate(-28 ${finalWidth / 2} ${finalHeight / 2})">
@@ -137,7 +137,7 @@ export async function POST(req: NextRequest) {
       </svg>
       `;
 
-      const processedBuffer = await resizedImage
+      const processedBuffer = await sharp(resizedBuffer)
         .composite([{ input: Buffer.from(watermarkSvg), gravity: 'center', blend: 'over' }])
         .webp({ quality: 86, effort: 4 })
         .toBuffer();
