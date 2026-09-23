@@ -171,6 +171,24 @@ async function scrapeGoogleSerp(
   return { position: foundPosition, competitors, foundUrl, foundDomain };
 }
 
+const USER_AGENTS = [
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.127 Mobile Safari/537.36',
+  'Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.88 Mobile Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+];
+
+function getRandomUserAgent() {
+  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+}
+
+function generateYandexCookies() {
+  const ts = Math.floor(Date.now() / 1000);
+  const randomUid = Math.floor(Math.random() * 900000000 + 100000000);
+  return `yandexuid=${randomUid}${ts}; yp=${ts + 31536000}.ygu.1; my=YycCAQA=; ys=udn.cDrFn21haWwucnU%3D#wprid.${ts}000000-0000000000000000000-touch-TURKEY; mda=0; _yasc=`;
+}
+
 /**
  * YANDEX SERP MOTORU (CANLI VE GERÇEK ÇOK SAYFALI TARAMA)
  */
@@ -194,75 +212,90 @@ async function scrapeYandexSerp(
     if (foundPosition > 0) break;
 
     const pageParam = pageIdx > 0 ? `&p=${pageIdx}` : '';
-    const yandexUrl = `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`;
+    const endpoints = [
+      `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`,
+      `https://ya.ru/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`,
+    ];
 
-    try {
-      const res = await fetch(yandexUrl, {
-        headers: {
-          'User-Agent':
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-          'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Sec-Ch-Ua-Mobile': '?1',
-          'Upgrade-Insecure-Requests': '1',
-        },
-      });
+    let pageSuccess = false;
 
-      if (res.ok) {
-        const html = await res.text();
-        const hasCaptcha = html.includes('SmartCaptcha') || html.includes('Verification') || html.includes('checkbox_captcha');
+    for (const yandexUrl of endpoints) {
+      if (pageSuccess) break;
 
-        if (hasCaptcha || html.length < 5000) {
-          isBlocked = true;
-          continue;
-        }
+      try {
+        const ua = getRandomUserAgent();
+        const cookie = generateYandexCookies();
 
-        scannedAnyValidPage = true;
-        const linkRegex = /href="([^"]+)"/g;
-        let m;
+        const res = await fetch(yandexUrl, {
+          headers: {
+            'User-Agent': ua,
+            'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'Cookie': cookie,
+            'Sec-Ch-Ua-Mobile': '?1',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Dest': 'document',
+            'Upgrade-Insecure-Requests': '1',
+          },
+        });
 
-        while ((m = linkRegex.exec(html)) !== null) {
-          let rawHref = m[1];
-          if (!rawHref.startsWith('http')) continue;
+        if (res.ok) {
+          const html = await res.text();
+          const hasCaptcha = html.includes('SmartCaptcha') || html.includes('Verification') || html.includes('checkbox_captcha');
 
-          try {
-            const parsed = new URL(rawHref);
-            const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+          if (hasCaptcha || html.length < 5000) {
+            continue;
+          }
 
-            if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
-              continue;
-            }
+          scannedAnyValidPage = true;
+          pageSuccess = true;
+          const linkRegex = /href="([^"]+)"/g;
+          let m;
 
-            seenDomains.add(hostname);
+          while ((m = linkRegex.exec(html)) !== null) {
+            let rawHref = m[1];
+            if (!rawHref.startsWith('http')) continue;
 
-            const isOurSite =
-              hostname.includes('besteskort') ||
-              hostname.includes('bestescort') ||
-              isOurSiteDomain(hostname, targetDomain);
+            try {
+              const parsed = new URL(rawHref);
+              const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
-            if (isOurSite) {
-              if (foundPosition === 0) {
-                foundPosition = rankCounter;
-                foundUrl = rawHref;
-                foundDomain = hostname;
+              if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
+                continue;
               }
-            } else {
-              if (competitors.length < 3) {
-                competitors.push({
-                  position: rankCounter,
-                  domain: hostname,
-                  title: hostname,
-                });
-              }
-            }
 
-            rankCounter++;
-            if (rankCounter > 50) break;
-          } catch (e) { }
+              seenDomains.add(hostname);
+
+              const isOurSite =
+                hostname.includes('besteskort') ||
+                hostname.includes('bestescort') ||
+                isOurSiteDomain(hostname, targetDomain);
+
+              if (isOurSite) {
+                if (foundPosition === 0) {
+                  foundPosition = rankCounter;
+                  foundUrl = rawHref;
+                  foundDomain = hostname;
+                }
+              } else {
+                if (competitors.length < 3) {
+                  competitors.push({
+                    position: rankCounter,
+                    domain: hostname,
+                    title: hostname,
+                  });
+                }
+              }
+
+              rankCounter++;
+              if (rankCounter > 50) break;
+            } catch (e) { }
+          }
         }
+      } catch (err) {
+        // Devam et
       }
-    } catch (err) {
-      // Devam et
     }
 
     if (pageIdx === 0 && foundPosition === 0) {

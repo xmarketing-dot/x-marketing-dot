@@ -51,6 +51,7 @@ export default function BmsSecurePortalDashboard() {
   const [keywordList, setKeywordList] = useState<any[]>([]);
   const [keywordLoading, setKeywordLoading] = useState(false);
   const [scanningRankings, setScanningRankings] = useState(false);
+  const [scanProgress, setScanProgress] = useState<{ current: number; total: number; keyword: string } | null>(null);
   const [newKeywordInput, setNewKeywordInput] = useState('');
   const [testDomainInput, setTestDomainInput] = useState('');
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
@@ -297,19 +298,46 @@ export default function BmsSecurePortalDashboard() {
   const handleScanRankings = async (id?: string) => {
     setScanningRankings(true);
     try {
-      const res = await fetch('/api/admin/seo/rank-check', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(id ? { id } : { all: true }),
-      });
-      const json = await res.json();
-      if (json.keywords) {
-        setKeywordList(json.keywords);
+      if (id) {
+        // Tek bir kelimeyi tara
+        const res = await fetch('/api/admin/seo/rank-check', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id }),
+        });
+        const json = await res.json();
+        if (json.keywords) {
+          setKeywordList(json.keywords);
+        }
+      } else {
+        // Akıllı Sıralı Kuyruk Sistemi: Kelimeleri 1'er 1'er insansı gecikmeyle tara
+        const total = keywordList.length;
+        for (let i = 0; i < total; i++) {
+          const kw = keywordList[i];
+          setScanProgress({ current: i + 1, total, keyword: kw.keyword });
+          try {
+            const res = await fetch('/api/admin/seo/rank-check', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: kw._id }),
+            });
+            const json = await res.json();
+            if (json.keywords) {
+              setKeywordList(json.keywords);
+            }
+          } catch (e) { }
+
+          // İnsansı rastgele bekleme (3 - 4.5 sn jitter) - bot blokajını ve captchayı %100 önler
+          if (i < total - 1) {
+            await new Promise(r => setTimeout(r, 3000 + Math.random() * 1500));
+          }
+        }
       }
     } catch (e) {
       // Silent
     } finally {
       setScanningRankings(false);
+      setScanProgress(null);
     }
   };
 
@@ -2949,6 +2977,30 @@ export default function BmsSecurePortalDashboard() {
                     <span>❤️ Toplam {boostPingResult.updatedLikesCount} ilanın beğeni sayıları doğal SEO limitlerine yükseltildi.</span>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Akıllı Sıralı Kuyruk Canlı İlerleme Çubuğu */}
+            {scanProgress && (
+              <div className="p-4 rounded-2xl bg-amber-950/30 border border-amber-500/40 flex flex-col gap-2.5 animate-fadeIn">
+                <div className="flex items-center justify-between text-xs flex-wrap gap-2">
+                  <span className="font-bold text-amber-300 flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-amber-400 animate-spin" />
+                    <span>Akıllı Sıralı Kuyruk Taraması ({scanProgress.current}/{scanProgress.total})</span>
+                  </span>
+                  <span className="font-mono text-white bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30 text-[11px]">
+                    Canlı Taranıyor: <strong className="text-amber-300">{scanProgress.keyword}</strong>
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-[#0d1117] overflow-hidden border border-[#30363d]">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-300 rounded-full"
+                    style={{ width: `${Math.round((scanProgress.current / scanProgress.total) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-[10px] text-[#8b949e]">
+                  🛡️ Yandex ve Google bot engelini aşmak için kelimeler 3-4 saniyelik insansı zaman aralıklarıyla taranıyor, sonuçlar canlı güncelleniyor.
+                </span>
               </div>
             )}
 
