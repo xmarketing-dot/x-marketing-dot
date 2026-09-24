@@ -85,18 +85,19 @@ export async function POST(req: NextRequest) {
     });
 
     // 3. WhatsApp Tıklaması, Paylaşım veya Gösterim/Görüntülenme Sayısını Arttır
-    if (targetId) {
+    const effectiveTargetId = targetId || lId || metadata?.slug;
+    if (effectiveTargetId) {
       if (eventType === 'whatsapp_click' || eventType === 'special_ad_whatsapp_click') {
-        if (mongoose.Types.ObjectId.isValid(targetId)) {
-          await ListingModel.findByIdAndUpdate(targetId, { $inc: { whatsappTiklamaSayisi: 1 } }).catch(() => {});
+        if (mongoose.Types.ObjectId.isValid(effectiveTargetId)) {
+          await ListingModel.findByIdAndUpdate(effectiveTargetId, { $inc: { whatsappTiklamaSayisi: 1 } }).catch(() => {});
         } else {
-          await ListingModel.updateOne({ slug: targetId }, { $inc: { whatsappTiklamaSayisi: 1 } }).catch(() => {});
+          await ListingModel.updateOne({ slug: effectiveTargetId }, { $inc: { whatsappTiklamaSayisi: 1 } }).catch(() => {});
         }
       } else if (eventType === 'share_listing') {
-        if (mongoose.Types.ObjectId.isValid(targetId)) {
-          await ListingModel.findByIdAndUpdate(targetId, { $inc: { paylasimSayisi: 1 } }).catch(() => {});
+        if (mongoose.Types.ObjectId.isValid(effectiveTargetId)) {
+          await ListingModel.findByIdAndUpdate(effectiveTargetId, { $inc: { paylasimSayisi: 1 } }).catch(() => {});
         } else {
-          await ListingModel.updateOne({ slug: targetId }, { $inc: { paylasimSayisi: 1 } }).catch(() => {});
+          await ListingModel.updateOne({ slug: effectiveTargetId }, { $inc: { paylasimSayisi: 1 } }).catch(() => {});
         }
       } else if (
         eventType === 'special_ad_impression' ||
@@ -106,10 +107,10 @@ export async function POST(req: NextRequest) {
         eventType === 'hero_vitrin_impression' ||
         eventType === 'popup_impression'
       ) {
-        if (mongoose.Types.ObjectId.isValid(targetId)) {
-          await ListingModel.findByIdAndUpdate(targetId, { $inc: { goruntulenmeSayisi: 1 } }).catch(() => {});
+        if (mongoose.Types.ObjectId.isValid(effectiveTargetId)) {
+          await ListingModel.findByIdAndUpdate(effectiveTargetId, { $inc: { goruntulenmeSayisi: 1 } }).catch(() => {});
         } else {
-          await ListingModel.updateOne({ slug: targetId }, { $inc: { goruntulenmeSayisi: 1 } }).catch(() => {});
+          await ListingModel.updateOne({ slug: effectiveTargetId }, { $inc: { goruntulenmeSayisi: 1 } }).catch(() => {});
         }
       }
     }

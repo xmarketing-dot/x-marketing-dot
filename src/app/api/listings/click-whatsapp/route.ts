@@ -9,12 +9,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'listingId is required' }, { status: 400 });
     }
 
-    await connectToDatabase();
-    await ListingModel.findByIdAndUpdate(listingId, {
-      $inc: { whatsappTiklamaSayisi: 1 },
-    });
-
-    return NextResponse.json({ success: true });
+    // whatsappTiklamaSayisi artık merkezi olarak /api/analytics/event üzerinden
+    // tekil ve tutarlı şekilde artırılmaktadır. Çift sayımı (double-count) önlemek için
+    // bu legacy endpoint güvenli bir şekilde başarı döndürür.
+    return NextResponse.json({ success: true, handledByAnalytics: true });
   } catch (error) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

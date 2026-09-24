@@ -391,15 +391,16 @@ export default async function ListingDetailPage({ params }: Props) {
 
           {/* Sayfa İçi Büyük WhatsApp Butonu */}
           <div className="pt-1">
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-3.5 sm:py-4 px-4 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-sm sm:text-base tracking-wide shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2.5 w-full"
-            >
-              <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
-              <span>WhatsApp İle Hemen Görüş</span>
-            </a>
+            <WhatsAppButton
+              numara={listing.whatsappNumara}
+              baslik={listing.baslik}
+              listingId={listing._id ? listing._id.toString() : listing.id}
+              slug={listing.slug}
+              il={ilAdi}
+              ilce={ilceAdi}
+              customMessage={listing.whatsappOzelMesaj}
+              label="WhatsApp İle Hemen Görüş"
+            />
           </div>
 
           <div className="pt-1 flex items-center justify-center">
@@ -526,15 +527,16 @@ export default async function ListingDetailPage({ params }: Props) {
       {/* ── 6. MOBİLDE ALTA YAPIŞIK SABİT İLETİŞİM BARI (STICKY WHATSAPP ACTION BAR) ──────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-[#0d1117]/95 backdrop-blur-xl border-t border-[#30363d] p-3 px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] pb-[max(env(safe-area-inset-bottom),12px)]">
         <div className="max-w-2xl mx-auto w-full">
-          <a
-            href={waUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-xl active:scale-95 transition-all font-heading"
-          >
-            <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
-            <span>WhatsApp ile İletişime Geç</span>
-          </a>
+          <WhatsAppButton
+            numara={listing.whatsappNumara}
+            baslik={listing.baslik}
+            listingId={listing._id ? listing._id.toString() : listing.id}
+            slug={listing.slug}
+            il={ilAdi}
+            ilce={ilceAdi}
+            customMessage={listing.whatsappOzelMesaj}
+            label="WhatsApp ile İletişime Geç"
+          />
         </div>
       </div>
 

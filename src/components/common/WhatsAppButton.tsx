@@ -12,6 +12,7 @@ interface ContactButtonsProps {
   customMessage?: string;
   compact?: boolean;
   className?: string;
+  label?: string;
 }
 
 export const OfficialWhatsAppIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
@@ -37,6 +38,7 @@ export default function WhatsAppButton({
   customMessage,
   compact = false,
   className = '',
+  label,
 }: ContactButtonsProps) {
   const formattedNumber = formatWhatsAppNumber(numara);
 
@@ -62,6 +64,8 @@ export default function WhatsAppButton({
         listingId,
         title: baslik,
         phone: formattedNumber,
+        city: `${il || ''}/${ilce || ''}`,
+        slug,
       });
     }
     if (listingId) {
@@ -85,7 +89,7 @@ export default function WhatsAppButton({
           title="WhatsApp'tan Mesaj Gönder"
         >
           <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
-          <span>WhatsApp ile İletişim</span>
+          <span>{label || 'WhatsApp ile İletişim'}</span>
         </a>
       </div>
     );
@@ -101,7 +105,7 @@ export default function WhatsAppButton({
         className="w-full flex items-center justify-center gap-2.5 py-3.5 sm:py-4 px-5 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-lg active:scale-95 transition-all font-heading cursor-pointer"
       >
         <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
-        <span>WhatsApp ile İletişime Geç</span>
+        <span>{label || 'WhatsApp ile İletişime Geç'}</span>
       </a>
     </div>
   );
