@@ -148,12 +148,6 @@ export default function AnalyticsTracker() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handleBeforeUnload);
 
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handleBeforeUnload);
-      flushImpressions();
-    };
-
     window.trackEvent = (eventType: string, payload: Record<string, any> = {}) => {
       try {
         const vid = getOrSetVisitorId();
@@ -174,12 +168,16 @@ export default function AnalyticsTracker() {
             entryReferer: entryRef,
             metadata: payload,
           }),
+          keepalive: true,
         }).catch(() => {});
       } catch (e) {}
     };
 
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
       if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
+      flushImpressions();
     };
   }, []);
 

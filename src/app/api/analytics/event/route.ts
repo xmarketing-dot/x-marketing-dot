@@ -87,9 +87,17 @@ export async function POST(req: NextRequest) {
     // 3. WhatsApp Tıklaması, Paylaşım veya Gösterim/Görüntülenme Sayısını Arttır
     if (targetId) {
       if (eventType === 'whatsapp_click' || eventType === 'special_ad_whatsapp_click') {
-        await ListingModel.findByIdAndUpdate(targetId, { $inc: { whatsappTiklamaSayisi: 1 } }).catch(() => {});
+        if (mongoose.Types.ObjectId.isValid(targetId)) {
+          await ListingModel.findByIdAndUpdate(targetId, { $inc: { whatsappTiklamaSayisi: 1 } }).catch(() => {});
+        } else {
+          await ListingModel.updateOne({ slug: targetId }, { $inc: { whatsappTiklamaSayisi: 1 } }).catch(() => {});
+        }
       } else if (eventType === 'share_listing') {
-        await ListingModel.findByIdAndUpdate(targetId, { $inc: { paylasimSayisi: 1 } }).catch(() => {});
+        if (mongoose.Types.ObjectId.isValid(targetId)) {
+          await ListingModel.findByIdAndUpdate(targetId, { $inc: { paylasimSayisi: 1 } }).catch(() => {});
+        } else {
+          await ListingModel.updateOne({ slug: targetId }, { $inc: { paylasimSayisi: 1 } }).catch(() => {});
+        }
       } else if (
         eventType === 'special_ad_impression' ||
         eventType === 'listing_modal_view' ||

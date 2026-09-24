@@ -207,7 +207,9 @@ async function scrapeYandexSerp(
 
   // 1. ÖNCELİK: Puppeteer Stealth Motoru (Yerel ve Chrome ortamlarında %100 Doğru Çalışır)
   try {
+    // @ts-ignore
     const puppeteerExtra = (await import('puppeteer-extra')).default;
+    // @ts-ignore
     const StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default;
     puppeteerExtra.use(StealthPlugin());
 

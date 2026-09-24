@@ -371,6 +371,15 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
           const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 
           const handleWaClick = () => {
+            if (typeof window !== 'undefined' && (window as any).trackEvent) {
+              (window as any).trackEvent('whatsapp_click', {
+                listingId: current._id,
+                title: current.baslik,
+                phone: formattedNumber,
+                city: `${current.ilSlug || ''}/${current.ilceSlug || ''}`,
+                slug: current.slug,
+              });
+            }
             if (current._id) {
               fetch('/api/listings/click-whatsapp', {
                 method: 'POST',
