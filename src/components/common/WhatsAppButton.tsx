@@ -27,6 +27,7 @@ export const OfficialWhatsAppIcon = ({ className = 'w-4 h-4' }: { className?: st
 );
 
 import { formatWhatsAppNumber } from '@/lib/format';
+import { trackEvent } from '@/components/common/AnalyticsTracker';
 
 export default function WhatsAppButton({
   numara,
@@ -59,15 +60,13 @@ export default function WhatsAppButton({
   const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 
   const handleClick = () => {
-    if (typeof window !== 'undefined' && (window as any).trackEvent) {
-      (window as any).trackEvent('whatsapp_click', {
-        listingId,
-        title: baslik,
-        phone: formattedNumber,
-        city: `${il || ''}/${ilce || ''}`,
-        slug,
-      });
-    }
+    trackEvent('whatsapp_click', {
+      listingId,
+      title: baslik,
+      phone: formattedNumber,
+      city: `${il || ''}/${ilce || ''}`,
+      slug,
+    });
     if (listingId) {
       fetch('/api/listings/click-whatsapp', {
         method: 'POST',

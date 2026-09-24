@@ -12,47 +12,120 @@ declare global {
   }
 }
 
+let memoryVid = '';
+let memorySid = '';
+
 function getOrSetVisitorId(): string {
   if (typeof window === 'undefined') return 'server';
-  let vid = localStorage.getItem('bms_vid');
-  if (!vid) {
-    vid = 'v_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
-    localStorage.setItem('bms_vid', vid);
+  try {
+    let vid = localStorage.getItem('bms_vid');
+    if (!vid) {
+      vid = memoryVid || ('v_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36));
+      try { localStorage.setItem('bms_vid', vid); } catch (e) {}
+    }
+    memoryVid = vid;
+    return vid;
+  } catch (e) {
+    if (!memoryVid) memoryVid = 'v_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
+    return memoryVid;
   }
-  return vid;
 }
 
 function getOrSetSessionId(): string {
   if (typeof window === 'undefined') return 'server';
-  let sid = sessionStorage.getItem('bms_sid');
-  if (!sid) {
-    sid = 's_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
-    sessionStorage.setItem('bms_sid', sid);
+  try {
+    let sid = sessionStorage.getItem('bms_sid');
+    if (!sid) {
+      sid = memorySid || ('s_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36));
+      try { sessionStorage.setItem('bms_sid', sid); } catch (e) {}
+    }
+    memorySid = sid;
+    return sid;
+  } catch (e) {
+    if (!memorySid) memorySid = 's_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
+    return memorySid;
   }
-  return sid;
 }
 
 function getOrSetEntryReferrer(): string {
   if (typeof window === 'undefined') return 'Direct';
-  const currentRef = document.referrer || '';
-  const currentHost = window.location.hostname;
-  let entryRef = sessionStorage.getItem('bms_entry_ref');
+  try {
+    const currentRef = document.referrer || '';
+    const currentHost = window.location.hostname;
+    let entryRef = sessionStorage.getItem('bms_entry_ref');
 
-  // Harici bir siteden (Google, FB, X, IG vb.) geldiyse oturumun giriş referansını kaydet
-  if (currentRef && !currentRef.includes(currentHost)) {
-    sessionStorage.setItem('bms_entry_ref', currentRef);
-    return currentRef;
+    if (currentRef && !currentRef.includes(currentHost)) {
+      try { sessionStorage.setItem('bms_entry_ref', currentRef); } catch (e) {}
+      return currentRef;
+    }
+
+    if (entryRef) return entryRef;
+
+    const fallback = currentRef && !currentRef.includes(currentHost) ? currentRef : 'Direct';
+    try { sessionStorage.setItem('bms_entry_ref', fallback); } catch (e) {}
+    return fallback;
+  } catch (e) {
+    return 'Direct';
   }
+}
 
-  // Daha önce oturumda kaydedilmiş harici referans varsa onu koru
-  if (entryRef) {
-    return entryRef;
+export function trackEvent(eventType: string, payload: Record<string, any> = {}) {
+  if (typeof window === 'undefined') return;
+  try {
+    const vid = getOrSetVisitorId();
+    const sid = getOrSetSessionId();
+    const entryRef = getOrSetEntryReferrer();
+
+    const bodyString = JSON.stringify({
+      visitorId: vid,
+      sessionId: sid,
+      eventType,
+      targetId: payload.listingId || payload.targetId || payload.slug || '',
+      targetTitle: payload.title || payload.targetTitle || '',
+      targetCity: payload.city || payload.targetCity || '',
+      path: window.location.pathname,
+      entryReferer: entryRef,
+      metadata: payload,
+    });
+
+    // Mobile external redirect dostu sendBeacon (veri asla kaybolmaz)
+    let beaconSent = false;
+    if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+      try {
+        const blob = new Blob([bodyString], { type: 'application/json' });
+        beaconSent = navigator.sendBeacon('/api/analytics/event', blob);
+      } catch (err) {}
+    }
+
+    if (!beaconSent) {
+      fetch('/api/analytics/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: bodyString,
+        keepalive: true,
+      }).catch(() => {});
+    }
+  } catch (e) {
+    try {
+      fetch('/api/analytics/event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType,
+          targetId: payload.listingId || payload.targetId || payload.slug,
+          targetTitle: payload.title || payload.targetTitle,
+          path: window.location.pathname,
+          metadata: payload,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch (err) {}
   }
+}
 
-  // İlk giriş direkt ise direkt olarak işaretle
-  const fallback = currentRef && !currentRef.includes(currentHost) ? currentRef : 'Direct';
-  sessionStorage.setItem('bms_entry_ref', fallback);
-  return fallback;
+// Script yüklendiği anda window'a bağla (useEffect beklemez, 0ms hazır)
+if (typeof window !== 'undefined') {
+  (window as any).trackEvent = trackEvent;
 }
 
 export default function AnalyticsTracker() {
@@ -148,30 +221,7 @@ export default function AnalyticsTracker() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handleBeforeUnload);
 
-    window.trackEvent = (eventType: string, payload: Record<string, any> = {}) => {
-      try {
-        const vid = getOrSetVisitorId();
-        const sid = getOrSetSessionId();
-        const entryRef = getOrSetEntryReferrer();
-
-        fetch('/api/analytics/event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            visitorId: vid,
-            sessionId: sid,
-            eventType,
-            targetId: payload.listingId || payload.targetId,
-            targetTitle: payload.title || payload.targetTitle,
-            targetCity: payload.city || payload.targetCity,
-            path: window.location.pathname,
-            entryReferer: entryRef,
-            metadata: payload,
-          }),
-          keepalive: true,
-        }).catch(() => {});
-      } catch (e) {}
-    };
+    window.trackEvent = trackEvent;
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);

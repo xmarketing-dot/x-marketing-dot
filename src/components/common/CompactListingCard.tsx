@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { MapPin, ShieldCheck, Crown, Award, Medal } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
+import { trackEvent } from '@/components/common/AnalyticsTracker';
 
 interface CompactListingCardProps {
   listing: {
@@ -143,14 +144,13 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
 
   const handleWaClick = () => {
     if (listing._id) {
-      if (typeof window !== 'undefined' && window.trackEvent) {
-        window.trackEvent('whatsapp_click', {
-          listingId: listing._id,
-          title: listing.baslik,
-          city: `${listing.ilSlug}/${listing.ilceSlug}`,
-          phone: formattedNumber,
-        });
-      }
+      trackEvent('whatsapp_click', {
+        listingId: listing._id,
+        title: listing.baslik,
+        city: `${listing.ilSlug}/${listing.ilceSlug}`,
+        phone: formattedNumber,
+        slug: listing.slug,
+      });
       fetch('/api/listings/click-whatsapp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

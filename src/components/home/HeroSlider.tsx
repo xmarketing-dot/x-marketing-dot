@@ -24,6 +24,7 @@ import {
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 import { getAdminWhatsAppNumber } from '@/lib/siteConfig';
+import { trackEvent } from '@/components/common/AnalyticsTracker';
 
 export interface DynamicHeroSlide {
   _id: string;
@@ -371,15 +372,13 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
           const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
 
           const handleWaClick = () => {
-            if (typeof window !== 'undefined' && (window as any).trackEvent) {
-              (window as any).trackEvent('whatsapp_click', {
-                listingId: current._id,
-                title: current.baslik,
-                phone: formattedNumber,
-                city: `${current.ilSlug || ''}/${current.ilceSlug || ''}`,
-                slug: current.slug,
-              });
-            }
+            trackEvent('whatsapp_click', {
+              listingId: current._id,
+              title: current.baslik,
+              phone: formattedNumber,
+              city: `${current.ilSlug || ''}/${current.ilceSlug || ''}`,
+              slug: current.slug,
+            });
             if (current._id) {
               fetch('/api/listings/click-whatsapp', {
                 method: 'POST',

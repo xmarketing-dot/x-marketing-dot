@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { X, Flame, ChevronRight, Crown, MapPin, ShieldCheck } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
+import { trackEvent } from '@/components/common/AnalyticsTracker';
 
 interface SpecialAdItem {
   _id?: string;
@@ -147,23 +148,19 @@ export default function SpecialAdPopup() {
       const lTitle = currentAd?.ilan?.baslik || currentAd?.baslik;
       const lCity = currentAd?.hedefIlSlug || currentAd?.ilan?.ilSlug;
 
-      if (typeof window !== 'undefined') {
-        if ((window as any).trackEvent) {
-          (window as any).trackEvent('special_ad_impression', {
-            listingId: lId,
-            slug: lSlug,
-            title: lTitle,
-            targetCity: lCity,
-          });
-        }
-        if ((window as any).trackListingImpression && lId) {
-          (window as any).trackListingImpression({
-            listingId: lId,
-            slug: lSlug,
-            title: lTitle,
-            city: lCity,
-          });
-        }
+      trackEvent('special_ad_impression', {
+        listingId: lId,
+        slug: lSlug,
+        title: lTitle,
+        targetCity: lCity,
+      });
+      if ((window as any).trackListingImpression && lId) {
+        (window as any).trackListingImpression({
+          listingId: lId,
+          slug: lSlug,
+          title: lTitle,
+          city: lCity,
+        });
       }
       if (timer) clearTimeout(timer);
       window.removeEventListener('scroll', handleScroll);
@@ -270,15 +267,11 @@ export default function SpecialAdPopup() {
   const handleGoToAd = () => {
     hasDismissedThisVisitRef.current = true;
     setIsOpen(false);
-    if (typeof window !== 'undefined') {
-      if ((window as any).trackEvent) {
-        (window as any).trackEvent('special_ad_click', {
-          listingId: listing?._id,
-          title: displayTitle,
-          targetUrl,
-        });
-      }
-    }
+    trackEvent('special_ad_click', {
+      listingId: listing?._id,
+      title: displayTitle,
+      targetUrl,
+    });
     router.push(targetUrl);
   };
 
@@ -378,12 +371,12 @@ export default function SpecialAdPopup() {
                 onClick={() => {
                   hasDismissedThisVisitRef.current = true;
                   setIsOpen(false);
-                  if ((window as any).trackEvent) {
-                    (window as any).trackEvent('special_ad_whatsapp_click', {
-                      listingId: listing?._id,
-                      title: displayTitle,
-                    });
-                  }
+                  trackEvent('special_ad_whatsapp_click', {
+                    listingId: listing?._id,
+                    title: displayTitle,
+                    slug: listing?.slug,
+                    city: listing?.ilSlug,
+                  });
                 }}
                 className="w-full py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2.5 active:scale-95 transition-all"
               >

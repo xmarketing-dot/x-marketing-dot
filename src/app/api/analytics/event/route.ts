@@ -22,27 +22,34 @@ export async function POST(req: NextRequest) {
       metadata = {},
     } = body;
 
-    if (!eventType || !visitorId) {
+    if (!eventType) {
       return NextResponse.json({ error: 'Missing required event fields' }, { status: 400 });
     }
-
-    await connectToDatabase();
 
     const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
     const cleanIp = clientIp.split(',')[0].trim();
     const incomingHost = (req.headers.get('x-forwarded-host') || req.headers.get('host') || '').split(':')[0].toLowerCase();
 
+    const effectiveVisitorId = visitorId || ('v_' + cleanIp.replace(/[^a-zA-Z0-9]/g, '_'));
+
+    await connectToDatabase();
+
     // 1. Ziyaretçi İstihbaratını (Şehir, Cihaz, Referrer, Arama Kelimesi) Çek
     let visitorInfo: any = null;
-    if (visitorId) {
-      visitorInfo = await AnalyticsVisitorModel.findOne({ visitorId }).sort({ createdAt: -1 }).lean();
+    if (effectiveVisitorId) {
+      visitorInfo = await AnalyticsVisitorModel.findOne({ visitorId: effectiveVisitorId }).sort({ createdAt: -1 }).lean();
     }
 
-    // 2. İlan Detaylarını Çek
+    // 2. İlan Detaylarını Çek (Hem ObjectId hem Slug desteği)
     let listingInfo: any = null;
-    const lId = targetId || metadata?.listingId;
-    if (lId && mongoose.Types.ObjectId.isValid(lId)) {
-      listingInfo = await ListingModel.findById(lId).select('baslik slug whatsappNumara ilSlug ilceSlug anaFotograf rozet status').lean();
+    const lId = targetId || metadata?.listingId || metadata?.slug;
+    if (lId) {
+      if (mongoose.Types.ObjectId.isValid(lId)) {
+        listingInfo = await ListingModel.findById(lId).select('baslik slug whatsappNumara ilSlug ilceSlug anaFotograf rozet status').lean();
+      }
+      if (!listingInfo) {
+        listingInfo = await ListingModel.findOne({ slug: lId }).select('baslik slug whatsappNumara ilSlug ilceSlug anaFotograf rozet status').lean();
+      }
     }
 
     const city = visitorInfo?.city || req.headers.get('x-vercel-ip-city') || targetCity || 'İstanbul';
@@ -72,8 +79,8 @@ export async function POST(req: NextRequest) {
     const finalTitle = listingInfo?.baslik || targetTitle || (metadata?.title || 'İlan');
 
     const event = await AnalyticsEventModel.create({
-      visitorId,
-      sessionId: sessionId || visitorId,
+      visitorId: effectiveVisitorId,
+      sessionId: sessionId || effectiveVisitorId,
       eventType,
       targetId: targetId || lId || '',
       targetTitle: finalTitle,
@@ -120,11 +127,14 @@ export async function POST(req: NextRequest) {
       try {
         chatEmitter.emit('whatsapp_click', {
           eventId: event._id.toString(),
+          _id: event._id.toString(),
           targetId: event.targetId,
           targetTitle: finalTitle,
+          baslik: finalTitle,
           path: event.path,
           ip: cleanIp,
           city,
+          targetCity: city,
           device,
           browser,
           os,
@@ -132,8 +142,11 @@ export async function POST(req: NextRequest) {
           refererSource,
           searchKeyword,
           phone: enrichedMetadata.listingPhone,
+          whatsappNumara: enrichedMetadata.listingPhone,
+          slug: enrichedMetadata.listingSlug,
           listingSlug: enrichedMetadata.listingSlug,
           listingPhoto: enrichedMetadata.listingPhoto,
+          fotoUrl: enrichedMetadata.listingPhoto,
           listingLocation: enrichedMetadata.listingLocation,
           createdAt: event.createdAt,
         });
