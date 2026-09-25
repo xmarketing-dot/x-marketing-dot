@@ -97,6 +97,14 @@ export function trackEvent(eventType: string, payload: Record<string, any> = {})
       } catch (err) {}
     }
 
+    // Yandex Metrika Hedef Takibi (reachGoal)
+    if (typeof window !== 'undefined' && typeof (window as any).ym === 'function') {
+      try {
+        (window as any).ym(113056145, 'reachGoal', eventType, payload);
+        (window as any).ym(112120217, 'reachGoal', eventType, payload);
+      } catch (ymErr) {}
+    }
+
     if (!beaconSent) {
       fetch('/api/analytics/event', {
         method: 'POST',
@@ -294,6 +302,21 @@ export default function AnalyticsTracker() {
     else if (/Android/i.test(ua)) os = 'Android';
     else if (/Windows/i.test(ua)) os = 'Windows';
     else if (/Macintosh/i.test(ua)) os = 'macOS';
+
+    // Yandex Metrika SPA Hit Gönderimi (Next.js sayfa geçişleri için)
+    if (typeof window !== 'undefined' && typeof (window as any).ym === 'function') {
+      try {
+        const fullUrl = window.location.href;
+        (window as any).ym(113056145, 'hit', fullUrl, {
+          title: document.title || 'Best Eskort',
+          referer: referer !== 'Direct' ? referer : undefined,
+        });
+        (window as any).ym(112120217, 'hit', fullUrl, {
+          title: document.title || 'Best Eskort',
+          referer: referer !== 'Direct' ? referer : undefined,
+        });
+      } catch (ymErr) {}
+    }
 
     fetch('/api/analytics/track', {
       method: 'POST',
