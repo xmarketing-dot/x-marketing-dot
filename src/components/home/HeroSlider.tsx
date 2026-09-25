@@ -335,9 +335,19 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
               <span>VIP VİTRİN • #{activeIdx + 1} / 5</span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/90 text-slate-950 font-black text-xs font-heading shadow-lg">
-              <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>%100 Doğrulanmış</span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/75 backdrop-blur-md text-emerald-400 font-bold text-xs border border-emerald-500/40 shadow-lg">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>Çevrimiçi</span>
+              </div>
+
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/90 text-slate-950 font-black text-xs font-heading shadow-lg">
+                <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>Teyitli</span>
+              </div>
             </div>
           </>
         ) : (

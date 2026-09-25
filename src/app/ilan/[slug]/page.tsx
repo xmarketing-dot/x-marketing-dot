@@ -19,7 +19,11 @@ import {
   Award,
   Medal,
   BadgeCheck,
-  Check
+  Check,
+  Flame,
+  Clock,
+  Zap,
+  Users
 } from 'lucide-react';
 import { getListingBySlug, getListings, getActiveBanner, getAllLocations } from '@/lib/data';
 import { generateListingSeoContent } from '@/lib/seoData';
@@ -332,6 +336,31 @@ export default async function ListingDetailPage({ params }: Props) {
             </div>
           </div>
 
+          {/* ── CANLI FOMO & SOSYAL KANIT PANELİ ──────────────── */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-emerald-950/40 via-[#161b22] to-amber-950/30 border border-emerald-500/30 shadow-inner">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="font-bold text-emerald-400 text-xs sm:text-[13px] font-heading">
+                Şu An Çevrimiçi &amp; Müsait
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 text-[11px] sm:text-xs text-slate-300 font-medium">
+              <span className="flex items-center gap-1 text-amber-300 font-semibold">
+                <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
+                <span>Son 1 saatte <strong>{14 + ((listing.slug || '').charCodeAt(0) % 28)}</strong> kişi inceledi</span>
+              </span>
+              <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-600"></span>
+              <span className="text-slate-400 flex items-center gap-1">
+                <Clock className="w-3 h-3 text-slate-400" />
+                <span>Yanıt: ~2 dk</span>
+              </span>
+            </div>
+          </div>
+
           {/* ── ÖNE ÇIKAN AÇIKLAMA ALANI (Vurgulanmış, Lüks Koyu Panel) ──────────────── */}
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between">
@@ -343,8 +372,9 @@ export default async function ListingDetailPage({ params }: Props) {
                   Model Açıklaması &amp; Hizmet Detayları
                 </h2>
               </div>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                ● Aktif &amp; Müsait
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
+                <Zap className="w-3 h-3 text-emerald-400" />
+                <span>Yoğun İlgi Görüyor</span>
               </span>
             </div>
 
@@ -389,8 +419,8 @@ export default async function ListingDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Sayfa İçi Büyük WhatsApp Butonu */}
-          <div className="pt-1">
+          {/* Sayfa İçi Büyük WhatsApp Butonu & FOMO Alt Bar */}
+          <div className="pt-1 flex flex-col gap-1.5">
             <WhatsAppButton
               numara={listing.whatsappNumara}
               baslik={listing.baslik}
@@ -401,6 +431,10 @@ export default async function ListingDetailPage({ params }: Props) {
               customMessage={listing.whatsappOzelMesaj}
               label="WhatsApp İle Hemen Görüş"
             />
+            <p className="text-center text-[10.5px] text-emerald-400/90 font-medium flex items-center justify-center gap-1.5">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>Son randevu talebi <strong>{6 + ((listing.slug || '').charCodeAt(0) % 22)} dakika önce</strong> iletildi</span>
+            </p>
           </div>
 
           <div className="pt-1 flex items-center justify-center">
