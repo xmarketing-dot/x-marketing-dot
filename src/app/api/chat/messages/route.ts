@@ -134,10 +134,11 @@ export async function POST(req: NextRequest) {
         `👤 <b>Gönderen:</b> <b>${userName}</b>${userPhone ? ` (<code>${userPhone}</code>)` : ''}`,
         listingTitle ? `👑 <b>İlanı:</b> <code>${listingTitle}</code>` : '',
         clientIp ? `📍 IP: <code>${clientIp}</code>` : '',
+        `🆔 <b>Sohbet Kodu:</b> <code>#THR_${threadId}</code>`,
         ``,
         `<blockquote>${cleanMsg}</blockquote>`,
         ``,
-
+        `👉 <i>Bu müşteriye cevap vermek için bu mesaja <b>Yanıtla (Reply)</b> yaparak yazınız.</i>`,
       ].filter(Boolean).join('\n');
 
       sendTelegramNotification(notifText).then((tgRes) => {
