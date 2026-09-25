@@ -153,8 +153,10 @@ export default function RootLayout({
       <head>
         <meta name="6a97888e-site-verification" content="d56702bff7a1051249d301cd6c520d4f" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="icon" type="image/png" sizes="120x120" href="/icon-192.png" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-icon" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon-192.png" />
         
         <script
           type="application/ld+json"

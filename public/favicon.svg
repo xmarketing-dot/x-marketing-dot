@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#090d16" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Arka Plan Yuvarlak Kutu -->
+  <rect x="4" y="4" width="112" height="112" rx="28" fill="url(#bgGrad)" stroke="url(#goldGrad)" stroke-width="4" />
+  
+  <!-- Taç / VIP Sembolü -->
+  <path d="M36 50 L46 72 L60 42 L74 72 L84 50 L80 82 L40 82 Z" fill="url(#goldGrad)" filter="url(#glow)" />
+  
+  <!-- Elmas Noktalar -->
+  <circle cx="36" cy="46" r="4" fill="#fef08a" />
+  <circle cx="60" cy="38" r="5" fill="#fef08a" />
+  <circle cx="84" cy="46" r="4" fill="#fef08a" />
+</svg>
