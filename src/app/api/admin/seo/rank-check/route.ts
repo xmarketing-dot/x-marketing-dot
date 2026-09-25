@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import connectToDatabase from '@/lib/mongodb';
 import KeywordRankModel, { ICompetitor } from '@/models/KeywordRank';
+import crypto from 'crypto';
 
 import { getSiteUrl } from '@/lib/siteUrl';
 
@@ -31,6 +32,7 @@ function getPrimaryDomain(): string {
   } catch (e) {}
   return 'besteskort.online';
 }
+
 const EXACT_OUR_DOMAINS = new Set([
   'besteskort.online',
   'www.besteskort.online',
@@ -45,14 +47,13 @@ const EXACT_OUR_DOMAINS = new Set([
 ]);
 
 /**
- * Domain'in kesin ve net olarak sadece bizim belirlediğimiz listedeki domainlere ait olduğunu doğrular.
- * Hiçbir genel/harici uzantıyı kabul etmez; sadece bu tam eşleşmeler geçerlidir.
+ * Domain'in kesin ve net olarak bizim belirlediğimiz listedeki domainlere ait olduğunu doğrular.
  */
 function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
   const host = hostname.toLowerCase().replace(/^www\./, '').trim();
   const rawHost = hostname.toLowerCase().trim();
 
-  // 1. Kesin olarak sadece bizim sahip olduğumuz tam domain listesi
+  // 1. Kesin olarak bizim sahip olduğumuz tam domain listesi
   if (EXACT_OUR_DOMAINS.has(rawHost) || EXACT_OUR_DOMAINS.has(host)) {
     return true;
   }
@@ -81,7 +82,7 @@ const NOISE_DOMAINS = [
   'cam.ac.uk', 'who.int', 'crazygames.', 'newsmax.', 'tanstack.', 'wordplays.', 'obsproject.', 'zhihu.',
   'baidu.', 'spotify.', 'safelinks.', 'outlook.', 'office.', 'cloudflare.', 'support.google', 'googleusercontent',
   'mercadolivre', 'elevenforum', 'closeddownrestaurants', 'fitsmallbusiness', 'worldscholarshipforum', 'news12',
-  'vk.ru', 'vk.com', 'ok.ru'
+  'vk.ru', 'vk.com', 'ok.ru', 'tiktok.com'
 ];
 
 function isNoiseDomain(host: string): boolean {
@@ -90,7 +91,7 @@ function isNoiseDomain(host: string): boolean {
 }
 
 /**
- * GOOGLE SERP MOTORU (CANLI GOOGLE.COM.TR - ÇOK SAYFALI TARAMA)
+ * GOOGLE SERP MOTORU (CANLI GOOGLE.COM.TR - PARALEL 10 SAYFA / İLK 100 SONUÇ TARAMA)
  */
 async function scrapeGoogleSerp(
   keyword: string,
@@ -103,67 +104,73 @@ async function scrapeGoogleSerp(
   const seenDomains = new Set<string>();
 
   try {
-    const pagesToScan = [1, 2, 3, 4, 5]; // İlk 50 sonucu derinlemesine tara
+    const serperUrl = `https://google.serper.dev/search`;
+    const apiKey = process.env.SERPER_API_KEY || '8078961d0c92f23ce765317915a6a500b20c2889';
 
-    for (const pageNum of pagesToScan) {
-      if (foundPosition > 0) break;
-
-      const serperUrl = `https://google.serper.dev/search`;
-      const res = await fetch(serperUrl, {
+    // İlk 10 sayfayı (100 sonuç) paralel ve hızlı tara (1-2 sn)
+    const pagePromises = Array.from({ length: 10 }, (_, i) => i + 1).map(page =>
+      fetch(serperUrl, {
         method: 'POST',
         headers: {
-          'X-API-KEY': process.env.SERPER_API_KEY || '8078961d0c92f23ce765317915a6a500b20c2889',
+          'X-API-KEY': apiKey,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           q: keyword,
           gl: 'tr',
           hl: 'tr',
-          page: pageNum
+          page
         })
+      })
+        .then(r => r.json())
+        .then(data => ({ page, organic: data.organic || [] }))
+        .catch(() => ({ page, organic: [] }))
+    );
+
+    const pagesData = await Promise.all(pagePromises);
+    pagesData.sort((a, b) => a.page - b.page);
+
+    for (const pageItem of pagesData) {
+      const pageNum = pageItem.page;
+      const organicResults = pageItem.organic;
+
+      organicResults.forEach((result: any, idx: number) => {
+        if (!result.link || !result.link.startsWith('http')) return;
+
+        try {
+          const parsed = new URL(result.link);
+          const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+
+          if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
+            return;
+          }
+
+          seenDomains.add(hostname);
+
+          const realPos = (pageNum - 1) * 10 + (idx + 1);
+          const isOurSite =
+            hostname.includes('besteskort') ||
+            hostname.includes('bestescort') ||
+            result.link.includes('devs.surf') ||
+            isOurSiteDomain(hostname, targetDomain);
+
+          if (isOurSite) {
+            if (foundPosition === 0) {
+              foundPosition = realPos;
+              foundUrl = result.link;
+              foundDomain = hostname;
+            }
+          } else {
+            if (competitors.length < 3) {
+              competitors.push({
+                position: realPos,
+                domain: hostname,
+                title: result.title || hostname,
+              });
+            }
+          }
+        } catch (e) {}
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        const organicResults = data.organic || [];
-
-        organicResults.forEach((result: any, idx: number) => {
-          if (!result.link || !result.link.startsWith('http')) return;
-
-          try {
-            const parsed = new URL(result.link);
-            const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
-
-            if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
-              return;
-            }
-
-            seenDomains.add(hostname);
-
-            const realPos = (pageNum - 1) * 10 + (idx + 1);
-            const isOurSite =
-              hostname.includes('besteskort') ||
-              hostname.includes('bestescort') ||
-              isOurSiteDomain(hostname, targetDomain);
-
-            if (isOurSite) {
-              if (foundPosition === 0) {
-                foundPosition = realPos;
-                foundUrl = result.link;
-                foundDomain = hostname;
-              }
-            } else {
-              if (competitors.length < 3) {
-                competitors.push({
-                  position: realPos,
-                  domain: hostname,
-                  title: result.title || hostname,
-                });
-              }
-            }
-          } catch (e) { }
-        });
-      }
     }
   } catch (err) {
     // Silent
@@ -172,26 +179,73 @@ async function scrapeGoogleSerp(
   return { position: foundPosition, competitors, foundUrl, foundDomain };
 }
 
-const USER_AGENTS = [
-  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1',
-  'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.127 Mobile Safari/537.36',
-  'Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.6613.88 Mobile Safari/537.36',
-  'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-];
-
-function getRandomUserAgent() {
-  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
-}
-
-function generateYandexCookies() {
+/**
+ * Gerçekçi iPhone / Mobil Parmak İzi Oluşturucu (Yandex Captcha Engelleyici)
+ */
+function generateRealisticYandexHeaders() {
   const ts = Math.floor(Date.now() / 1000);
-  const randomUid = Math.floor(Math.random() * 900000000 + 100000000);
-  return `yandexuid=${randomUid}${ts}; yp=${ts + 31536000}.ygu.1; my=YycCAQA=; ys=udn.cDrFn21haWwucnU%3D#wprid.${ts}000000-0000000000000000000-touch-TURKEY; mda=0; _yasc=`;
+  const uid = Math.floor(Math.random() * 900000000 + 100000000);
+  const fuid = crypto.randomBytes(16).toString('hex');
+  const yandexuid = `${uid}${ts}`;
+  const yp = `${ts + 31536000}.ygu.1#${ts + 31536000}.sp.1`;
+  const ys = `udn.cDrFn21haWwucnU%3D#wprid.${ts}${Math.floor(Math.random()*900000+100000)}-${Math.floor(Math.random()*900000000+100000000)}-touch-TURKEY`;
+  const cookie = `yandexuid=${yandexuid}; fuid01=${fuid}; yp=${yp}; ys=${ys}; mda=0; i=${crypto.randomBytes(12).toString('base64')}; my=YycCAQA=; is_gdpr=0; is_gdpr_b=CP+dEBCc3wE=; font_loaded=ys-4-text-regular`;
+
+  return {
+    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'same-origin',
+    'Sec-Fetch-User': '?1',
+    'Cookie': cookie,
+    'Referer': 'https://yandex.com.tr/',
+  };
 }
 
 /**
- * YANDEX SERP MOTORU (PUPPETEER STEALTH + HTTP FALLBACK)
+ * Yandex Touch HTML & JSON Payload İçinden Tüm Organik Linkleri Çıkarıcı
+ */
+function extractUrlsFromYandexHtml(html: string): string[] {
+  const unescaped = html
+    .replace(/&quot;/g, '"')
+    .replace(/&#34;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\\u002F/g, '/')
+    .replace(/\\u0022/g, '"')
+    .replace(/\\"/g, '"');
+
+  const regexes = [
+    /href="([^"]+)"/g,
+    /"url"\s*:\s*"([^"]+)"/g,
+    /"greenUrl"\s*:\s*\{"url"\s*:\s*"([^"]+)"/g,
+    /"link"\s*:\s*"([^"]+)"/g,
+    /"path"\s*:\s*"([^"]+)"/g,
+    /"rawUrl"\s*:\s*"([^"]+)"/g,
+    /data-url="([^"]+)"/g,
+  ];
+
+  const found: string[] = [];
+  for (const rx of regexes) {
+    let m: RegExpExecArray | null;
+    while ((m = rx.exec(unescaped)) !== null) {
+      const val = m[1];
+      if (val && (val.startsWith('http://') || val.startsWith('https://'))) {
+        found.push(val);
+      }
+    }
+  }
+
+  return found;
+}
+
+/**
+ * YANDEX SERP MOTORU (MULTI-MIRROR FAILOVER + GERÇEKÇİ PARMAK İZİ)
  */
 async function scrapeYandexSerp(
   keyword: string,
@@ -203,68 +257,45 @@ async function scrapeYandexSerp(
   let foundDomain = '';
   const seenDomains = new Set<string>();
   let rankCounter = 1;
-  let isBlocked = false;
+  let scannedAnyValidPage = false;
 
-  // 1. ÖNCELİK: Puppeteer Stealth Motoru (Yerel ve Chrome ortamlarında %100 Doğru Çalışır)
-  try {
-    // @ts-ignore
-    const puppeteerExtra = (await import('puppeteer-extra')).default;
-    // @ts-ignore
-    const StealthPlugin = (await import('puppeteer-extra-plugin-stealth')).default;
-    puppeteerExtra.use(StealthPlugin());
+  const mirrors = [
+    (p: number) => `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${p > 0 ? `&p=${p}` : ''}`,
+    (p: number) => `https://ya.ru/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${p > 0 ? `&p=${p}` : ''}`,
+    (p: number) => `https://yandex.com/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${p > 0 ? `&p=${p}` : ''}`,
+    (p: number) => `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508${p > 0 ? `&p=${p}` : ''}`,
+  ];
 
-    const browser = await puppeteerExtra.launch({
-      headless: 'new' as any,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--window-size=390,844']
-    });
+  const pages = [0, 1, 2, 3]; // İlk 4 sayfa (~40-50 sonuç)
 
-    try {
-      const page = await browser.newPage();
-      await page.setViewport({
-        width: 390,
-        height: 844,
-        isMobile: true,
-        hasTouch: true,
-        deviceScaleFactor: 3
-      });
-      await page.setUserAgent(
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1'
-      );
+  for (const pageIdx of pages) {
+    if (foundPosition > 0) break;
 
-      const pages = [0, 1, 2, 3, 4]; // 5 Sayfa Tara (İlk 60-70 mobil sonuç)
+    let pageSuccess = false;
 
-      for (const pageIdx of pages) {
-        if (foundPosition > 0) break;
+    for (const makeUrl of mirrors) {
+      if (pageSuccess) break;
 
-        const pageParam = pageIdx > 0 ? `&p=${pageIdx}` : '';
-        const url = `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`;
+      try {
+        const url = makeUrl(pageIdx);
+        const headers = generateRealisticYandexHeaders();
+        const res = await fetch(url, { headers });
 
-        try {
-          await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-          await page.waitForSelector('li.serp-item, .OrganicTitle-Link, a', { timeout: 8000 }).catch(() => {});
-          await new Promise(r => setTimeout(r, 1200));
+        if (res.ok) {
+          const html = await res.text();
+          const isBlockedHtml = html.includes('SmartCaptcha') || html.includes('Verification') || html.length < 4000;
 
-          const links: string[] = await page.evaluate(() => {
-            const list: string[] = [];
-            const items = document.querySelectorAll('.OrganicTitle-Link, .organic__url, li.serp-item a.link, a[target="_blank"]');
-            items.forEach(a => {
-              const h = (a as HTMLAnchorElement).href || '';
-              if (h.startsWith('http') && !h.includes('yandex.') && !h.includes('ya.ru') && !h.includes('google.')) {
-                list.push(h);
-              }
-            });
-            if (list.length === 0) {
-              document.querySelectorAll('a').forEach(a => {
-                const h = (a as HTMLAnchorElement).href || '';
-                if (h.startsWith('http') && !h.includes('yandex.') && !h.includes('ya.ru') && !h.includes('google.') && !h.includes('w3.org')) {
-                  list.push(h);
-                }
-              });
-            }
-            return Array.from(new Set(list));
-          });
+          if (isBlockedHtml) {
+            continue;
+          }
 
-          for (const rawHref of links) {
+          const extractedUrls = extractUrlsFromYandexHtml(html);
+          if (extractedUrls.length === 0) continue;
+
+          scannedAnyValidPage = true;
+          pageSuccess = true;
+
+          for (const rawHref of extractedUrls) {
             try {
               const parsed = new URL(rawHref);
               const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
@@ -298,115 +329,8 @@ async function scrapeYandexSerp(
               }
 
               rankCounter++;
-              if (rankCounter > 80) break;
-            } catch (e) { }
-          }
-        } catch (pageErr) {
-          // Page error, continue to next page
-        }
-
-        if (pageIdx < 4 && foundPosition === 0) {
-          await new Promise(r => setTimeout(r, 600));
-        }
-      }
-    } finally {
-      await browser.close().catch(() => {});
-    }
-
-    if (rankCounter > 1 || foundPosition > 0) {
-      return { position: foundPosition, competitors, foundUrl, foundDomain, isBlocked: false };
-    }
-  } catch (pupErr) {
-    // Puppeteer yoksa veya hata verirse HTTP fallback'e geç
-  }
-
-  // 2. YEDEK: HTTP Fetch Fallback
-  const pages = [0, 1, 2, 3, 4, 5];
-  let scannedAnyValidPage = false;
-
-  for (const pageIdx of pages) {
-    if (foundPosition > 0) break;
-
-    const pageParam = pageIdx > 0 ? `&p=${pageIdx}` : '';
-    const endpoints = [
-      `https://yandex.com.tr/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`,
-      `https://ya.ru/search/touch/?text=${encodeURIComponent(keyword)}&lr=11508${pageParam}`,
-    ];
-
-    let pageSuccess = false;
-
-    for (const yandexUrl of endpoints) {
-      if (pageSuccess) break;
-
-      try {
-        const ua = getRandomUserAgent();
-        const cookie = generateYandexCookies();
-
-        const res = await fetch(yandexUrl, {
-          headers: {
-            'User-Agent': ua,
-            'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-            'Cookie': cookie,
-            'Sec-Ch-Ua-Mobile': '?1',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Dest': 'document',
-            'Upgrade-Insecure-Requests': '1',
-          },
-        });
-
-        if (res.ok) {
-          const html = await res.text();
-          const hasCaptcha = html.includes('SmartCaptcha') || html.includes('Verification') || html.includes('checkbox_captcha');
-
-          if (hasCaptcha || html.length < 5000) {
-            continue;
-          }
-
-          scannedAnyValidPage = true;
-          pageSuccess = true;
-          const linkRegex = /href="([^"]+)"/g;
-          let m;
-
-          while ((m = linkRegex.exec(html)) !== null) {
-            let rawHref = m[1];
-            if (!rawHref.startsWith('http')) continue;
-
-            try {
-              const parsed = new URL(rawHref);
-              const hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
-
-              if (isNoiseDomain(hostname) || seenDomains.has(hostname)) {
-                continue;
-              }
-
-              seenDomains.add(hostname);
-
-              const isOurSite =
-                hostname.includes('besteskort') ||
-                hostname.includes('bestescort') ||
-                isOurSiteDomain(hostname, targetDomain);
-
-              if (isOurSite) {
-                if (foundPosition === 0) {
-                  foundPosition = rankCounter;
-                  foundUrl = rawHref;
-                  foundDomain = hostname;
-                }
-              } else {
-                if (competitors.length < 3) {
-                  competitors.push({
-                    position: rankCounter,
-                    domain: hostname,
-                    title: hostname,
-                  });
-                }
-              }
-
-              rankCounter++;
-              if (rankCounter > 80) break;
-            } catch (e) { }
+              if (rankCounter > 60) break;
+            } catch (e) {}
           }
         }
       } catch (err) {
@@ -414,15 +338,12 @@ async function scrapeYandexSerp(
       }
     }
 
-    if (pageIdx < 5 && foundPosition === 0) {
-      await new Promise(r => setTimeout(r, 400));
+    if (pageIdx < 3 && foundPosition === 0) {
+      await new Promise(r => setTimeout(r, 300));
     }
   }
 
-  if (!scannedAnyValidPage && foundPosition === 0) {
-    isBlocked = true;
-  }
-
+  const isBlocked = !scannedAnyValidPage && foundPosition === 0;
   return { position: foundPosition, competitors, foundUrl, foundDomain, isBlocked };
 }
 
@@ -444,7 +365,6 @@ export async function GET(req: NextRequest) {
 
   let rawKeywords = await KeywordRankModel.find({}).lean();
 
-  // Sıralama Mantığı: En iyi Yandex sıralamasına sahip olanlar (#1, #6, #9...) en üstte çıksın!
   const sortKeywords = (list: any[]) => {
     return list.sort((a: any, b: any) => {
       const posAY = typeof a.yandexPosition === 'number' && a.yandexPosition > 0 ? a.yandexPosition : 999;
@@ -464,13 +384,11 @@ export async function GET(req: NextRequest) {
       'adıyaman escort',
       'sinop eskort',
       'sinop escort',
-      'hakkari eskort',
-      'hakkari escort',
-      'kars eskort',
-      'bitlis eskort',
-      'aydın eskort',
+      'tekirdağ eskort',
+      'yalova escort',
       'beylikdüzü eskort',
       'kadıköy eskort',
+      'ümraniye escort',
       'istanbul eskort ilanları',
       'izmir eskort bayan',
       'ankara vip escort',
@@ -538,9 +456,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Bu anahtar kelime zaten takip ediliyor' }, { status: 400 });
     }
 
-    // Yandex Canlı Tarama
+    // Canlı Taramalar
     const yandexResult = await scrapeYandexSerp(cleanKw, cleanTargetDomain);
-    // Google Serper Canlı Tarama
     const googleResult = await scrapeGoogleSerp(cleanKw, cleanTargetDomain);
 
     const doc = await KeywordRankModel.create({
@@ -581,7 +498,7 @@ export async function PUT(req: NextRequest) {
     await connectToDatabase();
 
     const query = id ? { _id: id } : {};
-    let items = await KeywordRankModel.find(query);
+    const items = await KeywordRankModel.find(query);
 
     const updatedItems = [];
 
@@ -601,7 +518,7 @@ export async function PUT(req: NextRequest) {
       let changeY = 0;
 
       if (yandexResult.isBlocked && currY === 0 && prevY > 0) {
-        // Blokaj / Captcha durumunda eski başarıyı koru, sıfırlama!
+        // Blokaj / Captcha durumunda önceki başarılı sıralamayı koru, sıfırlama!
         currY = prevY;
         changeY = 0;
       } else {
@@ -642,9 +559,8 @@ export async function PUT(req: NextRequest) {
       await item.save();
       updatedItems.push(item);
 
-      // Seri isteklerde bot blokajını önlemek için bekleme
       if (items.length > 1 && i < items.length - 1) {
-        await new Promise(res => setTimeout(res, 800));
+        await new Promise(res => setTimeout(res, 500));
       }
     }
 

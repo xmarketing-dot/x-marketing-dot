@@ -329,9 +329,9 @@ export default function BmsSecurePortalDashboard() {
             }
           } catch (e) { }
 
-          // İnsansı rastgele bekleme (2.2 - 3.2 sn jitter)
+          // İnsansı rastgele bekleme (1.2 - 1.8 sn jitter)
           if (i < total - 1) {
-            await new Promise(r => setTimeout(r, 2200 + Math.random() * 1000));
+            await new Promise(r => setTimeout(r, 1200 + Math.random() * 600));
           }
         }
       }
@@ -3062,28 +3062,29 @@ export default function BmsSecurePortalDashboard() {
                         : `https://www.google.com.tr/search?q=${encodeURIComponent(keyword)}`;
 
                       let badgeContent = null;
-                      if (pos > 0 && pos <= 3) {
+                      if (pos > 0 && pos <= 10) {
                         badgeContent = (
                           <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
-                            🥇 #{pos} (Zirve) ↗
+                            {pos === 1 ? '👑 #1 (1. Sayfa)' : `🥇 #${pos} (1. Sayfa)`} ↗
                           </span>
                         );
-                      } else if (pos > 3 && pos <= 10) {
+                      } else if (pos > 10 && pos <= 20) {
                         badgeContent = (
                           <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
-                            🥈 #{pos} (1. Sayfa) ↗
+                            🥈 #{pos} (2. Sayfa) ↗
                           </span>
                         );
-                      } else if (pos > 10 && pos <= 30) {
+                      } else if (pos > 20 && pos <= 30) {
                         badgeContent = (
                           <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
-                            🥉 #{pos} (Sayfa 2-3) ↗
+                            🥉 #{pos} (3. Sayfa) ↗
                           </span>
                         );
-                      } else if (pos > 30) {
+                      } else if (pos > 30 && pos <= 100) {
+                        const pageNum = Math.ceil(pos / 10);
                         badgeContent = (
-                          <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
-                            #{pos} ↗
+                          <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                            📄 #{pos} ({pageNum}. Sayfa) ↗
                           </span>
                         );
                       } else {
