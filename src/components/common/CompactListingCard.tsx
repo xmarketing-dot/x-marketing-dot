@@ -224,9 +224,9 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
           )}
         </div>
 
-        <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-black text-[8px] sm:text-[9px] font-heading shadow-md flex items-center gap-0.5">
+        <span className="px-1.5 py-0.5 rounded bg-emerald-500/90 backdrop-blur-xs text-slate-950 font-black text-[8.5px] sm:text-[9.5px] font-heading shadow-md flex items-center gap-0.5 ring-1 ring-emerald-400/40">
           <ShieldCheck className="w-2.5 h-2.5 stroke-[3]" />
-          <span className="hidden sm:inline">Teyitli</span>
+          <span>Teyitli</span>
         </span>
       </div>
 
