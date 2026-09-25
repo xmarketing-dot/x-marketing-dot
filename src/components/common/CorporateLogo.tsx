@@ -57,14 +57,19 @@ export default function CorporateLogo({ className = 'text-3xl' }: { className?: 
         </span>
       ))}
 
-      {/* Animated Kiss Lips */}
-      <span
-        className={`inline-block transition-all duration-300 transform group-hover:scale-130 active:scale-90 ${
-          isKissing ? 'scale-135 -rotate-12' : 'animate-kiss-pulse'
-        } ${className}`}
+      {/* Animated Kiss Lips Badge */}
+      <div
+        className={`relative rounded-full overflow-hidden transition-all duration-300 transform group-hover:scale-110 active:scale-95 shadow-lg shadow-rose-900/40 border border-amber-500/40 ${
+          isKissing ? 'scale-120 -rotate-6' : 'animate-kiss-pulse'
+        } ${className.includes('w-') ? className : 'w-9 h-9 sm:w-10 sm:h-10'}`}
       >
-        💋
-      </span>
+        <img
+          src="/favicon-120x120.png"
+          alt="Best Eskort Kiss"
+          className="w-full h-full object-cover select-none pointer-events-none"
+        />
+        <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-amber-400/30" />
+      </div>
 
       {/* Global CSS for subtle breathing kiss animation */}
       <style jsx>{`
