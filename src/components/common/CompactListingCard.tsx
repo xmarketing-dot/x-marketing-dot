@@ -49,6 +49,12 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     return list;
   }, [listing.anaFotograf, listing.fotograflar]);
 
+  // Gerçekçi durum dağılımı: Herkes aynı anda aktif olamaz (~%65 çevrimiçi)
+  const isOnline = React.useMemo(() => {
+    const hash = (listing.slug || listing._id || 'a').charCodeAt(0) + (listing.slug || '').length;
+    return hash % 3 !== 0;
+  }, [listing.slug, listing._id]);
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -225,14 +231,15 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Canlı Online Nabzı */}
-          <span className="px-1.5 py-0.5 rounded bg-black/75 backdrop-blur-md text-emerald-400 font-bold text-[8px] sm:text-[9px] flex items-center gap-1 border border-emerald-500/40 shadow-sm">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+          {/* Canlı Online Nabzı (Metinsiz, Sadece Şık LED Nokta) */}
+          {isOnline && (
+            <span className="p-1 rounded-full bg-black/75 backdrop-blur-md border border-emerald-500/40 shadow-sm flex items-center justify-center">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+              </span>
             </span>
-            <span>Aktif</span>
-          </span>
+          )}
 
           <span className="px-1.5 py-0.5 rounded bg-emerald-500/90 backdrop-blur-xs text-slate-950 font-black text-[8.5px] sm:text-[9.5px] font-heading shadow-md flex items-center gap-0.5 ring-1 ring-emerald-400/40">
             <ShieldCheck className="w-2.5 h-2.5 stroke-[3]" />
