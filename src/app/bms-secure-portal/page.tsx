@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
+import CircularProgress from '@/components/common/CircularProgress';
 
 export default function BmsSecurePortalDashboard() {
   const [data, setData] = useState<any>(null);
@@ -387,8 +388,12 @@ export default function BmsSecurePortalDashboard() {
 
   if (loading && !data) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+      <div className="min-h-[60vh] flex items-center justify-center bg-[#161b22] border border-[#30363d] rounded-3xl p-8 shadow-2xl w-full">
+        <CircularProgress
+          size="lg"
+          title="BMS Portal Canlı Verileri Yükleniyor..."
+          subtitle="Tekil ziyaretçiler, randevu dönüşümleri ve canlı akış hazırlanıyor"
+        />
       </div>
     );
   }

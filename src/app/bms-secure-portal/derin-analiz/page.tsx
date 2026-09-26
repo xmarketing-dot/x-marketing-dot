@@ -30,6 +30,7 @@ import {
   Monitor
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import CircularProgress from '@/components/common/CircularProgress';
 
 export default function DeepAnalyticsPage() {
   const [data, setData] = useState<any>(null);
@@ -234,14 +235,37 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
       </div>
 
       {loading && !data ? (
-        <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3 bg-[#161b22] border border-[#30363d] rounded-3xl p-8 shadow-xl w-full">
-          <RefreshCw className="w-8 h-8 text-amber-400 animate-spin" />
-          <span className="text-sm font-heading font-bold text-[#8b949e]">
-            Veritabanı taranıyor ve analitik modelleri hesaplanıyor...
-          </span>
+        <div className="min-h-[55vh] flex flex-col items-center justify-center bg-[#161b22] border border-[#30363d] rounded-3xl p-6 sm:p-12 shadow-2xl w-full">
+          <CircularProgress
+            size="xl"
+            title="Derin Analitik Modelleri Hesaplanıyor..."
+            subtitle="Canlı veritabanı taranıyor ve filtreleme matrisleri çalıştırılıyor"
+            steps={[
+              'Ziyaretçi veritabanı taranıyor...',
+              'Arama motorları ve bot filtreleri ayrıştırılıyor...',
+              'Kullanıcı oturumları ve sadakat piramidi oluşturuluyor...',
+              'WhatsApp randevu dönüşümleri ve şehir istatistikleri birleştiriliyor...',
+            ]}
+          />
         </div>
       ) : (
-        <>
+        <div className="relative flex flex-col gap-5 sm:gap-6 w-full">
+          {/* Recalculating Overlay */}
+          {loading && data && (
+            <div className="absolute inset-0 z-30 bg-[#0d1117]/80 backdrop-blur-md rounded-3xl flex items-center justify-center animate-fadeIn">
+              <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl">
+                <CircularProgress
+                  size="md"
+                  title="Tarih Aralığı Güncelleniyor..."
+                  steps={[
+                    'Seçili tarih aralığı filtreleniyor...',
+                    'Sadakat metrikleri güncelleniyor...',
+                  ]}
+                />
+              </div>
+            </div>
+          )}
+
           {/* ── 2. ANA METRİKLER (HAM VS TEMİZ İNSAN HIT) ──────────────── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 w-full">
             
@@ -696,7 +720,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
             </div>
 
           </div>
-        </>
+        </div>
       )}
 
     </div>
