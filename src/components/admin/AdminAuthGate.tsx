@@ -346,6 +346,20 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             </Link>
 
             <Link
+              href="/bms-secure-portal/derin-analiz"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/derin-analiz')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <BarChart3 className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-300">Derin Analitik &amp; Müdavim</span>
+              </div>
+              <span className="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+                MÜDAVİM
+              </span>
+            </Link>
+
+            <Link
               href="/bms-secure-portal/ilanlar"
               prefetch={false}
               className={`${getNavClass('/bms-secure-portal/ilanlar')} justify-between`}
@@ -632,7 +646,21 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
                 <BarChart3 className="w-5 h-5 text-amber-400" />
-                <span>1. Trafik &amp; Analiz</span>
+                <span>1. Canlı Trafik</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/derin-analiz"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-gradient-to-br from-emerald-950/40 to-[#21262d] hover:bg-[#30363d] text-emerald-300 flex flex-col gap-1 border border-emerald-500/40 relative shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <BarChart3 className="w-5 h-5 text-emerald-400" />
+                  <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[9px] font-black">
+                    MÜDAVİM
+                  </span>
+                </div>
+                <span>🔬 Derin Analiz</span>
               </Link>
 
               <Link
