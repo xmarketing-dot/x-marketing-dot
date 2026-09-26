@@ -2,26 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { 
-  ShieldCheck, 
-  MapPin, 
-  Building2, 
-  Globe, 
-  Users, 
-  ArrowRight, 
-  Zap, 
-  CheckCircle2, 
-  Lock, 
-  Cpu, 
-  Server, 
-  MessageSquare, 
-  BarChart3, 
-  Award, 
-  LayoutDashboard, 
-  KeyRound 
-} from 'lucide-react';
+import { LayoutDashboard } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 import HeaderTicker from '@/components/common/HeaderTicker';
 import SeoBacklinkFooter from '@/components/common/SeoBacklinkFooter';
@@ -38,8 +20,6 @@ export default function MobileShell({ children }: MobileShellProps) {
   const isSecurePortal = pathname?.startsWith('/bms-secure-portal');
   const isChatPage = pathname === '/chat';
   const isPanelimPage = pathname === '/panelim';
-  const isPromoPage = pathname === '/ucretsiz-ilan' || pathname === '/ucretsiz-reklam';
-  const [activeRegion, setActiveRegion] = useState<string>('marmara');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -63,7 +43,7 @@ export default function MobileShell({ children }: MobileShellProps) {
     return <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans overflow-x-hidden">{children}</div>;
   }
 
-  // Standalone Fullscreen Native Chat Layout (No outer headers or dual scrolls)
+  // Standalone Fullscreen Native Chat Layout
   if (isChatPage) {
     return (
       <div className="h-[100dvh] w-full bg-[#0d1117] text-[#f0f6fc] font-sans overflow-hidden flex flex-col">
@@ -71,13 +51,6 @@ export default function MobileShell({ children }: MobileShellProps) {
       </div>
     );
   }
-
-  // Reklam Ver, İlan Ver ve Ücretsiz Tanıtım sayfaları masaüstünde kurumsal ajans yerine formu gösterir
-  const isDedicatedFormPage =
-    pathname === '/reklam-ver' ||
-    pathname === '/ilan-ver' ||
-    pathname === '/ucretsiz-ilan' ||
-    pathname === '/ucretsiz-reklam';
 
   // Panelim route renders dedicated clean dashboard without public website header/ticker
   if (isPanelimPage) {
@@ -89,10 +62,17 @@ export default function MobileShell({ children }: MobileShellProps) {
     );
   }
 
+  // Reklam Ver, İlan Ver ve Ücretsiz Tanıtım sayfaları masaüstünde kurumsal ajans yerine formu gösterir
+  const isDedicatedFormPage =
+    pathname === '/reklam-ver' ||
+    pathname === '/ilan-ver' ||
+    pathname === '/ucretsiz-ilan' ||
+    pathname === '/ucretsiz-reklam';
+
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden">
       
-      {/* ── 1. DESKTOP GÖRÜNÜMÜ ──────────────── */}
+      {/* ── 1. MASAÜSTÜ (WEB / DESKTOP) GÖRÜNÜMÜ: X-MARKETING TECH KURUMSAL PLATFORM ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
         {isDedicatedFormPage ? (
           <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans overflow-x-hidden flex flex-col w-full">
@@ -107,10 +87,10 @@ export default function MobileShell({ children }: MobileShellProps) {
         )}
       </div>
 
-      {/* ── 2. MOBİL UYGULAMA GÖRÜNÜMÜ (MOBILE-FIRST APP SHELL) ──────────────── */}
+      {/* ── 2. MOBİL GÖRÜNÜMÜ: %100 BEST ESKORT PLATFORMU ──────────────── */}
       <div className="md:hidden min-h-[100dvh] bg-[#0d1117] flex flex-col relative w-full max-w-full overflow-x-clip">
 
-        {/* STICKY TOP HEADER BAR (Always visible) */}
+        {/* STICKY TOP HEADER BAR */}
         <div id="app-sticky-header" className="sticky top-0 z-40 bg-[#0d1117]/95 backdrop-blur-md">
           {/* TOP ANNOUNCEMENT TICKER */}
           <HeaderTicker />
@@ -118,7 +98,7 @@ export default function MobileShell({ children }: MobileShellProps) {
           {/* MOBILE APP HEADER — Premium Global Brand Bar */}
           <header className="px-3.5 py-3 border-b border-[#30363d]/60 flex items-center justify-between w-full shadow-md">
             <Link href="/" className="flex items-center gap-2 group">
-              <CorporateLogo className="text-2xl shrink-0 group-hover:scale-105 transition-transform" />
+              <CorporateLogo className="w-9 h-9 shrink-0 group-hover:scale-105 transition-transform" />
               <div className="flex flex-col leading-none text-left">
                 <span className="font-black text-[14px] text-white font-heading tracking-tight group-hover:text-amber-400 transition-colors">
                   Best Eskort
@@ -168,7 +148,7 @@ export default function MobileShell({ children }: MobileShellProps) {
         {/* Mobile-Only Sponsored VIP Ad Popup */}
         <SpecialAdPopup />
         
-        {/* Global Real-Time Chat Notifications (Sadece Mobil Uygulama Görünümünde) */}
+        {/* Global Real-Time Chat Notifications */}
         <GlobalChatNotification />
       </div>
 
