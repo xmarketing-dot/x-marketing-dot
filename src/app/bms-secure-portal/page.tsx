@@ -733,6 +733,15 @@ export default function BmsSecurePortalDashboard() {
             ))}
           </div>
 
+          <Link
+            href="/bms-secure-portal/derin-analiz"
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-all active:scale-95 shadow-md shadow-amber-500/20 shrink-0"
+            title="Tüm zamanlar, özel tarih aralıkları ve bot filtreli derin analitik"
+          >
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span className="font-heading font-black">🔬 Derin Analiz</span>
+          </Link>
+
           <button
             onClick={fetchAnalytics}
             className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-xs transition-all active:scale-95 shadow-sm shrink-0"
@@ -867,6 +876,36 @@ export default function BmsSecurePortalDashboard() {
               </button>
             </div>
           </div>
+
+          {/* Derin Analitik & Müdavim Raporu Giriş Kartı */}
+          <Link
+            href="/bms-secure-portal/derin-analiz"
+            className="p-3.5 sm:p-4 rounded-3xl bg-gradient-to-r from-amber-500/20 via-[#161b22] to-emerald-500/10 border border-amber-500/40 flex items-center justify-between shadow-xl hover:border-amber-400 transition-all group"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0 group-hover:scale-105 transition-transform shadow-md shadow-amber-500/30">
+                <BarChart3 className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-white text-sm sm:text-base font-heading">
+                    🔬 Tüm Zamanlar &amp; Özel Tarihli Derin Analitik Masası
+                  </span>
+                  <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-black font-heading">
+                    YENİ
+                  </span>
+                </div>
+                <span className="text-[11px] text-[#8b949e] truncate">
+                  Botları eleme/dahil etme, sadakat piramidi, müdavim kullanıcıların oturum detayları ve WhatsApp dönüşüm raporu →
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs font-heading shrink-0 shadow-md">
+              <span>İncele</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+          </Link>
 
           {/* 6 Ana Metrik Kartı — Mobilde 2x3, Masaüstünde 6'lı Grid (Vercel + Google Analytics Seviyesi) */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5">
