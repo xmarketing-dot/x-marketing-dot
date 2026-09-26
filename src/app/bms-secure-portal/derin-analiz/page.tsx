@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import CircularProgress from '@/components/common/CircularProgress';
+import PullToRefresh from '@/components/common/PullToRefresh';
 
 export default function DeepAnalyticsPage() {
   const [data, setData] = useState<any>(null);
@@ -118,10 +119,11 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
   const sourceTotal = Object.values(breakdowns.sources || {}).reduce((a: number, b: any) => a + Number(b), 0) || 1;
 
   return (
-    <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full text-left">
-      
-      {/* ── 1. ÜST KURUMSAL HEADER & KONTROL MASASI (100% RESPONSIVE) ──────────────── */}
-      <div className="flex flex-col gap-4 p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl w-full">
+    <PullToRefresh onRefresh={() => fetchDeepAnalytics()} isRefreshing={loading}>
+      <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full text-left">
+        
+        {/* ── 1. ÜST KURUMSAL HEADER & KONTROL MASASI (100% RESPONSIVE) ──────────────── */}
+        <div className="flex flex-col gap-4 p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl w-full">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <Link
@@ -723,6 +725,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
         </div>
       )}
 
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }

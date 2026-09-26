@@ -14,6 +14,7 @@ import {
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
 import CircularProgress from '@/components/common/CircularProgress';
+import PullToRefresh from '@/components/common/PullToRefresh';
 
 export default function BmsSecurePortalDashboard() {
   const [data, setData] = useState<any>(null);
@@ -690,10 +691,11 @@ export default function BmsSecurePortalDashboard() {
   });
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full text-left">
-      
-      {/* ── 1. UNIFIED COMPACT HEADER & DATE CONTROLS (MASAÜSTÜ ENTEGRE ANALİTİK ÇUBUĞU) ──────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-[#161b22] border border-[#30363d] p-3.5 sm:p-5 rounded-3xl shadow-xl">
+    <PullToRefresh onRefresh={() => fetchAnalytics()} isRefreshing={loading}>
+      <div className="flex flex-col gap-6 w-full max-w-full text-left">
+        
+        {/* ── 1. UNIFIED COMPACT HEADER & DATE CONTROLS (MASAÜSTÜ ENTEGRE ANALİTİK ÇUBUĞU) ──────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-[#161b22] border border-[#30363d] p-3.5 sm:p-5 rounded-3xl shadow-xl">
         <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-md">
             <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -4723,6 +4725,7 @@ export default function BmsSecurePortalDashboard() {
         );
       })()}
 
-    </div>
+      </div>
+    </PullToRefresh>
   );
 }
