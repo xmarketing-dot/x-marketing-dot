@@ -109,11 +109,15 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-120x120.png', sizes: '120x120', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/favicon.ico', sizes: 'any' },
-      { url: '/icon', type: 'image/png', sizes: '32x32' },
     ],
     shortcut: '/favicon.ico',
-    apple: '/apple-icon',
+    apple: [
+      { url: '/icon-192.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
 };
 
