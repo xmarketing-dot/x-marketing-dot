@@ -10,6 +10,7 @@ import SeoBacklinkFooter from '@/components/common/SeoBacklinkFooter';
 import GlobalChatNotification from '@/components/common/GlobalChatNotification';
 import SpecialAdPopup from '@/components/common/SpecialAdPopup';
 import CorporateWebHome from '@/components/corporate/CorporateWebHome';
+import AgeVerificationModal from '@/components/common/AgeVerificationModal';
 
 interface MobileShellProps {
   children: React.ReactNode;
@@ -21,6 +22,23 @@ export default function MobileShell({ children }: MobileShellProps) {
   const isChatPage = pathname === '/chat';
   const isPanelimPage = pathname === '/panelim';
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAgeModalOpen, setIsAgeModalOpen] = useState(false);
+
+  useEffect(() => {
+    try {
+      const verified = localStorage.getItem('age_verified_2026');
+      if (!verified) {
+        setIsAgeModalOpen(true);
+      }
+    } catch (e) {}
+  }, []);
+
+  const handleAgeConfirm = () => {
+    try {
+      localStorage.setItem('age_verified_2026', 'true');
+    } catch (e) {}
+    setIsAgeModalOpen(false);
+  };
 
   useEffect(() => {
     const checkUserStatus = () => {
@@ -70,7 +88,9 @@ export default function MobileShell({ children }: MobileShellProps) {
     pathname === '/ucretsiz-reklam';
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden relative">
+      {/* +18 Yaş Doğrulama Modalı (İlk Girişte Onay İster) */}
+      <AgeVerificationModal isOpen={isAgeModalOpen} onConfirm={handleAgeConfirm} />
       
       {/* ── 1. MASAÜSTÜ (WEB / DESKTOP) GÖRÜNÜMÜ: X-MARKETING TECH KURUMSAL PLATFORM ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
