@@ -27,7 +27,8 @@ import {
   X,
   Megaphone,
   Link2,
-  Gift
+  Gift,
+  Activity
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 
@@ -589,14 +590,31 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
         <Link
           href="/bms-secure-portal"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
+          className={`flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all ${
             pathname === '/bms-secure-portal'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
           }`}
         >
           <BarChart3 className="w-5 h-5" />
-          <span className="text-[10px] font-heading">Analiz</span>
+          <span className="text-[10px] font-heading">Canlı</span>
+        </Link>
+
+        <Link
+          href="/bms-secure-portal/derin-analiz"
+          className={`flex flex-col items-center gap-1 py-1 px-1.5 rounded-xl transition-all relative ${
+            pathname === '/bms-secure-portal/derin-analiz'
+              ? 'text-emerald-400 font-black'
+              : 'text-[#8b949e] hover:text-white font-medium'
+          }`}
+        >
+          <div className="relative">
+            <Activity className="w-5 h-5 text-emerald-400" />
+            <span className="absolute -top-1 -right-1.5 px-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[8px] font-black border border-emerald-500/40">
+              PRO
+            </span>
+          </div>
+          <span className="text-[10px] font-heading">Derin Analiz</span>
         </Link>
 
         <button
