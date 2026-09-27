@@ -39,7 +39,8 @@ import {
   Link2,
   PlayCircle,
   AtSign,
-  KeyRound
+  KeyRound,
+  Edit3
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 
@@ -186,6 +187,10 @@ export default function AdminHomepageConfigPage() {
   const [newAdHedefIl, setNewAdHedefIl] = useState<string>('tum_turkiye');
   const [newAdRozet, setNewAdRozet] = useState<string>('🔥 GÜNÜN ÖZEL VIP İLANI');
   const [newAdGecikme, setNewAdGecikme] = useState<number>(4);
+
+  // Popup Reklam Düzenleme State'i
+  const [editingAdIdx, setEditingAdIdx] = useState<number | null>(null);
+  const [editingAdData, setEditingAdData] = useState<SpecialAdEntry | null>(null);
 
   const [selectedListingIds, setSelectedListingIds] = useState<string[]>([]);
   const [allListings, setAllListings] = useState<any[]>([]);
@@ -779,8 +784,45 @@ export default function AdminHomepageConfigPage() {
     }
   };
 
-  // ── ÇOKLU ÖZEL REKLAM YÖNETİMİ FONKSİYONLARI ──
-  const handleAddNewSpecialAd = () => {
+  // ── ÇOKLU ÖZEL REKLAM YÖNETİMİ & DÜZENLEME FONKSİYONLARI ──
+  const saveSpecialAdsToDb = async (adsList: SpecialAdEntry[], customSuccessMsg?: string) => {
+    setSavingAd(true);
+    setMessage(null);
+    try {
+      const topActive = adsList.find((a) => a.aktif) || adsList[0] || null;
+      const res = await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ozelIlanReklamlar: adsList,
+          ozelIlanReklam: topActive ? {
+            aktif: topActive.aktif,
+            ilanId: topActive.ilanId,
+            hedefIlSlug: topActive.hedefIlSlug,
+            gecikmeSaniye: topActive.gecikmeSaniye,
+            rozet: topActive.rozet,
+          } : { aktif: false },
+        }),
+      });
+
+      if (res.ok) {
+        setMessage({
+          type: 'success',
+          text: customSuccessMsg || `✅ Özel reklamlar (${adsList.length} Adet) başarıyla kaydedildi!`,
+        });
+        fetchConfig();
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        setMessage({ type: 'error', text: errJson.error || 'Özel reklamlar kaydedilemedi.' });
+      }
+    } catch (e: any) {
+      setMessage({ type: 'error', text: e.message || 'Bağlantı hatası' });
+    } finally {
+      setSavingAd(false);
+    }
+  };
+
+  const handleAddNewSpecialAd = async () => {
     if (!newAdIlanId) {
       alert('Lütfen popup olarak gösterilecek bir ilan seçin.');
       return;
@@ -795,61 +837,54 @@ export default function AdminHomepageConfigPage() {
       rozet: newAdRozet,
     };
 
-    setOzelIlanReklamlar([newAd, ...ozelIlanReklamlar]);
+    const updated = [newAd, ...ozelIlanReklamlar];
+    setOzelIlanReklamlar(updated);
     setNewAdIlanId('');
+    await saveSpecialAdsToDb(updated, `✅ Yeni popup reklamı havuzuna eklendi ve yayına alındı!`);
   };
 
-  const handleToggleAdActive = (index: number) => {
+  const handleStartEditAd = (index: number) => {
+    setEditingAdIdx(index);
+    setEditingAdData({ ...ozelIlanReklamlar[index] });
+  };
+
+  const handleCancelEditAd = () => {
+    setEditingAdIdx(null);
+    setEditingAdData(null);
+  };
+
+  const handleSaveEditedAd = async (index: number) => {
+    if (!editingAdData) return;
+    const updated = [...ozelIlanReklamlar];
+    updated[index] = { ...editingAdData };
+    setOzelIlanReklamlar(updated);
+    setEditingAdIdx(null);
+    setEditingAdData(null);
+
+    const targetLabel = updated[index].hedefIlSlug ? updated[index].hedefIlSlug.toUpperCase() : 'TÜRKİYE GENELİ';
+    await saveSpecialAdsToDb(updated, `✅ Reklam ayarları güncellendi (Yeni Hedef: ${targetLabel})!`);
+  };
+
+  const handleToggleAdActive = async (index: number) => {
     const updated = [...ozelIlanReklamlar];
     updated[index].aktif = !updated[index].aktif;
     setOzelIlanReklamlar(updated);
+    await saveSpecialAdsToDb(updated, `✅ Reklam durumu ${updated[index].aktif ? 'AKTİF' : 'PASİF'} olarak güncellendi!`);
   };
 
-  const handleRemoveSpecialAd = (index: number) => {
-    setOzelIlanReklamlar(ozelIlanReklamlar.filter((_, i) => i !== index));
+  const handleRemoveSpecialAd = async (index: number) => {
+    if (!confirm('Bu popup reklamını havuzdan tamamen silmek istediğinize emin misiniz?')) return;
+    const updated = ozelIlanReklamlar.filter((_, i) => i !== index);
+    setOzelIlanReklamlar(updated);
+    if (editingAdIdx === index) {
+      setEditingAdIdx(null);
+      setEditingAdData(null);
+    }
+    await saveSpecialAdsToDb(updated, '✅ Reklam havuzdan silindi.');
   };
 
   const handleSaveSpecialAdsOnly = async () => {
-    setSavingAd(true);
-    setMessage(null);
-    try {
-      const topActive = ozelIlanReklamlar.find((a) => a.aktif) || ozelIlanReklamlar[0] || null;
-
-      const res = await fetch('/api/admin/homepage-config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          heroBaslik,
-          heroAltBaslik,
-          bannerMetin,
-          bannerLink,
-          bannerAktif,
-          bannerRozet,
-          duyurular,
-          sliderIlanIds: selectedListingIds,
-          ozelIlanReklamlar,
-          ozelIlanReklam: topActive ? {
-            aktif: topActive.aktif,
-            ilanId: topActive.ilanId,
-            hedefIlSlug: topActive.hedefIlSlug,
-            gecikmeSaniye: topActive.gecikmeSaniye,
-            rozet: topActive.rozet,
-          } : { aktif: false },
-        }),
-      });
-
-      if (res.ok) {
-        setMessage({ type: 'success', text: `Tüm özel reklamlar (${ozelIlanReklamlar.length} Adet) başarıyla kaydedildi ve yayına alındı!` });
-        fetchConfig();
-      } else {
-        const errJson = await res.json().catch(() => ({}));
-        setMessage({ type: 'error', text: errJson.error || 'Özel reklamlar kaydedilemedi.' });
-      }
-    } catch (e: any) {
-      setMessage({ type: 'error', text: e.message || 'Bağlantı hatası' });
-    } finally {
-      setSavingAd(false);
-    }
+    await saveSpecialAdsToDb(ozelIlanReklamlar);
   };
 
   const handleSaveAll = async (e?: React.FormEvent) => {
@@ -2203,10 +2238,153 @@ export default function AdminHomepageConfigPage() {
                     ctr: '0.0',
                   };
 
+                  const isEditing = editingAdIdx === idx && editingAdData;
+
+                  if (isEditing) {
+                    return (
+                      <div
+                        key={ad._id || idx}
+                        className="p-4 rounded-2xl border-2 border-amber-500 bg-[#161b22] shadow-2xl flex flex-col gap-3.5 transition-all text-left"
+                      >
+                        <div className="flex items-center justify-between border-b border-[#30363d] pb-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </div>
+                            <span className="font-heading font-black text-xs text-white uppercase tracking-wide">
+                              #{idx + 1} Reklam Ayarlarını Düzenle
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-amber-300 font-bold max-w-[140px] truncate bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                            {listing ? listing.baslik : 'İlan'}
+                          </span>
+                        </div>
+
+                        {/* Hedef İl & İlçe Seçici */}
+                        <div className="flex flex-col gap-1">
+                          <label className="text-[11px] font-bold text-amber-300 flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Hedef Gösterim Konumu (Şehir / İlçe) *</span>
+                          </label>
+                          <select
+                            value={editingAdData.hedefIlSlug}
+                            onChange={(e) => setEditingAdData({ ...editingAdData, hedefIlSlug: e.target.value })}
+                            className="w-full px-3 py-2.5 rounded-xl bg-[#0d1117] border border-amber-500/50 text-white text-xs font-semibold focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 shadow-inner"
+                          >
+                            <option value="tum_turkiye">🇹🇷 TÜRKİYE GENELİ (Tüm Şehirler &amp; Anasayfa)</option>
+
+                            {listing && listing.ilSlug && (
+                              <optgroup label="── BU İLANIN KENDİ KONUMU ──">
+                                {listing.ilceSlug && (
+                                  <option value={`${listing.ilSlug}/${listing.ilceSlug}`}>
+                                    🎯 SADECE {listing.ilSlug.toUpperCase()} / {listing.ilceSlug.toUpperCase()}
+                                  </option>
+                                )}
+                                <option value={listing.ilSlug}>
+                                  📍 TÜM {listing.ilSlug.toUpperCase()}
+                                </option>
+                              </optgroup>
+                            )}
+
+                            <optgroup label="── POPÜLER ŞEHİRLER &amp; İLÇELER ──">
+                              <option value="eskisehir">📍 ESKİŞEHİR (Tüm İlçeler)</option>
+                              <option value="eskisehir/tepebasi">↳ ESKİŞEHİR / Tepebaşı</option>
+                              <option value="eskisehir/odunpazari">↳ ESKİŞEHİR / Odunpazarı</option>
+                              <option value="istanbul">📍 İSTANBUL (Tüm İlçeler)</option>
+                              <option value="istanbul/beylikduzu">↳ İSTANBUL / Beylikdüzü</option>
+                              <option value="istanbul/kadikoy">↳ İSTANBUL / Kadıköy</option>
+                              <option value="istanbul/sisli">↳ İSTANBUL / Şişli</option>
+                              <option value="istanbul/besiktas">↳ İSTANBUL / Beşiktaş</option>
+                              <option value="ankara">📍 ANKARA (Tüm İlçeler)</option>
+                              <option value="ankara/cankaya">↳ ANKARA / Çankaya</option>
+                              <option value="izmir">📍 İZMİR (Tüm İlçeler)</option>
+                              <option value="izmir/karsiyaka">↳ İZMİR / Karşıyaka</option>
+                              <option value="antalya">📍 ANTALYA (Tüm İlçeler)</option>
+                              <option value="bursa">📍 BURSA (Tüm İlçeler)</option>
+                            </optgroup>
+
+                            {allLocations.length > 0 && (
+                              allLocations.map((loc: any) => (
+                                <optgroup key={loc.ilSlug} label={`── ${loc.il.toUpperCase()} ──`}>
+                                  <option value={loc.ilSlug}>📍 TÜM {loc.il.toUpperCase()}</option>
+                                  {Array.isArray(loc.ilceler) && loc.ilceler.map((ilce: any) => (
+                                    <option key={ilce.slug} value={`${loc.ilSlug}/${ilce.slug}`}>
+                                      ↳ {loc.il.toUpperCase()} / {ilce.ad}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              ))
+                            )}
+                          </select>
+                        </div>
+
+                        {/* Rozet Metni & Gecikme */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[11px] font-bold text-[#8b949e]">Rozet Metni</label>
+                            <input
+                              type="text"
+                              value={editingAdData.rozet}
+                              onChange={(e) => setEditingAdData({ ...editingAdData, rozet: e.target.value })}
+                              placeholder="👑 VIP VİTRİN İLANI"
+                              className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[11px] font-bold text-[#8b949e]">Gecikme (Saniye)</label>
+                            <input
+                              type="number"
+                              min={1}
+                              max={30}
+                              value={editingAdData.gecikmeSaniye}
+                              onChange={(e) => setEditingAdData({ ...editingAdData, gecikmeSaniye: Number(e.target.value) })}
+                              className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono text-center"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Durum & Aksiyon Butonları */}
+                        <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-[#30363d]">
+                          <button
+                            type="button"
+                            onClick={() => setEditingAdData({ ...editingAdData, aktif: !editingAdData.aktif })}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                              editingAdData.aktif ? 'bg-emerald-500 text-slate-950 shadow-md font-black' : 'bg-[#21262d] text-[#8b949e]'
+                            }`}
+                          >
+                            {editingAdData.aktif ? '● AKTİF' : '○ PASİF'}
+                          </button>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={handleCancelEditAd}
+                              className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white font-bold text-xs transition-all flex items-center gap-1 active:scale-95"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>İptal</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => handleSaveEditedAd(idx)}
+                              disabled={savingAd}
+                              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs uppercase font-heading flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+                            >
+                              {savingAd ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                              <span>Kaydet &amp; Uygula</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   return (
                     <div
                       key={ad._id || idx}
-                      className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 ${ad.aktif
+                      className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 text-left ${ad.aktif
                           ? 'bg-[#0d1117] border-amber-500/50 shadow-md'
                           : 'bg-[#0d1117]/60 border-[#30363d] opacity-60'
                         }`}
@@ -2224,8 +2402,18 @@ export default function AdminHomepageConfigPage() {
                         <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
+                            onClick={() => handleStartEditAd(idx)}
+                            className="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 hover:text-amber-200 border border-amber-500/40 text-[10px] font-black uppercase transition-all flex items-center gap-1 active:scale-95 shadow-sm"
+                            title="Reklam Konumunu ve Ayarlarını Düzenle"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span>Düzenle</span>
+                          </button>
+
+                          <button
+                            type="button"
                             onClick={() => handleToggleAdActive(idx)}
-                            className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase transition-all ${ad.aktif ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-[#21262d] text-[#8b949e]'
+                            className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${ad.aktif ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-[#21262d] text-[#8b949e]'
                               }`}
                           >
                             {ad.aktif ? '● AKTİF' : '○ PASİF'}
@@ -2255,7 +2443,7 @@ export default function AdminHomepageConfigPage() {
                           <div className="flex flex-col min-w-0 flex-1">
                             <span className="font-bold text-white truncate text-xs">{listing.baslik}</span>
                             <span className="text-[10px] text-amber-400 font-mono">
-                              🎯 Hedef: <strong className="text-white uppercase">{ad.hedefIlSlug}</strong> • {ad.gecikmeSaniye}sn
+                              🎯 Hedef: <strong className="text-white uppercase">{ad.hedefIlSlug || 'tum_turkiye'}</strong> • {ad.gecikmeSaniye}sn
                             </span>
                           </div>
                         </div>
