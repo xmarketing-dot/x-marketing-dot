@@ -14,7 +14,6 @@ import {
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
 import CircularProgress from '@/components/common/CircularProgress';
-import PullToRefresh from '@/components/common/PullToRefresh';
 
 export default function BmsSecurePortalDashboard() {
   const [data, setData] = useState<any>(null);
@@ -691,11 +690,10 @@ export default function BmsSecurePortalDashboard() {
   });
 
   return (
-    <PullToRefresh onRefresh={() => fetchAnalytics()} isRefreshing={loading}>
-      <div className="flex flex-col gap-6 w-full max-w-full text-left">
-        
-        {/* ── 1. UNIFIED COMPACT HEADER & DATE CONTROLS (MASAÜSTÜ ENTEGRE ANALİTİK ÇUBUĞU) ──────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-[#161b22] border border-[#30363d] p-3.5 sm:p-5 rounded-3xl shadow-xl">
+    <div className="flex flex-col gap-6 w-full max-w-full text-left">
+      
+      {/* ── 1. UNIFIED COMPACT HEADER & DATE CONTROLS (MASAÜSTÜ ENTEGRE ANALİTİK ÇUBUĞU) ──────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 bg-[#161b22] border border-[#30363d] p-3.5 sm:p-5 rounded-3xl shadow-xl">
         <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-md">
             <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -716,8 +714,8 @@ export default function BmsSecurePortalDashboard() {
           </div>
         </div>
 
-        {/* Tarih Filtresi Butonları & Yenile Butonu (Masaüstünde Sağda Hizalı) */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Tarih Filtresi Butonları & Yenile Butonu */}
+        <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
           <div className="grid grid-cols-5 bg-[#0d1117] p-1 rounded-2xl border border-[#21262d] gap-1 shrink-0">
             {[
               { id: 'today', label: 'Bugün' },
@@ -742,11 +740,11 @@ export default function BmsSecurePortalDashboard() {
 
           <button
             onClick={fetchAnalytics}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-xs transition-all active:scale-95 shadow-sm shrink-0"
+            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/30 font-bold text-xs transition-all active:scale-95 shadow-sm shrink-0"
             title="Verileri Yenile"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span className="font-heading font-black hidden sm:inline">Yenile</span>
+            <span className="font-heading font-black">Yenile</span>
           </button>
         </div>
       </div>
@@ -4687,6 +4685,5 @@ export default function BmsSecurePortalDashboard() {
       })()}
 
       </div>
-    </PullToRefresh>
   );
 }

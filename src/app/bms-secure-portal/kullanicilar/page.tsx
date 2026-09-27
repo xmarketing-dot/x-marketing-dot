@@ -183,7 +183,7 @@ export default function AdminUsersPage() {
             title="Listeyi Yenile"
           >
             <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Yenile</span>
+            <span className="font-heading font-black">Yenile</span>
           </button>
         </div>
       </div>

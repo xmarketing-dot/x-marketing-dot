@@ -269,7 +269,7 @@ export default function AdminUcretsizlerPage() {
             title="Canlı Verileri Yenile"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-            <span className="font-heading font-black hidden sm:inline">Yenile</span>
+            <span className="font-heading font-black">Yenile</span>
           </button>
         </div>
       </div>
