@@ -36,13 +36,26 @@ export async function GET(req: Request) {
     }
 
     if (domainFilter && domainFilter !== 'all') {
-      dateQuery.hostname = { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') };
+      if (domainFilter.includes('turkiyeescort')) {
+        dateQuery.hostname = { $regex: /turkiyeescort/i };
+      } else if (domainFilter.includes('besteskort')) {
+        dateQuery.$or = [
+          { hostname: { $regex: /besteskort/i } },
+          { hostname: { $in: ['', null] } }
+        ];
+      } else {
+        dateQuery.hostname = { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') };
+      }
     }
 
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
     const activeUsersQuery: any = { createdAt: { $gte: fiveMinutesAgo } };
     if (domainFilter && domainFilter !== 'all') {
-      activeUsersQuery.hostname = dateQuery.hostname;
+      if (dateQuery.$or) {
+        activeUsersQuery.$or = dateQuery.$or;
+      } else if (dateQuery.hostname) {
+        activeUsersQuery.hostname = dateQuery.hostname;
+      }
     }
 
     // ── TEK BİR PROMISE.ALL İLE PARALEL ÇALIŞTIRMA (10X HIZ) ──
@@ -523,8 +536,8 @@ export async function GET(req: Request) {
 
     // ── 14. Domain Bazlı İstatistik Haritası ──
     const defaultGatewayDomains = [
-      'www.besteskort.online',
       'besteskort.online',
+      'turkiyeescort.devs.surf',
     ];
 
     const domainStatsMap: Record<string, any> = {};
@@ -540,8 +553,18 @@ export async function GET(req: Request) {
       };
     });
 
+    const normalizeDomainName = (raw: string) => {
+      if (!raw || raw === 'Ana Domain' || raw.includes('localhost') || raw.includes('besteskort')) {
+        return 'besteskort.online';
+      }
+      if (raw.includes('turkiyeescort')) {
+        return 'turkiyeescort.devs.surf';
+      }
+      return raw.replace(/^www\./, '');
+    };
+
     domainVisitorsAgg.forEach((item: any) => {
-      const d = item.domain || 'Ana Domain';
+      const d = normalizeDomainName(item.domain);
       if (!domainStatsMap[d]) {
         domainStatsMap[d] = {
           domain: d,
@@ -552,25 +575,24 @@ export async function GET(req: Request) {
           conversionRate: '0.0%',
         };
       }
-      domainStatsMap[d].uniqueVisitors = item.uniqueVisitors || 0;
-      domainStatsMap[d].totalPageviews = item.totalPageviews || 0;
-      domainStatsMap[d].mobileCount = item.mobileCount || 0;
+      domainStatsMap[d].uniqueVisitors += (item.uniqueVisitors || 0);
+      domainStatsMap[d].totalPageviews += (item.totalPageviews || 0);
+      domainStatsMap[d].mobileCount += (item.mobileCount || 0);
     });
 
     domainEventsAgg.forEach((item: any) => {
-      const d = item.domain || 'Ana Domain';
+      const d = normalizeDomainName(item.domain);
       if (!domainStatsMap[d]) {
         domainStatsMap[d] = {
           domain: d,
           uniqueVisitors: 0,
           totalPageviews: 0,
           mobileCount: 0,
-          whatsappClicks: item.whatsappClicks || 0,
+          whatsappClicks: 0,
           conversionRate: '0.0%',
         };
-      } else {
-        domainStatsMap[d].whatsappClicks = item.whatsappClicks || 0;
       }
+      domainStatsMap[d].whatsappClicks += (item.whatsappClicks || 0);
     });
 
     const domainBreakdown = Object.values(domainStatsMap).map((d: any) => {

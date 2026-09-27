@@ -36,15 +36,20 @@ export default function DeepAnalyticsPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [range, setRange] = useState<string>('all'); // all, today, yesterday, week, month, custom
+  const [selectedDomain, setSelectedDomain] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const fetchDeepAnalytics = async (customRange?: string) => {
+  const fetchDeepAnalytics = async (customRange?: string, customDomain?: string) => {
     setLoading(true);
     const targetRange = customRange || range;
+    const targetDomain = customDomain !== undefined ? customDomain : selectedDomain;
     let url = `/api/admin/deep-analytics?range=${targetRange}`;
+    if (targetDomain && targetDomain !== 'all') {
+      url += `&domain=${encodeURIComponent(targetDomain)}`;
+    }
     if (targetRange === 'custom') {
       if (startDate) url += `&startDate=${startDate}`;
       if (endDate) url += `&endDate=${endDate}`;
@@ -64,20 +69,25 @@ export default function DeepAnalyticsPage() {
   };
 
   useEffect(() => {
-    fetchDeepAnalytics('all');
+    fetchDeepAnalytics('all', 'all');
   }, []);
 
   const handleRangeChange = (newRange: string) => {
     setRange(newRange);
     if (newRange !== 'custom') {
-      fetchDeepAnalytics(newRange);
+      fetchDeepAnalytics(newRange, selectedDomain);
     }
+  };
+
+  const handleDomainChange = (newDomain: string) => {
+    setSelectedDomain(newDomain);
+    fetchDeepAnalytics(range, newDomain);
   };
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!startDate) return alert('Lütfen başlangıç tarihi seçin.');
-    fetchDeepAnalytics('custom');
+    fetchDeepAnalytics('custom', selectedDomain);
   };
 
   const handleCopySummary = () => {
@@ -174,63 +184,107 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
           </div>
         </div>
 
-        {/* ── TARİH FİLTRESİ BUTONLARI & ÖZEL TARİH SEÇİCİ ──────────────── */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-3 border-t border-[#21262d]">
-          {/* Preset Buttons */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 bg-[#0d1117] p-1 rounded-2xl border border-[#21262d] gap-1 w-full lg:w-auto">
-            {[
-              { id: 'all', label: 'Tüm Zamanlar' },
-              { id: 'today', label: 'Bugün' },
-              { id: 'yesterday', label: 'Dün' },
-              { id: 'week', label: 'Son 7 Gün' },
-              { id: 'month', label: 'Son 30 Gün' },
-              { id: 'custom', label: 'Özel Tarih 📅' },
-            ].map((r) => (
+        {/* ── ALAN ADI & TARİH FİLTRESİ BUTONLARI ──────────────── */}
+        <div className="flex flex-col gap-3 pt-3 border-t border-[#21262d]">
+          {/* Domain Switcher Bar */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs font-heading font-black text-white flex items-center gap-1 mr-1">
+                <Globe className="w-3.5 h-3.5 text-amber-400" />
+                <span>Domain:</span>
+              </span>
               <button
-                key={r.id}
-                onClick={() => handleRangeChange(r.id)}
-                className={`py-2 px-3 text-center text-[11px] sm:text-xs font-black rounded-xl transition-all truncate font-heading ${
-                  range === r.id
-                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black scale-[1.02]'
-                    : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                onClick={() => handleDomainChange('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                  selectedDomain === 'all'
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md'
+                    : 'bg-[#0d1117] text-[#8b949e] border-[#30363d] hover:text-white'
                 }`}
               >
-                {r.label}
+                🌐 Tüm Siteler (Konsolide)
               </button>
-            ))}
+              <button
+                onClick={() => handleDomainChange('besteskort.online')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                  selectedDomain === 'besteskort.online'
+                    ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black shadow-md'
+                    : 'bg-[#0d1117] text-emerald-400 border-emerald-500/30 hover:border-emerald-500/60'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>🌟 besteskort.online (Ana Vitrin)</span>
+              </button>
+              <button
+                onClick={() => handleDomainChange('turkiyeescort.devs.surf')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                  selectedDomain === 'turkiyeescort.devs.surf'
+                    ? 'bg-fuchsia-500 text-slate-950 border-fuchsia-400 font-black shadow-md'
+                    : 'bg-[#0d1117] text-fuchsia-400 border-fuchsia-500/30 hover:border-fuchsia-500/60'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
+                <span>🚀 turkiyeescort.devs.surf (Türkiye Ağı)</span>
+              </button>
+            </div>
           </div>
 
-          {/* Custom Date Form */}
-          {range === 'custom' && (
-            <form onSubmit={handleCustomSubmit} className="flex items-center gap-2 flex-wrap sm:flex-nowrap bg-[#0d1117] p-2 rounded-2xl border border-amber-500/30 animate-fadeIn">
-              <div className="flex items-center gap-1.5 text-xs text-[#8b949e]">
-                <span>Başlangıç:</span>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="bg-[#161b22] border border-[#30363d] rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
-                  required
-                />
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-[#8b949e]">
-                <span>Bitiş:</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="bg-[#161b22] border border-[#30363d] rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-3.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-heading font-black transition-all"
-              >
-                Uygula
-              </button>
-            </form>
-          )}
+          {/* Preset Date Buttons & Custom Form */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2 border-t border-[#21262d]">
+            <div className="grid grid-cols-3 sm:grid-cols-6 bg-[#0d1117] p-1 rounded-2xl border border-[#21262d] gap-1 w-full lg:w-auto">
+              {[
+                { id: 'all', label: 'Tüm Zamanlar' },
+                { id: 'today', label: 'Bugün' },
+                { id: 'yesterday', label: 'Dün' },
+                { id: 'week', label: 'Son 7 Gün' },
+                { id: 'month', label: 'Son 30 Gün' },
+                { id: 'custom', label: 'Özel Tarih 📅' },
+              ].map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => handleRangeChange(r.id)}
+                  className={`py-2 px-3 text-center text-[11px] sm:text-xs font-black rounded-xl transition-all truncate font-heading ${
+                    range === r.id
+                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black scale-[1.02]'
+                      : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Date Form */}
+            {range === 'custom' && (
+              <form onSubmit={handleCustomSubmit} className="flex items-center gap-2 flex-wrap sm:flex-nowrap bg-[#0d1117] p-2 rounded-2xl border border-amber-500/30 animate-fadeIn">
+                <div className="flex items-center gap-1.5 text-xs text-[#8b949e]">
+                  <span>Başlangıç:</span>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="bg-[#161b22] border border-[#30363d] rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-[#8b949e]">
+                  <span>Bitiş:</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="bg-[#161b22] border border-[#30363d] rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-3.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg text-xs font-heading font-black transition-all"
+                >
+                  Uygula
+                </button>
+              </form>
+            )}
+          </div>
         </div>
       </div>
 
@@ -256,12 +310,86 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
               <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl">
                 <CircularProgress
                   size="md"
-                  title="Tarih Aralığı Güncelleniyor..."
+                  title="Tarih & Alan Adı Güncelleniyor..."
                   steps={[
-                    'Seçili tarih aralığı filtreleniyor...',
-                    'Sadakat metrikleri güncelleniyor...',
+                    'Seçili filtre parametreleri hesaplanıyor...',
+                    'Sadakat ve dönüşüm metrikleri güncelleniyor...',
                   ]}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* ── 1. ÇOKLU ALAN ADI & UYDU SİTELER KARŞILAŞTIRMA KARTI ──────────── */}
+          {data?.domainBreakdown && data.domainBreakdown.length > 0 && (
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#21262d] pb-3">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-amber-400" />
+                  <h3 className="font-heading font-black text-sm sm:text-base text-white">
+                    Çoklu Alan Adı &amp; Uydu Siteler Karşılaştırma Matrisi
+                  </h3>
+                </div>
+                <span className="text-[11px] font-mono text-[#8b949e]">
+                  Tüm bağlı projelerin gerçek insan ve dönüşüm performansı
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {data.domainBreakdown.map((db: any) => {
+                  const isTurkiye = db.domain.includes('turkiyeescort');
+                  const isBest = db.domain.includes('besteskort');
+
+                  return (
+                    <div 
+                      key={db.domain}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col justify-between gap-3 shadow-md ${
+                        isTurkiye 
+                          ? 'bg-gradient-to-b from-fuchsia-950/20 to-[#161b22] border-fuchsia-500/30 hover:border-fuchsia-400' 
+                          : isBest
+                          ? 'bg-gradient-to-b from-emerald-950/20 to-[#161b22] border-emerald-500/30 hover:border-emerald-400'
+                          : 'bg-[#0d1117] border-[#30363d]'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex flex-col">
+                          <span className="font-mono font-black text-xs text-white flex items-center gap-1.5">
+                            <span className={`w-2 h-2 rounded-full ${isTurkiye ? 'bg-fuchsia-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}`}></span>
+                            <span>{db.domain}</span>
+                          </span>
+                          <span className="text-[10px] text-[#8b949e] mt-0.5 font-sans">
+                            {isTurkiye ? 'Türkiye Geneli İlan Ağı' : isBest ? 'Ana Merkez Vitrin' : 'Bağlı Uydu Gateway'}
+                          </span>
+                        </div>
+                        <span className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                          isTurkiye ? 'bg-fuchsia-500/15 text-fuchsia-300 border-fuchsia-500/30' : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                        }`}>
+                          {db.conversionRate} CR
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 py-2 border-y border-[#21262d] text-center">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-[#8b949e]">Tekil İnsan</span>
+                          <span className="text-sm font-black text-white font-mono">{db.uniqueHumans?.toLocaleString('tr-TR')}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-[#8b949e]">Temiz Hit</span>
+                          <span className="text-sm font-black text-slate-300 font-mono">{db.humanHits?.toLocaleString('tr-TR')}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-emerald-400 font-bold">WhatsApp</span>
+                          <span className="text-sm font-black text-emerald-400 font-mono">{db.whatsappClicks}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] text-[#8b949e] font-mono">
+                        <span>Mobil Payı: <strong className="text-slate-200">%{db.mobilePercent}</strong></span>
+                        <span>Bot Filtresi: <strong className="text-red-400">%{Math.round((db.botHits / ((db.humanHits + db.botHits) || 1)) * 100)}</strong></span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

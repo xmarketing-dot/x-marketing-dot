@@ -669,6 +669,31 @@ export default function BmsSecurePortalDashboard() {
     );
   };
 
+  const renderDomainBadge = (rawHost?: string) => {
+    const host = (rawHost || '').toLowerCase();
+    if (host.includes('turkiyeescort')) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-fuchsia-500/15 border border-fuchsia-500/40 text-fuchsia-300 font-mono font-bold text-[10px] shadow-sm shadow-fuchsia-500/10">
+          <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
+          <span>🚀 turkiyeescort.devs.surf</span>
+        </span>
+      );
+    }
+    if (host.includes('besteskort') || !host || host === 'ana domain' || host === 'ana merkez') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-mono font-bold text-[10px] shadow-sm shadow-emerald-500/10">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>🌟 besteskort.online</span>
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 font-mono font-bold text-[10px]">
+        🌐 {host}
+      </span>
+    );
+  };
+
   const suspiciousTotalCount = (recentVisitors as any[]).filter(
     (v: any) => getSuspiciousAnalysis(v).isSuspicious
   ).length;
@@ -685,6 +710,7 @@ export default function BmsSecurePortalDashboard() {
       (v.city || '').toLowerCase().includes(term) ||
       (v.path || '').toLowerCase().includes(term) ||
       (v.referer || '').toLowerCase().includes(term) ||
+      (v.hostname || '').toLowerCase().includes(term) ||
       (v.searchKeyword || '').toLowerCase().includes(term)
     );
   });
@@ -749,20 +775,89 @@ export default function BmsSecurePortalDashboard() {
         </div>
       </div>
 
-      {/* ── ÜRETİM ALAN ADI BİLGİ ŞERİDİ ──────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 sm:p-3.5 rounded-2xl bg-[#161b22] border border-[#30363d]">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <Globe className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span className="text-xs font-heading font-black text-white">Aktif Üretim Alan Adı:</span>
-          <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono font-bold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            www.besteskort.online (Production)
-          </span>
+      {/* ── ÇOKLU DOMAİN / UYDU AĞI KONTROL MERKEZİ & FİLTRE ──────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-lg">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 mr-1">
+            <Globe className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="text-xs font-heading font-black text-white">Analiz Alan Adı:</span>
+          </div>
+
+          {/* Domain Filter Buttons */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              onClick={() => setSelectedDomain('all')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 border ${
+                selectedDomain === 'all'
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black scale-[1.02]'
+                  : 'bg-[#0d1117] text-[#8b949e] hover:text-white border-[#30363d] hover:border-amber-500/30'
+              }`}
+            >
+              <span>🌐 Tüm Siteler (Konsolide)</span>
+              {domainBreakdown.length > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                  selectedDomain === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#21262d] text-amber-300'
+                }`}>
+                  {uniqueVisitors} Tekil
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setSelectedDomain('besteskort.online')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 border ${
+                selectedDomain === 'besteskort.online'
+                  ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md font-black scale-[1.02]'
+                  : 'bg-[#0d1117] text-emerald-400 hover:text-emerald-300 border-emerald-500/30 hover:border-emerald-500/50'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>🌟 besteskort.online (Ana Vitrin)</span>
+              {(() => {
+                const bStats = domainBreakdown.find((d: any) => d.domain?.includes('besteskort'));
+                return bStats ? (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    selectedDomain === 'besteskort.online' ? 'bg-slate-950/30 text-slate-950' : 'bg-emerald-500/20 text-emerald-300'
+                  }`}>
+                    {bStats.uniqueVisitors}
+                  </span>
+                ) : null;
+              })()}
+            </button>
+
+            <button
+              onClick={() => setSelectedDomain('turkiyeescort.devs.surf')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 border ${
+                selectedDomain === 'turkiyeescort.devs.surf'
+                  ? 'bg-fuchsia-500 text-slate-950 border-fuchsia-400 shadow-md font-black scale-[1.02]'
+                  : 'bg-[#0d1117] text-fuchsia-400 hover:text-fuchsia-300 border-fuchsia-500/30 hover:border-fuchsia-500/50'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-fuchsia-400 animate-pulse"></span>
+              <span>🚀 turkiyeescort.devs.surf (Türkiye Ağı)</span>
+              {(() => {
+                const tStats = domainBreakdown.find((d: any) => d.domain?.includes('turkiyeescort'));
+                return tStats ? (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    selectedDomain === 'turkiyeescort.devs.surf' ? 'bg-slate-950/30 text-slate-950' : 'bg-fuchsia-500/20 text-fuchsia-300'
+                  }`}>
+                    {tStats.uniqueVisitors}
+                  </span>
+                ) : null;
+              })()}
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-[#8b949e] font-mono">
-          <span className="px-2 py-0.5 rounded-lg bg-[#0d1117] border border-[#30363d] text-amber-400 font-bold">
-            301/308 Yönlendirmeleri Aktif
-          </span>
+
+        <div className="flex items-center gap-2 text-[11px] text-[#8b949e] font-mono shrink-0">
+          <Link
+            href="/bms-secure-portal/derin-analiz"
+            className="px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold transition-all flex items-center gap-1.5"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>🔬 Derin Ağ Analizi</span>
+            <ArrowUpRight className="w-3 h-3" />
+          </Link>
         </div>
       </div>
 
@@ -1887,15 +1982,16 @@ export default function BmsSecurePortalDashboard() {
 
                               {/* Hedef İlan & Telefon */}
                               <td className="py-4 px-5">
-                                <div className="flex flex-col gap-1 max-w-xs">
-                                  <div className="flex items-center gap-1.5">
+                                <div className="flex flex-col gap-1.5 max-w-xs">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
                                     <Crown className={`w-3.5 h-3.5 shrink-0 ${isNew ? 'text-emerald-300 animate-bounce' : 'text-amber-400'}`} />
                                     <span className={`font-black text-xs truncate transition-colors ${isNew ? 'text-emerald-200 text-sm' : 'text-white group-hover:text-amber-300'}`}>
                                       {lead.targetTitle || 'İlan'}
                                     </span>
                                   </div>
                                   
-                                  <div className="flex items-center gap-2 text-[11px] font-mono text-[#8b949e]">
+                                  <div className="flex items-center gap-2 text-[11px] font-mono text-[#8b949e] flex-wrap">
+                                    {renderDomainBadge(lead.hostname || m.hostname)}
                                     {m.listingLocation && (
                                       <span className="font-bold text-slate-300">📍 {m.listingLocation.toUpperCase()}</span>
                                     )}
@@ -2059,8 +2155,11 @@ export default function BmsSecurePortalDashboard() {
                           </span>
                         </div>
 
-                        <div className="flex flex-col gap-1">
-                          <span className="font-bold text-white text-xs">{lead.targetTitle || 'İlan'}</span>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <span className="font-bold text-white text-xs">{lead.targetTitle || 'İlan'}</span>
+                            {renderDomainBadge(lead.hostname || m.hostname)}
+                          </div>
                           <div className="flex items-center justify-between text-[11px] text-[#8b949e] font-mono">
                             <span>📍 {m.city || lead.targetCity || 'İstanbul'}</span>
                             <span className="text-emerald-400 font-bold">{m.listingPhone}</span>
@@ -3770,45 +3869,89 @@ export default function BmsSecurePortalDashboard() {
             </div>
           </div>
 
-          {/* HIZLI GÜVENLİK FİLTRESİ (TÜMÜ VS ŞÜPHELİ / BOT / SALDIRI) */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl bg-[#0d1117] border border-[#30363d]">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setOnlySuspiciousFilter(false)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  !onlySuspiciousFilter
-                    ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                    : 'text-[#8b949e] hover:text-white bg-[#161b22]'
-                }`}
-              >
-                <span>🔘 Tümü</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
-                  {(recentVisitors as any[]).length}
-                </span>
-              </button>
+          {/* HIZLI FİLTRELER: GÜVENLİK & DOMAİN SEÇİCİ */}
+          <div className="flex flex-col gap-2.5 p-3 sm:p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d]">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              {/* Güvenlik Filtresi */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setOnlySuspiciousFilter(false)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    !onlySuspiciousFilter
+                      ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                      : 'text-[#8b949e] hover:text-white bg-[#161b22]'
+                  }`}
+                >
+                  <span>🔘 Tümü</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+                    {(recentVisitors as any[]).length}
+                  </span>
+                </button>
 
-              <button
-                onClick={() => setOnlySuspiciousFilter(true)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  onlySuspiciousFilter
-                    ? 'bg-red-500 text-white shadow-md shadow-red-500/30 font-black animate-pulse'
-                    : 'text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/40'
-                }`}
-              >
-                <span>🚨 Sadece Şüpheli &amp; Bot / Saldırı</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-red-900/80 font-mono font-black">
-                  {suspiciousTotalCount}
-                </span>
-              </button>
+                <button
+                  onClick={() => setOnlySuspiciousFilter(true)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    onlySuspiciousFilter
+                      ? 'bg-red-500 text-white shadow-md shadow-red-500/30 font-black animate-pulse'
+                      : 'text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/40'
+                  }`}
+                >
+                  <span>🚨 Sadece Şüpheli &amp; Bot / Saldırı</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-red-900/80 font-mono font-black">
+                    {suspiciousTotalCount}
+                  </span>
+                </button>
+              </div>
+
+              {/* Hızlı Domain Filtreleme Butonları */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] text-[#8b949e] font-mono mr-1">Domain:</span>
+                <button
+                  onClick={() => setSearchTermFilter('')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ${
+                    !searchTermFilter 
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' 
+                      : 'bg-[#161b22] text-[#8b949e] border-[#30363d] hover:text-white'
+                  }`}
+                >
+                  Tümü
+                </button>
+                <button
+                  onClick={() => setSearchTermFilter('besteskort')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 border ${
+                    searchTermFilter === 'besteskort'
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-[#161b22] text-emerald-400 border-[#30363d] hover:text-emerald-300'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>besteskort.online</span>
+                </button>
+                <button
+                  onClick={() => setSearchTermFilter('turkiyeescort')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 border ${
+                    searchTermFilter === 'turkiyeescort'
+                      ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40'
+                      : 'bg-[#161b22] text-fuchsia-400 border-[#30363d] hover:text-fuchsia-300'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400"></span>
+                  <span>turkiyeescort.devs.surf</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] text-[#8b949e]">
+            <div className="flex items-center gap-2 text-[11px] text-[#8b949e] pt-1 border-t border-[#21262d]">
               <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
                 ✅ Google / Yandex Korumalı
               </span>
               <span>•</span>
               <span className="inline-flex items-center gap-1 text-red-400 font-medium">
                 ⚠️ Otomasyon / AWS / Proxy İşaretli
+              </span>
+              <span>•</span>
+              <span className="inline-flex items-center gap-1 text-fuchsia-400 font-medium">
+                🚀 Multi-Domain Canlı Dinleme Aktif
               </span>
             </div>
           </div>
@@ -3863,11 +4006,7 @@ export default function BmsSecurePortalDashboard() {
                       <span className="font-mono text-[11px] text-white truncate">{v.path}</span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      {v.hostname && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 font-mono border border-amber-500/30">
-                          {v.hostname}
-                        </span>
-                      )}
+                      {renderDomainBadge(v.hostname)}
                       {renderTrafficSourceBadge(v)}
                     </div>
                   </div>
@@ -3946,9 +4085,7 @@ export default function BmsSecurePortalDashboard() {
 
                       {/* Girilen Domain */}
                       <td className="py-3 px-3 font-mono text-[11px]">
-                        <span className="px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-bold">
-                          {v.hostname || 'Ana Merkez'}
-                        </span>
+                        {renderDomainBadge(v.hostname)}
                       </td>
 
                       {/* Gezilen Sayfa */}

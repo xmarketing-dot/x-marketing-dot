@@ -12,6 +12,7 @@ export async function GET(req: Request) {
     await connectToDatabase();
     const url = new URL(req.url);
     const range = url.searchParams.get('range') || 'all';
+    const domainFilter = url.searchParams.get('domain') || 'all';
     const startDateParam = url.searchParams.get('startDate');
     const endDateParam = url.searchParams.get('endDate');
     const botFilter = url.searchParams.get('botFilter') || 'all'; // all, human, bot
@@ -47,6 +48,19 @@ export async function GET(req: Request) {
       dateQuery = {};
     }
 
+    if (domainFilter && domainFilter !== 'all') {
+      if (domainFilter.includes('turkiyeescort')) {
+        dateQuery.hostname = { $regex: /turkiyeescort/i };
+      } else if (domainFilter.includes('besteskort')) {
+        dateQuery.$or = [
+          { hostname: { $regex: /besteskort/i } },
+          { hostname: { $in: ['', null] } }
+        ];
+      } else {
+        dateQuery.hostname = { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') };
+      }
+    }
+
     // Parallel fetch
     const [visitors, events, listings] = await Promise.all([
       AnalyticsVisitorModel.find(dateQuery, {
@@ -63,6 +77,7 @@ export async function GET(req: Request) {
         searchKeyword: 1,
         duration: 1,
         userAgent: 1,
+        hostname: 1,
         createdAt: 1,
       }).lean(),
       AnalyticsEventModel.find(dateQuery, {
@@ -72,6 +87,7 @@ export async function GET(req: Request) {
         listingId: 1,
         city: 1,
         district: 1,
+        hostname: 1,
         meta: 1,
         createdAt: 1,
       }).lean(),
@@ -393,6 +409,70 @@ export async function GET(req: Request) {
         topWhatsappCities: Object.entries(whatsappCities).sort((a, b) => b[1] - a[1]).slice(0, 15),
       },
       topListingsByViews,
+      domainBreakdown: (() => {
+        const domainMap: Record<string, {
+          domain: string;
+          rawHits: number;
+          humanHits: number;
+          botHits: number;
+          uniqueHumans: Set<string>;
+          whatsappClicks: number;
+          mobileHits: number;
+        }> = {};
+
+        visitors.forEach((v: any) => {
+          let d = (v.hostname || '').trim().toLowerCase();
+          if (!d || d.includes('besteskort')) d = 'besteskort.online';
+          else if (d.includes('turkiyeescort')) d = 'turkiyeescort.devs.surf';
+          
+          if (!domainMap[d]) {
+            domainMap[d] = {
+              domain: d,
+              rawHits: 0,
+              humanHits: 0,
+              botHits: 0,
+              uniqueHumans: new Set(),
+              whatsappClicks: 0,
+              mobileHits: 0,
+            };
+          }
+
+          domainMap[d].rawHits += 1;
+          const botCheck = detectBot(v);
+          if (botCheck.isBot) {
+            domainMap[d].botHits += 1;
+          } else {
+            domainMap[d].humanHits += 1;
+            domainMap[d].uniqueHumans.add(v.visitorId || v.ip || 'anon');
+            if (v.device === 'mobile') {
+              domainMap[d].mobileHits += 1;
+            }
+          }
+        });
+
+        events.forEach((ev: any) => {
+          if (ev.eventType === 'whatsapp_click' || ev.eventType === 'special_ad_whatsapp_click') {
+            let d = (ev.hostname || '').trim().toLowerCase();
+            if (!d || d.includes('besteskort')) d = 'besteskort.online';
+            else if (d.includes('turkiyeescort')) d = 'turkiyeescort.devs.surf';
+
+            if (domainMap[d]) {
+              domainMap[d].whatsappClicks += 1;
+            }
+          }
+        });
+
+        return Object.values(domainMap).map((dm) => ({
+          domain: dm.domain,
+          rawHits: dm.rawHits,
+          humanHits: dm.humanHits,
+          botHits: dm.botHits,
+          uniqueHumans: dm.uniqueHumans.size,
+          whatsappClicks: dm.whatsappClicks,
+          mobilePercent: dm.humanHits > 0 ? Math.round((dm.mobileHits / dm.humanHits) * 100) : 0,
+          conversionRate: dm.uniqueHumans.size > 0 ? ((dm.whatsappClicks / dm.uniqueHumans.size) * 100).toFixed(2) + '%' : '0.00%',
+        })).sort((a, b) => b.humanHits - a.humanHits);
+      })(),
     };
 
     return NextResponse.json(responsePayload);
