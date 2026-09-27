@@ -26,6 +26,9 @@ export default function MobileShell({ children }: MobileShellProps) {
 
   useEffect(() => {
     try {
+      if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+        return; // Masaüstünde asla kontrol etme / açma
+      }
       const verified = localStorage.getItem('age_verified_2026');
       if (!verified) {
         setIsAgeModalOpen(true);
@@ -88,9 +91,7 @@ export default function MobileShell({ children }: MobileShellProps) {
     pathname === '/ucretsiz-reklam';
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden relative">
-      {/* +18 Yaş Doğrulama Modalı (İlk Girişte Onay İster) */}
-      <AgeVerificationModal isOpen={isAgeModalOpen} onConfirm={handleAgeConfirm} />
+    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden">
       
       {/* ── 1. MASAÜSTÜ (WEB / DESKTOP) GÖRÜNÜMÜ: X-MARKETING TECH KURUMSAL PLATFORM ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
@@ -109,6 +110,9 @@ export default function MobileShell({ children }: MobileShellProps) {
 
       {/* ── 2. MOBİL GÖRÜNÜMÜ: %100 BEST ESKORT PLATFORMU ──────────────── */}
       <div className="md:hidden min-h-[100dvh] bg-[#0d1117] flex flex-col relative w-full max-w-full overflow-x-clip">
+
+        {/* Mobil +18 Yaş Doğrulama Modalı (İlk Girişte Onay İster) */}
+        <AgeVerificationModal isOpen={isAgeModalOpen} onConfirm={handleAgeConfirm} />
 
         {/* STICKY TOP HEADER BAR */}
         <div id="app-sticky-header" className="sticky top-0 z-40 bg-[#0d1117]/95 backdrop-blur-md">
