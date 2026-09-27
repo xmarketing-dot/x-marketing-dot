@@ -9,7 +9,11 @@ export const dynamic = 'force-dynamic';
 
 function slugifyCity(cityName: string): string {
   if (!cityName) return '';
-  return cityName
+  let decoded = cityName;
+  try {
+    decoded = decodeURIComponent(cityName);
+  } catch (e) {}
+  return decoded
     .toLowerCase()
     .replace(/ğ/g, 'g')
     .replace(/ü/g, 'u')
@@ -23,7 +27,12 @@ function slugifyCity(cityName: string): string {
 
 export async function GET(req: Request) {
   try {
-    const rawCity = req.headers.get('x-vercel-ip-city') || req.headers.get('x-vercel-ip-country-region') || '';
+    const rawCity = 
+      req.headers.get('cf-ipcity') ||
+      req.headers.get('x-vercel-ip-city') || 
+      req.headers.get('x-vercel-ip-country-region') || 
+      req.headers.get('cf-region') || 
+      '';
     const detectedCity = slugifyCity(rawCity);
 
     await connectToDatabase();
