@@ -7,8 +7,25 @@ import { checkAndExpireShowcases, checkAndExpirePopups } from '@/lib/vitrinManag
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+function slugifyCity(cityName: string): string {
+  if (!cityName) return '';
+  return cityName
+    .toLowerCase()
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+}
+
+export async function GET(req: Request) {
   try {
+    const rawCity = req.headers.get('x-vercel-ip-city') || req.headers.get('x-vercel-ip-country-region') || '';
+    const detectedCity = slugifyCity(rawCity);
+
     await connectToDatabase();
 
     // Süresi dolan vitrin ve popup reklamlarını kontrol et
@@ -56,7 +73,10 @@ export async function GET() {
     }
 
     return NextResponse.json(
-      { config: JSON.parse(JSON.stringify(config)) },
+      { 
+        config: JSON.parse(JSON.stringify(config)),
+        detectedCity: detectedCity || null,
+      },
       {
         headers: {
           'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=29',

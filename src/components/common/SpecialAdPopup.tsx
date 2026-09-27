@@ -36,7 +36,6 @@ export default function SpecialAdPopup() {
   const [currentAd, setCurrentAd] = useState<SpecialAdItem | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
-  const hasDismissedThisVisitRef = useRef(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -47,7 +46,7 @@ export default function SpecialAdPopup() {
   const { currentCitySlug, currentDistrictSlug } = useMemo(() => {
     if (!pathname || pathname === '/') return { currentCitySlug: '', currentDistrictSlug: '' };
     const segments = pathname.split('/').filter(Boolean);
-    if (segments[0] && !['kategori', 'ilan', 'ara', 'sehirler', 'bms-secure-portal', 'chat'].includes(segments[0])) {
+    if (segments[0] && !['kategori', 'ilan', 'ara', 'sehirler', 'bms-secure-portal', 'chat', 'panelim', 'ilan-ver', 'reklam-ver'].includes(segments[0])) {
       return {
         currentCitySlug: segments[0].toLowerCase(),
         currentDistrictSlug: segments[1] ? segments[1].toLowerCase() : '',
@@ -57,12 +56,21 @@ export default function SpecialAdPopup() {
   }, [pathname]);
 
   useEffect(() => {
-    // Strictly MOBILE-ONLY: Don't show on desktop web, admin portal or chat
+    // 1. Strictly MOBILE-ONLY: Don't show on desktop web, admin portal or chat
     if (pathname?.startsWith('/bms-secure-portal') || pathname === '/chat') {
       return;
     }
     if (typeof window !== 'undefined' && window.innerWidth >= 768) {
       return;
+    }
+
+    // 2. SESSION CONTROL: Kullanıcı oturumu boyunca (tarayıcı sekmesi kapanana kadar) sadece 1 KEZ göster!
+    // Sayfa değiştirildiğinde tekrar tekrar patlamasın.
+    if (typeof window !== 'undefined') {
+      const isAlreadyShown = sessionStorage.getItem('bms_popup_shown_session');
+      if (isAlreadyShown === 'true') {
+        return;
+      }
     }
 
     // Fetch config
@@ -71,7 +79,7 @@ export default function SpecialAdPopup() {
       .then((data) => {
         const adsList: SpecialAdItem[] = [];
 
-        // Check new multi-ad array
+        // Check multi-ad array
         if (Array.isArray(data?.config?.ozelIlanReklamlar)) {
           data.config.ozelIlanReklamlar.forEach((ad: SpecialAdItem) => {
             if (ad.aktif && ad.ilan && (ad.ilan.status === 'yayinda' || !ad.ilan.status)) {
@@ -88,38 +96,59 @@ export default function SpecialAdPopup() {
         if (adsList.length > 0) {
           setActiveAds(adsList);
 
-          // ── AKILLI KONUM VE SIRALI ROTASYON ALGORİTMASI ──
-          // 1. Kullanıcının bulunduğu il veya ilçeye özel reklamları önceliklendir (Geo-Targeting)
-          const locationMatched = adsList.filter((ad) => {
-            const target = (ad.hedefIlSlug || '').toLowerCase();
-            const listingCity = (ad.ilan?.ilSlug || '').toLowerCase();
-            const listingDistrict = (ad.ilan?.ilceSlug || '').toLowerCase();
+          // ── KATI ŞEHİR / İLÇE HEDEFLEME ALGORİTMASI ──
+          // Kullanıcının bulunduğu şehir: 1. URL'deki şehir slug'ı veya 2. IP üzerinden algılanan detectedCity
+          const detectedCity = (data?.detectedCity || '').toLowerCase().trim();
+          const effectiveCity = currentCitySlug || detectedCity;
+          const effectiveDistrict = currentDistrictSlug || '';
 
-            // Belirli ilçe eşleşmesi (örn: istanbul/beylikduzu veya beylikduzu)
-            if (currentDistrictSlug && (target.includes(currentDistrictSlug) || listingDistrict === currentDistrictSlug)) {
+          // A) Konum Eşleşen Reklamlar (Sadece kullanıcının şehrine / ilçesine ait olanlar)
+          const locationMatched = adsList.filter((ad) => {
+            const target = (ad.hedefIlSlug || '').toLowerCase().trim();
+            const listingCity = (ad.ilan?.ilSlug || '').toLowerCase().trim();
+            const listingDistrict = (ad.ilan?.ilceSlug || '').toLowerCase().trim();
+
+            // Eğer hedef "tum_turkiye" ise genel havuza aittir, buraya girmez
+            if (!target || target === 'tum_turkiye' || target === 'hepsi' || target === 'all') {
+              return false;
+            }
+
+            // İlçe hedeflemesi eşleşmesi (örn: istanbul/beylikduzu veya beylikduzu)
+            if (effectiveDistrict && (target.includes(effectiveDistrict) || listingDistrict === effectiveDistrict)) {
               return true;
             }
-            // Şehir geneli eşleşmesi (örn: istanbul)
-            if (currentCitySlug && (target === currentCitySlug || listingCity === currentCitySlug)) {
+
+            // İl hedeflemesi eşleşmesi (örn: "eskisehir", "istanbul", "izmir")
+            if (effectiveCity && (target === effectiveCity || target.startsWith(`${effectiveCity}/`) || listingCity === effectiveCity)) {
               return true;
             }
+
             return false;
           });
 
-          // 2. Tüm Türkiye genel reklamları
+          // B) Tüm Türkiye Genel Reklamları (Her şehirdeki kullanıcıya gösterilebilir)
           const generalAds = adsList.filter((ad) => {
-            const target = (ad.hedefIlSlug || '').toLowerCase();
-            return !target || target === 'tum_turkiye' || target === 'hepsi';
+            const target = (ad.hedefIlSlug || '').toLowerCase().trim();
+            return !target || target === 'tum_turkiye' || target === 'hepsi' || target === 'all';
           });
 
-          const candidates = locationMatched.length > 0 ? locationMatched : (generalAds.length > 0 ? generalAds : adsList);
+          // KESİN KURAL:
+          // 1. Kullanıcının şehrine özel reklam varsa onu göster.
+          // 2. Yoksa Tüm Türkiye genel reklamı varsa onu göster.
+          // 3. Başka şehre (örn. Eskişehir) ait reklamı İstanbul'daki veya alakasız kullanıcıya ASLA GÖSTERME (candidates boş kalır).
+          const candidates = locationMatched.length > 0 ? locationMatched : generalAds;
 
-          // 3. Sıralı Rotasyon: Session'daki index'i okuyup sıradaki reklamı seç
+          if (candidates.length === 0) {
+            setCurrentAd(null);
+            setIsOpen(false);
+            return;
+          }
+
+          // C) Sıralı Rotasyon: Session'daki index'i okuyup sıradaki reklamı seç
           let cycleIdx = 0;
           if (typeof window !== 'undefined') {
             const savedIdx = parseInt(sessionStorage.getItem('bms_special_ad_cycle_idx') || '0', 10);
             cycleIdx = (savedIdx >= 0 && savedIdx < candidates.length) ? savedIdx : 0;
-            // Next time, show next ad in rotation
             sessionStorage.setItem('bms_special_ad_cycle_idx', String((cycleIdx + 1) % candidates.length));
           }
 
@@ -131,16 +160,30 @@ export default function SpecialAdPopup() {
   }, [pathname, currentCitySlug]);
 
   useEffect(() => {
-    if (!currentAd || !currentAd.aktif || hasDismissedThisVisitRef.current) return;
+    if (!currentAd || !currentAd.aktif) return;
 
-    const delayMs = Math.max(2, currentAd.gecikmeSaniye || 4) * 1000;
+    // Check session again
+    if (typeof window !== 'undefined') {
+      const isAlreadyShown = sessionStorage.getItem('bms_popup_shown_session');
+      if (isAlreadyShown === 'true') {
+        return;
+      }
+    }
+
+    const delayMs = Math.max(2, currentAd.gecikmeSaniye || 3) * 1000;
 
     let timer: NodeJS.Timeout | null = null;
     let triggered = false;
 
     const showAd = () => {
-      if (triggered || hasDismissedThisVisitRef.current) return;
+      if (triggered) return;
       triggered = true;
+
+      // Mark session as shown so it never pops up again in this browser tab/session
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('bms_popup_shown_session', 'true');
+      }
+
       setIsOpen(true);
 
       const lId = currentAd?.ilan?._id || currentAd?.ilanId;
@@ -166,14 +209,14 @@ export default function SpecialAdPopup() {
       window.removeEventListener('scroll', handleScroll);
     };
 
-    // Trigger on timer (e.g. 4 seconds)
+    // Trigger on timer (e.g. 3 seconds)
     timer = setTimeout(() => {
       showAd();
     }, delayMs);
 
-    // Or trigger when user scrolls down 200px
+    // Or trigger when user scrolls down 180px
     const handleScroll = () => {
-      if (window.scrollY > 200) {
+      if (window.scrollY > 180) {
         showAd();
       }
     };
@@ -260,12 +303,16 @@ export default function SpecialAdPopup() {
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
-    hasDismissedThisVisitRef.current = true;
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('bms_popup_shown_session', 'true');
+    }
     setIsOpen(false);
   };
 
   const handleGoToAd = () => {
-    hasDismissedThisVisitRef.current = true;
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('bms_popup_shown_session', 'true');
+    }
     setIsOpen(false);
     trackEvent('special_ad_click', {
       listingId: listing?._id,
@@ -312,33 +359,36 @@ export default function SpecialAdPopup() {
             >
               <Image
                 src={src}
-                alt={`${displayTitle} - Foto ${idx + 1}`}
+                alt={displayTitle}
                 fill
-                sizes="(max-width: 640px) 100vw, 400px"
-                className="object-cover group-hover:scale-105 transition-transform duration-700 brightness-[1.03]"
-                loading="lazy"
+                sizes="(max-width: 640px) 360px, 380px"
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                priority={idx === 0}
               />
             </div>
           ))}
 
+          {/* Üst Karartma & Rozet */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#12161f] via-black/20 to-black/60 z-20 pointer-events-none" />
+
           {/* Sol Üst Sponsorlu Rozeti */}
-          <div className="absolute top-3.5 left-3.5 z-20">
-            <span className="px-3 py-1.5 rounded-full bg-black/80 backdrop-blur-md text-amber-400 font-black text-xs uppercase font-heading tracking-wide shadow-lg flex items-center gap-1.5 border border-amber-400/40">
-              <Crown className="w-3.5 h-3.5 fill-amber-400" />
-              <span>{currentAd.rozet || '🔥 GÜNÜN ÖZEL VIP İLANI'}</span>
-            </span>
+          <div className="absolute top-4 left-4 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/90 text-slate-950 font-black text-[11px] font-heading shadow-lg backdrop-blur-md border border-amber-300">
+            <Crown className="w-3.5 h-3.5 fill-current" />
+            <span>{currentAd.rozet || 'SPONSORLU VIP'}</span>
           </div>
 
-          {/* Fotoğraf Slide Nokta Göstergeleri */}
+          {/* Fotoğraf Sayısı / Dot Göstergeleri */}
           {photos.length > 1 && (
-            <div className="absolute bottom-3 left-0 right-0 z-20 flex items-center justify-center gap-1.5 pointer-events-none">
-              {photos.map((_, dotIdx) => (
-                <span
-                  key={dotIdx}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    dotIdx === activePhotoIdx
-                      ? 'w-5 bg-amber-400 shadow-md shadow-black'
-                      : 'w-2 bg-white/60 backdrop-blur-sm'
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-full backdrop-blur-md border border-white/10">
+              {photos.map((_, idx) => (
+                <div
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActivePhotoIdx(idx);
+                  }}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    idx === activePhotoIdx ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/40'
                   }`}
                 />
               ))}
@@ -346,63 +396,66 @@ export default function SpecialAdPopup() {
           )}
         </div>
 
-        {/* ── 2. ALT BİLGİ & DÖNÜŞÜM ALANI (Büyük Puntolar & Net Ayrım) ──────────────── */}
-        <div className="p-5 pt-4 flex flex-col gap-3.5 text-center bg-[#12161f]">
-          
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-center gap-2 text-sm text-amber-400 font-bold">
-              <MapPin className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="font-heading tracking-wide text-amber-300">{displayLocation}</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono text-[11px] font-bold">● Doğrulandı</span>
+        {/* ── 2. BİLGİ & AKSİYON ALANI (ALT KISIM) ──────────────── */}
+        <div className="p-4 sm:p-5 flex flex-col gap-3.5 bg-[#12161f] text-left">
+          {/* Başlık ve Konum */}
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1.5 text-xs text-amber-400 font-bold uppercase tracking-wider font-heading">
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
+              <span>{displayLocation}</span>
+              <span className="w-1 h-1 rounded-full bg-amber-400" />
+              <span className="text-emerald-400 flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Doğrulanmış
+              </span>
             </div>
-
-            <h2 className="font-black text-base sm:text-lg text-white font-heading tracking-tight leading-snug drop-shadow-md text-amber-300 line-clamp-2 px-1">
+            <h3 
+              onClick={handleGoToAd}
+              className="text-lg font-black text-white font-heading hover:text-amber-400 transition-colors line-clamp-1 cursor-pointer"
+            >
               {displayTitle}
-            </h2>
+            </h3>
+            <p className="text-xs text-[#8b949e] line-clamp-2">
+              {currentAd.spotMetin || 'Seçkin ve güvenilir görüşmeler için WhatsApp üzerinden anında randevu oluşturabilirsiniz.'}
+            </p>
           </div>
 
-          {/* Aksiyon Butonları (Büyük, Kolay Tıklanır) */}
-          <div className="flex flex-col gap-2.5 pt-1 font-heading">
-            {waUrl && (
+          {/* Aksiyon Butonları (WhatsApp ve İlanı İncele) */}
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            {waUrl ? (
               <a
                 href={waUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => {
-                  hasDismissedThisVisitRef.current = true;
-                  setIsOpen(false);
+                  if (typeof window !== 'undefined') {
+                    sessionStorage.setItem('bms_popup_shown_session', 'true');
+                  }
                   trackEvent('special_ad_whatsapp_click', {
                     listingId: listing?._id,
                     title: displayTitle,
-                    slug: listing?.slug,
                     city: listing?.ilSlug,
                   });
+                  setIsOpen(false);
                 }}
-                className="w-full py-3.5 px-4 rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2.5 active:scale-95 transition-all"
+                className="col-span-1 py-3 px-2 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
               >
-                <OfficialWhatsAppIcon className="w-4 h-4 fill-slate-950 shrink-0" />
-                <span>WhatsApp ile Hemen Yaz</span>
+                <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
+                <span>WhatsApp</span>
               </a>
-            )}
+            ) : null}
 
             <button
               type="button"
               onClick={handleGoToAd}
-              className="w-full py-3 px-4 rounded-2xl bg-[#1c222e] hover:bg-[#252d3d] text-white font-bold text-sm border border-white/10 flex items-center justify-center gap-2 active:scale-95 transition-all"
+              className={`${
+                waUrl ? 'col-span-1' : 'col-span-2'
+              } py-3 px-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20 active:scale-95 transition-all`}
             >
-              <span>Profili &amp; Fotoğrafları İncele</span>
-              <ChevronRight className="w-4 h-4 text-amber-400 stroke-[3]" />
+              <span>İlanı İncele</span>
+              <ChevronRight className="w-4 h-4 stroke-[3]" />
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={handleClose}
-            className="text-xs text-[#8b949e] hover:text-white transition-colors py-1 font-medium"
-          >
-            Kapat ve Devam Et
-          </button>
-
         </div>
 
       </div>
