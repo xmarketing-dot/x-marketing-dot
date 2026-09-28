@@ -32,8 +32,9 @@ export async function PUT(req: NextRequest) {
     }
 
     if (status) {
+      const prevStatus = listing.status;
       listing.status = status;
-      if (status === 'yayinda') {
+      if (status === 'yayinda' && (prevStatus !== 'yayinda' || !listing.paketBitisTarihi)) {
         const now = Date.now();
         const duration = listing.yayinSuresi || 'haftalik';
         let days = 7;

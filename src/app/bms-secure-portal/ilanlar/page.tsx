@@ -84,6 +84,7 @@ export default function AdminListingsPage() {
     gozRengi: 'Ela',
     diller: 'Türkçe, İngilizce, Rusça',
     hizmetMekanlari: 'Kendi Evi, Lüks Otel, Rezidans, Seyahat',
+    paketBitisTarihi: '',
   });
 
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
@@ -348,6 +349,7 @@ export default function AdminListingsPage() {
       gozRengi: item.gozRengi || 'Ela',
       diller: Array.isArray(item.diller) ? item.diller.join(', ') : (item.diller || 'Türkçe, İngilizce'),
       hizmetMekanlari: Array.isArray(item.hizmetMekanlari) ? item.hizmetMekanlari.join(', ') : (item.hizmetMekanlari || 'Kendi Evi, Lüks Otel, Rezidans'),
+      paketBitisTarihi: item.paketBitisTarihi ? new Date(item.paketBitisTarihi).toISOString().slice(0, 16) : '',
     });
 
     const photos = item.fotograflar && item.fotograflar.length > 0
@@ -1805,8 +1807,8 @@ export default function AdminListingsPage() {
                 </label>
               </div>
 
-              {/* Tier & Status */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {/* Tier & Status & Bitiş Tarihi */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Vitrin Kademe Rozeti *
                   <select
@@ -1831,6 +1833,16 @@ export default function AdminListingsPage() {
                     <option value="onay_bekliyor">⏳ Onay Bekliyor</option>
                     <option value="suresi_doldu">❌ Süresi Doldu</option>
                   </select>
+                </label>
+
+                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                  <span>Yayın Bitiş Tarihi (Süre)</span>
+                  <input
+                    type="datetime-local"
+                    value={editForm.paketBitisTarihi || ''}
+                    onChange={(e) => setEditForm({ ...editForm, paketBitisTarihi: e.target.value })}
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-amber-500/40 text-amber-300 font-mono text-xs focus:outline-none focus:border-amber-400"
+                  />
                 </label>
               </div>
 

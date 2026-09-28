@@ -17,9 +17,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'İlan bulunamadı.' }, { status: 404 });
     }
 
+    const prevStatus = listing.status;
     listing.status = status;
 
-    if (status === 'yayinda') {
+    if (status === 'yayinda' && (prevStatus !== 'yayinda' || !listing.paketBitisTarihi)) {
       const now = Date.now();
       const duration = listing.yayinSuresi || 'haftalik';
       let days = 7;

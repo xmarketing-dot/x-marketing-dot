@@ -133,13 +133,19 @@ export async function PATCH(req: NextRequest) {
         : body.hizmetMekanlari.split(',').map((s: string) => s.trim()).filter(Boolean);
     }
 
-    // Onaylama anında otomatik süre başlatma (Eğer 'yayinda' yapılıyorsa)
+    // Onaylama anında otomatik süre başlatma (SADECE ilan onay bekliyorsa veya daha önce yayında değilse)
     let calculatedExpiry = existing.paketBitisTarihi;
-    if (status === 'yayinda') {
+    if (status === 'yayinda' && (wasPending || !existing.paketBitisTarihi || existing.status !== 'yayinda')) {
       const days = (yayinSuresi || existing.yayinSuresi) === 'gunluk' ? 1 : (yayinSuresi || existing.yayinSuresi) === 'aylik' ? 30 : 7;
       calculatedExpiry = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
       updateFields.paketBitisTarihi = calculatedExpiry;
       updateFields.onaylanmaTarihi = new Date();
+    }
+
+    // Doğrudan manuel paketBitisTarihi güncellemesi (Admin özel tarih girdiyse)
+    if (body.paketBitisTarihi) {
+      updateFields.paketBitisTarihi = new Date(body.paketBitisTarihi);
+      calculatedExpiry = updateFields.paketBitisTarihi;
     }
 
     // Photos update
