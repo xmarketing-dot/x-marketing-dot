@@ -49,7 +49,7 @@ import { turkeyProvinces } from '@/data/turkeyLocations';
 export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
+  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu' | 'pasif'>('all');
   const [sortBy, setSortBy] = useState<'sira_asc' | 'expiry_asc' | 'created_desc' | 'city_asc' | 'views_desc' | 'whatsapp_desc' | 'title_asc'>('sira_asc');
   const [searchTerm, setSearchTerm] = useState('');
   const [rankingId, setRankingId] = useState<string | null>(null);
@@ -737,6 +737,52 @@ export default function AdminListingsPage() {
     if (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now()) return true;
     return false;
   }).length;
+  const passiveCount = listings.filter((l) => l.status === 'pasif').length;
+
+  const renderStatusBadge = (status: string, paketBitisTarihi?: string) => {
+    const isExpired = paketBitisTarihi && new Date(paketBitisTarihi).getTime() < Date.now();
+    
+    if (status === 'yayinda') {
+      if (isExpired) {
+        return (
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-amber-500/20 text-amber-400 border border-amber-500/40">
+            ⏰ Süresi Doldu
+          </span>
+        );
+      }
+      return (
+        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+          🟢 Yayında
+        </span>
+      );
+    }
+    if (status === 'onay_bekliyor') {
+      return (
+        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse">
+          ⏳ Onay Bekliyor
+        </span>
+      );
+    }
+    if (status === 'suresi_doldu') {
+      return (
+        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-red-500/20 text-red-400 border border-red-500/40">
+          ❌ Süresi Doldu
+        </span>
+      );
+    }
+    if (status === 'pasif') {
+      return (
+        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-slate-800 text-slate-300 border border-slate-700">
+          🚫 Pasif
+        </span>
+      );
+    }
+    return (
+      <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-[#21262d] text-[#8b949e]">
+        {status}
+      </span>
+    );
+  };
 
   const filteredListings = useMemo(() => {
     let list = listings.filter((l) => {
@@ -748,6 +794,8 @@ export default function AdminListingsPage() {
       } else if (filter === 'suresi_doldu') {
         const isExpired = l.status === 'suresi_doldu' || (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now());
         if (!isExpired) return false;
+      } else if (filter === 'pasif') {
+        if (l.status !== 'pasif') return false;
       }
 
       // 2. Search Query
@@ -849,6 +897,11 @@ export default function AdminListingsPage() {
                   {expiredCount} Süresi Doldu
                 </span>
               )}
+              {passiveCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-300 border border-slate-600 text-[10px] font-black shrink-0">
+                  {passiveCount} Pasif
+                </span>
+              )}
             </h1>
             <p className="text-[11px] text-[#8b949e] truncate">Gelen ilanları onaylayın, süreleri ve hesapları düzenleyin.</p>
           </div>
@@ -923,6 +976,17 @@ export default function AdminListingsPage() {
                 {expiredCount}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => setFilter('pasif')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'pasif' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              }`}
+          >
+            <span>🚫 Pasif İlanlar</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'pasif' ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
+              {passiveCount}
+            </span>
           </button>
         </div>
 
@@ -1160,12 +1224,7 @@ export default function AdminListingsPage() {
                           {/* Rozet & Durum */}
                           <td className="py-3 px-3">
                             <div className="flex flex-col gap-1 items-start">
-                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading ${isLive
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-                                }`}>
-                                {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
-                              </span>
+                              {renderStatusBadge(item.status, item.paketBitisTarihi)}
                               <div className="flex items-center gap-1 flex-wrap">
                                 <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-black uppercase">
                                   👑 {item.rozet || 'vip'}
@@ -1328,19 +1387,20 @@ export default function AdminListingsPage() {
                               </button>
 
                               {/* Onayla / Durdur */}
-                              {isPending ? (
+                              {/* Onayla / Yayına Al / Pasife Al */}
+                              {isPending || item.status === 'pasif' || item.status === 'suresi_doldu' ? (
                                 <button
                                   onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
                                   className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95"
-                                  title="Hemen Onayla & Yayına Al"
+                                  title="Hemen Yayına Al (Aktif Et)"
                                 >
                                   <Check className="w-4 h-4 stroke-[3]" />
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                                  className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 border border-[#30363d] text-xs transition-all"
-                                  title="İlanı Durdur / Beklemeye Al"
+                                  onClick={() => handleQuickStatusChange(item._id, 'pasif')}
+                                  className="p-2 rounded-xl bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 border border-[#30363d] text-xs transition-all"
+                                  title="İlanı Pasife Al (Gizle)"
                                 >
                                   <Clock className="w-4 h-4" />
                                 </button>
@@ -1456,12 +1516,7 @@ export default function AdminListingsPage() {
                             {item.baslik}
                           </h3>
 
-                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase font-heading ${isLive
-                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                              : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
-                            }`}>
-                            {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
-                          </span>
+                          {renderStatusBadge(item.status, item.paketBitisTarihi)}
 
                           <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             {item.rozet || 'vip'}
@@ -1589,22 +1644,22 @@ export default function AdminListingsPage() {
                           <span>{item.siraNo === 1 ? '👑 1. Sırada' : '1. Yap'}</span>
                         </button>
 
-                        {/* Onayla / Beklemeye Al */}
-                        {isPending ? (
+                        {/* Onayla / Yayına Al / Pasife Al */}
+                        {isPending || item.status === 'pasif' || item.status === 'suresi_doldu' ? (
                           <button
                             onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
                             className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
                           >
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            <span>Hemen Onayla</span>
+                            <span>Yayına Al</span>
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                            className="py-2 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 font-bold text-xs border border-[#30363d] transition-colors"
-                            title="İlanı beklemeye al"
+                            onClick={() => handleQuickStatusChange(item._id, 'pasif')}
+                            className="py-2 px-2.5 rounded-xl bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 font-bold text-xs border border-[#30363d] transition-colors"
+                            title="İlanı pasife al"
                           >
-                            <span>Durdur</span>
+                            <span>Pasife Al</span>
                           </button>
                         )}
 
@@ -1832,6 +1887,7 @@ export default function AdminListingsPage() {
                     <option value="yayinda">✅ Yayında</option>
                     <option value="onay_bekliyor">⏳ Onay Bekliyor</option>
                     <option value="suresi_doldu">❌ Süresi Doldu</option>
+                    <option value="pasif">🚫 Pasife Alındı (Gizli)</option>
                   </select>
                 </label>
 
@@ -2121,10 +2177,7 @@ export default function AdminListingsPage() {
                     <h2 className="font-heading font-black text-sm sm:text-lg text-white truncate max-w-[180px] sm:max-w-md">
                       {inspectItem.baslik}
                     </h2>
-                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${inspectItem.status === 'yayinda' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
-                      }`}>
-                      {inspectItem.status === 'yayinda' ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
-                    </span>
+                    {renderStatusBadge(inspectItem.status, inspectItem.paketBitisTarihi)}
                   </div>
                   <span className="text-[10px] text-[#8b949e] truncate">
                     📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug} • {new Date(inspectItem.createdAt).toLocaleDateString('tr-TR')}
