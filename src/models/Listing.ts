@@ -80,6 +80,9 @@ export interface IListing extends Document {
   visitorId?: string;
   creatorIp?: string;
 
+  // Sıralama Önceliği (1 = 1. Sıra Sabit, 2 = 2. Sıra, 0 = Normal Tarih Sıralaması)
+  siraNo?: number;
+
   onaylanmaTarihi?: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -174,6 +177,9 @@ const ListingSchema = new Schema<IListing>(
 
     visitorId: { type: String, index: true },
     creatorIp: { type: String, index: true },
+
+    // Sıralama Önceliği (1 = 1. Sıra Sabit, 2 = 2. Sıra, 0 = Normal Tarih)
+    siraNo: { type: Number, default: 0, index: true },
 
     onaylanmaTarihi: { type: Date },
   },

@@ -183,6 +183,7 @@ export async function POST(req: NextRequest) {
       panelSifresi: resolvedPassword,
       vitrinIstegi: hasVitrin,
       status: 'onay_bekliyor',
+      siraNo: body.siraNo ? Number(body.siraNo) : 0,
       isPromo: Boolean(isPromo),
       promoType: isPromo ? '1gunluk_ucretsiz' : undefined,
       promoBitisTarihi: isPromo ? paketBitisTarihi : undefined,

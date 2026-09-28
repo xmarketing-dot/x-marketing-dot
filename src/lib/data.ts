@@ -167,14 +167,42 @@ export async function getListings({
     }
   }
 
-  // Include fotograflar so compact card auto-slider works
+const TIER_ORDER_MAP: Record<string, number> = {
+  vip: 1,
+  ultravip: 1,
+  gold: 2,
+  silver: 3,
+  standart: 4,
+};
+
+  // Include fotograflar so compact card auto-slider works, and siraNo for pinned rank ordering
   const listings = await ListingModel.find(query)
-    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf fotograflar createdAt status')
-    .sort({ rozet: -1, createdAt: -1 })
+    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf fotograflar createdAt status siraNo isPromo')
+    .sort({ createdAt: -1 })
     .limit(limit)
     .lean();
 
-  return JSON.parse(JSON.stringify(listings));
+  const sortedListings = (listings as any[]).sort((a: any, b: any) => {
+    // 1. Manuel Sabit Sıra Önceliği (1 = 1. Sıra, 2 = 2. Sıra vb.)
+    const sA = (a.siraNo && a.siraNo > 0) ? a.siraNo : 999999;
+    const sB = (b.siraNo && b.siraNo > 0) ? b.siraNo : 999999;
+    if (sA !== sB) return sA - sB;
+
+    // 2. Paket Rozet Önceliği (VIP > Gold > Silver)
+    const orderA = TIER_ORDER_MAP[a.rozet || 'silver'] || 4;
+    const orderB = TIER_ORDER_MAP[b.rozet || 'silver'] || 4;
+    if (orderA !== orderB) return orderA - orderB;
+
+    // 3. Normal ücretli VIP ilanları promosyonlu (ücretsiz) ilanların önüne geçer
+    const isPromoA = a.isPromo ? 1 : 0;
+    const isPromoB = b.isPromo ? 1 : 0;
+    if (isPromoA !== isPromoB) return isPromoA - isPromoB;
+
+    // 4. Eklenme Tarihi (Yeni > Eski)
+    return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+  });
+
+  return JSON.parse(JSON.stringify(sortedListings));
 }
 
 export const getListingBySlug = cache(async (slug: string) => {

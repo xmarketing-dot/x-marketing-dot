@@ -94,9 +94,13 @@ export default async function HomePage() {
     getActiveBanner('anasayfa'),
   ]);
 
-  // Sort all listings strictly by Tier Priority (VIP -> Gold -> Silver), Paid first, and then by Date
-  // NOT: 3 Günlük ücretsiz promosyon ilanları ilk 3 sıraya oturmaz, 4. sıradan itibaren listelenir
+  // Sort all listings strictly by Manual Sıra Önceliği (siraNo), Tier Priority (VIP -> Gold -> Silver), Paid first, and then by Date
   const allSortedListings = [...rawListings].sort((a: any, b: any) => {
+    // 1. Manuel Sabit Sıra Önceliği (1 = 1. Sıra, 2 = 2. Sıra vb.)
+    const sA = (a.siraNo && a.siraNo > 0) ? a.siraNo : 999999;
+    const sB = (b.siraNo && b.siraNo > 0) ? b.siraNo : 999999;
+    if (sA !== sB) return sA - sB;
+
     const orderA = TIER_ORDER[a.rozet || 'silver'] || 4;
     const orderB = TIER_ORDER[b.rozet || 'silver'] || 4;
     if (orderA !== orderB) return orderA - orderB;

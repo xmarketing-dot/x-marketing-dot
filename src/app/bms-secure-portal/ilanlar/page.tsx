@@ -50,8 +50,9 @@ export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
-  const [sortBy, setSortBy] = useState<'expiry_asc' | 'created_desc' | 'city_asc' | 'views_desc' | 'whatsapp_desc' | 'title_asc'>('created_desc');
+  const [sortBy, setSortBy] = useState<'sira_asc' | 'expiry_asc' | 'created_desc' | 'city_asc' | 'views_desc' | 'whatsapp_desc' | 'title_asc'>('sira_asc');
   const [searchTerm, setSearchTerm] = useState('');
+  const [rankingId, setRankingId] = useState<string | null>(null);
 
   // Detaylı İnceleme Modalı (Full Inspection Modal)
   const [inspectItem, setInspectItem] = useState<any | null>(null);
@@ -74,6 +75,7 @@ export default function AdminListingsPage() {
     tamAd: '',
     isVerifiedProfile: false,
     likeSayisi: 55,
+    siraNo: 0,
     yas: 23,
     boy: 173,
     kilo: 54,
@@ -105,6 +107,7 @@ export default function AdminListingsPage() {
     tamAd: 'Merve Özdemir',
     isVerifiedProfile: true,
     likeSayisi: 55,
+    siraNo: 0,
     yas: 23,
     boy: 173,
     kilo: 54,
@@ -241,6 +244,85 @@ export default function AdminListingsPage() {
     }
   };
 
+  // 1-Click Fast 1. Sıraya Sabitle / Başa Taşı
+  const handleMakeFirst = async (id: string, baslik = 'İlan') => {
+    setRankingId(id);
+    try {
+      const res = await fetch('/api/admin/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: 'make_first' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // Local state'te bu ilanı 1 yap, diğer >=1 olanları +1 kaydır
+        setListings((prev) =>
+          prev.map((l) => {
+            if (l._id === id) {
+              return { ...l, siraNo: 1 };
+            }
+            if (l.siraNo && l.siraNo >= 1) {
+              return { ...l, siraNo: l.siraNo + 1 };
+            }
+            return l;
+          })
+        );
+      } else {
+        alert(data.error || 'Sıralama güncellenemedi.');
+      }
+    } catch (err) {
+      alert('Sıralama güncellenirken bağlantı hatası oluştu.');
+    } finally {
+      setRankingId(null);
+    }
+  };
+
+  const handleResetOrder = async (id: string) => {
+    setRankingId(id);
+    try {
+      const res = await fetch('/api/admin/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: 'reset_order' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setListings((prev) =>
+          prev.map((l) => (l._id === id ? { ...l, siraNo: 0 } : l))
+        );
+      } else {
+        alert(data.error || 'Sıfırlama başarısız.');
+      }
+    } catch (err) {
+      alert('Sıralama sıfırlanırken hata oluştu.');
+    } finally {
+      setRankingId(null);
+    }
+  };
+
+  const handleSetCustomOrder = async (id: string, customSira: number) => {
+    setRankingId(id);
+    try {
+      const res = await fetch('/api/admin/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, siraNo: customSira }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setListings((prev) =>
+          prev.map((l) => (l._id === id ? { ...l, siraNo: customSira } : l))
+        );
+      } else {
+        alert(data.error || 'Sıralama güncellenemedi.');
+      }
+    } catch (err) {
+      alert('Sıralama güncellenirken bağlantı hatası oluştu.');
+    } finally {
+      setRankingId(null);
+    }
+  };
+
   const handleOpenEdit = (item: any) => {
     setEditingItem(item);
     setEditForm({
@@ -257,6 +339,7 @@ export default function AdminListingsPage() {
       tamAd: item.tamAd || '',
       isVerifiedProfile: Boolean(item.isVerifiedProfile),
       likeSayisi: item.likeSayisi || 55,
+      siraNo: item.siraNo || 0,
       yas: item.yas || 23,
       boy: item.boy || 173,
       kilo: item.kilo || 54,
@@ -689,6 +772,15 @@ export default function AdminListingsPage() {
 
     // 3. Sorting
     list = [...list].sort((a, b) => {
+      if (sortBy === 'sira_asc') {
+        // 1. Sıraya sabitlenmiş ilanlar en başta (1, 2, 3...) ardından tarihe göre
+        const sA = (a.siraNo && a.siraNo > 0) ? a.siraNo : 999999;
+        const sB = (b.siraNo && b.siraNo > 0) ? b.siraNo : 999999;
+        if (sA !== sB) return sA - sB;
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      }
       if (sortBy === 'expiry_asc') {
         // En az süresi kalan (veya süresi geçmiş olanlar) en üstte
         const timeA = a.paketBitisTarihi ? new Date(a.paketBitisTarihi).getTime() : 9999999999999;
@@ -696,6 +788,11 @@ export default function AdminListingsPage() {
         return timeA - timeB;
       }
       if (sortBy === 'created_desc') {
+        // Sabit sırası olanlar önce, sonra en yeni eklenenler
+        const sA = (a.siraNo && a.siraNo > 0) ? a.siraNo : 999999;
+        const sB = (b.siraNo && b.siraNo > 0) ? b.siraNo : 999999;
+        if (sA !== sB) return sA - sB;
+
         const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return timeB - timeA;
@@ -859,6 +956,19 @@ export default function AdminListingsPage() {
             {/* Desktop / Tablet Quick Sort Pills */}
             <div className="hidden sm:flex items-center gap-1 bg-[#0d1117] p-1 rounded-xl border border-[#30363d]/60">
               <button
+                onClick={() => setSortBy('sira_asc')}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+                  sortBy === 'sira_asc'
+                    ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black shadow-sm shadow-amber-500/20'
+                    : 'text-amber-400 hover:text-white hover:bg-[#21262d]'
+                }`}
+                title="1. Sıraya sabitlenmiş ilanlar en başta"
+              >
+                <Crown className="w-3 h-3" />
+                <span>👑 1. Sıra / Öncelik</span>
+              </button>
+
+              <button
                 onClick={() => setSortBy('expiry_asc')}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
                   sortBy === 'expiry_asc'
@@ -927,6 +1037,7 @@ export default function AdminListingsPage() {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="w-full py-2 px-3 text-xs bg-[#0d1117] border border-[#30363d] rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
               >
+                <option value="sira_asc">👑 1. Sıra / Öncelik Sıralaması</option>
                 <option value="expiry_asc">⏳ Az Zamanı Kalan (Önce Bitenler)</option>
                 <option value="created_desc">🆕 En Yeni Eklenen</option>
                 <option value="city_asc">🏙️ Şehir &amp; İlçe (A-Z)</option>
@@ -966,6 +1077,7 @@ export default function AdminListingsPage() {
                       <th className="py-3.5 px-4">İlan / Model</th>
                       <th className="py-3.5 px-3">Konum &amp; Bölge</th>
                       <th className="py-3.5 px-3">Rozet &amp; Durum</th>
+                      <th className="py-3.5 px-3">👑 Sıra (1. Yap)</th>
                       <th className="py-3.5 px-3">Yayın Süresi</th>
                       <th className="py-3.5 px-3">İletişim &amp; Şifre</th>
                       <th className="py-3.5 px-3 text-center">📊 İstatistik &amp; Yorumlar</th>
@@ -1060,6 +1172,60 @@ export default function AdminListingsPage() {
                             </div>
                           </td>
 
+                          {/* 👑 Sıralama Önceliği & 1. Yap */}
+                          <td className="py-3 px-3">
+                            <div className="flex flex-col gap-1 items-start">
+                              {item.siraNo === 1 ? (
+                                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/50 shadow-sm shadow-amber-500/10">
+                                  <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-bounce" />
+                                  <span className="font-heading font-black text-amber-300 text-[11px] whitespace-nowrap">👑 1. Sırada</span>
+                                  <button
+                                    onClick={() => handleResetOrder(item._id)}
+                                    disabled={rankingId === item._id}
+                                    className="text-[#8b949e] hover:text-rose-400 text-[10px] ml-1 p-0.5 transition-colors"
+                                    title="Sabit Sırayı Kaldır (Otomatiğe Al)"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ) : item.siraNo && item.siraNo > 1 ? (
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30">
+                                  <span className="font-heading font-black text-cyan-300 text-[10px] whitespace-nowrap">📌 #{item.siraNo}. Sıra</span>
+                                  <button
+                                    onClick={() => handleMakeFirst(item._id, item.baslik)}
+                                    disabled={rankingId === item._id}
+                                    className="text-amber-400 hover:text-amber-300 text-[9px] font-bold underline ml-1"
+                                    title="1. Sıraya Taşı"
+                                  >
+                                    1. Yap
+                                  </button>
+                                  <button
+                                    onClick={() => handleResetOrder(item._id)}
+                                    disabled={rankingId === item._id}
+                                    className="text-[#8b949e] hover:text-rose-400 text-[10px] p-0.5 transition-colors"
+                                    title="Sabit Sırayı Kaldır"
+                                  >
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => handleMakeFirst(item._id, item.baslik)}
+                                  disabled={rankingId === item._id}
+                                  className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-400 text-[#8b949e] hover:text-slate-950 font-heading font-bold text-[11px] border border-[#30363d] hover:border-amber-400 transition-all flex items-center gap-1 active:scale-95 shadow-sm"
+                                  title="Bu ilanı sitede ve listede 1. sıraya sabitle"
+                                >
+                                  {rankingId === item._id ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                                  ) : (
+                                    <Crown className="w-3.5 h-3.5 text-amber-400 group-hover:text-slate-950" />
+                                  )}
+                                  <span>1. Yap</span>
+                                </button>
+                              )}
+                            </div>
+                          </td>
+
                           {/* Kalan Süre */}
                           <td className="py-3 px-3">
                             <div className="flex flex-col gap-1">
@@ -1145,6 +1311,20 @@ export default function AdminListingsPage() {
                           {/* Yönetim & Aksiyonlar */}
                           <td className="py-3 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                              {/* 1. Sıraya Sabitle */}
+                              <button
+                                onClick={() => item.siraNo === 1 ? handleResetOrder(item._id) : handleMakeFirst(item._id, item.baslik)}
+                                disabled={rankingId === item._id}
+                                className={`p-2 rounded-xl border transition-all ${
+                                  item.siraNo === 1
+                                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                                    : 'bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-amber-400 border-[#30363d]'
+                                }`}
+                                title={item.siraNo === 1 ? '1. Sırada Sabit (Kaldırmak için tıkla)' : 'Bu İlanı 1. Sıraya Sabitle'}
+                              >
+                                <Crown className="w-4 h-4" />
+                              </button>
+
                               {/* Onayla / Durdur */}
                               {isPending ? (
                                 <button
@@ -1284,6 +1464,17 @@ export default function AdminListingsPage() {
                           <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             {item.rozet || 'vip'}
                           </span>
+
+                          {item.siraNo === 1 ? (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500/25 to-yellow-500/25 text-amber-300 border border-amber-500/50 text-[9px] font-black font-heading animate-pulse">
+                              <Crown className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
+                              <span>👑 1. Sırada</span>
+                            </span>
+                          ) : item.siraNo && item.siraNo > 1 ? (
+                            <span className="px-1.5 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[9px] font-black font-heading">
+                              📌 #{item.siraNo}. Sıra
+                            </span>
+                          ) : null}
                         </div>
 
                         {/* Konum & Süre */}
@@ -1377,6 +1568,25 @@ export default function AdminListingsPage() {
                     <div className="flex flex-col gap-1.5 border-t border-[#30363d]/60 pt-2.5">
                       {/* Satır 1: Ana Operasyon Butonları */}
                       <div className="flex items-center gap-1.5">
+                        {/* 1. Sıraya Sabitle */}
+                        <button
+                          onClick={() => item.siraNo === 1 ? handleResetOrder(item._id) : handleMakeFirst(item._id, item.baslik)}
+                          disabled={rankingId === item._id}
+                          className={`py-2 px-2.5 rounded-xl font-heading font-black text-xs flex items-center justify-center gap-1 border transition-all active:scale-95 shrink-0 ${
+                            item.siraNo === 1
+                              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                              : 'bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border-amber-500/30'
+                          }`}
+                          title={item.siraNo === 1 ? '1. Sırayı Kaldır' : '1. Sıraya Sabitle'}
+                        >
+                          {rankingId === item._id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Crown className="w-3.5 h-3.5" />
+                          )}
+                          <span>{item.siraNo === 1 ? '👑 1. Sırada' : '1. Yap'}</span>
+                        </button>
+
                         {/* Onayla / Beklemeye Al */}
                         {isPending ? (
                           <button
@@ -1622,6 +1832,99 @@ export default function AdminListingsPage() {
                     <option value="suresi_doldu">❌ Süresi Doldu</option>
                   </select>
                 </label>
+              </div>
+
+              {/* Sıralama Önceliği (Sıra No: 1 = 1. Sıra Sabit, 0 = Normal Tarih) */}
+              <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-amber-500/40 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-amber-300 font-heading uppercase flex items-center gap-1.5">
+                    <Crown className="w-4 h-4 text-amber-400" />
+                    <span>Sitedeki Sıralama Önceliği (Sıra No)</span>
+                  </span>
+
+                  {editForm.siraNo === 1 && (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] animate-pulse">
+                      👑 1. Sırada Sabit
+                    </span>
+                  )}
+                  {editForm.siraNo > 1 && (
+                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-black text-[10px]">
+                      📌 #{editForm.siraNo}. Sıra Sabit
+                    </span>
+                  )}
+                  {editForm.siraNo === 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#21262d] text-[#8b949e] font-mono text-[10px]">
+                      ⚡ Otomatik Tarih Sırası
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-[#8b949e] leading-relaxed">
+                  İlanı anasayfa ve şehir listesinde <strong>en başta (1. sırada)</strong> sabitlemek için <strong>1. Sıra</strong> seçin. Normal eklenme tarihine göre sıralanması için <strong>Otomatik (0)</strong> bırakın.
+                </p>
+
+                <div className="flex items-center gap-2 flex-wrap pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setEditForm({ ...editForm, siraNo: 1 })}
+                    className={`px-3 py-1.5 rounded-xl font-heading font-black text-xs transition-all flex items-center gap-1.5 ${
+                      editForm.siraNo === 1
+                        ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md shadow-amber-500/20 scale-105'
+                        : 'bg-[#21262d] text-amber-300 hover:bg-[#30363d] border border-[#30363d]'
+                    }`}
+                  >
+                    <Crown className="w-3.5 h-3.5" />
+                    <span>👑 1. Sıra Yap (En Üst)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setEditForm({ ...editForm, siraNo: 2 })}
+                    className={`px-2.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all ${
+                      editForm.siraNo === 2
+                        ? 'bg-cyan-500 text-slate-950 font-black'
+                        : 'bg-[#21262d] text-[#8b949e] hover:text-white border border-[#30363d]'
+                    }`}
+                  >
+                    2. Sıra
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setEditForm({ ...editForm, siraNo: 3 })}
+                    className={`px-2.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all ${
+                      editForm.siraNo === 3
+                        ? 'bg-cyan-500 text-slate-950 font-black'
+                        : 'bg-[#21262d] text-[#8b949e] hover:text-white border border-[#30363d]'
+                    }`}
+                  >
+                    3. Sıra
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setEditForm({ ...editForm, siraNo: 0 })}
+                    className={`px-2.5 py-1.5 rounded-xl font-mono text-xs transition-all ${
+                      editForm.siraNo === 0
+                        ? 'bg-slate-700 text-white font-bold'
+                        : 'bg-[#21262d] text-[#8b949e] hover:text-white border border-[#30363d]'
+                    }`}
+                  >
+                    🔄 Otomatik (0)
+                  </button>
+
+                  <div className="flex items-center gap-1.5 ml-auto">
+                    <span className="text-xs text-[#8b949e] font-bold">Özel No:</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={999}
+                      value={editForm.siraNo}
+                      onChange={(e) => setEditForm({ ...editForm, siraNo: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                      className="w-16 px-2.5 py-1 text-center font-mono font-bold text-xs bg-[#21262d] border border-amber-500/40 rounded-lg text-amber-300 focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Panel Şifresi & Kullanıcı Hesabı Eşleştirme */}

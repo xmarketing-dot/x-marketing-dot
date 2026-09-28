@@ -153,6 +153,29 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
+    // Sıralama Önceliği (Sıra No: 1 = 1. Sıra, 2 = 2. Sıra, 0 = Normal Tarih)
+    if (body.action === 'make_first') {
+      // 1. Sıraya Taşı: Mevcut 1 ve üzeri olan tüm ilanların sırasını 1 artır, bu ilanı 1 yap
+      await ListingModel.updateMany(
+        { _id: { $ne: existing._id }, siraNo: { $gte: 1 } },
+        { $inc: { siraNo: 1 } }
+      ).catch(() => {});
+      updateFields.siraNo = 1;
+    } else if (body.action === 'reset_order') {
+      // Sıralama Önceliğini Kaldır / Otomatik Tarihe Döndür
+      updateFields.siraNo = 0;
+    } else if (body.siraNo !== undefined) {
+      const newSiraNo = Math.max(0, parseInt(String(body.siraNo), 10) || 0);
+      updateFields.siraNo = newSiraNo;
+      if (newSiraNo > 0) {
+        // Çakışmayı önlemek için mevcut aynı sıradaki diğer ilanları 1 kaydır
+        await ListingModel.updateMany(
+          { _id: { $ne: existing._id }, siraNo: newSiraNo },
+          { $inc: { siraNo: 1 } }
+        ).catch(() => {});
+      }
+    }
+
     // Extend days option
     if (ekleGun && typeof ekleGun === 'number') {
       const currentExpiry = existing.paketBitisTarihi && existing.paketBitisTarihi > new Date()
@@ -164,6 +187,10 @@ export async function PATCH(req: NextRequest) {
       updateFields.status = 'yayinda';
       calculatedExpiry = currentExpiry;
     }
+
+    // Cache'i anında temizle
+    adminListingsCache = null;
+    adminListingsCacheTime = 0;
 
     const updatedListing = await ListingModel.findByIdAndUpdate(
       id,
