@@ -28,7 +28,8 @@ import {
   Megaphone,
   Link2,
   Gift,
-  Activity
+  Activity,
+  Flame
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 
@@ -470,6 +471,20 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             </Link>
 
             <Link
+              href="/bms-secure-portal/duyuru-bari"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/duyuru-bari')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Flame className="w-4 h-4 text-amber-400" />
+                <span>Üst Duyuru Barı</span>
+              </div>
+              <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                1X
+              </span>
+            </Link>
+
+            <Link
               href="/bms-secure-portal/backlinks"
               prefetch={false}
               className={`${getNavClass('/bms-secure-portal/backlinks')} justify-between`}
@@ -771,6 +786,17 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               </Link>
 
               <Link
+                href="/bms-secure-portal/duyuru-bari"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <div className="flex items-center justify-between">
+                  <Flame className="w-5 h-5 text-amber-400" />
+                </div>
+                <span>7. Üst Duyuru Barı</span>
+              </Link>
+
+              <Link
                 href="/bms-secure-portal/backlinks"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
@@ -778,7 +804,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <div className="flex items-center justify-between">
                   <Link2 className="w-5 h-5 text-blue-400" />
                 </div>
-                <span>7. SEO Backlink Ağı</span>
+                <span>8. SEO Backlink Ağı</span>
               </Link>
 
               <Link
@@ -789,7 +815,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <div className="flex items-center justify-between">
                   <ShieldAlert className="w-5 h-5 text-red-400" />
                 </div>
-                <span>8. Güvenlik &amp; IP Ban</span>
+                <span>9. Güvenlik &amp; IP Ban</span>
               </Link>
             </div>
 

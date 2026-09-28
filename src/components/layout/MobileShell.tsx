@@ -11,6 +11,7 @@ import GlobalChatNotification from '@/components/common/GlobalChatNotification';
 import SpecialAdPopup from '@/components/common/SpecialAdPopup';
 import CorporateWebHome from '@/components/corporate/CorporateWebHome';
 import AgeVerificationModal from '@/components/common/AgeVerificationModal';
+import GlobalAnnouncementBar from '@/components/common/GlobalAnnouncementBar';
 
 interface MobileShellProps {
   children: React.ReactNode;
@@ -92,6 +93,8 @@ export default function MobileShell({ children }: MobileShellProps) {
 
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden">
+      {/* Global Üst Bildirim & Duyuru Barı (Tek Seferlik Gösterim) */}
+      <GlobalAnnouncementBar />
       
       {/* ── 1. MASAÜSTÜ (WEB / DESKTOP) GÖRÜNÜMÜ: X-MARKETING TECH KURUMSAL PLATFORM ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
