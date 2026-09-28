@@ -49,8 +49,8 @@ export async function GET(req: Request) {
     }
 
     if (domainFilter && domainFilter !== 'all') {
-      if (domainFilter.includes('turkiyeescort')) {
-        dateQuery.hostname = { $regex: /turkiyeescort/i };
+      if (domainFilter.includes('escturkiye') || domainFilter.includes('turkiyeescort')) {
+        dateQuery.hostname = { $regex: /(escturkiye|turkiyeescort)/i };
       } else if (domainFilter.includes('besteskort')) {
         dateQuery.$or = [
           { hostname: { $regex: /besteskort/i } },
@@ -423,7 +423,7 @@ export async function GET(req: Request) {
         visitors.forEach((v: any) => {
           let d = (v.hostname || '').trim().toLowerCase();
           if (!d || d.includes('besteskort')) d = 'besteskort.online';
-          else if (d.includes('turkiyeescort')) d = 'turkiyeescort.devs.surf';
+          else if (d.includes('escturkiye') || d.includes('turkiyeescort')) d = 'escturkiye.devs.surf';
           
           if (!domainMap[d]) {
             domainMap[d] = {
@@ -454,7 +454,7 @@ export async function GET(req: Request) {
           if (ev.eventType === 'whatsapp_click' || ev.eventType === 'special_ad_whatsapp_click') {
             let d = (ev.hostname || '').trim().toLowerCase();
             if (!d || d.includes('besteskort')) d = 'besteskort.online';
-            else if (d.includes('turkiyeescort')) d = 'turkiyeescort.devs.surf';
+            else if (d.includes('escturkiye') || d.includes('turkiyeescort')) d = 'escturkiye.devs.surf';
 
             if (domainMap[d]) {
               domainMap[d].whatsappClicks += 1;

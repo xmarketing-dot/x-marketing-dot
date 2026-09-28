@@ -215,15 +215,15 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                 <span>🌟 besteskort.online (Ana Vitrin)</span>
               </button>
               <button
-                onClick={() => handleDomainChange('turkiyeescort.devs.surf')}
+                onClick={() => handleDomainChange('escturkiye.devs.surf')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
-                  selectedDomain === 'turkiyeescort.devs.surf'
+                  selectedDomain === 'escturkiye.devs.surf'
                     ? 'bg-fuchsia-500 text-slate-950 border-fuchsia-400 font-black shadow-md'
                     : 'bg-[#0d1117] text-fuchsia-400 border-fuchsia-500/30 hover:border-fuchsia-500/60'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
-                <span>🚀 turkiyeescort.devs.surf (Türkiye Ağı)</span>
+                <span>🚀 escturkiye.devs.surf (Türkiye Ağı)</span>
               </button>
             </div>
           </div>
@@ -337,7 +337,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {data.domainBreakdown.map((db: any) => {
-                  const isTurkiye = db.domain.includes('turkiyeescort');
+                  const isTurkiye = db.domain.includes('escturkiye') || db.domain.includes('turkiyeescort');
                   const isBest = db.domain.includes('besteskort');
 
                   return (

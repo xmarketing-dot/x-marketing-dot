@@ -36,8 +36,8 @@ export async function GET(req: Request) {
     }
 
     if (domainFilter && domainFilter !== 'all') {
-      if (domainFilter.includes('turkiyeescort')) {
-        dateQuery.hostname = { $regex: /turkiyeescort/i };
+      if (domainFilter.includes('escturkiye') || domainFilter.includes('turkiyeescort')) {
+        dateQuery.hostname = { $regex: /(escturkiye|turkiyeescort)/i };
       } else if (domainFilter.includes('besteskort')) {
         dateQuery.$or = [
           { hostname: { $regex: /besteskort/i } },
@@ -537,7 +537,7 @@ export async function GET(req: Request) {
     // ── 14. Domain Bazlı İstatistik Haritası ──
     const defaultGatewayDomains = [
       'besteskort.online',
-      'turkiyeescort.devs.surf',
+      'escturkiye.devs.surf',
     ];
 
     const domainStatsMap: Record<string, any> = {};
@@ -557,8 +557,8 @@ export async function GET(req: Request) {
       if (!raw || raw === 'Ana Domain' || raw.includes('localhost') || raw.includes('besteskort')) {
         return 'besteskort.online';
       }
-      if (raw.includes('turkiyeescort')) {
-        return 'turkiyeescort.devs.surf';
+      if (raw.includes('escturkiye') || raw.includes('turkiyeescort')) {
+        return 'escturkiye.devs.surf';
       }
       return raw.replace(/^www\./, '');
     };

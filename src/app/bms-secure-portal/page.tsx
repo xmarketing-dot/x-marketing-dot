@@ -671,11 +671,11 @@ export default function BmsSecurePortalDashboard() {
 
   const renderDomainBadge = (rawHost?: string) => {
     const host = (rawHost || '').toLowerCase();
-    if (host.includes('turkiyeescort')) {
+    if (host.includes('escturkiye') || host.includes('turkiyeescort')) {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-fuchsia-500/15 border border-fuchsia-500/40 text-fuchsia-300 font-mono font-bold text-[10px] shadow-sm shadow-fuchsia-500/10">
           <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
-          <span>🚀 turkiyeescort.devs.surf</span>
+          <span>🚀 escturkiye.devs.surf</span>
         </span>
       );
     }
@@ -826,20 +826,20 @@ export default function BmsSecurePortalDashboard() {
             </button>
 
             <button
-              onClick={() => setSelectedDomain('turkiyeescort.devs.surf')}
+              onClick={() => setSelectedDomain('escturkiye.devs.surf')}
               className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 border ${
-                selectedDomain === 'turkiyeescort.devs.surf'
+                selectedDomain === 'escturkiye.devs.surf'
                   ? 'bg-fuchsia-500 text-slate-950 border-fuchsia-400 shadow-md font-black scale-[1.02]'
                   : 'bg-[#0d1117] text-fuchsia-400 hover:text-fuchsia-300 border-fuchsia-500/30 hover:border-fuchsia-500/50'
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-fuchsia-400 animate-pulse"></span>
-              <span>🚀 turkiyeescort.devs.surf (Türkiye Ağı)</span>
+              <span>🚀 escturkiye.devs.surf (Türkiye Ağı)</span>
               {(() => {
-                const tStats = domainBreakdown.find((d: any) => d.domain?.includes('turkiyeescort'));
+                const tStats = domainBreakdown.find((d: any) => d.domain?.includes('escturkiye') || d.domain?.includes('turkiyeescort'));
                 return tStats ? (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDomain === 'turkiyeescort.devs.surf' ? 'bg-slate-950/30 text-slate-950' : 'bg-fuchsia-500/20 text-fuchsia-300'
+                    selectedDomain === 'escturkiye.devs.surf' ? 'bg-slate-950/30 text-slate-950' : 'bg-fuchsia-500/20 text-fuchsia-300'
                   }`}>
                     {tStats.uniqueVisitors}
                   </span>
@@ -3928,15 +3928,15 @@ export default function BmsSecurePortalDashboard() {
                   <span>besteskort.online</span>
                 </button>
                 <button
-                  onClick={() => setSearchTermFilter('turkiyeescort')}
+                  onClick={() => setSearchTermFilter('escturkiye')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 border ${
-                    searchTermFilter === 'turkiyeescort'
+                    searchTermFilter === 'escturkiye'
                       ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40'
                       : 'bg-[#161b22] text-fuchsia-400 border-[#30363d] hover:text-fuchsia-300'
                   }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400"></span>
-                  <span>turkiyeescort.devs.surf</span>
+                  <span>escturkiye.devs.surf</span>
                 </button>
               </div>
             </div>
