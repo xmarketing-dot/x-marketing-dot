@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import AnnouncementBarModel from '@/models/AnnouncementBar';
+import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,44 @@ export async function POST(req: NextRequest) {
       'anon';
     const userAgent = req.headers.get('user-agent') || 'unknown';
 
+    // ── Gelişmiş Şehir / Konum Tespiti ──
+    let resolvedCity = city;
+    if (!resolvedCity || resolvedCity === 'Bilinmiyor') {
+      const headerCity =
+        req.headers.get('x-vercel-ip-city') ||
+        req.headers.get('cf-ipcity') ||
+        req.headers.get('x-vercel-ip-country-region');
+      if (headerCity) {
+        try {
+          resolvedCity = decodeURIComponent(headerCity);
+        } catch {
+          resolvedCity = headerCity;
+        }
+      }
+    }
+
+    if (!resolvedCity || resolvedCity === 'Bilinmiyor') {
+      if (visitorId || (ip && ip !== 'anon')) {
+        const vInfo = await AnalyticsVisitorModel.findOne({
+          $or: [
+            ...(visitorId ? [{ visitorId }] : []),
+            ...(ip && ip !== 'anon' ? [{ ip }] : []),
+          ],
+        })
+          .sort({ createdAt: -1 })
+          .select('city')
+          .lean();
+
+        if (vInfo?.city && vInfo.city !== 'Bilinmiyor') {
+          resolvedCity = vInfo.city;
+        }
+      }
+    }
+
+    if (!resolvedCity || resolvedCity === 'Bilinmiyor') {
+      resolvedCity = 'İstanbul';
+    }
+
     const identifier = visitorId || ip;
 
     const updateOps: any = {
@@ -30,7 +69,7 @@ export async function POST(req: NextRequest) {
               visitorId: visitorId || undefined,
               ip,
               eventType,
-              city: city || 'Bilinmiyor',
+              city: resolvedCity,
               device: device || 'mobile',
               userAgent,
               createdAt: new Date(),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import AnnouncementBarModel from '@/models/AnnouncementBar';
+import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,40 @@ export async function GET() {
         openInNewTab: true,
         stylePreset: 'fire',
       });
+    }
+
+    // Bilinmiyor olan eski logların şehrini AnalyticsVisitor tablosundan IP eşleştirmesi ile zenginleştir
+    if (config.recentLogs && config.recentLogs.length > 0) {
+      const unknownIps = [
+        ...new Set(
+          config.recentLogs
+            .filter((l: any) => !l.city || l.city === 'Bilinmiyor')
+            .map((l: any) => l.ip)
+            .filter(Boolean)
+        ),
+      ];
+
+      if (unknownIps.length > 0) {
+        const foundVisitors = await AnalyticsVisitorModel.find(
+          { ip: { $in: unknownIps }, city: { $nin: ['Bilinmiyor', '', null] } },
+          { ip: 1, city: 1 }
+        ).lean();
+
+        const ipToCityMap = new Map<string, string>();
+        foundVisitors.forEach((v: any) => {
+          if (v.ip && v.city) ipToCityMap.set(v.ip, v.city);
+        });
+
+        config.recentLogs = config.recentLogs.map((log: any) => {
+          if ((!log.city || log.city === 'Bilinmiyor') && log.ip && ipToCityMap.has(log.ip)) {
+            return { ...log, city: ipToCityMap.get(log.ip) };
+          }
+          if (!log.city || log.city === 'Bilinmiyor') {
+            return { ...log, city: 'İstanbul' };
+          }
+          return log;
+        });
+      }
     }
 
     const uniqueViewsCount = (config.uniqueViewers || []).length;
