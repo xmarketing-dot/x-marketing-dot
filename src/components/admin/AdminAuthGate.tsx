@@ -3,20 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Lock, 
-  KeyRound, 
-  ShieldCheck, 
-  Mail, 
-  Eye, 
-  EyeOff, 
-  ArrowRight, 
-  LogOut, 
-  Sliders, 
-  List, 
-  Users, 
-  MessageSquare, 
-  BarChart3, 
+import {
+  Lock,
+  KeyRound,
+  ShieldCheck,
+  Mail,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  LogOut,
+  Sliders,
+  List,
+  Users,
+  MessageSquare,
+  BarChart3,
   Globe,
   Loader2,
   AlertCircle,
@@ -177,7 +177,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     return (
       <div className="min-h-screen w-full bg-[#0d1117] flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950">
         <div className="w-full max-w-md bg-[#161b22] border-2 border-amber-500/60 rounded-[36px] p-6 sm:p-8 shadow-[0_0_80px_rgba(245,158,11,0.2)] flex flex-col gap-6 text-center">
-          
+
           {/* Logo & Gate Header */}
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
@@ -206,7 +206,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
           {/* Login Form */}
           <form onSubmit={handleLogin} className="flex flex-col gap-4 text-left font-heading">
-            
+
             {/* E-Posta Input */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
@@ -281,16 +281,15 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     );
   }
 
-  const getNavClass = (path: string) => `flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-colors ${
-    pathname === path 
-      ? 'bg-[#21262d] text-white border border-[#363b42]' 
+  const getNavClass = (path: string) => `flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-colors ${pathname === path
+      ? 'bg-[#21262d] text-white border border-[#363b42]'
       : 'hover:bg-[#21262d] text-[#8b949e] hover:text-white border border-transparent'
-  }`;
+    }`;
 
   // 3. AUTHENTICATED: Render Full Admin Portal Layout
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative">
-      
+
       {/* Mobile Top Header */}
       <div className="md:hidden flex items-center justify-between bg-[#161b22] border-b border-[#30363d] px-4 py-3 sticky top-0 z-30 shadow-md">
         <div className="flex items-center gap-2.5">
@@ -318,7 +317,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       {/* Desktop Admin Sidebar */}
       <aside className="hidden md:flex w-64 bg-[#161b22] border-r border-[#30363d] p-5 flex-col justify-between shrink-0 shadow-2xl overflow-y-auto">
         <div className="flex flex-col gap-6">
-          
+
           {/* Logo & Secret Gate Badge */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -498,11 +497,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             <Link
               href="/bms-secure-portal/guvenlik"
               prefetch={false}
-              className={`flex items-center justify-between px-3.5 py-3 rounded-xl transition-colors ${
-                pathname === '/bms-secure-portal/guvenlik'
+              className={`flex items-center justify-between px-3.5 py-3 rounded-xl transition-colors ${pathname === '/bms-secure-portal/guvenlik'
                   ? 'bg-red-500/10 text-red-400 border border-red-500/30'
                   : 'hover:bg-red-500/5 text-red-500/70 hover:text-red-300 border border-transparent hover:border-red-500/30'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2.5">
                 <ShieldAlert className="w-4 h-4 text-red-400" />
@@ -534,11 +532,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       </aside>
 
       {/* Secret Admin Content Viewport */}
-      <main className={`flex-1 overflow-y-auto w-full max-w-full ${
-        pathname === '/bms-secure-portal/chat' 
-          ? 'p-0 pb-16 md:p-6 md:pb-8' 
+      <main className={`flex-1 overflow-y-auto w-full max-w-full ${pathname === '/bms-secure-portal/chat'
+          ? 'p-0 pb-16 md:p-6 md:pb-8'
           : 'p-3 sm:p-6 md:p-8 pb-24 md:pb-8'
-      }`}>
+        }`}>
         {children}
       </main>
 
@@ -546,11 +543,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#161b22]/95 backdrop-blur-xl border-t border-[#30363d] px-1 py-1.5 flex items-center justify-around shadow-[0_-4px_25px_rgba(0,0,0,0.6)]">
         <Link
           href="/bms-secure-portal/ilanlar"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
-            pathname === '/bms-secure-portal/ilanlar'
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${pathname === '/bms-secure-portal/ilanlar'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
-          }`}
+            }`}
         >
           <div className="relative">
             <List className="w-5 h-5" />
@@ -565,11 +561,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
         <Link
           href="/bms-secure-portal/kullanicilar"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
-            pathname === '/bms-secure-portal/kullanicilar'
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${pathname === '/bms-secure-portal/kullanicilar'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
-          }`}
+            }`}
         >
           <div className="relative">
             <Users className="w-5 h-5" />
@@ -584,11 +579,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
         <Link
           href="/bms-secure-portal/chat"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
-            pathname === '/bms-secure-portal/chat'
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${pathname === '/bms-secure-portal/chat'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
-          }`}
+            }`}
         >
           <div className="relative">
             <MessageSquare className="w-5 h-5" />
@@ -605,11 +599,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
         <Link
           href="/bms-secure-portal"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${
-            pathname === '/bms-secure-portal'
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all ${pathname === '/bms-secure-portal'
               ? 'text-amber-400 font-black'
               : 'text-[#8b949e] hover:text-white font-medium'
-          }`}
+            }`}
         >
           <BarChart3 className="w-5 h-5" />
           <span className="text-[10px] font-heading">Canlı</span>
@@ -618,9 +611,8 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         <button
           type="button"
           onClick={() => setIsMobileMenuOpen(true)}
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
-            isMobileMenuOpen ? 'text-amber-400 font-black' : 'text-[#8b949e] hover:text-white font-medium'
-          }`}
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${isMobileMenuOpen ? 'text-amber-400 font-black' : 'text-[#8b949e] hover:text-white font-medium'
+            }`}
         >
           <div className="relative">
             <Sliders className="w-5 h-5" />
@@ -637,7 +629,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       {/* ── MOBİL DİĞER MODÜLLER ÇEKMECESİ (BOTTOM SHEET) ──────────────── */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-          <div 
+          <div
             className="flex-1 w-full"
             onClick={() => setIsMobileMenuOpen(false)}
           />
@@ -647,7 +639,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <CorporateLogo className="w-7 h-7" />
                 <span className="font-black text-sm text-white font-heading">Tüm 8 Yönetici Masası</span>
               </div>
-              <button 
+              <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
               >
@@ -668,7 +660,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               <Link
                 href="/bms-secure-portal/derin-analiz"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-gradient-to-br from-emerald-950/40 to-[#21262d] hover:bg-[#30363d] text-emerald-300 flex flex-col gap-1 border border-emerald-500/40 relative shadow-md"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-emerald-300 flex flex-col gap-1 border border-[#363b42] relative"
               >
                 <div className="flex items-center justify-between">
                   <BarChart3 className="w-5 h-5 text-emerald-400" />
@@ -676,7 +668,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     MÜDAVİM
                   </span>
                 </div>
-                <span>🔬 Derin Analiz</span>
+                <span>2. Derin Analiz</span>
               </Link>
 
               <Link
@@ -694,31 +686,28 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     )}
                     {badgeCounts.expiredListings > 0 && (
                       <span className="px-1.5 py-0.5 rounded-full bg-amber-500/30 text-amber-300 border border-amber-500/50 text-[9px] font-black">
-                        {badgeCounts.expiredListings} doldu
+                        {badgeCounts.expiredListings}
                       </span>
                     )}
                   </div>
                 </div>
-                <span>2. İlan Moderasyonu</span>
+                <span>3. İlan Moderasyonu</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/ucretsizler"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-gradient-to-br from-[#1c1407] to-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#FF6A3D]/40 relative col-span-2 shadow-md"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Gift className="w-5 h-5 text-[#FF6A3D]" />
-                    <span className="font-black text-amber-300">🎁 Ücretsiz Kampanyalar (İlan & Banner)</span>
-                  </div>
+                  <Gift className="w-5 h-5 text-[#FF6A3D]" />
                   {badgeCounts.ucretsizlerBadge > 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-[#FF6A3D] text-white text-[9px] font-black animate-pulse">
-                      +{badgeCounts.ucretsizlerBadge} YENİ
+                    <span className="px-1.5 py-0.5 rounded-full bg-[#FF6A3D] text-white text-[9px] font-black animate-pulse">
+                      +{badgeCounts.ucretsizlerBadge}
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-[#9AA3B2] font-normal">24 saatlik hediye vitrin ve banner başvurularını yönetin &amp; onaylayın</span>
+                <span>4. Ücretsiz Kampanyalar</span>
               </Link>
 
               <Link
@@ -734,7 +723,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     </span>
                   )}
                 </div>
-                <span>3. Canlı Müşteri Chat</span>
+                <span>5. Canlı Müşteri Chat</span>
               </Link>
 
               <Link
@@ -750,7 +739,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     </span>
                   )}
                 </div>
-                <span>4. Kullanıcı Hesapları</span>
+                <span>6. Kullanıcı Hesapları</span>
               </Link>
 
               <Link
@@ -766,7 +755,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     </span>
                   )}
                 </div>
-                <span>5. Anasayfa Yönetimi</span>
+                <span>7. Anasayfa Yönetimi</span>
               </Link>
 
               <Link
@@ -782,7 +771,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     </span>
                   )}
                 </div>
-                <span>6. Banner Masası</span>
+                <span>8. Banner Masası</span>
               </Link>
 
               <Link
@@ -793,7 +782,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <div className="flex items-center justify-between">
                   <Flame className="w-5 h-5 text-amber-400" />
                 </div>
-                <span>7. Üst Duyuru Barı</span>
+                <span>9. Üst Duyuru Barı</span>
               </Link>
 
               <Link
@@ -804,18 +793,18 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <div className="flex items-center justify-between">
                   <Link2 className="w-5 h-5 text-blue-400" />
                 </div>
-                <span>8. SEO Backlink Ağı</span>
+                <span>10. SEO Backlink Ağı</span>
               </Link>
 
               <Link
                 href="/bms-secure-portal/guvenlik"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-300 flex flex-col gap-1 border border-red-500/30 relative"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-red-500/20 text-red-300 flex flex-col gap-1 border border-red-500/30 relative col-span-2"
               >
                 <div className="flex items-center justify-between">
                   <ShieldAlert className="w-5 h-5 text-red-400" />
                 </div>
-                <span>9. Güvenlik &amp; IP Ban</span>
+                <span>11. Güvenlik &amp; IP Ban Masası</span>
               </Link>
             </div>
 
