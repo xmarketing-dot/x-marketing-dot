@@ -258,7 +258,7 @@ export default function CreateListingPage() {
               ad: formData.baslik,
               type: 'user'
             }));
-          } catch (_) {}
+          } catch (_) { }
         }
 
         if (data.chatThreadId) {
@@ -526,8 +526,8 @@ export default function CreateListingPage() {
                   key={tier.id}
                   onClick={() => setFormData({ ...formData, rozet: tier.id })}
                   className={`group relative rounded-2xl sm:rounded-3xl p-1.5 sm:p-2.5 transition-all duration-300 hover:-translate-y-1.5 cursor-pointer shadow-xl select-none flex flex-col justify-between ${tier.cardBg} ${isSelected
-                      ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-[#0d1117] scale-[1.02] z-20'
-                      : 'opacity-70 hover:opacity-100'
+                    ? 'ring-4 ring-amber-400 ring-offset-2 ring-offset-[#0d1117] scale-[1.02] z-20'
+                    : 'opacity-70 hover:opacity-100'
                     }`}
                 >
                   {/* VIP Parlama Efekti */}
@@ -585,8 +585,8 @@ export default function CreateListingPage() {
                       </div>
 
                       <span className={`text-[9px] sm:text-[10px] font-heading font-black px-2 py-0.5 rounded-full shadow-md tracking-wider ${isSelected
-                          ? isVip ? 'bg-slate-950 text-amber-300 border-2 border-slate-950' : 'bg-amber-400 text-slate-950 font-black'
-                          : 'bg-black/30 text-current border border-current/20'
+                        ? isVip ? 'bg-slate-950 text-amber-300 border-2 border-slate-950' : 'bg-amber-400 text-slate-950 font-black'
+                        : 'bg-black/30 text-current border border-current/20'
                         }`}>
                         {isSelected ? '✓ SEÇİLDİ' : 'SEÇ'}
                       </span>
@@ -631,6 +631,23 @@ export default function CreateListingPage() {
             <span>{currentTierObj.name} ile Devam Et</span>
             <ArrowRight className="w-4 h-4 stroke-[3]" />
           </button>
+
+          {/* VEYA WHATSAPP İLE ADMIN'E ULAŞ */}
+          <div className="flex items-center gap-3 my-1">
+            <div className="h-px bg-white/10 flex-1" />
+            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">VEYA</span>
+            <div className="h-px bg-white/10 flex-1" />
+          </div>
+
+          <a
+            href={getAdminWhatsAppUrl(`Merhaba, "${currentTierObj.name}" paketiyle ilan vermek istiyorum. Admin üzerinden doğrudan ilan kaydı ve vitrin desteği alabilir miyim?`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-4 px-5 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-sm shadow-xl shadow-green-500/25 active:scale-95 transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider cursor-pointer"
+          >
+            <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+            <span>WhatsApp'tan Admin'e Ulaş (İlan Ver)</span>
+          </a>
         </div>
       )}
 
@@ -715,8 +732,8 @@ export default function CreateListingPage() {
                 <span>Fotoğraf Yükleme (En Az 3, En Fazla 7 Resim) *</span>
               </h2>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${photoUrls.length >= 3
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
                 }`}>
                 {photoUrls.length} / 7 Fotoğraf
               </span>
@@ -890,23 +907,21 @@ export default function CreateListingPage() {
           </div>
 
           {/* ── 🌟 ANASAYFA VIP VİTRİNİNE EKLEME OPSİYONU (GÜNLÜK 2.000 TL / HAFTALIK 6.000 TL KAMPANYA) ── */}
-          <div 
-            className={`p-4 sm:p-5 rounded-3xl border-2 transition-all flex flex-col gap-3.5 shadow-xl ${
-              formData.vitrinIstegi
+          <div
+            className={`p-4 sm:p-5 rounded-3xl border-2 transition-all flex flex-col gap-3.5 shadow-xl ${formData.vitrinIstegi
                 ? 'bg-gradient-to-br from-[#2a1d06] via-[#1a1408] to-[#0d1117] border-amber-400 ring-4 ring-amber-400/20 shadow-amber-500/10'
                 : 'bg-[#161b22] border-[#30363d] hover:border-amber-500/40 opacity-90'
-            }`}
+              }`}
           >
-            <div 
+            <div
               onClick={() => setFormData({ ...formData, vitrinIstegi: !formData.vitrinIstegi })}
               className="flex items-start justify-between gap-3 cursor-pointer select-none"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center font-black shrink-0 transition-transform ${
-                  formData.vitrinIstegi 
-                    ? 'bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 scale-105 shadow-md shadow-amber-500/30' 
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center font-black shrink-0 transition-transform ${formData.vitrinIstegi
+                    ? 'bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 scale-105 shadow-md shadow-amber-500/30'
                     : 'bg-[#21262d] text-[#8b949e]'
-                }`}>
+                  }`}>
                   <Crown className="w-5 h-5 sm:w-6 sm:h-6 fill-current" />
                 </div>
                 <div className="flex flex-col">
@@ -925,11 +940,10 @@ export default function CreateListingPage() {
               </div>
 
               {/* Checkbox Toggle */}
-              <div className={`w-6 h-6 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${
-                formData.vitrinIstegi
+              <div className={`w-6 h-6 rounded-xl border-2 flex items-center justify-center shrink-0 transition-all ${formData.vitrinIstegi
                   ? 'bg-amber-400 border-amber-400 text-slate-950'
                   : 'border-[#363b42] bg-[#21262d]'
-              }`}>
+                }`}>
                 {formData.vitrinIstegi && <CheckCircle2 className="w-4 h-4 stroke-[3]" />}
               </div>
             </div>
@@ -940,11 +954,10 @@ export default function CreateListingPage() {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, vitrinPaketi: 'gunluk' })}
-                  className={`p-3 rounded-2xl border transition-all text-left flex flex-col justify-between ${
-                    formData.vitrinPaketi === 'gunluk'
+                  className={`p-3 rounded-2xl border transition-all text-left flex flex-col justify-between ${formData.vitrinPaketi === 'gunluk'
                       ? 'bg-amber-500/20 border-amber-400 text-white'
                       : 'bg-[#0d1117] border-[#30363d] text-[#8b949e]'
-                  }`}
+                    }`}
                 >
                   <span className="text-[10px] uppercase font-bold text-amber-400">1 Günlük</span>
                   <span className="font-heading font-black text-xs sm:text-sm text-white mt-0.5">Günlük Vitrin</span>
@@ -954,11 +967,10 @@ export default function CreateListingPage() {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, vitrinPaketi: 'haftalik' })}
-                  className={`p-3 rounded-2xl border transition-all text-left flex flex-col justify-between relative overflow-hidden ${
-                    formData.vitrinPaketi === 'haftalik'
+                  className={`p-3 rounded-2xl border transition-all text-left flex flex-col justify-between relative overflow-hidden ${formData.vitrinPaketi === 'haftalik'
                       ? 'bg-gradient-to-br from-[#2a1d06] to-[#161b22] border-amber-400 text-white shadow-md'
                       : 'bg-[#0d1117] border-[#30363d] text-[#8b949e]'
-                  }`}
+                    }`}
                 >
                   <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500 text-slate-950 font-black w-fit">
                     %57 İNDİRİM
@@ -1010,6 +1022,23 @@ export default function CreateListingPage() {
               <ArrowRight className="w-4 h-4 stroke-[3]" />
             </button>
           </div>
+
+          {/* VEYA WHATSAPP İLE ADMIN'E ULAŞ */}
+          <div className="flex items-center gap-3 my-1">
+            <div className="h-px bg-white/10 flex-1" />
+            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">VEYA</span>
+            <div className="h-px bg-white/10 flex-1" />
+          </div>
+
+          <a
+            href={getAdminWhatsAppUrl(`Merhaba, "${formData.baslik || 'Yeni İlan'}" için ilan vermek istiyorum. Admin üzerinden doğrudan ilan kaydı ve vitrin desteği alabilir miyim?`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-4 px-5 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-sm shadow-xl shadow-green-500/25 active:scale-95 transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider cursor-pointer"
+          >
+            <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+            <span>WhatsApp'tan Admin'e Ulaş (İlan Ver)</span>
+          </a>
         </form>
       )}
 

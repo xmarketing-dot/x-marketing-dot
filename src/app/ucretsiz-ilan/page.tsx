@@ -96,7 +96,7 @@ export default function UcretsizIlanPage() {
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
       try {
         window.navigator.vibrate(10);
-      } catch (e) {}
+      } catch (e) { }
     }
   };
 
@@ -350,7 +350,7 @@ export default function UcretsizIlanPage() {
             type: 'user'
           }));
           localStorage.setItem('my_listing_panel_password', resolvedPass);
-        } catch (_) {}
+        } catch (_) { }
 
         setSuccessData({
           ...data,
@@ -498,7 +498,7 @@ export default function UcretsizIlanPage() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-[#F5F6FA] flex flex-col selection:bg-[#FF6A3D]/30">
-      
+
       {/* ── 1. STICKY HEADER (GERİ VE GİRİŞ BUTONLARI YOK, NET BAŞLIK) ── */}
       <header className="sticky top-0 z-40 bg-[#0B0E14]/95 backdrop-blur-xl border-b border-[#252B3B] px-4 py-2">
         <div className="flex flex-col items-center justify-center max-w-lg mx-auto text-center">
@@ -577,9 +577,8 @@ export default function UcretsizIlanPage() {
                 key={idx}
                 type="button"
                 onClick={() => scrollToSlide(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  activeSlide === idx ? 'w-5 bg-[#FF6A3D]' : 'w-1.5 bg-[#252B3B]'
-                }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${activeSlide === idx ? 'w-5 bg-[#FF6A3D]' : 'w-1.5 bg-[#252B3B]'
+                  }`}
                 aria-label={`Slide ${idx + 1}`}
               />
             ))}
@@ -704,11 +703,10 @@ export default function UcretsizIlanPage() {
                 <ImageIcon className="w-4 h-4" />
                 <span>Fotoğraf Yükleme (En Az 3, En Fazla 7 Resim) *</span>
               </h2>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
-                photos.length >= 3
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${photos.length >= 3
                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                   : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-              }`}>
+                }`}>
                 {photos.length} / 7 Fotoğraf
               </span>
             </div>
@@ -765,9 +763,8 @@ export default function UcretsizIlanPage() {
                   return (
                     <div
                       key={idx}
-                      className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-2 flex flex-col justify-between p-2 bg-[#0B0E14] ${
-                        isCover ? 'border-amber-400 shadow-lg shadow-amber-500/20 ring-2 ring-amber-400/30' : 'border-[#252B3B]'
-                      }`}
+                      className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-2 flex flex-col justify-between p-2 bg-[#0B0E14] ${isCover ? 'border-amber-400 shadow-lg shadow-amber-500/20 ring-2 ring-amber-400/30' : 'border-[#252B3B]'
+                        }`}
                     >
                       <img src={url} alt={`Fotoğraf ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover z-0" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 z-10" />
@@ -911,6 +908,23 @@ export default function UcretsizIlanPage() {
                 </>
               )}
             </button>
+
+            {/* VEYA WHATSAPP İLE ADMIN'E ULAŞ */}
+            <div className="flex items-center gap-3 my-1">
+              <div className="h-px bg-[#252B3B] flex-1" />
+              <span className="text-[11px] font-bold text-[#9AA3B2] uppercase tracking-wider">VEYA</span>
+              <div className="h-px bg-[#252B3B] flex-1" />
+            </div>
+
+            <a
+              href={getAdminWhatsAppUrl('Merhaba, ücretsiz ilan vermek ve vitrin desteği almak için admin üzerinden işlem yapmak istiyorum.')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full h-12.5 sm:h-13 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold text-[14px] shadow-lg shadow-green-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+              <span>WhatsApp'tan Admin'e Ulaş (İlan Ver)</span>
+            </a>
 
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#9AA3B2] text-center">
               <ShieldCheck className="w-3.5 h-3.5 text-[#00E0A4] shrink-0" />

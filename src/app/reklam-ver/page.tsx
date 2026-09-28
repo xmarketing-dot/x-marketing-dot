@@ -3,13 +3,13 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-  Crown, 
-  Upload, 
-  Check, 
-  ArrowRight, 
-  Loader2, 
-  Wallet, 
+import {
+  Crown,
+  Upload,
+  Check,
+  ArrowRight,
+  Loader2,
+  Wallet,
   MessageSquare,
   ChevronLeft,
   Copy,
@@ -219,7 +219,7 @@ export default function ReklamVerPage() {
             ad: baslik || 'Banner Müşterisi',
             type: 'banner'
           }));
-        } catch (_) {}
+        } catch (_) { }
         setStep('payment');
       } else {
         alert(data.error || 'Başvuru alınamadı.');
@@ -236,7 +236,7 @@ export default function ReklamVerPage() {
 
   return (
     <div className="flex flex-col gap-8 max-w-2xl mx-auto w-full text-left pb-20 px-2 sm:px-0 animate-fadeIn">
-      
+
       {/* ── ÜST BAR & GERİ DÖNÜŞ ──────────────── */}
       <div className="flex items-center justify-between border-b border-[#30363d]/80 pb-4">
         <Link
@@ -255,7 +255,7 @@ export default function ReklamVerPage() {
       {/* ADIM 1: YÜKSEK DÖNÜŞÜMLÜ PREMIUM REKLAM FORMU */}
       {step === 'form' && (
         <form onSubmit={handleFormSubmit} className="flex flex-col gap-8">
-          
+
           {/* ── HERO BAŞLIK & DEĞER ÖNERİSİ ──────────────── */}
           <div className="flex flex-col gap-3 text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-black w-fit font-heading">
@@ -318,22 +318,20 @@ export default function ReklamVerPage() {
                   <button
                     type="button"
                     onClick={() => { setBannerFitMode('contain'); setBannerScale(1); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      bannerFitMode === 'contain'
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${bannerFitMode === 'contain'
                         ? 'bg-amber-400 text-slate-950 shadow-sm font-black'
                         : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#30363d]'
-                    }`}
+                      }`}
                   >
                     Tam Sığdır (Boyunu Daralt)
                   </button>
                   <button
                     type="button"
                     onClick={() => { setBannerFitMode('cover'); setBannerScale(1); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      bannerFitMode === 'cover'
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${bannerFitMode === 'cover'
                         ? 'bg-amber-500 text-slate-950 shadow-sm font-black'
                         : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#30363d]'
-                    }`}
+                      }`}
                   >
                     Alanı Doldur (Cover)
                   </button>
@@ -379,22 +377,20 @@ export default function ReklamVerPage() {
                       setIsCustomDays(false);
                       setSelectedGun(pkg.gun);
                     }}
-                    className={`relative p-4 rounded-2xl border-2 text-left transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[190px] select-none ${
-                      isSelected
+                    className={`relative p-4 rounded-2xl border-2 text-left transition-all duration-300 cursor-pointer flex flex-col justify-between min-h-[190px] select-none ${isSelected
                         ? 'bg-gradient-to-b from-[#2d1e06] via-[#1c1407] to-[#120e06] border-amber-400 ring-2 ring-amber-400/50 shadow-2xl shadow-amber-500/25 scale-[1.03] z-10'
                         : pkg.highlight
-                        ? 'bg-[#161b22] border-amber-500/40 hover:border-amber-400'
-                        : 'bg-[#161b22] border-[#30363d] hover:border-[#484f58]'
-                    }`}
+                          ? 'bg-[#161b22] border-amber-500/40 hover:border-amber-400'
+                          : 'bg-[#161b22] border-[#30363d] hover:border-[#484f58]'
+                      }`}
                   >
                     {/* Üst Rozet */}
                     <div className="min-h-[22px]">
                       {pkg.badge ? (
-                        <span className={`inline-block px-2 py-0.5 rounded-full font-black text-[9px] font-heading tracking-wider uppercase shadow-md ${
-                          pkg.highlight 
-                            ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 border border-amber-200' 
+                        <span className={`inline-block px-2 py-0.5 rounded-full font-black text-[9px] font-heading tracking-wider uppercase shadow-md ${pkg.highlight
+                            ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 border border-amber-200'
                             : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        }`}>
+                          }`}>
                           {pkg.badge}
                         </span>
                       ) : null}
@@ -431,12 +427,11 @@ export default function ReklamVerPage() {
             </div>
 
             {/* İsteğe Bağlı: Özel Gün Sayısı Belirleme (Custom Days) */}
-            <div className={`p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300 ${
-              isCustomDays 
-                ? 'bg-gradient-to-b from-[#2d1e06] via-[#161b22] to-[#120e06] border-amber-400 ring-2 ring-amber-400/50 shadow-xl' 
+            <div className={`p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300 ${isCustomDays
+                ? 'bg-gradient-to-b from-[#2d1e06] via-[#161b22] to-[#120e06] border-amber-400 ring-2 ring-amber-400/50 shadow-xl'
                 : 'bg-[#161b22] border-[#30363d] hover:border-[#484f58]'
-            }`}>
-              <div 
+              }`}>
+              <div
                 onClick={() => setIsCustomDays(true)}
                 className="flex items-center justify-between cursor-pointer"
               >
@@ -643,6 +638,23 @@ export default function ReklamVerPage() {
                 </>
               )}
             </button>
+
+            {/* VEYA WHATSAPP İLE ADMIN'DEN REKLAM VER */}
+            <div className="flex items-center gap-3 my-1">
+              <div className="h-px bg-white/10 flex-1" />
+              <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider">VEYA</span>
+              <div className="h-px bg-white/10 flex-1" />
+            </div>
+
+            <a
+              href={getAdminWhatsAppUrl(`Merhaba, sitenizde ${activeDays} Günlük tepe banner reklamı yayınlatmak istiyorum. Admin üzerinden doğrudan reklam kaydı ve ödeme desteği alabilir miyim?`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-4 px-5 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-sm shadow-xl shadow-green-500/25 active:scale-95 transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider cursor-pointer"
+            >
+              <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+              <span>WhatsApp'tan Admin'e Ulaş (Reklam Ver)</span>
+            </a>
 
             <div className="flex items-center justify-center gap-4 text-[11px] text-[#8b949e] font-medium text-center">
               <span>✓ 7/24 Canlı Destek</span>

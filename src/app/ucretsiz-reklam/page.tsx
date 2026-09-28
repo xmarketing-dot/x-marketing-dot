@@ -71,7 +71,7 @@ export default function UcretsizReklamPage() {
     if (typeof window !== 'undefined' && window.navigator && window.navigator.vibrate) {
       try {
         window.navigator.vibrate(10);
-      } catch (e) {}
+      } catch (e) { }
     }
   };
 
@@ -308,7 +308,7 @@ export default function UcretsizReklamPage() {
             type: 'banner'
           }));
           localStorage.setItem('my_listing_panel_password', resolvedPass);
-        } catch (_) {}
+        } catch (_) { }
 
         setSuccessData({
           ...data,
@@ -462,7 +462,7 @@ export default function UcretsizReklamPage() {
 
   return (
     <div className="min-h-screen bg-[#0B0E14] text-[#F5F6FA] flex flex-col selection:bg-[#FF6A3D]/30">
-      
+
       {/* ── 1. STICKY HEADER (GERİ VE GİRİŞ BUTONLARI YOK, NET BAŞLIK) ── */}
       <header className="sticky top-0 z-40 bg-[#0B0E14]/95 backdrop-blur-xl border-b border-[#252B3B] px-4 py-2">
         <div className="flex flex-col items-center justify-center max-w-lg mx-auto text-center">
@@ -541,9 +541,8 @@ export default function UcretsizReklamPage() {
                 key={idx}
                 type="button"
                 onClick={() => scrollToSlide(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  activeSlide === idx ? 'w-5 bg-[#FF6A3D]' : 'w-1.5 bg-[#252B3B]'
-                }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${activeSlide === idx ? 'w-5 bg-[#FF6A3D]' : 'w-1.5 bg-[#252B3B]'
+                  }`}
                 aria-label={`Slide ${idx + 1}`}
               />
             ))}
@@ -605,22 +604,20 @@ export default function UcretsizReklamPage() {
                   <button
                     type="button"
                     onClick={() => { setBannerFitMode('contain'); setBannerScale(1); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      bannerFitMode === 'contain'
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${bannerFitMode === 'contain'
                         ? 'bg-[#00E0A4] text-slate-950 shadow-sm'
                         : 'bg-[#141824] text-[#8b949e] hover:text-white border border-[#252B3B]'
-                    }`}
+                      }`}
                   >
                     Tam Sığdır (Boyunu Daralt)
                   </button>
                   <button
                     type="button"
                     onClick={() => { setBannerFitMode('cover'); setBannerScale(1); }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      bannerFitMode === 'cover'
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${bannerFitMode === 'cover'
                         ? 'bg-[#FF6A3D] text-white shadow-sm'
                         : 'bg-[#141824] text-[#8b949e] hover:text-white border border-[#252B3B]'
-                    }`}
+                      }`}
                   >
                     Alanı Doldur (Cover)
                   </button>
@@ -886,6 +883,23 @@ export default function UcretsizReklamPage() {
                 </>
               )}
             </button>
+
+            {/* VEYA WHATSAPP İLE ADMIN'E ULAŞ */}
+            <div className="flex items-center gap-3 my-1">
+              <div className="h-px bg-[#252B3B] flex-1" />
+              <span className="text-[11px] font-bold text-[#9AA3B2] uppercase tracking-wider">VEYA</span>
+              <div className="h-px bg-[#252B3B] flex-1" />
+            </div>
+
+            <a
+              href={getAdminWhatsAppUrl('Merhaba, sitede 21:9 tepe banner reklamı yayınlatmak ve reklam vermek için doğrudan admin desteği almak istiyorum.')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full h-12.5 sm:h-13 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold text-[14px] shadow-lg shadow-green-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
+              <span>WhatsApp'tan Admin'e Ulaş (Reklam Ver)</span>
+            </a>
 
             <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#9AA3B2] text-center">
               <ShieldCheck className="w-3.5 h-3.5 text-[#00E0A4] shrink-0" />

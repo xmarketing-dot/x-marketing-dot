@@ -3,24 +3,24 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { 
-  User as UserIcon, 
-  Lock, 
-  Sparkles, 
-  Clock, 
-  Eye, 
-  MessageSquare, 
-  Edit3, 
-  ExternalLink, 
-  Zap, 
-  ShieldCheck, 
-  Plus, 
-  LogOut, 
-  Loader2, 
-  AlertCircle, 
-  CheckCircle2, 
-  Crown, 
-  Star, 
+import {
+  User as UserIcon,
+  Lock,
+  Sparkles,
+  Clock,
+  Eye,
+  MessageSquare,
+  Edit3,
+  ExternalLink,
+  Zap,
+  ShieldCheck,
+  Plus,
+  LogOut,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Crown,
+  Star,
   ArrowRight,
   Save,
   X,
@@ -57,7 +57,7 @@ export default function PanelimPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [banners, setBanners] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState(Date.now());
-  
+
   // Tab Navigation State: 'ilanlarim' | 'reklam_ver' | 'ilan_ver' | 'odeme' | 'chat'
   const [activeTab, setActiveTab] = useState<'ilanlarim' | 'reklam_ver' | 'ilan_ver' | 'odeme' | 'chat'>('ilanlarim');
 
@@ -154,7 +154,7 @@ export default function PanelimPage() {
   // Online Heartbeat Tracker
   useEffect(() => {
     if (!currentUser) return;
-    
+
     const sendHeartbeat = (status = 'online') => {
       const activeIdent = currentUser.identifier || currentUser.telefon || currentUser.kullaniciAdi;
       if (!activeIdent && !currentUser.userId && !currentUser._id) return;
@@ -176,7 +176,7 @@ export default function PanelimPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
-        }).catch(() => {});
+        }).catch(() => { });
       }
     };
 
@@ -312,7 +312,7 @@ export default function PanelimPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).catch(() => {});
+      }).catch(() => { });
     }
 
     localStorage.removeItem('panel_user_session');
@@ -356,9 +356,9 @@ export default function PanelimPage() {
       return null;
     }
     if (!vitrinBitisTarihiStr && isVitrin) {
-      return { 
-        text: 'Vitrinde (Süresiz)', 
-        expired: false, 
+      return {
+        text: 'Vitrinde (Süresiz)',
+        expired: false,
         color: 'text-amber-400',
         days: 99, hours: 23, minutes: 59, seconds: 59,
         padDays: '99', padHours: '23', padMinutes: '59', padSeconds: '59',
@@ -369,9 +369,9 @@ export default function PanelimPage() {
     const diff = bitisTime - currentTime;
 
     if (diff <= 0) {
-      return { 
-        text: 'Süre Doldu', 
-        expired: true, 
+      return {
+        text: 'Süre Doldu',
+        expired: true,
         color: 'text-rose-400',
         days: 0, hours: 0, minutes: 0, seconds: 0,
         padDays: '00', padHours: '00', padMinutes: '00', padSeconds: '00',
@@ -384,9 +384,9 @@ export default function PanelimPage() {
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
     const pad = (n: number) => n.toString().padStart(2, '0');
 
-    return { 
-      text: days > 0 ? `${days}g ${pad(hours)}s ${pad(minutes)}d` : `${pad(hours)}s ${pad(minutes)}d ${pad(seconds)}sn`, 
-      expired: false, 
+    return {
+      text: days > 0 ? `${days}g ${pad(hours)}s ${pad(minutes)}d` : `${pad(hours)}s ${pad(minutes)}d ${pad(seconds)}sn`,
+      expired: false,
       color: 'text-amber-300',
       days, hours, minutes, seconds,
       padDays: pad(days), padHours: pad(hours), padMinutes: pad(minutes), padSeconds: pad(seconds),
@@ -632,7 +632,7 @@ export default function PanelimPage() {
 
   return (
     <div className="min-h-screen bg-[#090d14] text-[#f0f6fc] font-sans pb-28 select-none">
-      
+
       {/* ── NATIVE APP TOP BAR ──────────────── */}
       <header className="sticky top-0 z-30 bg-[#090d14]/90 backdrop-blur-xl border-b border-white/5 px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -679,17 +679,15 @@ export default function PanelimPage() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-heading font-bold whitespace-nowrap shrink-0 transition-all flex items-center gap-1.5 active:scale-95 ${
-                  isSelected
+                className={`px-3.5 py-1.5 rounded-full text-xs font-heading font-bold whitespace-nowrap shrink-0 transition-all flex items-center gap-1.5 active:scale-95 ${isSelected
                     ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-500/20'
                     : 'bg-white/5 text-[#8b949e] hover:text-white'
-                }`}
+                  }`}
               >
                 <span>{item.label}</span>
                 {item.count !== undefined && (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    isSelected ? 'bg-slate-950 text-amber-300' : 'bg-white/10 text-white'
-                  }`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${isSelected ? 'bg-slate-950 text-amber-300' : 'bg-white/10 text-white'
+                    }`}>
                     {item.count}
                   </span>
                 )}
@@ -804,7 +802,7 @@ export default function PanelimPage() {
 
                   return (
                     <div key={item._id} className="p-3.5 sm:p-4 flex flex-col gap-3">
-                      
+
                       {/* Üst Satır: Fotoğraf + Bilgiler */}
                       <div className="flex items-center gap-3">
                         <div className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
@@ -814,9 +812,8 @@ export default function PanelimPage() {
                             alt={item.baslik}
                             className="w-full h-full object-cover"
                           />
-                          <span className={`absolute top-1 left-1 px-1.5 py-0.2 rounded text-[8px] font-black uppercase ${
-                            item.rozet === 'vip' ? 'bg-amber-400 text-slate-950' : 'bg-slate-700 text-white'
-                          }`}>
+                          <span className={`absolute top-1 left-1 px-1.5 py-0.2 rounded text-[8px] font-black uppercase ${item.rozet === 'vip' ? 'bg-amber-400 text-slate-950' : 'bg-slate-700 text-white'
+                            }`}>
                             {item.rozet?.toUpperCase() || 'VIP'}
                           </span>
                         </div>
@@ -826,11 +823,10 @@ export default function PanelimPage() {
                             <h3 className="font-heading font-black text-sm text-white truncate">
                               {item.baslik}
                             </h3>
-                            <span className={`text-[10px] font-bold shrink-0 px-2 py-0.5 rounded-full ${
-                              item.status === 'yayinda'
+                            <span className={`text-[10px] font-bold shrink-0 px-2 py-0.5 rounded-full ${item.status === 'yayinda'
                                 ? 'bg-emerald-500/20 text-emerald-400'
                                 : 'bg-amber-500/20 text-amber-400'
-                            }`}>
+                              }`}>
                               {item.status === 'yayinda' ? '● Yayında' : '⏳ Onayda'}
                             </span>
                           </div>
@@ -1141,33 +1137,30 @@ export default function PanelimPage() {
                 <button
                   type="button"
                   onClick={() => setNewListingForm({ ...newListingForm, rozet: 'gold' })}
-                  className={`py-2.5 px-2 rounded-2xl border text-center transition-all ${
-                    newListingForm.rozet === 'gold'
+                  className={`py-2.5 px-2 rounded-2xl border text-center transition-all ${newListingForm.rozet === 'gold'
                       ? 'bg-amber-500/20 border-amber-400 text-amber-300 font-black'
                       : 'bg-black/30 border-white/5 text-[#8b949e]'
-                  }`}
+                    }`}
                 >
                   <span className="text-xs">⭐ GOLD</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setNewListingForm({ ...newListingForm, rozet: 'vip' })}
-                  className={`py-2.5 px-2 rounded-2xl border text-center transition-all ${
-                    newListingForm.rozet === 'vip'
+                  className={`py-2.5 px-2 rounded-2xl border text-center transition-all ${newListingForm.rozet === 'vip'
                       ? 'bg-amber-400 border-amber-400 text-slate-950 font-black shadow-md'
                       : 'bg-black/30 border-white/5 text-[#8b949e]'
-                  }`}
+                    }`}
                 >
                   <span className="text-xs">👑 VIP</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setNewListingForm({ ...newListingForm, rozet: 'silver' })}
-                  className={`py-2.5 px-2 rounded-2xl border text-center transition-all ${
-                    newListingForm.rozet === 'silver'
+                  className={`py-2.5 px-2 rounded-2xl border text-center transition-all ${newListingForm.rozet === 'silver'
                       ? 'bg-slate-700 border-slate-400 text-white font-black'
                       : 'bg-black/30 border-white/5 text-[#8b949e]'
-                  }`}
+                    }`}
                 >
                   <span className="text-xs">⚡ SILVER</span>
                 </button>
@@ -1188,8 +1181,8 @@ export default function PanelimPage() {
                     value={newListingForm.ilSlug}
                     onChange={(e) => {
                       const il = turkeyProvinces.find(p => p.ilSlug === e.target.value);
-                      setNewListingForm({ 
-                        ...newListingForm, 
+                      setNewListingForm({
+                        ...newListingForm,
                         ilSlug: e.target.value,
                         ilceSlug: il?.ilceler[0]?.slug || ''
                       });
@@ -1327,7 +1320,7 @@ export default function PanelimPage() {
       {editingListing && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
           <div className="w-full max-w-lg bg-[#12161f] border-t sm:border border-white/10 rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            
+
             <div className="flex items-center justify-between border-b border-white/5 pb-3">
               <span className="font-heading font-black text-sm text-white flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-amber-400" />
@@ -1492,7 +1485,7 @@ export default function PanelimPage() {
       {selectedVitrinListing && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
           <div className="w-full max-w-md bg-[#12161f] border-t sm:border border-amber-500/30 rounded-t-3xl sm:rounded-3xl p-5 flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto text-left">
-            
+
             <div className="flex items-center justify-between border-b border-white/5 pb-3">
               <span className="font-heading font-black text-sm text-white flex items-center gap-2">
                 <Crown className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -1543,11 +1536,10 @@ export default function PanelimPage() {
                   <button
                     type="button"
                     onClick={() => setVitrinPaketiSecimi('gunluk')}
-                    className={`p-3 rounded-2xl border text-center transition-all ${
-                      vitrinPaketiSecimi === 'gunluk'
+                    className={`p-3 rounded-2xl border text-center transition-all ${vitrinPaketiSecimi === 'gunluk'
                         ? 'bg-amber-500/20 border-amber-400 text-white font-bold'
                         : 'bg-black/30 border-white/5 text-[#8b949e]'
-                    }`}
+                      }`}
                   >
                     <span className="text-[10px] uppercase block">1 Günlük</span>
                     <span className="font-heading font-black text-sm text-amber-400 mt-0.5 block">2.000 ₺</span>
@@ -1556,11 +1548,10 @@ export default function PanelimPage() {
                   <button
                     type="button"
                     onClick={() => setVitrinPaketiSecimi('haftalik')}
-                    className={`p-3 rounded-2xl border text-center transition-all relative ${
-                      vitrinPaketiSecimi === 'haftalik'
+                    className={`p-3 rounded-2xl border text-center transition-all relative ${vitrinPaketiSecimi === 'haftalik'
                         ? 'bg-amber-400 border-amber-400 text-slate-950 font-black shadow-md'
                         : 'bg-black/30 border-white/5 text-[#8b949e]'
-                    }`}
+                      }`}
                   >
                     <span className={`text-[9px] font-bold block ${vitrinPaketiSecimi === 'haftalik' ? 'text-slate-950' : 'text-emerald-400'}`}>7 Gün (Önerilen)</span>
                     <span className={`font-heading font-black text-sm mt-0.5 block ${vitrinPaketiSecimi === 'haftalik' ? 'text-slate-950' : 'text-amber-400'}`}>6.000 ₺</span>
@@ -1622,7 +1613,7 @@ export default function PanelimPage() {
       {selectedPopupListing && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
           <div className="w-full max-w-lg bg-[#12161f] border-t sm:border border-purple-500/40 rounded-t-3xl sm:rounded-3xl p-6 flex flex-col gap-5 shadow-2xl max-h-[90vh] overflow-y-auto text-left relative">
-            
+
             <div className="flex items-center justify-between border-b border-white/10 pb-3.5">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center">
@@ -1697,11 +1688,10 @@ export default function PanelimPage() {
                         key={opt.days}
                         type="button"
                         onClick={() => setPopupGunSecimi(opt.days)}
-                        className={`py-3.5 px-2 rounded-2xl border text-center transition-all ${
-                          popupGunSecimi === opt.days
+                        className={`py-3.5 px-2 rounded-2xl border text-center transition-all ${popupGunSecimi === opt.days
                             ? 'bg-gradient-to-b from-purple-600 to-pink-600 border-pink-400 text-white font-black shadow-lg shadow-purple-500/40 scale-102 ring-2 ring-pink-400'
                             : 'bg-black/50 border-white/10 text-gray-300 hover:border-white/30 hover:text-white'
-                        }`}
+                          }`}
                       >
                         <span className="text-xs sm:text-sm font-bold uppercase block leading-tight">{opt.label}</span>
                         <span className="font-heading font-black text-sm sm:text-base mt-1.5 block text-white">{opt.price}</span>
@@ -1714,17 +1704,16 @@ export default function PanelimPage() {
                 <div className="flex flex-col gap-2.5">
                   <label className="text-xs sm:text-sm font-black text-amber-300 uppercase tracking-wide">2. Hedef Gösterim Bölgesi</label>
                   <div className="flex flex-col gap-3">
-                    
+
                     {/* Seçenek 1: Sadece İlanın İlçesi / Bölgesi (Varsa) */}
                     {selectedPopupListing.ilSlug && selectedPopupListing.ilceSlug && (
                       <button
                         type="button"
                         onClick={() => setPopupHedefSehirSecimi(`${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}`)}
-                        className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                          popupHedefSehirSecimi === `${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}`
+                        className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${popupHedefSehirSecimi === `${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}`
                             ? 'bg-purple-500/30 border-pink-400 ring-2 ring-pink-400 text-white shadow-lg'
                             : 'bg-black/50 border-white/10 text-gray-300 hover:border-white/30'
-                        }`}
+                          }`}
                       >
                         <div className="flex flex-col">
                           <span className="font-heading font-black text-sm sm:text-base text-white flex items-center gap-1.5">
@@ -1734,11 +1723,10 @@ export default function PanelimPage() {
                             {selectedPopupListing.ilSlug.toUpperCase()} / {selectedPopupListing.ilceSlug.toUpperCase()} sayfalarına girenler görür
                           </span>
                         </div>
-                        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                          popupHedefSehirSecimi === `${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}`
+                        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${popupHedefSehirSecimi === `${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}`
                             ? 'border-pink-400 bg-pink-500 text-white'
                             : 'border-white/30'
-                        }`}>
+                          }`}>
                           {popupHedefSehirSecimi === `${selectedPopupListing.ilSlug}/${selectedPopupListing.ilceSlug}` && <Check className="w-4 h-4 stroke-[3]" />}
                         </div>
                       </button>
@@ -1749,11 +1737,10 @@ export default function PanelimPage() {
                       <button
                         type="button"
                         onClick={() => setPopupHedefSehirSecimi(selectedPopupListing.ilSlug)}
-                        className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                          popupHedefSehirSecimi === selectedPopupListing.ilSlug
+                        className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${popupHedefSehirSecimi === selectedPopupListing.ilSlug
                             ? 'bg-purple-500/30 border-pink-400 ring-2 ring-pink-400 text-white shadow-lg'
                             : 'bg-black/50 border-white/10 text-gray-300 hover:border-white/30'
-                        }`}
+                          }`}
                       >
                         <div className="flex flex-col">
                           <span className="font-heading font-black text-sm sm:text-base text-white flex items-center gap-1.5">
@@ -1763,11 +1750,10 @@ export default function PanelimPage() {
                             {selectedPopupListing.ilSlug.toUpperCase()} ve tüm ilçelerindeki ziyaretçiler görür
                           </span>
                         </div>
-                        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                          popupHedefSehirSecimi === selectedPopupListing.ilSlug
+                        <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${popupHedefSehirSecimi === selectedPopupListing.ilSlug
                             ? 'border-pink-400 bg-pink-500 text-white'
                             : 'border-white/30'
-                        }`}>
+                          }`}>
                           {popupHedefSehirSecimi === selectedPopupListing.ilSlug && <Check className="w-4 h-4 stroke-[3]" />}
                         </div>
                       </button>
@@ -1777,11 +1763,10 @@ export default function PanelimPage() {
                     <button
                       type="button"
                       onClick={() => setPopupHedefSehirSecimi('tum_turkiye')}
-                      className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                        popupHedefSehirSecimi === 'tum_turkiye'
+                      className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${popupHedefSehirSecimi === 'tum_turkiye'
                           ? 'bg-purple-500/30 border-pink-400 ring-2 ring-pink-400 text-white shadow-lg'
                           : 'bg-black/50 border-white/10 text-gray-300 hover:border-white/30'
-                      }`}
+                        }`}
                     >
                       <div className="flex flex-col">
                         <span className="font-heading font-black text-sm sm:text-base text-white flex items-center gap-1.5">
@@ -1791,11 +1776,10 @@ export default function PanelimPage() {
                           Anasayfa + 81 İlin tamamındaki tüm ziyaretçilere tam ekran çıkar
                         </span>
                       </div>
-                      <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                        popupHedefSehirSecimi === 'tum_turkiye'
+                      <div className={`w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 ${popupHedefSehirSecimi === 'tum_turkiye'
                           ? 'border-pink-400 bg-pink-500 text-white'
                           : 'border-white/30'
-                      }`}>
+                        }`}>
                         {popupHedefSehirSecimi === 'tum_turkiye' && <Check className="w-4 h-4 stroke-[3]" />}
                       </div>
                     </button>
@@ -1866,11 +1850,10 @@ export default function PanelimPage() {
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id as any)}
-              className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-90 ${
-                isSelected
+              className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-90 ${isSelected
                   ? 'text-amber-400 font-extrabold'
                   : 'text-[#8b949e] hover:text-white'
-              }`}
+                }`}
             >
               <Icon className={`w-5 h-5 ${isSelected ? 'stroke-[2.5] scale-105' : 'stroke-2'}`} />
               <span className="text-[10px] font-heading font-bold tracking-tight leading-none">
