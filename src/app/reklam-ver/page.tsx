@@ -22,6 +22,7 @@ import {
 import ImageCropModal from '@/components/common/ImageCropModal';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
+import { smartUploadFile } from '@/lib/smartUpload';
 
 const PRESET_TIERS = [
   {
@@ -147,24 +148,15 @@ export default function ReklamVerPage() {
     e.target.value = '';
   };
 
-  // Doğrudan Dosya Yükleme (GIF veya hazır görseller için)
+  // Doğrudan Dosya Yükleme (GIF veya hazır görseller için - 15MB'a kadar destekler)
   const uploadFileDirectly = async (file: File | Blob, customName?: string) => {
     setUploading(true);
     try {
-      const formData = new FormData();
-      const uploadFile = file instanceof File ? file : new File([file], customName || 'banner.jpg', { type: 'image/jpeg' });
-      formData.append('files', uploadFile);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (data.success && data.urls && data.urls.length > 0) {
-        setGorselUrl(data.urls[0]);
+      const result = await smartUploadFile(file, customName);
+      if (result.success && result.url) {
+        setGorselUrl(result.url);
       } else {
-        alert(data.error || 'Fotoğraf yüklenemedi');
+        alert(result.error || 'Görsel / GIF yüklenemedi');
       }
     } catch (err: any) {
       alert('Yükleme hatası: ' + err.message);

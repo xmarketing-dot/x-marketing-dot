@@ -23,6 +23,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import ImageCropModal from '@/components/common/ImageCropModal';
+import { smartUploadFile } from '@/lib/smartUpload';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
 
@@ -176,8 +177,8 @@ export default function UcretsizReklamPage() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Görsel veya GIF boyutu en fazla 5 MB olabilir.');
+    if (file.size > 15 * 1024 * 1024) {
+      alert('Görsel veya GIF boyutu en fazla 15 MB olabilir.');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -187,21 +188,11 @@ export default function UcretsizReklamPage() {
       setIsUploading(true);
       triggerHaptic();
       try {
-        const uploadData = new FormData();
-        uploadData.append('files', file);
-
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadData,
-        });
-
-        const json = await res.json();
-        if (json.success && json.urls && json.urls.length > 0) {
-          setUploadedUrl(json.urls[0]);
-        } else if (json.url) {
-          setUploadedUrl(json.url);
+        const result = await smartUploadFile(file);
+        if (result.success && result.url) {
+          setUploadedUrl(result.url);
         } else {
-          alert(json.error || 'GIF yüklenemedi.');
+          alert(result.error || 'GIF yüklenemedi.');
         }
       } catch (err) {
         alert('GIF sunucuya yüklenirken bir hata oluştu.');
@@ -227,21 +218,11 @@ export default function UcretsizReklamPage() {
 
     try {
       const croppedFile = new File([croppedBlob], 'banner-21-9.webp', { type: 'image/webp' });
-      const uploadData = new FormData();
-      uploadData.append('files', croppedFile);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadData,
-      });
-
-      const json = await res.json();
-      if (json.success && json.urls && json.urls.length > 0) {
-        setUploadedUrl(json.urls[0]);
-      } else if (json.url) {
-        setUploadedUrl(json.url);
+      const result = await smartUploadFile(croppedFile);
+      if (result.success && result.url) {
+        setUploadedUrl(result.url);
       } else {
-        alert(json.error || 'Kırpılan görsel yüklenemedi.');
+        alert(result.error || 'Kırpılan görsel yüklenemedi.');
       }
     } catch (err) {
       alert('Görsel yüklenirken hata oluştu.');

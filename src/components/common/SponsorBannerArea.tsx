@@ -3,17 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  Megaphone,
-  ArrowUpRight,
-  Sparkles,
-  Crown,
-  TrendingUp,
-  Zap,
-  CheckCircle2,
-  ExternalLink,
-  Flame
-} from 'lucide-react';
+import { ArrowRight, Sparkles, Flame, Zap } from 'lucide-react';
 
 export interface BannerAdData {
   _id: string;
@@ -31,28 +21,28 @@ interface Props {
 
 export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }: Props) {
   const [banner, setBanner] = useState<BannerAdData | null>(initialBanner || null);
-  const [loading, setLoading] = useState<boolean>(initialBanner === undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(initialBanner === undefined);
 
   useEffect(() => {
     if (initialBanner !== undefined) {
       setBanner(initialBanner);
-      setLoading(false);
+      setIsLoading(false);
       return;
     }
 
     let isMounted = true;
-    fetch(`/api/banners?konum=${konum}`)
+    fetch(`/api/banners?konum=${encodeURIComponent(konum === 'ilan_detay' ? 'ilan_detay' : 'anasayfa')}`, {
+      cache: 'no-store',
+    })
       .then((res) => res.json())
       .then((data) => {
         if (isMounted) {
-          if (data.success && data.banner) {
-            setBanner(data.banner);
-          }
-          setLoading(false);
+          setBanner(data?.success && data?.banner ? data.banner : null);
+          setIsLoading(false);
         }
       })
       .catch(() => {
-        if (isMounted) setLoading(false);
+        if (isMounted) setIsLoading(false);
       });
 
     return () => {
@@ -69,37 +59,6 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     }).catch(() => { });
   };
 
-  if (loading) {
-    return (
-      <div className="w-full h-24 sm:h-28 bg-[#161b22]/60 border-y border-[#30363d]/50 animate-pulse my-1.5" />
-    );
-  }
-
-  // 1. EĞER YAYINDA REKLAM VARSA
-  if (banner) {
-    return (
-      <div className="w-full relative group">
-        <a
-          href={banner.hedefUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleBannerClick}
-          className="block relative w-full h-32 sm:h-40 md:h-44 overflow-hidden border-y border-amber-500/50 shadow-xl shadow-amber-500/10 hover:border-amber-400 transition-all duration-300 bg-black"
-        >
-          {/* Banner Görseli (unoptimized sayesinde hareketli GIF'ler donmadan sonsuz döngüde oynar) */}
-          <Image
-            src={banner.gorselUrl}
-            alt={banner.baslik}
-            fill
-            unoptimized={banner.gorselUrl?.includes('.gif') || banner.gorselUrl?.startsWith('data:image/gif') || true}
-            sizes="100vw"
-            className={`${banner.fitMode === 'contain' ? 'object-contain' : 'object-cover'} group-hover:scale-105 transition-transform duration-700 ease-out`}
-          />
-        </a>
-      </div>
-    );
-  }
-
   const handleEmptyBannerClick = () => {
     fetch('/api/banners/click', {
       method: 'POST',
@@ -108,50 +67,107 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     }).catch(() => { });
   };
 
-  // 2. REKLAM YOKSA -> TAM EKRAN SAĞA VE SOLA YAPIŞIK LÜKS ÇAĞRI ŞERİDİ
+  const isHero = konum === 'anasayfa_hero' || konum === 'anasayfa' || konum === 'her_ikisi';
+
+  // 1. REKLAM YÜKLENİYOR SKELETON'I
+  if (isLoading) {
+    return (
+      <div className="w-full">
+        <div className="w-full h-20 sm:h-24 bg-slate-950/80 border border-[#30363d] rounded-2xl animate-pulse my-1" />
+      </div>
+    );
+  }
+
+  // 2. YAYINDA DOLU REKLAM VARSA (Müşteri Banner'ı)
+  if (banner) {
+    return (
+      <div className="w-full sponsor-banner-container no-safe-blur my-1.5 sm:my-2">
+        <div
+          className={`w-full ${isHero ? 'border-y sm:border border-amber-500/30 sm:rounded-2xl shadow-md' : 'border-y sm:border border-[#30363d] sm:rounded-2xl'
+            } overflow-hidden bg-slate-950 group relative select-none`}
+        >
+          <a
+            href={banner.hedefUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleBannerClick}
+            className={`block relative w-full ${isHero ? 'h-24 sm:h-32 md:h-36 lg:h-40' : 'h-20 sm:h-28 md:h-32'
+              } overflow-hidden cursor-pointer bg-slate-950`}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-slate-900 to-amber-500/10 pointer-events-none" />
+
+            <Image
+              src={banner.gorselUrl}
+              alt={banner.baslik || 'Sponsor Reklam'}
+              fill
+              priority
+              loading="eager"
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 1280px"
+              className={`${banner.fitMode === 'contain' ? 'object-contain' : 'object-cover'
+                } md:object-contain object-center group-hover:scale-[1.01] transition-transform duration-500 ease-out relative z-10 no-safe-blur sponsor-banner-img`}
+            />
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. REKLAM YOKSA -> KOMPAKT, SÜREKLİ ANİMASYONLU RGB CASINO / BAHİS / ADULT REKLAM ALANI
   return (
-    <div className="w-full">
+    <div className="w-full sponsor-banner-container no-safe-blur my-1 sm:my-1.5 select-none">
       <Link
         href="/reklam-ver"
         onClick={handleEmptyBannerClick}
-        className="relative block w-full px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-[#2a1b04] via-[#1c1407] to-[#120e06] border-y border-dashed border-amber-500/60 hover:border-amber-400 shadow-lg shadow-amber-500/10 group transition-all duration-300 overflow-hidden"
+        className="group relative block w-full rounded-2xl overflow-hidden cursor-pointer border-2 border-dashed animate-rgb-neon-border bg-gradient-to-r from-[#0d0714] via-[#170a24] to-[#0d0714] transition-all duration-300"
       >
-        {/* Arka Plan Hareketli Parlama Işığı */}
-        <div className="absolute -right-12 -top-12 w-44 h-44 bg-amber-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/25 transition-all duration-500" />
+        {/* ── SÜREKLİ KAYAN LAZER IŞIK ŞERİDİ (Continuous Laser Sweep) ── */}
+        <div className="absolute top-0 left-0 w-[40%] h-full bg-gradient-to-r from-transparent via-amber-300/25 to-transparent skew-x-[-25deg] animate-continuous-laser pointer-events-none z-30" />
 
-        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        {/* Arka Plan Dinamik Neon Işık Yayılımları */}
+        <div className="absolute -left-8 -top-8 w-40 h-40 bg-fuchsia-600/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+        <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-amber-500/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
 
-          {/* Sol Taraf: İkon ve Büyük Yazılar */}
-          <div className="flex items-center gap-3.5 text-left min-w-0">
-            <div className="relative w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30 shrink-0 group-hover:rotate-6 group-hover:scale-105 transition-all duration-300">
-              <Flame className="w-6 h-6 sm:w-7 sm:h-7 fill-slate-950 stroke-[2.5]" />
-              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-rose-500 animate-ping" />
+        {/* ── KOMPAKT VE YOĞUN İÇERİK ŞERİDİ ───────────────────────────── */}
+        <div className="relative z-20 px-3 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
+
+          {/* Sol: Casino / Bahis / Adult Rozeti & Ana Başlık */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 w-full sm:w-auto text-left">
+
+            {/* Yanıp Sönen Casino Rozeti */}
+            <div className="shrink-0 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-gradient-to-r from-rose-600 via-fuchsia-600 to-amber-500 text-white font-mono font-black text-[10px] sm:text-xs flex items-center gap-1.5 animate-badge-fire shadow-md">
+              <span className="animate-spin text-xs">🎰</span>
+              <span className="tracking-tight whitespace-nowrap">CASINO &amp; ADULT</span>
             </div>
 
-            <div className="flex flex-col min-w-0 gap-0.5">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-heading font-black text-sm sm:text-lg md:text-xl text-white tracking-wide group-hover:text-amber-400 transition-colors drop-shadow-sm">
-                  BURAYA ÖZEL REKLAM VERİN
+            {/* Başlık ve Trafik Vurgusu */}
+            <div className="flex flex-col min-w-0 leading-tight">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-heading font-black text-xs sm:text-sm md:text-base text-white tracking-tight drop-shadow-md truncate">
+                  BU ALANA ÖZEL REKLAM VER!
                 </span>
-                <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-rose-600 to-amber-600 text-white font-black text-[10px] sm:text-xs font-heading tracking-wider shadow-sm animate-pulse">
-                  BOŞ REKLAM ALANI
+                <span className="hidden md:inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-400 bg-amber-500/15 px-2 py-0.2 rounded-full border border-amber-500/30">
+                  <Zap className="w-2.5 h-2.5 fill-amber-400" />
+                  <span>50.000+ Canlı Oyuncu/Müşteri</span>
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-[#e6edf3] font-medium leading-tight">
-                Günde <strong className="text-amber-400 font-black">50.000+</strong> tekil müşterinin ekranında en üst sırada görünün!
+              <p className="text-[10px] sm:text-xs text-slate-300 font-medium truncate mt-0.5">
+                Casino, Bahis ve VIP Hizmetlerinizi zirveye taşıyın • Anında yayına girin
               </p>
             </div>
+
           </div>
 
-          {/* Sağ Taraf: Büyük Satın Al Butonu */}
-          <div className="flex items-center justify-end shrink-0 w-full sm:w-auto">
-            <div className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:brightness-110 text-slate-950 font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/25 group-hover:scale-105 transition-all">
-              <span>Hemen Özel Reklam Ver</span>
-              <ArrowUpRight className="w-4 h-4 stroke-[3]" />
+          {/* Sağ: Parlayan 3D Neon Buton */}
+          <div className="shrink-0 w-full sm:w-auto flex items-center justify-end">
+            <div className="w-full sm:w-auto px-4 py-1.5 sm:px-5 sm:py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-heading font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:shadow-[0_0_30px_rgba(245,158,11,0.9)] group-hover:scale-105 active:scale-95 transition-all">
+              <span>TIKLA REKLAM VER 👆</span>
+              <ArrowRight className="w-3.5 h-3.5 stroke-[3] group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
 
         </div>
+
       </Link>
     </div>
   );
