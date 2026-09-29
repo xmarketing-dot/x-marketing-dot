@@ -93,8 +93,6 @@ export default function MobileShell({ children }: MobileShellProps) {
 
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden">
-      {/* Global Üst Bildirim & Duyuru Barı (Tek Seferlik Gösterim) */}
-      <GlobalAnnouncementBar />
       
       {/* ── 1. MASAÜSTÜ (WEB / DESKTOP) GÖRÜNÜMÜ: X-MARKETING TECH KURUMSAL PLATFORM ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
@@ -113,6 +111,9 @@ export default function MobileShell({ children }: MobileShellProps) {
 
       {/* ── 2. MOBİL GÖRÜNÜMÜ: %100 BEST ESKORT PLATFORMU ──────────────── */}
       <div className="md:hidden min-h-[100dvh] bg-[#0d1117] flex flex-col relative w-full max-w-full overflow-x-clip">
+
+        {/* Global Üst Bildirim / Çekmece (Sadece Mobilde Gösterilir) */}
+        <GlobalAnnouncementBar />
 
         {/* Mobil +18 Yaş Doğrulama Modalı (İlk Girişte Onay İster) */}
         <AgeVerificationModal isOpen={isAgeModalOpen} onConfirm={handleAgeConfirm} />

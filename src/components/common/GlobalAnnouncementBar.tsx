@@ -33,11 +33,31 @@ export default function GlobalAnnouncementBar() {
     let isMounted = true;
     let timerId: any = null;
 
+    // Masaüstünde (Web / Desktop) kesinlikle çalıştırma ve gösterme
+    const isMobileDevice = () => typeof window !== 'undefined' && window.innerWidth < 768;
+
+    if (!isMobileDevice()) {
+      return;
+    }
+
+    const handleResize = () => {
+      if (!isMobileDevice()) {
+        setIsVisible(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
     async function loadAnnouncement() {
       try {
         const res = await fetch('/api/announcement-bar', { cache: 'no-store' });
         const json = await res.json();
         if (!json.success || !json.data || !json.data.isActive) return;
+
+        // Masaüstünde (Web / Desktop) asla gösterme - Sadece Mobilde göster
+        if (!isMobileDevice()) {
+          return;
+        }
 
         const config: AnnouncementData = json.data;
         const storageKey = `announcement_seen_${config.campaignId}`;
@@ -49,7 +69,7 @@ export default function GlobalAnnouncementBar() {
         const delay = (typeof config.delaySeconds === 'number' ? config.delaySeconds : 3) * 1000;
 
         timerId = setTimeout(() => {
-          if (!isMounted) return;
+          if (!isMounted || !isMobileDevice()) return;
 
           setData(config);
           setIsVisible(true);
@@ -63,7 +83,7 @@ export default function GlobalAnnouncementBar() {
               eventType: 'view',
               campaignId: config.campaignId,
               visitorId,
-              device: typeof window !== 'undefined' && window.innerWidth < 768 ? 'mobile' : 'desktop',
+              device: 'mobile',
             }),
           }).catch(() => {});
         }, delay);
@@ -75,6 +95,7 @@ export default function GlobalAnnouncementBar() {
     loadAnnouncement();
     return () => {
       isMounted = false;
+      window.removeEventListener('resize', handleResize);
       if (timerId) clearTimeout(timerId);
     };
   }, []);
@@ -177,7 +198,7 @@ export default function GlobalAnnouncementBar() {
   // ════════════════════════════════════════════════════════════════
   if (data.displayType !== 'bar') {
     return (
-      <div className="fixed inset-0 z-[999999] flex flex-col justify-end items-center pointer-events-none">
+      <div className="fixed inset-0 z-[999999] flex flex-col justify-end items-center pointer-events-none md:hidden">
         {/* Fullscreen Backdrop — Hafif Blur & Sayfa Arkası Görünür (Tap to dismiss) */}
         <div
           onClick={() => markAsSeenAndClose('dismiss')}
@@ -299,7 +320,7 @@ export default function GlobalAnnouncementBar() {
   return (
     <aside
       aria-label="Duyuru Bildirim Çubuğu"
-      className={`w-full bg-gradient-to-r from-amber-600 via-rose-600 to-red-700 border-b shadow-sm relative z-50 transition-all duration-200 select-none overflow-hidden ${
+      className={`w-full md:hidden bg-gradient-to-r from-amber-600 via-rose-600 to-red-700 border-b shadow-sm relative z-50 transition-all duration-200 select-none overflow-hidden ${
         isClosing ? 'opacity-0 -translate-y-full max-h-0 h-0 py-0' : 'opacity-100 translate-y-0 h-8 sm:h-9'
       }`}
     >
