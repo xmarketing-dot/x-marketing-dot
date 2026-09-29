@@ -81,6 +81,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       isActive,
+      displayType,
+      delaySeconds,
+      mediaUrl,
+      mediaType,
       title,
       description,
       badgeText,
@@ -106,6 +110,10 @@ export async function POST(req: NextRequest) {
       };
     } else {
       if (typeof isActive === 'boolean') updateFields.isActive = isActive;
+      if (displayType !== undefined) updateFields.displayType = displayType;
+      if (typeof delaySeconds === 'number') updateFields.delaySeconds = delaySeconds;
+      if (mediaUrl !== undefined) updateFields.mediaUrl = mediaUrl;
+      if (mediaType !== undefined) updateFields.mediaType = mediaType;
       if (title !== undefined) updateFields.title = title;
       if (description !== undefined) updateFields.description = description;
       if (badgeText !== undefined) updateFields.badgeText = badgeText;

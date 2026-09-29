@@ -64,18 +64,13 @@ export async function POST(req: NextRequest) {
     const updateOps: any = {
       $push: {
         recentLogs: {
-          $each: [
-            {
-              visitorId: visitorId || undefined,
-              ip,
-              eventType,
-              city: resolvedCity,
-              device: device || 'mobile',
-              userAgent,
-              createdAt: new Date(),
-            },
-          ],
-          $slice: -250, // Keep last 250 logs
+          visitorId: visitorId || undefined,
+          ip,
+          eventType,
+          city: resolvedCity,
+          device: device || 'mobile',
+          userAgent,
+          createdAt: new Date(),
         },
       },
     };

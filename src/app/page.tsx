@@ -357,6 +357,7 @@ export default async function HomePage() {
         goldListings={goldListings}
         silverListings={silverListings}
         allListings={allSortedListings}
+        banner={activeBanner}
       />
 
       {/* ── 5. GÜVEN & DOĞRULAMA BİLGİ KUTUSU ──────────────── */}

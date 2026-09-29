@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Flame,
   Sparkles,
@@ -22,9 +22,19 @@ import {
   Radio,
   Sliders,
   Check,
-  X
+  X,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Upload,
+  Clock,
+  LayoutTemplate,
+  Image as ImageIcon
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { smartUploadFile } from '@/lib/smartUpload';
 
 interface LogItem {
   visitorId?: string;
@@ -39,6 +49,10 @@ interface LogItem {
 interface AnnouncementState {
   isActive: boolean;
   campaignId: string;
+  displayType: 'drawer' | 'bar';
+  delaySeconds: number;
+  mediaUrl?: string;
+  mediaType?: 'gif' | 'image' | 'none';
   title: string;
   description?: string;
   badgeText: string;
@@ -60,10 +74,15 @@ export default function AnnouncementBarAdminPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Form State
   const [isActive, setIsActive] = useState(false);
+  const [displayType, setDisplayType] = useState<'drawer' | 'bar'>('drawer');
+  const [delaySeconds, setDelaySeconds] = useState<number>(3);
+  const [mediaUrl, setMediaUrl] = useState<string>('');
+  const [mediaType, setMediaType] = useState<'gif' | 'image' | 'none'>('none');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [badgeText, setBadgeText] = useState('');
@@ -71,6 +90,14 @@ export default function AnnouncementBarAdminPage() {
   const [targetUrl, setTargetUrl] = useState('');
   const [openInNewTab, setOpenInNewTab] = useState(true);
   const [stylePreset, setStylePreset] = useState<'fire' | 'emerald' | 'fuchsia' | 'cyber'>('fire');
+
+  // Logs Table Filters & Pagination
+  const [logSearch, setLogSearch] = useState('');
+  const [logFilter, setLogFilter] = useState<'all' | 'view' | 'click' | 'dismiss'>('all');
+  const [logPage, setLogPage] = useState(1);
+  const [logsPerPage, setLogsPerPage] = useState<number | 'all'>(100);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchData = async () => {
     try {
@@ -80,6 +107,10 @@ export default function AnnouncementBarAdminPage() {
       if (json.success && json.data) {
         setData(json.data);
         setIsActive(json.data.isActive);
+        setDisplayType(json.data.displayType || 'drawer');
+        setDelaySeconds(typeof json.data.delaySeconds === 'number' ? json.data.delaySeconds : 3);
+        setMediaUrl(json.data.mediaUrl || '');
+        setMediaType(json.data.mediaType || 'none');
         setTitle(json.data.title || '');
         setDescription(json.data.description || '');
         setBadgeText(json.data.badgeText || '');
@@ -99,6 +130,52 @@ export default function AnnouncementBarAdminPage() {
     fetchData();
   }, []);
 
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingMedia(true);
+    setFeedback(null);
+    try {
+      const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+      const result = await smartUploadFile(file, `announcement_media_${Date.now()}.${isGif ? 'gif' : 'jpg'}`);
+      if (result.success && result.url) {
+        setMediaUrl(result.url);
+        setMediaType(isGif ? 'gif' : 'image');
+
+        // Otomatik olarak veritabanına anında kaydet
+        await fetch('/api/admin/announcement-bar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isActive,
+            displayType,
+            delaySeconds: Number(delaySeconds) || 0,
+            mediaUrl: result.url,
+            mediaType: isGif ? 'gif' : 'image',
+            title,
+            description,
+            badgeText,
+            buttonText,
+            targetUrl,
+            openInNewTab,
+            stylePreset,
+          }),
+        });
+
+        setFeedback({ type: 'success', text: isGif ? '🎉 GIF başarıyla yüklendi ve kaydedildi!' : '🎉 Görsel başarıyla yüklendi ve kaydedildi!' });
+      } else {
+        setFeedback({ type: 'error', text: result.error || 'Medya yüklenemedi' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', text: 'Yükleme hatası: ' + err.message });
+    } finally {
+      setUploadingMedia(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setTimeout(() => setFeedback(null), 4000);
+    }
+  };
+
   const handleSave = async (forceActiveState?: boolean) => {
     try {
       setSaving(true);
@@ -110,6 +187,10 @@ export default function AnnouncementBarAdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           isActive: activeToSave,
+          displayType,
+          delaySeconds: Number(delaySeconds) || 0,
+          mediaUrl,
+          mediaType: mediaUrl ? (mediaUrl.includes('.gif') ? 'gif' : 'image') : 'none',
           title,
           description,
           badgeText,
@@ -171,6 +252,13 @@ export default function AnnouncementBarAdminPage() {
     cyber: 'from-indigo-700 via-violet-800 to-blue-900 border-indigo-400/50 shadow-indigo-900/40 text-indigo-50',
   };
 
+  const presetButtonGradients = {
+    fire: 'from-amber-400 to-yellow-300 text-slate-950 shadow-amber-500/30',
+    fuchsia: 'from-fuchsia-400 to-pink-300 text-slate-950 shadow-fuchsia-500/30',
+    emerald: 'from-emerald-400 to-teal-300 text-slate-950 shadow-emerald-500/30',
+    cyber: 'from-cyan-400 to-blue-300 text-slate-950 shadow-cyan-500/30',
+  };
+
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] p-4 lg:p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -184,13 +272,13 @@ export default function AnnouncementBarAdminPage() {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-heading font-black text-white flex items-center gap-2">
-                  <span>Üst Duyuru &amp; Bildirim Barı</span>
+                  <span>Duyuru &amp; Çekmece Bildirim Merkezi</span>
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono font-bold">
-                    Tek Seferlik Gösterim
+                    Drawer &amp; Bar Popup
                   </span>
                 </h1>
                 <p className="text-xs text-[#8b949e] mt-0.5">
-                  Tüm ziyaretçilerin göreceği tek seferlik duyuru barını yönetin, anlık görüntülenme ve tıklanma istatistiklerini takip edin.
+                  Tüm ziyaretçilere açılan çekmece (drawer) veya üst bar bildirimini yönetin, GIF görseli ekleyin ve gecikme süresini ayarlayın.
                 </p>
               </div>
             </div>
@@ -337,57 +425,211 @@ export default function AnnouncementBarAdminPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs font-bold text-[#8b949e]">
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Canlı Önizleme (Kullanıcıların Göreceği Hali)</span>
+              <span>Canlı Önizleme ({displayType === 'drawer' ? 'Çekmece / Drawer Popup' : 'Sabit Üst Bar'})</span>
             </div>
             <span className="text-[11px] font-mono text-[#8b949e]">
-              Tema: <span className="text-amber-400 uppercase font-bold">{stylePreset}</span>
+              Gecikme: <span className="text-amber-300 font-bold">{delaySeconds} sn sonra</span>
             </span>
           </div>
 
-          <div className="p-1 rounded-2xl bg-[#0d1117] border border-[#21262d] overflow-hidden">
-            <div className={`w-full bg-gradient-to-r ${presetClasses[stylePreset]} p-3 rounded-xl shadow-lg transition-all`}>
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm">
-                <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/30 border border-white/20 font-black text-[10px] tracking-wider uppercase text-white shadow-inner shrink-0">
-                    <Flame className="w-3 h-3 text-amber-300 animate-bounce" />
-                    <span>{badgeText || '🚀 YENİ AĞ'}</span>
-                  </span>
+          {displayType === 'drawer' ? (
+            /* ÇEKMECE ÖNİZLEME (VIP REKLAM STYLE - %100 ORTALANMIŞ) */
+            <div className="p-6 rounded-2xl bg-[#0B0E14] border border-[#252B3B] flex justify-center items-center">
+              <div className="w-full max-w-md bg-[#141824]/95 border border-amber-500/40 rounded-3xl shadow-2xl p-6 flex flex-col justify-between items-center text-center space-y-4">
+                {/* Grab Handle */}
+                <div className="w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-1" />
 
-                  <span className="font-heading font-black tracking-tight text-white drop-shadow-sm">
+                {/* Rozet */}
+                <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/50 shadow-inner">
+                  <Flame className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="font-heading font-black text-xs text-amber-300 uppercase tracking-wider">
+                    {badgeText || '👑 VIP DUYURU'}
+                  </span>
+                </div>
+
+                {/* Medya (GIF / Görsel) */}
+                {mediaUrl && (
+                  <div className="relative w-full h-44 sm:h-52 rounded-2xl overflow-hidden border border-[#252B3B] bg-black/90 shadow-xl flex items-center justify-center p-1.5">
+                    <img
+                      src={mediaUrl}
+                      alt="Önizleme"
+                      className="w-full h-full object-contain max-h-[34vh] rounded-xl"
+                    />
+                  </div>
+                )}
+
+                {/* Başlık & Açıklama (Ortalanmış) */}
+                <div className="space-y-1.5 px-2">
+                  <h3 className="text-xl font-heading font-black tracking-tight leading-snug bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-300">
                     {title || 'Türkiyenin en büyük eskort sitesi açıldı !'}
-                  </span>
-
+                  </h3>
                   {description && (
-                    <span className="hidden md:inline text-white/85 text-xs font-medium">
-                      — {description}
-                    </span>
+                    <p className="text-xs text-[#9AA3B2] font-medium leading-relaxed line-clamp-2">
+                      {description}
+                    </p>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="px-3 py-1.5 rounded-xl bg-white text-slate-950 font-heading font-black text-xs shadow-md flex items-center gap-1.5 cursor-pointer">
-                    <span>{buttonText || 'Hemen İncele →'}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
+                {/* Butonlar */}
+                <div className="w-full space-y-2 pt-2">
+                  <div className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-heading font-black text-sm uppercase tracking-wider text-center flex items-center justify-center gap-1.5 shadow-xl shadow-amber-500/30 cursor-pointer">
+                    <span>{buttonText || 'Hemen İncele'}</span>
+                    <ExternalLink className="w-4 h-4 stroke-[3]" />
+                  </div>
+                  <div className="text-[11px] text-[#9AA3B2] font-medium cursor-pointer">
+                    Daha sonra hatırlat veya kapat
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* ÜST BAR ÖNİZLEME */
+            <div className="p-1 rounded-2xl bg-[#0d1117] border border-[#21262d] overflow-hidden">
+              <div className={`w-full bg-gradient-to-r ${presetClasses[stylePreset]} px-3 py-2 rounded-xl shadow-lg flex items-center justify-between text-xs`}>
+                <div className="flex items-center gap-2 truncate">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/30 font-black text-[10px] text-white">
+                    <Flame className="w-2.5 h-2.5 text-amber-300" />
+                    <span>{badgeText || '🚀 YENİ'}</span>
                   </span>
-
-                  <span className="p-1 rounded-lg bg-black/20 text-white/80">
-                    <X className="w-4 h-4" />
+                  <span className="font-heading font-black text-white truncate">
+                    {title || 'Türkiyenin en büyük eskort sitesi açıldı !'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="px-2.5 py-1 rounded bg-white text-slate-950 font-heading font-black text-[10px]">
+                    {buttonText || 'İncele →'}
+                  </span>
+                  <span className="p-1 rounded bg-black/20 text-white/80">
+                    <X className="w-3 h-3" />
                   </span>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* ── FORM & KONTROL MERKEZİ ────────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
-          {/* Sol Kolon: Metin ve Link Düzenleme */}
+          {/* Sol Kolon: Metin, Medya ve Link Düzenleme */}
           <div className="lg:col-span-2 p-6 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-5">
             <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
               <Sliders className="w-4 h-4 text-amber-400" />
               <span>Duyuru İçerik &amp; Yönlendirme Ayarları</span>
             </h2>
+
+            {/* GÖRÜNÜM TİPİ VE GECİKME SEÇİMİ */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
+              {/* Görünüm Modu */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                  <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Bildirim Formatı</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDisplayType('drawer')}
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all border ${
+                      displayType === 'drawer'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                        : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
+                    }`}
+                  >
+                    📱 Çekmece (Drawer)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDisplayType('bar')}
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all border ${
+                      displayType === 'bar'
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                        : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
+                    }`}
+                  >
+                    📌 Üst Sabit Bar
+                  </button>
+                </div>
+              </div>
+
+              {/* Kaç Saniye Sonra Çıksın */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Kaç Sn Sonra Açılsın?</span>
+                </label>
+                <select
+                  value={delaySeconds}
+                  onChange={(e) => setDelaySeconds(Number(e.target.value))}
+                  className="w-full px-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs font-bold focus:border-amber-400 focus:outline-none cursor-pointer"
+                >
+                  <option value={0}>0 saniye (Hemen Açılır)</option>
+                  <option value={1}>1 saniye sonra</option>
+                  <option value={2}>2 saniye sonra</option>
+                  <option value={3}>3 saniye sonra (Önerilen)</option>
+                  <option value={5}>5 saniye sonra</option>
+                  <option value={7}>7 saniye sonra</option>
+                  <option value={10}>10 saniye sonra</option>
+                  <option value={15}>15 saniye sonra</option>
+                </select>
+              </div>
+            </div>
+
+            {/* MEDYA / GIF YÜKLEYİCİ */}
+            <div className="p-4 rounded-xl bg-[#0d1117] border border-[#21262d] space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Çekmece Görseli / Hareketli GIF (Opsiyonel)</span>
+                </label>
+                {mediaUrl && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMediaUrl('');
+                      setMediaType('none');
+                    }}
+                    className="text-[11px] text-rose-400 hover:text-rose-300 font-bold"
+                  >
+                    Medyayı Kaldır
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-3">
+                <input
+                  type="text"
+                  value={mediaUrl}
+                  onChange={(e) => {
+                    setMediaUrl(e.target.value);
+                    setMediaType(e.target.value.includes('.gif') ? 'gif' : 'image');
+                  }}
+                  placeholder="https://... veya dosya yükleyin"
+                  className="flex-1 w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58]"
+                />
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleMediaUpload}
+                  accept="image/gif,image/jpeg,image/png,image/webp"
+                  className="hidden"
+                />
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingMedia}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer"
+                >
+                  <Upload className={`w-3.5 h-3.5 ${uploadingMedia ? 'animate-bounce' : ''}`} />
+                  <span>{uploadingMedia ? 'Yükleniyor...' : 'GIF / Görsel Yükle'}</span>
+                </button>
+              </div>
+              <p className="text-[10px] text-[#8b949e]">
+                15MB'a kadar hareketli GIF veya yüksek kaliteli görselleri yükleyebilirsiniz.
+              </p>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Başlık */}
@@ -407,14 +649,14 @@ export default function AnnouncementBarAdminPage() {
               {/* Açıklama */}
               <div className="md:col-span-2 space-y-1.5">
                 <label className="text-xs font-bold text-[#8b949e]">
-                  Alt Açıklama (Masaüstünde Gözükür)
+                  Açıklama Metni
                 </label>
-                <input
-                  type="text"
+                <textarea
+                  rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="escturkiye.devs.surf yayında! Tüm illerdeki doğrulanmış VIP ilanları hemen keşfedin."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-sm placeholder-[#484f58]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-sm placeholder-[#484f58] resize-none"
                 />
               </div>
 
@@ -528,7 +770,7 @@ export default function AnnouncementBarAdminPage() {
                   <span>Tek Seferlik Gösterim Mantığı:</span>
                 </div>
                 <p>
-                  Kullanıcı siteye girdiğinde duyuru barını görür. Butona tıklar veya 'X' ile kapatırsa tarayıcısına (localStorage) kayıt atılır ve bir daha aynı kullanıcıyı rahatsız etmez.
+                  Kullanıcı siteye girdiğinde belirlediğiniz gecikme süresi (örn. 3 sn) sonrasında bildirim açılır. Kullanıcı tıkladığında veya kapattığında tarayıcısına kayıt atılır ve aynı kullanıcı bir daha rahatsız edilmez.
                 </p>
                 <p className="pt-2 border-t border-[#21262d]">
                   Mevcut Kampanya ID: <span className="font-mono text-amber-300 font-bold">{data?.campaignId || 'camp_v1'}</span>
@@ -540,7 +782,7 @@ export default function AnnouncementBarAdminPage() {
                   Tüm Kullanıcılara Tekrar Göstermek İçin:
                 </span>
                 <p className="text-[11px] text-[#8b949e]">
-                  Duyuru metnini değiştirdiğinizde veya yeni bir duyuru yapmak istediğinizde aşağıdaki butona basın. Tüm eski ziyaretçilerin 'gördüm' durumu sıfırlanır ve herkes barı tekrar 1 kez görür.
+                  Duyuruyu güncellediğinizde veya yeni bir kampanya başlattığınızda aşağıdaki butona basın. Tüm eski ziyaretçilerin kayıtları sıfırlanır ve herkes bildirimi tekrar 1 kez görür.
                 </p>
               </div>
             </div>
@@ -558,82 +800,214 @@ export default function AnnouncementBarAdminPage() {
 
         </div>
 
-        {/* ── CANLI ETKİLEŞİM VE LOG TABLOSU ─────────────────── */}
+        {/* ── CANLI ETKİLEŞİM VE LOG TABLOSU (TÜMÜ) ─────────────────── */}
         <div className="p-6 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
                 <Radio className="w-4 h-4 text-blue-400" />
-                <span>Son Ziyaretçi Etkileşim Akışı</span>
+                <span>Ziyaretçi Etkileşim Günlüğü (Tüm Kayıtlar)</span>
               </h2>
               <p className="text-xs text-[#8b949e] mt-0.5">
-                Duyuru barını gören, tıklayan ve kapatan son 250 ziyaretçinin anlık logları
+                Duyuru &amp; Çekmece ile etkileşime geçen tüm ziyaretçilerin anlık kayıtları
               </p>
             </div>
-            <span className="text-xs font-mono text-[#8b949e]">
-              Toplam Kayıt: <span className="text-white font-bold">{data?.recentLogs?.length || 0}</span>
-            </span>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="px-3 py-1 rounded-lg bg-[#0d1117] border border-[#21262d] text-[#8b949e]">
+                Toplam Kayıt: <span className="text-white font-bold">{data?.recentLogs?.length || 0}</span>
+              </span>
+            </div>
           </div>
 
-          <div className="rounded-xl border border-[#21262d] overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-[#0d1117] text-[#8b949e] uppercase font-mono font-bold text-[10px] border-b border-[#21262d]">
-                <tr>
-                  <th className="p-3">Etkinlik</th>
-                  <th className="p-3">IP Adresi</th>
-                  <th className="p-3">Konum</th>
-                  <th className="p-3">Cihaz</th>
-                  <th className="p-3">Zaman</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#21262d] text-[#c9d1d9]">
-                {(!data?.recentLogs || data.recentLogs.length === 0) ? (
-                  <tr>
-                    <td colSpan={5} className="p-6 text-center text-[#8b949e] italic">
-                      Henüz etkileşim kaydı bulunmuyor. Duyuru barını açtığınızda anlık loglar burada listelenecektir.
-                    </td>
-                  </tr>
-                ) : (
-                  [...data.recentLogs].reverse().slice(0, 50).map((log, i) => (
-                    <tr key={i} className="hover:bg-[#1f242c] transition-colors">
-                      <td className="p-3 font-bold">
-                        {log.eventType === 'click' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px]">
-                            🎯 Tıkladı (Siteye Gitti)
-                          </span>
-                        )}
-                        {log.eventType === 'view' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]">
-                            👁️ Görüntüledi
-                          </span>
-                        )}
-                        {log.eventType === 'dismiss' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px]">
-                            ❌ Kapattı ('X')
-                          </span>
-                        )}
-                      </td>
-                      <td className="p-3 font-mono text-[#8b949e]">
-                        {log.ip || 'anon'}
-                      </td>
-                      <td className="p-3 font-medium text-white">
-                        {log.city || 'Bilinmiyor'}
-                      </td>
-                      <td className="p-3 font-medium">
-                        <span className="inline-flex items-center gap-1">
-                          {log.device === 'desktop' ? <Laptop className="w-3.5 h-3.5 text-blue-400" /> : <Smartphone className="w-3.5 h-3.5 text-emerald-400" />}
-                          <span className="capitalize">{log.device || 'Mobil'}</span>
-                        </span>
-                      </td>
-                      <td className="p-3 font-mono text-[#8b949e]">
-                        {new Date(log.createdAt).toLocaleString('tr-TR')}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          {/* Filtre ve Arama Araç Çubuğu */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-xl bg-[#0d1117] border border-[#21262d]">
+            {/* Arama Input */}
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={logSearch}
+                onChange={(e) => {
+                  setLogSearch(e.target.value);
+                  setLogPage(1);
+                }}
+                placeholder="IP adresi, şehir veya ID ile ara..."
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+              />
+            </div>
+
+            {/* Event Tipi Filtresi */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+              {[
+                { id: 'all', label: 'Tümü' },
+                { id: 'click', label: '🎯 Tıklamalar' },
+                { id: 'view', label: '👁️ Görüntülemeler' },
+                { id: 'dismiss', label: '❌ Kapatmalar' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setLogFilter(tab.id as any);
+                    setLogPage(1);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    logFilter === tab.id
+                      ? 'bg-amber-500 text-slate-950 font-black shadow'
+                      : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#30363d]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Sayfa Başına Gösterim */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11px] text-[#8b949e] font-medium hidden sm:inline">Göster:</span>
+              <select
+                value={logsPerPage}
+                onChange={(e) => {
+                  const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                  setLogsPerPage(val);
+                  setLogPage(1);
+                }}
+                className="px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none cursor-pointer"
+              >
+                <option value={50}>50 kayıt</option>
+                <option value={100}>100 kayıt</option>
+                <option value={250}>250 kayıt</option>
+                <option value={500}>500 kayıt</option>
+                <option value="all">Tümünü Göster</option>
+              </select>
+            </div>
           </div>
+
+          {/* Tablo */}
+          {(() => {
+            const allLogs = data?.recentLogs ? [...data.recentLogs].reverse() : [];
+            const filtered = allLogs.filter((log) => {
+              if (logFilter !== 'all' && log.eventType !== logFilter) return false;
+              if (logSearch.trim()) {
+                const q = logSearch.toLowerCase().trim();
+                const ip = (log.ip || '').toLowerCase();
+                const city = (log.city || '').toLowerCase();
+                const vid = (log.visitorId || '').toLowerCase();
+                return ip.includes(q) || city.includes(q) || vid.includes(q);
+              }
+              return true;
+            });
+
+            const limit = logsPerPage === 'all' ? filtered.length : logsPerPage;
+            const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
+            const currentPage = Math.min(logPage, totalPages);
+            const displayed = logsPerPage === 'all' ? filtered : filtered.slice((currentPage - 1) * limit, currentPage * limit);
+
+            return (
+              <>
+                <div className="rounded-xl border border-[#21262d] overflow-x-auto max-h-[600px] overflow-y-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#0d1117] text-[#8b949e] uppercase font-mono font-bold text-[10px] border-b border-[#21262d] sticky top-0 z-10">
+                      <tr>
+                        <th className="p-3">Etkinlik</th>
+                        <th className="p-3">IP Adresi</th>
+                        <th className="p-3">Konum</th>
+                        <th className="p-3">Cihaz</th>
+                        <th className="p-3">Zaman</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#21262d] text-[#c9d1d9]">
+                      {displayed.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-8 text-center text-[#8b949e] italic">
+                            {filtered.length === 0 && logSearch
+                              ? 'Aramanıza uygun etkileşim kaydı bulunamadı.'
+                              : 'Henüz etkileşim kaydı bulunmuyor. Duyuru barını açtığınızda tüm ziyaretçi logları burada listelenecektir.'}
+                          </td>
+                        </tr>
+                      ) : (
+                        displayed.map((log, i) => (
+                          <tr key={i} className="hover:bg-[#1f242c] transition-colors">
+                            <td className="p-3 font-bold">
+                              {log.eventType === 'click' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px]">
+                                  🎯 Tıkladı (Siteye Gitti)
+                                </span>
+                              )}
+                              {log.eventType === 'view' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]">
+                                  👁️ Görüntüledi
+                                </span>
+                              )}
+                              {log.eventType === 'dismiss' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px]">
+                                  ❌ Kapattı ('X')
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3 font-mono text-[#8b949e]">
+                              {log.ip || 'anon'}
+                            </td>
+                            <td className="p-3 font-medium text-white">
+                              {log.city || 'Bilinmiyor'}
+                            </td>
+                            <td className="p-3 font-medium">
+                              <span className="inline-flex items-center gap-1">
+                                {log.device === 'desktop' ? <Laptop className="w-3.5 h-3.5 text-blue-400" /> : <Smartphone className="w-3.5 h-3.5 text-emerald-400" />}
+                                <span className="capitalize">{log.device || 'Mobil'}</span>
+                              </span>
+                            </td>
+                            <td className="p-3 font-mono text-[#8b949e]">
+                              {new Date(log.createdAt).toLocaleString('tr-TR')}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Sayfalama & Bilgi Alt Çubuğu */}
+                {filtered.length > 0 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-[#8b949e]">
+                    <div>
+                      Filtrelenen <span className="text-white font-bold">{filtered.length}</span> kayıttan{' '}
+                      <span className="text-white font-bold">
+                        {logsPerPage === 'all' ? `1 - ${filtered.length}` : `${(currentPage - 1) * limit + 1} - ${Math.min(currentPage * limit, filtered.length)}`}
+                      </span>{' '}
+                      arası gösteriliyor
+                    </div>
+
+                    {logsPerPage !== 'all' && totalPages > 1 && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setLogPage((p) => Math.max(1, p - 1))}
+                          disabled={currentPage <= 1}
+                          className="p-1.5 rounded-lg bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] disabled:opacity-40 disabled:cursor-not-allowed text-white"
+                          title="Önceki Sayfa"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <span className="px-3 py-1 rounded-lg bg-[#0d1117] border border-[#21262d] font-mono text-white text-xs">
+                          {currentPage} / {totalPages}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setLogPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={currentPage >= totalPages}
+                          className="p-1.5 rounded-lg bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] disabled:opacity-40 disabled:cursor-not-allowed text-white"
+                          title="Sonraki Sayfa"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
 
       </div>

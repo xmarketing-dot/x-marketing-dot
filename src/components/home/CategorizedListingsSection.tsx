@@ -4,12 +4,14 @@ import React from 'react';
 import Link from 'next/link';
 import { Crown, Award, Medal, ChevronRight, Sparkles } from 'lucide-react';
 import CompactListingCard from '@/components/common/CompactListingCard';
+import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 
 interface CategorizedListingsSectionProps {
   vipListings: any[];
   goldListings: any[];
   silverListings: any[];
   allListings: any[];
+  banner?: any;
 }
 
 export default function CategorizedListingsSection({
@@ -17,6 +19,7 @@ export default function CategorizedListingsSection({
   goldListings,
   silverListings,
   allListings,
+  banner,
 }: CategorizedListingsSectionProps) {
   // Kontenjan sınırları: VIP (50), Gold (100), Silver (200) - Tümü doğrudan gösterilir
   const displayedVip = vipListings.slice(0, 50);
@@ -57,7 +60,14 @@ export default function CategorizedListingsSection({
           {/* 3'LÜ YAN YANA İLAN GRID */}
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {displayedVip.map((listing: any, index: number) => (
-              <CompactListingCard key={listing._id || index} listing={listing} />
+              <React.Fragment key={listing._id || index}>
+                <CompactListingCard listing={listing} />
+                {(index + 1) % 12 === 0 && index < displayedVip.length - 1 && (
+                  <div className="col-span-3 my-2 w-full">
+                    <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
         </section>
@@ -92,7 +102,14 @@ export default function CategorizedListingsSection({
           {/* 3'LÜ YAN YANA İLAN GRID */}
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {displayedGold.map((listing: any, index: number) => (
-              <CompactListingCard key={listing._id || index} listing={listing} />
+              <React.Fragment key={listing._id || index}>
+                <CompactListingCard listing={listing} />
+                {(index + 1) % 12 === 0 && index < displayedGold.length - 1 && (
+                  <div className="col-span-3 my-2 w-full">
+                    <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
         </section>
@@ -127,7 +144,14 @@ export default function CategorizedListingsSection({
           {/* 3'LÜ YAN YANA İLAN GRID */}
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {displayedSilver.map((listing: any, index: number) => (
-              <CompactListingCard key={listing._id || index} listing={listing} />
+              <React.Fragment key={listing._id || index}>
+                <CompactListingCard listing={listing} />
+                {(index + 1) % 12 === 0 && index < displayedSilver.length - 1 && (
+                  <div className="col-span-3 my-2 w-full">
+                    <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
         </section>
@@ -153,7 +177,14 @@ export default function CategorizedListingsSection({
           {/* 3'LÜ YAN YANA İLAN GRID */}
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {displayedAll.map((listing: any, index: number) => (
-              <CompactListingCard key={listing._id || index} listing={listing} />
+              <React.Fragment key={listing._id || index}>
+                <CompactListingCard listing={listing} />
+                {(index + 1) % 12 === 0 && index < displayedAll.length - 1 && (
+                  <div className="col-span-3 my-2 w-full">
+                    <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
+                  </div>
+                )}
+              </React.Fragment>
             ))}
           </div>
         </section>

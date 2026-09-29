@@ -30,6 +30,10 @@ export async function GET() {
       data: {
         isActive: record.isActive,
         campaignId: record.campaignId,
+        displayType: record.displayType || 'drawer',
+        delaySeconds: typeof record.delaySeconds === 'number' ? record.delaySeconds : 3,
+        mediaUrl: record.mediaUrl || '',
+        mediaType: record.mediaType || 'none',
         title: record.title,
         description: record.description,
         badgeText: record.badgeText,

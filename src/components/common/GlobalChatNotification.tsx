@@ -330,7 +330,7 @@ export default function GlobalChatNotification() {
             position: 'fixed',
             left: `${position.x}px`,
             top: `${position.y}px`,
-            zIndex: 9999,
+            zIndex: 50,
             touchAction: 'none',
           }}
           onTouchStart={handleTouchStart}

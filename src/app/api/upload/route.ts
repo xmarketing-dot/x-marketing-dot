@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import path from 'path';
 import sharp from 'sharp';
 import connectToDatabase from '@/lib/mongodb';
 import mongoose from 'mongoose';
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: `"${file.name}" çok büyük. Maksimum dosya boyutu 10MB olmalıdır.` }, { status: 400 });
       }
 
-      const fileExt = (file.name ? require('path').extname(file.name) : '').toLowerCase();
+      const fileExt = (file.name ? path.extname(file.name) : '').toLowerCase();
       const mime = (file.type || '').toLowerCase();
 
       const isValid = ALLOWED_MIME_TYPES.has(mime) || mime.startsWith('image/') || ALLOWED_EXTENSIONS.has(fileExt);

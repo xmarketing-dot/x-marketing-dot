@@ -13,6 +13,10 @@ export interface IAnnouncementLog {
 export interface IAnnouncementBar extends Document {
   isActive: boolean;
   campaignId: string;
+  displayType: 'drawer' | 'bar';
+  delaySeconds: number;
+  mediaUrl?: string;
+  mediaType?: 'gif' | 'image' | 'none';
   title: string;
   description?: string;
   badgeText: string;
@@ -34,6 +38,10 @@ const AnnouncementBarSchema = new Schema<IAnnouncementBar>(
   {
     isActive: { type: Boolean, default: false },
     campaignId: { type: String, default: 'camp_v1' },
+    displayType: { type: String, enum: ['drawer', 'bar'], default: 'drawer' },
+    delaySeconds: { type: Number, default: 3 },
+    mediaUrl: { type: String, default: '' },
+    mediaType: { type: String, enum: ['gif', 'image', 'none'], default: 'none' },
     title: { type: String, default: "Türkiyenin en büyük eskort sitesi açıldı !" },
     description: { type: String, default: "escturkiye.devs.surf yayında! Tüm illerdeki doğrulanmış VIP ilanları hemen keşfedin." },
     badgeText: { type: String, default: "🚀 YENİ AĞ" },
@@ -58,8 +66,12 @@ const AnnouncementBarSchema = new Schema<IAnnouncementBar>(
       },
     ],
   },
-  { timestamps: true, autoIndex: false }
+  { timestamps: true, autoIndex: false, strict: false }
 );
+
+if (mongoose.models && mongoose.models.AnnouncementBar) {
+  delete mongoose.models.AnnouncementBar;
+}
 
 const AnnouncementBarModel: Model<IAnnouncementBar> =
   mongoose.models.AnnouncementBar || mongoose.model<IAnnouncementBar>('AnnouncementBar', AnnouncementBarSchema);
