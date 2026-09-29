@@ -153,8 +153,9 @@ export default function ReklamVerPage() {
     setUploading(true);
     try {
       const result = await smartUploadFile(file, customName);
-      if (result.success && result.url) {
-        setGorselUrl(result.url);
+      const uploadedUrl = result.url || result.urls?.[0];
+      if (result.success && uploadedUrl) {
+        setGorselUrl(uploadedUrl);
       } else {
         alert(result.error || 'Görsel / GIF yüklenemedi');
       }

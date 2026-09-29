@@ -45,7 +45,8 @@ export async function smartUploadFile(
     }
 
     if (onProgress) onProgress(100);
-    return { success: true, urls: data.urls || [], url: data.urls?.[0] };
+    const resolvedUrl = data.url || data.urls?.[0] || '';
+    return { success: true, urls: data.urls || (resolvedUrl ? [resolvedUrl] : []), url: resolvedUrl };
   }
 
   // 2. BÜYÜK DOSYALAR & HAREKETLİ GIFLER (> 3.5MB): Parçalı (Chunked) Yükleme

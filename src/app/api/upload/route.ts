@@ -154,6 +154,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       urls: uploadedUrls,
+      url: uploadedUrls[0] || '',
       count: uploadedUrls.length,
     });
   } catch (error: any) {
