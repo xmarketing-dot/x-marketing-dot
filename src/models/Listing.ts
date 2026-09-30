@@ -36,7 +36,7 @@ export interface IListing extends Document {
   fiyat: number;
   paraBirimi: string;
   rozet: 'ultravip' | 'vip' | 'gold' | 'silver' | 'standart' | null;
-  status: 'taslak' | 'odeme_bekliyor' | 'onay_bekliyor' | 'yayinda' | 'reddedildi' | 'suresi_doldu';
+  status: 'taslak' | 'odeme_bekliyor' | 'onay_bekliyor' | 'yayinda' | 'reddedildi' | 'suresi_doldu' | 'pasif';
   reddedilmeNedeni?: string;
   goruntulenmeSayisi: number;
   whatsappTiklamaSayisi: number;
@@ -131,7 +131,7 @@ const ListingSchema = new Schema<IListing>(
     },
     status: {
       type: String,
-      enum: ['taslak', 'odeme_bekliyor', 'onay_bekliyor', 'yayinda', 'reddedildi', 'suresi_doldu'],
+      enum: ['taslak', 'odeme_bekliyor', 'onay_bekliyor', 'yayinda', 'reddedildi', 'suresi_doldu', 'pasif'],
       default: 'onay_bekliyor',
       index: true,
     },

@@ -32,10 +32,10 @@ export async function POST(req: NextRequest) {
 
     let updatedLikesCount = 0;
 
-    // 1. BEĞENİLERİ GÜÇLENDİR (Binler Seviyesine Çıkar)
+    // 1. BEĞENİLERİ GÜÇLENDİR (Binler Seviyesine Çıkar - Sadece Yayındaki Aktif İlanlar)
     if (boostLikes) {
-      const allListings = await ListingModel.find({});
-      for (const listing of allListings) {
+      const activeListings = await ListingModel.find({ status: 'yayinda' }).select('_id rozet likeSayisi');
+      for (const listing of activeListings) {
         let baseMin = 1200;
         let baseMax = 1950;
 
@@ -53,8 +53,7 @@ export async function POST(req: NextRequest) {
         // Eğer mevcut beğeni 1000'den küçükse veya rastgele yenilenmesi isteniyorsa
         if (!listing.likeSayisi || listing.likeSayisi < 1000) {
           const randomLikes = Math.floor(Math.random() * (baseMax - baseMin + 1)) + baseMin;
-          listing.likeSayisi = randomLikes;
-          await listing.save();
+          await ListingModel.updateOne({ _id: listing._id }, { $set: { likeSayisi: randomLikes } });
           updatedLikesCount++;
         }
       }
