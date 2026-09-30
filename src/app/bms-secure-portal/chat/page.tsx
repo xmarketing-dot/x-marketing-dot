@@ -441,7 +441,7 @@ export default function AdminChatPage() {
   }, [threads]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0b0e14] md:rounded-2xl border-0 md:border md:border-[#232936] shadow-2xl overflow-hidden select-none">
+    <div className="w-full h-full flex flex-col bg-[#090c12] overflow-hidden select-none">
       
       <div className="flex-1 min-h-0 flex w-full h-full relative overflow-hidden">
         
@@ -1108,11 +1108,11 @@ export default function AdminChatPage() {
               <form onSubmit={handleSendReply} className="p-3 sm:p-4 bg-[#121722] border-t border-[#232936] flex items-center gap-2 shrink-0">
                 <textarea
                   rows={1}
-                  placeholder="Müşteriye yanıt yazın... (Göndermek için Enter, alt satır için Shift+Enter)"
+                  placeholder="Müşteriye yanıt yazın... (Enter: Gönder, Shift+Enter: Alt Satır)"
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#090c12] border border-[#263145] text-white text-xs sm:text-sm placeholder-[#545d6e] focus:outline-none focus:border-amber-400 resize-none max-h-32 transition-colors font-normal leading-relaxed"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#090c12] border border-[#263145] text-white text-base sm:text-sm placeholder-[#545d6e] focus:outline-none focus:border-amber-400 resize-none max-h-28 transition-colors font-normal leading-relaxed"
                 />
 
                 <button
