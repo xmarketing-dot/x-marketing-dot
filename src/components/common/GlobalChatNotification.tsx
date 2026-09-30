@@ -61,7 +61,15 @@ export default function GlobalChatNotification() {
       return;
     }
 
-    const savedThreadId = typeof window !== 'undefined' ? localStorage.getItem('best_eskort_chat_thread_id') : null;
+    const getSavedThreadId = () => {
+      if (typeof window === 'undefined') return null;
+      const ls = localStorage.getItem('best_eskort_chat_thread_id');
+      if (ls) return ls;
+      const match = document.cookie.match(/best_eskort_chat_thread_id=([^;]+)/);
+      return match ? decodeURIComponent(match[1]) : null;
+    };
+
+    const savedThreadId = getSavedThreadId();
     
     if (savedThreadId) {
       setHasStartedChat(true);

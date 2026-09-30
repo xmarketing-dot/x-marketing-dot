@@ -57,7 +57,14 @@ async function uploadToGridFS(buffer: Buffer, filename: string): Promise<string>
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const files = formData.getAll('files') as File[];
+    let files = formData.getAll('files') as File[];
+
+    if (!files || files.length === 0) {
+      const singleFile = formData.get('file') || formData.get('image') || formData.get('media') || formData.get('gorsel');
+      if (singleFile && typeof singleFile !== 'string') {
+        files = [singleFile as File];
+      }
+    }
 
     if (!files || files.length === 0) {
       return NextResponse.json({ error: 'Yüklenecek resim dosyası bulunamadı.' }, { status: 400 });
@@ -70,18 +77,19 @@ export async function POST(req: NextRequest) {
     const uploadedUrls: string[] = [];
 
     for (const file of files) {
-      if (file.size > 10 * 1024 * 1024) {
-        return NextResponse.json({ error: `"${file.name}" çok büyük. Maksimum dosya boyutu 10MB olmalıdır.` }, { status: 400 });
+      if (file.size > 15 * 1024 * 1024) {
+        return NextResponse.json({ error: `"${file.name}" çok büyük. Maksimum dosya boyutu 15MB olmalıdır.` }, { status: 400 });
       }
 
-      const fileExt = (file.name ? path.extname(file.name) : '').toLowerCase();
+      const rawFileName = file.name || 'image.jpg';
+      const fileExt = (path.extname(rawFileName) || '').toLowerCase();
       const mime = (file.type || '').toLowerCase();
 
       const isValid = ALLOWED_MIME_TYPES.has(mime) || mime.startsWith('image/') || ALLOWED_EXTENSIONS.has(fileExt);
 
       if (!isValid) {
         return NextResponse.json(
-          { error: `"${file.name}" desteklenmeyen bir dosya türü. Lütfen JPG, JPEG, PNG veya WEBP yükleyin.` },
+          { error: `"${rawFileName}" desteklenmeyen bir dosya türü. Lütfen JPG, JPEG, PNG, GIF veya WEBP yükleyin.` },
           { status: 400 }
         );
       }

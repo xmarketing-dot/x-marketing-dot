@@ -12,7 +12,9 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { threadId, kullaniciAdi, kullaniciTelefon, createIfNotFound } = body;
+    const { kullaniciAdi, kullaniciTelefon, createIfNotFound } = body;
+    let threadId = body.threadId || req.cookies.get('best_eskort_chat_thread_id')?.value || null;
+
     await connectToDatabase();
 
     // Resolve client IP
@@ -70,53 +72,90 @@ export async function POST(req: NextRequest) {
     let finalListingId = matchedListing?._id?.toString() || null;
     let finalListingSlug = matchedListing?.slug || null;
 
+    // 2. Thread'i ID, Telefon veya IP üzerinden kurtarma (Tarayıcı kapanıp açılsa bile devam ettirir)
+    let existing: any = null;
+
     if (threadId && mongoose.Types.ObjectId.isValid(threadId)) {
-      const existing = await ChatThreadModel.findById(threadId);
-      if (existing) {
-        if (existing.isBanned) {
-          return NextResponse.json(
-            {
-              error: 'Erişim Engellendi',
-              isBanned: true,
-              banTuru: existing.banTuru,
-              banSebebi: existing.banSebebi || 'Engellendiniz',
-            },
-            { status: 403 }
-          );
-        }
+      existing = await ChatThreadModel.findById(threadId);
+    }
 
-        // Eğer kullanıcı bilgileri yeni geldiyse thread'i zenginleştir
-        let hasUpdate = false;
-        if (finalName && (!existing.kullaniciAdi || existing.kullaniciAdi.startsWith('Müşteri #') || existing.kullaniciAdi === 'Ziyaretçi')) {
-          existing.kullaniciAdi = finalName;
-          hasUpdate = true;
-        }
-        if (finalPhone && !existing.kullaniciTelefon) {
-          existing.kullaniciTelefon = finalPhone;
-          hasUpdate = true;
-        }
-        if (finalListingBaslik && !existing.listingBaslik) {
-          existing.listingBaslik = finalListingBaslik;
-          existing.listingId = finalListingId;
-          existing.listingSlug = finalListingSlug;
-          hasUpdate = true;
-        }
+    // ID yoksa veya bulunamadıysa, aynı telefon numarasıyla mevcut aktif thread ara
+    if (!existing && cleanPhone) {
+      existing = await ChatThreadModel.findOne({
+        $or: [
+          { kullaniciTelefon: rawPhone },
+          { kullaniciTelefon: cleanPhone },
+        ],
+        isBanned: false,
+      }).sort({ updatedAt: -1 });
+    }
 
-        if (hasUpdate) {
-          await existing.save();
-        }
+    // Hala bulunamadıysa ve kullanıcı kayıtlı veya ilan sahibiyse, IP eşleşmesiyle son aktif thread'i bul
+    if (!existing && clientIp && clientIp !== '127.0.0.1') {
+      existing = await ChatThreadModel.findOne({
+        ip: clientIp,
+        isBanned: false,
+        updatedAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }, // Son 30 gündeki thread
+      }).sort({ updatedAt: -1 });
+    }
 
-        const messages = await ChatMessageModel.find({ threadId: existing._id })
-          .select('_id threadId gonderenTipi mesaj okundu createdAt')
-          .sort({ createdAt: 1 })
-          .limit(100)
-          .lean();
-
-        return NextResponse.json({ 
-          thread: JSON.parse(JSON.stringify(existing)),
-          messages: JSON.parse(JSON.stringify(messages))
-        });
+    if (existing) {
+      if (existing.isBanned) {
+        return NextResponse.json(
+          {
+            error: 'Erişim Engellendi',
+            isBanned: true,
+            banTuru: existing.banTuru,
+            banSebebi: existing.banSebebi || 'Engellendiniz',
+          },
+          { status: 403 }
+        );
       }
+
+      // Eğer kullanıcı bilgileri yeni geldiyse thread'i zenginleştir
+      let hasUpdate = false;
+      if (finalName && (!existing.kullaniciAdi || existing.kullaniciAdi.startsWith('Müşteri #') || existing.kullaniciAdi === 'Ziyaretçi')) {
+        existing.kullaniciAdi = finalName;
+        hasUpdate = true;
+      }
+      if (finalPhone && !existing.kullaniciTelefon) {
+        existing.kullaniciTelefon = finalPhone;
+        hasUpdate = true;
+      }
+      if (finalListingBaslik && !existing.listingBaslik) {
+        existing.listingBaslik = finalListingBaslik;
+        existing.listingId = finalListingId;
+        existing.listingSlug = finalListingSlug;
+        hasUpdate = true;
+      }
+      if (clientIp && !existing.ip) {
+        existing.ip = clientIp;
+        hasUpdate = true;
+      }
+
+      if (hasUpdate) {
+        await existing.save();
+      }
+
+      const messages = await ChatMessageModel.find({ threadId: existing._id })
+        .select('_id threadId gonderenTipi mesaj okundu createdAt')
+        .sort({ createdAt: 1 })
+        .limit(150)
+        .lean();
+
+      const res = NextResponse.json({ 
+        thread: JSON.parse(JSON.stringify(existing)),
+        messages: JSON.parse(JSON.stringify(messages))
+      });
+
+      // Kalıcı Cookie Ayarla (1 Yıl)
+      res.cookies.set('best_eskort_chat_thread_id', existing._id.toString(), {
+        path: '/',
+        maxAge: 365 * 24 * 60 * 60,
+        sameSite: 'lax',
+      });
+
+      return res;
     }
 
     // If client is just checking or visiting without writing a message, do not create empty thread in DB
@@ -137,7 +176,16 @@ export async function POST(req: NextRequest) {
       isBanned: false,
     });
 
-    return NextResponse.json({ thread: JSON.parse(JSON.stringify(newThread)), messages: [] });
+    const res = NextResponse.json({ thread: JSON.parse(JSON.stringify(newThread)), messages: [] });
+    
+    // Yeni oluşturulan thread'i kalıcı Cookie'ye kaydet
+    res.cookies.set('best_eskort_chat_thread_id', newThread._id.toString(), {
+      path: '/',
+      maxAge: 365 * 24 * 60 * 60,
+      sameSite: 'lax',
+    });
+
+    return res;
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

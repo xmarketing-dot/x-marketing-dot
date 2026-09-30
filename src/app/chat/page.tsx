@@ -32,12 +32,17 @@ interface Message {
   createdAt: string;
 }
 
+function getSavedThreadId(): string | null {
+  if (typeof window === 'undefined') return null;
+  const ls = localStorage.getItem('best_eskort_chat_thread_id');
+  if (ls) return ls;
+  const match = document.cookie.match(/best_eskort_chat_thread_id=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 export default function ChatPage() {
   const [threadId, setThreadId] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('best_eskort_chat_thread_id');
-    }
-    return null;
+    return getSavedThreadId();
   });
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== 'undefined') {
@@ -91,7 +96,7 @@ export default function ChatPage() {
   useEffect(() => {
     const initThread = async () => {
       try {
-        const savedThreadId = typeof window !== 'undefined' ? localStorage.getItem('best_eskort_chat_thread_id') : null;
+        const savedThreadId = getSavedThreadId();
         const savedUserStr = typeof window !== 'undefined' ? localStorage.getItem('panel_user_session') : null;
         let parsedUser: any = null;
         if (savedUserStr) {
@@ -123,6 +128,7 @@ export default function ChatPage() {
             setThreadId(data.thread._id);
           }
           localStorage.setItem('best_eskort_chat_thread_id', data.thread._id);
+          document.cookie = `best_eskort_chat_thread_id=${data.thread._id};path=/;max-age=31536000;SameSite=Lax`;
           window.dispatchEvent(new Event('storage'));
         }
       } catch (err) {
@@ -209,7 +215,7 @@ export default function ChatPage() {
       const senderPhone = parsedUser?.telefon || parsedUser?.identifier || undefined;
 
       if (!activeThreadId) {
-        const savedThreadId = typeof window !== 'undefined' ? localStorage.getItem('best_eskort_chat_thread_id') : null;
+        const savedThreadId = getSavedThreadId();
         const startRes = await fetch('/api/chat/start', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -225,6 +231,7 @@ export default function ChatPage() {
           activeThreadId = startData.thread._id;
           setThreadId(startData.thread._id);
           localStorage.setItem('best_eskort_chat_thread_id', startData.thread._id);
+          document.cookie = `best_eskort_chat_thread_id=${startData.thread._id};path=/;max-age=31536000;SameSite=Lax`;
           window.dispatchEvent(new Event('storage'));
         }
       }

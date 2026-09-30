@@ -17,11 +17,20 @@ export async function smartUploadFile(
   customName?: string,
   onProgress?: (percent: number) => void
 ): Promise<UploadResult> {
+  // Türkçe karakter ve özel sembol temizliği
+  const rawName = file instanceof File ? file.name : (customName || 'upload.jpg');
+  const sanitizedName = rawName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9._-]/g, '_');
+
   const actualFile =
-    file instanceof File ? file : new File([file], customName || 'upload.jpg', { type: file.type || 'image/jpeg' });
+    file instanceof File
+      ? (file.name !== sanitizedName ? new File([file], sanitizedName, { type: file.type || 'image/jpeg' }) : file)
+      : new File([file], sanitizedName, { type: file.type || 'image/jpeg' });
 
   const fileSize = actualFile.size;
-  const fileName = actualFile.name || 'image.jpg';
+  const fileName = sanitizedName;
   const mimeType = actualFile.type || 'image/jpeg';
 
   // 15MB Sınır Kontrolü
@@ -31,36 +40,40 @@ export async function smartUploadFile(
 
   // 1. KÜÇÜK DOSYALAR (<= 3.5MB): Standart Hızlı Yükleme
   if (fileSize <= 3.5 * 1024 * 1024) {
-    const formData = new FormData();
-    formData.append('files', actualFile);
+    try {
+      const formData = new FormData();
+      formData.append('files', actualFile);
 
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      return { success: false, urls: [], error: data.error || 'Yükleme başarısız oldu.' };
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        return { success: false, urls: [], error: data.error || 'Yükleme başarısız oldu.' };
+      }
+
+      if (onProgress) onProgress(100);
+      const resolvedUrl = data.url || data.urls?.[0] || '';
+      return { success: true, urls: data.urls || (resolvedUrl ? [resolvedUrl] : []), url: resolvedUrl };
+    } catch (err: any) {
+      return { success: false, urls: [], error: err.message || 'Yükleme sırasında ağ hatası oluştu.' };
     }
-
-    if (onProgress) onProgress(100);
-    const resolvedUrl = data.url || data.urls?.[0] || '';
-    return { success: true, urls: data.urls || (resolvedUrl ? [resolvedUrl] : []), url: resolvedUrl };
   }
 
   // 2. BÜYÜK DOSYALAR & HAREKETLİ GIFLER (> 3.5MB): Parçalı (Chunked) Yükleme
   try {
-    const arrayBuffer = await actualFile.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    
-    // Convert to binary string in chunks to avoid call stack overflow
-    let binary = '';
-    const step = 8192;
-    for (let i = 0; i < bytes.length; i += step) {
-      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + step)));
-    }
-    const fullBase64 = btoa(binary);
+    const fullBase64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const resStr = (reader.result as string) || '';
+        const base64Only = resStr.includes(',') ? resStr.split(',')[1] : resStr;
+        resolve(base64Only);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(actualFile);
+    });
 
     const uploadId = `upl_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const chunkSize = 1.5 * 1024 * 1024; // 1.5MB Base64 parçaları (Vercel sınırının çok altında)

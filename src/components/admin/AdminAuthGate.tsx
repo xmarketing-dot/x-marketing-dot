@@ -532,9 +532,9 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       </aside>
 
       {/* Secret Admin Content Viewport */}
-      <main className={`flex-1 overflow-y-auto w-full max-w-full ${pathname === '/bms-secure-portal/chat'
-          ? 'p-0 pb-16 md:p-6 md:pb-8'
-          : 'p-3 sm:p-6 md:p-8 pb-24 md:pb-8'
+      <main className={`flex-1 w-full max-w-full ${pathname === '/bms-secure-portal/chat'
+          ? 'p-0 pb-16 md:p-3 md:pb-3 overflow-hidden h-[calc(100vh-55px)] md:h-screen'
+          : 'overflow-y-auto p-3 sm:p-6 md:p-8 pb-24 md:pb-8'
         }`}>
         {children}
       </main>
