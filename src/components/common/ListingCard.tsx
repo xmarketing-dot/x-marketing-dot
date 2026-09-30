@@ -88,7 +88,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
         <div className="flex items-center justify-between text-xs pt-0.5">
           <div className="flex items-center gap-1.5 text-amber-400 font-extrabold font-heading capitalize bg-[#21262d] px-3 py-1 rounded-xl border border-[#30363d]">
             <MapPin className="w-3.5 h-3.5 shrink-0" />
-            <span>{listing.ilSlug} / {listing.ilceSlug}</span>
+            <span>{listing.ilSlug} / {(!listing.ilceSlug || listing.ilceSlug === 'genel' || listing.ilceSlug === 'tumu') ? '🌟 Tüm İl (Genel)' : listing.ilceSlug}</span>
           </div>
 
           <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-bold font-heading">

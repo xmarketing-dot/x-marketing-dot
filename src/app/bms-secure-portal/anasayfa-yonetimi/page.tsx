@@ -43,6 +43,7 @@ import {
   Edit3
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { turkeyProvinces } from '@/data/turkeyLocations';
 
 interface TickerItem {
   badge: string;
@@ -114,16 +115,10 @@ const PRESET_GIF_SUGGESTIONS = [
 
 const POPULAR_CITIES = [
   { slug: 'tum_turkiye', ad: '🇹🇷 TÜRKİYE GENELİ (Tüm Şehirler & Anasayfa)' },
-  { slug: 'istanbul', ad: '📍 İSTANBUL (Tüm İlçeler)' },
-  { slug: 'ankara', ad: '📍 ANKARA' },
-  { slug: 'izmir', ad: '📍 İZMİR' },
-  { slug: 'antalya', ad: '📍 ANTALYA' },
-  { slug: 'bursa', ad: '📍 BURSA' },
-  { slug: 'adana', ad: '📍 ADANA' },
-  { slug: 'eskisehir', ad: '📍 ESKİŞEHİR' },
-  { slug: 'gaziantep', ad: '📍 GAZİANTEP' },
-  { slug: 'kocaeli', ad: '📍 KOCAELİ' },
-  { slug: 'mugla', ad: '📍 MUĞLA (Bodrum/Marmaris/Fethiye)' },
+  ...turkeyProvinces.map((p) => ({
+    slug: p.ilSlug,
+    ad: `📍 ${p.il.toUpperCase()} (Tüm İlçeler & İl Geneli)`,
+  })),
 ];
 
 export default function AdminHomepageConfigPage() {

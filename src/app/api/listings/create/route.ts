@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     const forwardedFor = req.headers.get('x-forwarded-for');
     const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
 
-    const slug = generateSlug(ilceSlug, baslik, tamAd);
+    const slug = generateSlug((ilceSlug === 'genel' || ilceSlug === 'tumu') ? ilSlug : ilceSlug, baslik, tamAd);
     const imageUrl = anaFotografUrl && anaFotografUrl.trim() !== ''
       ? anaFotografUrl
       : 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800';

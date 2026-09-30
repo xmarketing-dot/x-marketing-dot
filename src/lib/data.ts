@@ -156,7 +156,11 @@ export async function getListings({
   };
 
   if (ilSlug) query.ilSlug = ilSlug;
-  if (ilceSlug) query.ilceSlug = ilceSlug;
+  if (ilceSlug) {
+    if (ilceSlug !== 'genel' && ilceSlug !== 'tumu') {
+      query.ilceSlug = { $in: [ilceSlug, 'genel', 'tumu', '', null] };
+    }
+  }
 
   if (kategoriSlug) {
     const category = await CategoryModel.findOne({ slug: kategoriSlug, aktif: true })

@@ -1217,7 +1217,7 @@ export default function AdminListingsPage() {
                           <td className="py-3 px-3">
                             <div className="flex items-center gap-1 text-amber-300 font-bold capitalize text-xs">
                               <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                              <span className="truncate">{item.ilSlug} / {item.ilceSlug}</span>
+                              <span className="truncate">{item.ilSlug} / {item.ilceSlug === 'genel' ? '🌟 TÜM İL (GENEL)' : item.ilceSlug}</span>
                             </div>
                           </td>
 
@@ -1538,7 +1538,7 @@ export default function AdminListingsPage() {
                         <div className="flex items-center gap-2 text-[11px] text-amber-400 font-bold capitalize flex-wrap">
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3 shrink-0" />
-                            <span>{item.ilSlug} / {item.ilceSlug}</span>
+                            <span>{item.ilSlug} / {item.ilceSlug === 'genel' ? '🌟 TÜM İL (GENEL)' : item.ilceSlug}</span>
                           </span>
                           <span className="text-[#8b949e]">•</span>
                           <span className="text-emerald-400 font-mono flex items-center gap-1">
@@ -2103,8 +2103,9 @@ export default function AdminListingsPage() {
                   <select
                     value={editForm.ilceSlug}
                     onChange={(e) => setEditForm({ ...editForm, ilceSlug: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
                   >
+                    <option value="genel" className="font-bold text-amber-400 bg-[#161b22]">🌟 TÜM İL (GENEL - Tüm İlçeler)</option>
                     {selectedProvince.ilceler.map((d) => (
                       <option key={d.slug} value={d.slug}>{d.ad}</option>
                     ))}
@@ -2180,7 +2181,7 @@ export default function AdminListingsPage() {
                     {renderStatusBadge(inspectItem.status, inspectItem.paketBitisTarihi)}
                   </div>
                   <span className="text-[10px] text-[#8b949e] truncate">
-                    📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug} • {new Date(inspectItem.createdAt).toLocaleDateString('tr-TR')}
+                    📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug === 'genel' ? '🌟 TÜM İL (GENEL)' : inspectItem.ilceSlug} • {new Date(inspectItem.createdAt).toLocaleDateString('tr-TR')}
                   </span>
                 </div>
               </div>
@@ -2887,8 +2888,9 @@ export default function AdminListingsPage() {
                   <select
                     value={createForm.ilceSlug}
                     onChange={(e) => setCreateForm({ ...createForm, ilceSlug: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
                   >
+                    <option value="genel" className="font-bold text-amber-400 bg-[#161b22]">🌟 TÜM İL (GENEL - Tüm İlçeler)</option>
                     {(turkeyProvinces.find((p) => p.ilSlug === createForm.ilSlug) || turkeyProvinces[0]).ilceler.map((d) => (
                       <option key={d.slug} value={d.slug}>{d.ad}</option>
                     ))}

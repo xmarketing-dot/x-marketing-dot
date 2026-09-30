@@ -65,7 +65,7 @@ export default function UcretsizIlanPage() {
   const [baslik, setBaslik] = useState<string>('');
   const [aciklama, setAciklama] = useState<string>('');
   const [ilSlug, setIlSlug] = useState<string>('istanbul');
-  const [ilceSlug, setIlceSlug] = useState<string>('kadikoy');
+  const [ilceSlug, setIlceSlug] = useState<string>('genel');
   const [whatsappNumara, setWhatsappNumara] = useState<string>('');
 
   // Fotoğraflar
@@ -833,9 +833,8 @@ export default function UcretsizIlanPage() {
                   value={ilSlug}
                   onChange={(e) => {
                     const newIl = e.target.value;
-                    const prov = turkeyProvinces.find((p) => p.ilSlug === newIl);
                     setIlSlug(newIl);
-                    setIlceSlug(prov && prov.ilceler.length > 0 ? prov.ilceler[0].slug : '');
+                    setIlceSlug('genel');
                   }}
                   className="px-3.5 py-2.5 rounded-xl bg-[#0B0E14] border border-[#252B3B] text-white text-xs focus:outline-none focus:border-amber-400"
                 >
@@ -852,8 +851,9 @@ export default function UcretsizIlanPage() {
                 <select
                   value={ilceSlug}
                   onChange={(e) => setIlceSlug(e.target.value)}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#0B0E14] border border-[#252B3B] text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="px-3.5 py-2.5 rounded-xl bg-[#0B0E14] border border-[#252B3B] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
                 >
+                  <option value="genel" className="font-bold text-amber-400 bg-[#141824]">🌟 TÜM İL (GENEL - Tüm İlçeler)</option>
                   {availableDistricts.map((d: any) => (
                     <option key={d.slug} value={d.slug} className="bg-[#141824] text-white">
                       {d.ad}

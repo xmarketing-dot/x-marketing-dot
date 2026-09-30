@@ -46,7 +46,7 @@ export default function CreateListingPage() {
     baslik: '',
     aciklama: '',
     ilSlug: 'istanbul',
-    ilceSlug: 'beylikduzu',
+    ilceSlug: 'genel',
     rozet: 'vip',
     yayinSuresi: 'haftalik',
     whatsappNumara: '',
@@ -858,11 +858,10 @@ export default function CreateListingPage() {
                   value={formData.ilSlug}
                   onChange={(e) => {
                     const newIl = e.target.value;
-                    const prov = turkeyProvinces.find((p) => p.ilSlug === newIl);
                     setFormData({
                       ...formData,
                       ilSlug: newIl,
-                      ilceSlug: prov?.ilceler[0]?.slug || 'merkez',
+                      ilceSlug: 'genel',
                     });
                   }}
                   className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
@@ -878,8 +877,9 @@ export default function CreateListingPage() {
                 <select
                   value={formData.ilceSlug}
                   onChange={(e) => setFormData({ ...formData, ilceSlug: e.target.value })}
-                  className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="px-3.5 py-3 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
                 >
+                  <option value="genel" className="font-bold text-amber-400 bg-[#161b22]">🌟 TÜM İL (GENEL - Tüm İlçeler)</option>
                   {selectedProvince.ilceler.map((d) => (
                     <option key={d.slug} value={d.slug}>{d.ad}</option>
                   ))}

@@ -54,11 +54,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
   const ogImageUrl = `${siteUrl}/api/og/listing/${listing.slug}`;
 
+  const isGenel = !listing.ilceSlug || listing.ilceSlug === 'genel' || listing.ilceSlug === 'tumu';
   const ilAdi = listing.ilSlug.charAt(0).toUpperCase() + listing.ilSlug.slice(1).replace(/-/g, ' ');
-  const ilceAdi = listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' ');
+  const ilceAdi = isGenel ? 'Geneli' : (listing.ilceSlug.charAt(0).toUpperCase() + listing.ilceSlug.slice(1).replace(/-/g, ' '));
 
-  const metaTitle = `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort İlanı`;
-  const metaDescription = `${ilAdi} ${ilceAdi} bölgesinde ${listing.baslik}. %100 Teyitli profil fotoğrafları, doğrudan WhatsApp ve telefon numarası ile hemen iletişime geçin.`;
+  const metaTitle = isGenel ? `${listing.baslik} — ${ilAdi} Geneli Eskort İlanı` : `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort İlanı`;
+  const metaDescription = isGenel 
+    ? `${ilAdi} genelinde ${listing.baslik}. %100 Teyitli profil fotoğrafları, doğrudan WhatsApp ve telefon numarası ile hemen iletişime geçin.`
+    : `${ilAdi} ${ilceAdi} bölgesinde ${listing.baslik}. %100 Teyitli profil fotoğrafları, doğrudan WhatsApp ve telefon numarası ile hemen iletişime geçin.`;
 
   return {
     title: metaTitle,
@@ -136,10 +139,11 @@ export default async function ListingDetailPage({ params }: Props) {
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
 
   const ilSlugSafe = listing.ilSlug || 'istanbul';
-  const ilceSlugSafe = listing.ilceSlug || 'merkez';
+  const isGenel = !listing.ilceSlug || listing.ilceSlug === 'genel' || listing.ilceSlug === 'tumu';
+  const ilceSlugSafe = isGenel ? 'genel' : (listing.ilceSlug || 'merkez');
   const ilAdi = ilSlugSafe.charAt(0).toUpperCase() + ilSlugSafe.slice(1).replace(/-/g, ' ');
-  const ilceAdi = ilceSlugSafe.charAt(0).toUpperCase() + ilceSlugSafe.slice(1).replace(/-/g, ' ');
-  const metaTitle = `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort`;
+  const ilceAdi = isGenel ? 'Geneli' : (ilceSlugSafe.charAt(0).toUpperCase() + ilceSlugSafe.slice(1).replace(/-/g, ' '));
+  const metaTitle = isGenel ? `${listing.baslik} — ${ilAdi} Geneli Eskort` : `${listing.baslik} — ${ilceAdi} ${ilAdi} Eskort`;
 
   // Google thin content fix: Her ilan için deterministik 300+ kelimeli benzersiz SEO içeriği
   const seoContent = generateListingSeoContent(
@@ -205,8 +209,8 @@ export default async function ListingDetailPage({ params }: Props) {
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Anasayfa', item: siteUrl },
           { '@type': 'ListItem', position: 2, name: `${ilAdi} Eskort`, item: `${siteUrl}/${listing.ilSlug}` },
-          { '@type': 'ListItem', position: 3, name: `${ilceAdi} Eskort`, item: `${siteUrl}/${listing.ilSlug}/${listing.ilceSlug}` },
-          { '@type': 'ListItem', position: 4, name: listing.baslik, item: `${siteUrl}/ilan/${listing.slug}` },
+          ...(isGenel ? [] : [{ '@type': 'ListItem', position: 3, name: `${ilceAdi} Eskort`, item: `${siteUrl}/${listing.ilSlug}/${listing.ilceSlug}` }]),
+          { '@type': 'ListItem', position: isGenel ? 3 : 4, name: listing.baslik, item: `${siteUrl}/ilan/${listing.slug}` },
         ],
       },
       {
@@ -290,11 +294,11 @@ export default async function ListingDetailPage({ params }: Props) {
 
             {/* Konum Rozeti */}
             <Link
-              href={`/${listing.ilSlug}/${listing.ilceSlug}`}
+              href={isGenel ? `/${listing.ilSlug}` : `/${listing.ilSlug}/${listing.ilceSlug}`}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/75 backdrop-blur-md text-amber-400 font-extrabold text-xs uppercase border border-amber-400/35 font-heading shrink-0 shadow-md hover:bg-amber-500/20 transition-all"
             >
               <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span className="truncate max-w-[130px] sm:max-w-none">{ilAdi} / {ilceAdi}</span>
+              <span className="truncate max-w-[150px] sm:max-w-none">{isGenel ? `🌟 ${ilAdi} (Tüm İl)` : `${ilAdi} / ${ilceAdi}`}</span>
             </Link>
           </div>
 

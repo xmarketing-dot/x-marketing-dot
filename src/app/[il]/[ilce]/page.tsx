@@ -43,8 +43,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Sayfa Bulunamadı | Best Eskort' };
   }
 
+  const isGenel = ilceSlug === 'genel' || ilceSlug === 'tumu';
   const district = location.ilceler.find((d: any) => d.slug === ilceSlug);
-  const districtName = district ? district.ad : ilceSlug;
+  const districtName = isGenel ? `${location.il} Geneli (Tüm İlçeler)` : (district ? district.ad : ilceSlug);
   const canonicalUrl = getCanonicalUrlForLocation(siteUrl, location.ilSlug, ilceSlug);
   const il = location.il;
 
@@ -151,8 +152,9 @@ export default async function DistrictPage({ params }: Props) {
     notFound();
   }
 
+  const isGenel = ilceSlug === 'genel' || ilceSlug === 'tumu';
   const district = location.ilceler.find((d: any) => d.slug === ilceSlug);
-  const districtName = district ? district.ad : ilceSlug;
+  const districtName = isGenel ? `${location.il} Geneli (Tüm İlçeler)` : (district ? district.ad : ilceSlug);
 
   // Bu ilçenin en çok görüntülenen 1-2 vitrin ilanı
   const districtShowcaseSlides = getTopShowcaseSlides(listings, 2);
