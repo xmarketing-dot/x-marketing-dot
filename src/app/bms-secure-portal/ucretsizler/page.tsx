@@ -1202,6 +1202,7 @@ export default function AdminUcretsizlerPage() {
           {inspectBanner && (() => {
             const cleanPhone = (inspectBanner.musteriIletisim || '').replace(/\D/g, '');
             const now = Date.now();
+            const expiryTime = inspectBanner.bitisTarihi ? new Date(inspectBanner.bitisTarihi).getTime() : 0;
             const diffMs = Math.max(0, expiryTime - now);
             const remainingHours = Math.floor(diffMs / (1000 * 60 * 60));
             const remainingMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
