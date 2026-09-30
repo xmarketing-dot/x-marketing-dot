@@ -11,13 +11,15 @@ import {
   SendHorizontal, 
   RefreshCw, 
   Zap, 
-  Lock,
-  KeyRound,
-  Wallet,
-  Copy,
-  Check,
-  CreditCard,
-  Loader2
+  Lock, 
+  KeyRound, 
+  Wallet, 
+  Copy, 
+  Check, 
+  CreditCard, 
+  Loader2,
+  Home,
+  ShieldCheck
 } from 'lucide-react';
 import CryptoPaymentCard from '@/components/common/CryptoPaymentCard';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
@@ -293,56 +295,62 @@ export default function ChatPage() {
   return (
     <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#0d1117] flex flex-col justify-between overflow-hidden max-w-lg mx-auto md:border-x md:border-[#30363d] shadow-2xl relative">
       
-      {/* ── 1. FIXED TOP HEADER ──────────────── */}
-      <header className="shrink-0 h-16 px-4 bg-[#161b22] border-b border-[#30363d] flex items-center justify-between z-30 shadow-md">
-        <div className="flex items-center gap-3">
+      {/* ── 1. FLAWLESS RESPONSIVE TOP HEADER (NATIVE TELEGRAM / IOS MESSAGES STYLE) ──────────────── */}
+      <header className="shrink-0 h-14 sm:h-16 px-3 sm:px-4 bg-[#161b22]/95 backdrop-blur-xl border-b border-[#30363d] flex items-center justify-between z-30 shadow-md gap-2 w-full">
+        
+        {/* Left: Back Arrow + Profile Avatar + Responsive Title */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Link 
             href="/"
-            className="p-2 -ml-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+            className="p-1.5 sm:p-2 -ml-1 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors shrink-0"
+            title="Geri Dön"
           >
             <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
           </Link>
 
-          <div className="relative">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/20">
-              <Sparkles className="w-5 h-5 stroke-[2.5]" />
+          <div className="relative shrink-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/20">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-slate-950 text-slate-950" />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-[#161b22] animate-pulse" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-[#161b22] animate-pulse" />
           </div>
 
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1.5">
-              <span className="font-black text-sm text-white font-heading">
-                Best VIP Canlı Destek
+          <div className="flex flex-col min-w-0 flex-1 text-left leading-tight">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="font-heading font-black text-xs sm:text-sm text-white truncate drop-shadow-sm">
+                Best VIP Destek
               </span>
-              <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 font-bold text-[9px] uppercase border border-amber-500/30">
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-400 font-black text-[8px] sm:text-[9px] uppercase border border-amber-500/30 shrink-0">
                 Yetkili
               </span>
             </div>
-            <span className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Çevrimiçi &bull; Ortalama yanıt 2 dk
+            <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 truncate mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+              <span>Çevrimiçi &bull; Ortalama 2 dk</span>
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Right: Compact WhatsApp Pill Button + Clean Home Button */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <a
             href={getAdminWhatsAppUrl('Merhaba, Best VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve onaylatmak istiyorum.')}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-black flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all font-heading"
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white text-[11px] sm:text-xs font-heading font-black flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all shrink-0"
             title="WhatsApp Destek Hattı"
           >
-            <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
+            <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-white shrink-0" />
             <span>WhatsApp</span>
           </a>
 
           <Link
             href="/"
-            className="px-2.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-xs text-[#8b949e] hover:text-white font-bold transition-colors border border-[#30363d]"
+            className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white transition-colors border border-[#30363d] shrink-0 flex items-center gap-1"
+            title="Ana Sayfaya Dön"
           >
-            Ana Sayfa
+            <Home className="w-4 h-4" />
+            <span className="hidden md:inline text-xs font-bold">Ana Sayfa</span>
           </Link>
         </div>
       </header>
