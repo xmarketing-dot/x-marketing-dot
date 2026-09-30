@@ -104,6 +104,7 @@ export default function AdminBannerManagementPage() {
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     // Progress hesaplama
     const start = banner.baslangicTarihi ? new Date(banner.baslangicTarihi).getTime() : end - banner.sureGun * 86400000;
@@ -111,11 +112,19 @@ export default function AdminBannerManagementPage() {
     const elapsed = now - start;
     const progress = Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
 
+    let text = `${Math.max(1, minutes)} Dakika Kaldı`;
+    if (days > 0) {
+      text = `${days} Gün ${hours} Saat Kaldı`;
+    } else if (hours > 0) {
+      text = `${hours} Saat ${minutes > 0 ? `${minutes} Dk ` : ''}Kaldı`;
+    }
+
     return {
       expired: false,
-      text: days > 0 ? `${days} Gün ${hours} Saat Kaldı` : `${hours} Saat Kaldı`,
+      text,
       days,
       hours,
+      minutes,
       progress,
     };
   };

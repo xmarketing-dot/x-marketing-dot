@@ -722,11 +722,15 @@ export default function AdminListingsPage() {
 
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
     if (diffDays > 0) {
       return { text: `⏳ ${diffDays} Gün ${diffHours} Saat Kaldı`, isExpired: false, isPending: false };
     }
-    return { text: `⏳ ${diffHours} Saat Kaldı`, isExpired: false, isPending: false };
+    if (diffHours > 0) {
+      return { text: `⏳ ${diffHours} Saat ${diffMinutes > 0 ? `${diffMinutes} Dk ` : ''}Kaldı`, isExpired: false, isPending: false };
+    }
+    return { text: `⏳ ${Math.max(1, diffMinutes)} Dakika Kaldı`, isExpired: false, isPending: false };
   };
 
   const selectedProvince = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];

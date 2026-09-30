@@ -425,7 +425,14 @@ export default function AdminUcretsizlerPage() {
               {filteredListings.map((l: any) => {
                 const now = Date.now();
                 const expiryTime = l.paketBitisTarihi ? new Date(l.paketBitisTarihi).getTime() : 0;
-                const remainingHours = expiryTime > now ? Math.round((expiryTime - now) / (1000 * 60 * 60)) : 0;
+                const diffMs = expiryTime - now;
+                const hoursLeft = Math.floor(diffMs / (1000 * 60 * 60));
+                const minutesLeft = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                const remainingTimeText =
+                  hoursLeft > 0
+                    ? `${hoursLeft} Saat ${minutesLeft > 0 ? `${minutesLeft} Dk ` : ''}Kaldı`
+                    : `${Math.max(1, minutesLeft)} Dakika Kaldı`;
+
                 const isExpired = l.status === 'suresi_doldu' || (expiryTime > 0 && expiryTime <= now);
                 const isLive = l.status === 'yayinda' && !isExpired;
                 const isPending = l.status === 'onay_bekliyor';
@@ -497,7 +504,7 @@ export default function AdminUcretsizlerPage() {
                           )}
                           {isLive && (
                             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-black flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> Yayında ({remainingHours} Saat Kaldı)
+                              <CheckCircle2 className="w-3 h-3" /> Yayında ({remainingTimeText})
                             </span>
                           )}
                           {isExpired && (
@@ -632,7 +639,12 @@ export default function AdminUcretsizlerPage() {
               {filteredBanners.map((b: any) => {
                 const now = Date.now();
                 const expiryTime = b.bitisTarihi ? new Date(b.bitisTarihi).getTime() : 0;
-                const remainingHours = expiryTime > now ? Math.round((expiryTime - now) / (1000 * 60 * 60)) : 0;
+                const diffMs = Math.max(0, expiryTime - now);
+                const remainingHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const remainingMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                const remainingTimeText = remainingHours > 0 
+                  ? `${remainingHours} Saat ${remainingMinutes > 0 ? `${remainingMinutes} Dk` : ''}`.trim()
+                  : `${remainingMinutes} Dakika`;
                 const isExpired = b.durum === 'suresi_doldu' || b.durum === 'pasif' || (expiryTime > 0 && expiryTime <= now);
                 const isLive = b.durum === 'yayinda' && !isExpired;
                 const isPending = b.durum === 'onay_bekliyor' || b.durum === 'beklemede';
@@ -707,7 +719,7 @@ export default function AdminUcretsizlerPage() {
                           )}
                           {isLive && (
                             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-black flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> Yayında ({remainingHours} Saat Kaldı)
+                              <CheckCircle2 className="w-3 h-3" /> Yayında ({remainingTimeText} Kaldı)
                             </span>
                           )}
                           {isExpired && (
@@ -815,7 +827,12 @@ export default function AdminUcretsizlerPage() {
             const cleanPhone = (inspectListing.whatsappNumara || '').replace(/\D/g, '');
             const now = Date.now();
             const expiryTime = inspectListing.paketBitisTarihi ? new Date(inspectListing.paketBitisTarihi).getTime() : 0;
-            const remainingHours = expiryTime > now ? Math.round((expiryTime - now) / (1000 * 60 * 60)) : 0;
+            const diffMs = Math.max(0, expiryTime - now);
+            const remainingHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const remainingMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const remainingTimeText = remainingHours > 0 
+              ? `${remainingHours} Saat ${remainingMinutes > 0 ? `${remainingMinutes} Dk` : ''}`.trim()
+              : `${remainingMinutes} Dakika`;
             const isExpired = inspectListing.status === 'suresi_doldu' || inspectListing.status === 'pasif' || (expiryTime > 0 && expiryTime <= now);
             const isLive = inspectListing.status === 'yayinda' && !isExpired;
             const isPending = inspectListing.status === 'onay_bekliyor';
@@ -846,7 +863,7 @@ export default function AdminUcretsizlerPage() {
                           )}
                           {isLive && (
                             <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold">
-                              🟢 Yayında ({remainingHours} Saat Kaldı)
+                              🟢 Yayında ({remainingTimeText} Kaldı)
                             </span>
                           )}
                           {isExpired && (
@@ -1185,8 +1202,12 @@ export default function AdminUcretsizlerPage() {
           {inspectBanner && (() => {
             const cleanPhone = (inspectBanner.musteriIletisim || '').replace(/\D/g, '');
             const now = Date.now();
-            const expiryTime = inspectBanner.bitisTarihi ? new Date(inspectBanner.bitisTarihi).getTime() : 0;
-            const remainingHours = expiryTime > now ? Math.round((expiryTime - now) / (1000 * 60 * 60)) : 0;
+            const diffMs = Math.max(0, expiryTime - now);
+            const remainingHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const remainingMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const remainingTimeText = remainingHours > 0 
+              ? `${remainingHours} Saat ${remainingMinutes > 0 ? `${remainingMinutes} Dk` : ''}`.trim()
+              : `${remainingMinutes} Dakika`;
             const isExpired = inspectBanner.durum === 'suresi_doldu' || inspectBanner.durum === 'pasif' || (expiryTime > 0 && expiryTime <= now);
             const isLive = inspectBanner.durum === 'yayinda' && !isExpired;
             const isPending = inspectBanner.durum === 'onay_bekliyor' || inspectBanner.durum === 'beklemede';
@@ -1219,7 +1240,7 @@ export default function AdminUcretsizlerPage() {
                           )}
                           {isLive && (
                             <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-bold">
-                              🟢 Yayında ({remainingHours} Saat Kaldı)
+                              🟢 Yayında ({remainingTimeText} Kaldı)
                             </span>
                           )}
                           {isExpired && (
