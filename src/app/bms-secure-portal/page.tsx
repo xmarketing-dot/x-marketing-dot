@@ -62,6 +62,7 @@ export default function BmsSecurePortalDashboard() {
   const [gscUrls, setGscUrls] = useState<string[]>([]);
   const [gscLoading, setGscLoading] = useState(false);
   const [gscCopied, setGscCopied] = useState(false);
+  const [gscCityCopied, setGscCityCopied] = useState(false);
 
   const handleAdminListingSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -3140,7 +3141,56 @@ export default function BmsSecurePortalDashboard() {
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all active:scale-95 disabled:opacity-50"
                   >
                     <Copy className={`w-3.5 h-3.5 ${gscLoading ? 'animate-pulse' : ''}`} />
-                    {gscLoading ? 'Yükleniyor...' : gscCopied ? '✅ Kopyalandı!' : '📋 URL Listesini Kopyala'}
+                    {gscLoading ? 'Yükleniyor...' : gscCopied ? '✅ Kopyalandı!' : '📋 Tüm URL\'leri Kopyala'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const BASE = 'https://www.besteskort.online';
+                      const cityUrls = [
+                        BASE,
+                        `${BASE}/sehirler`,
+                        `${BASE}/kategori/vip`,
+                        `${BASE}/kategori/gold`,
+                        `${BASE}/kategori/silver`,
+                        `${BASE}/istanbul`,
+                        `${BASE}/istanbul/beylikduzu`,
+                        `${BASE}/istanbul/kadikoy`,
+                        `${BASE}/istanbul/sisli`,
+                        `${BASE}/istanbul/besiktas`,
+                        `${BASE}/istanbul/avcilar`,
+                        `${BASE}/istanbul/esenyurt`,
+                        `${BASE}/istanbul/bakirkoy`,
+                        `${BASE}/istanbul/fatih`,
+                        `${BASE}/istanbul/umraniye`,
+                        `${BASE}/istanbul/maltepe`,
+                        `${BASE}/istanbul/pendik`,
+                        `${BASE}/istanbul/kartal`,
+                        `${BASE}/istanbul/bagcilar`,
+                        `${BASE}/istanbul/bahcelievler`,
+                        `${BASE}/istanbul/buyukcekmece`,
+                        `${BASE}/izmir`,
+                        `${BASE}/izmir/konak`,
+                        `${BASE}/izmir/karsiyaka`,
+                        `${BASE}/izmir/bornova`,
+                        `${BASE}/izmir/alsancak`,
+                        `${BASE}/ankara`,
+                        `${BASE}/ankara/cankaya`,
+                        `${BASE}/ankara/kizilay`,
+                        `${BASE}/antalya`,
+                        `${BASE}/antalya/muratpasa`,
+                        `${BASE}/antalya/kepez`,
+                        `${BASE}/bursa`,
+                        `${BASE}/bursa/nilufer`,
+                      ];
+                      await navigator.clipboard.writeText(cityUrls.join('\n'));
+                      setGscCityCopied(true);
+                      setTimeout(() => setGscCityCopied(false), 4000);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs transition-all active:scale-95"
+                  >
+                    <MapPin className="w-3.5 h-3.5" />
+                    {gscCityCopied ? '✅ Şehirler Kopyalandı!' : '🏙️ Sadece Şehirleri Kopyala (34 URL)'}
                   </button>
                   <a
                     href="https://search.google.com/search-console/sitemaps?resource_id=https%3A%2F%2Fwww.besteskort.online%2F"
