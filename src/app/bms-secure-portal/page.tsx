@@ -3152,7 +3152,7 @@ export default function BmsSecurePortalDashboard() {
                     GSC Sitemap
                   </a>
                   <a
-                    href="https://search.google.com/search-console/url-inspection?resource_id=https%3A%2F%2Fwww.besteskort.online%2F&url=https%3A%2F%2Fwww.besteskort.online%2F"
+                    href="https://search.google.com/search-console/url-inspection"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1e2a3a] hover:bg-[#2a3a4f] text-blue-300 font-bold text-xs border border-blue-500/30 transition-all"
