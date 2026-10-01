@@ -55,7 +55,7 @@ export default function BmsSecurePortalDashboard() {
   const [scanProgress, setScanProgress] = useState<{ current: number; total: number; keyword: string } | null>(null);
   const [newKeywordInput, setNewKeywordInput] = useState('');
   const [testDomainInput, setTestDomainInput] = useState('');
-  const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(9999);
+  const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(100);
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
   const [boostingPing, setBoostingPing] = useState(false);
   const [boostPingResult, setBoostPingResult] = useState<any | null>(null);
