@@ -59,6 +59,9 @@ export default function BmsSecurePortalDashboard() {
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
   const [boostingPing, setBoostingPing] = useState(false);
   const [boostPingResult, setBoostPingResult] = useState<any | null>(null);
+  const [gscUrls, setGscUrls] = useState<string[]>([]);
+  const [gscLoading, setGscLoading] = useState(false);
+  const [gscCopied, setGscCopied] = useState(false);
 
   const handleAdminListingSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -363,6 +366,28 @@ export default function BmsSecurePortalDashboard() {
       alert('Hata: ' + e.message);
     } finally {
       setBoostingPing(false);
+    }
+  };
+
+  const handleFetchGscUrls = async () => {
+    setGscLoading(true);
+    setGscCopied(false);
+    try {
+      const res = await fetch('/api/admin/seo/gsc-urls');
+      const data = await res.json();
+      if (data.success && data.urls) {
+        setGscUrls(data.urls);
+        const text = data.urls.join('\n');
+        await navigator.clipboard.writeText(text);
+        setGscCopied(true);
+        setTimeout(() => setGscCopied(false), 4000);
+      } else {
+        alert(data.error || 'URL listesi alınamadı');
+      }
+    } catch (e: any) {
+      alert('Hata: ' + e.message);
+    } finally {
+      setGscLoading(false);
     }
   };
 
@@ -3095,6 +3120,78 @@ export default function BmsSecurePortalDashboard() {
                 )}
               </div>
             )}
+
+            {/* ── GOOGLE SEARCH CONSOLE HIZLI URL SUBMIT PANELI ── */}
+            <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-blue-400">🔍 Google Search Console — Hızlı URL Gönderimi</span>
+                  </div>
+                  <p className="text-[11px] text-[#8b949e] mt-0.5">
+                    Tüm aktif ilan URL'lerini kopyala → GSC URL Inspection aracına yapıştır → "Test Live URL" tıkla.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleFetchGscUrls}
+                    disabled={gscLoading}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    <Copy className={`w-3.5 h-3.5 ${gscLoading ? 'animate-pulse' : ''}`} />
+                    {gscLoading ? 'Yükleniyor...' : gscCopied ? '✅ Kopyalandı!' : '📋 URL Listesini Kopyala'}
+                  </button>
+                  <a
+                    href="https://search.google.com/search-console/sitemaps?resource_id=https%3A%2F%2Fwww.besteskort.online%2F"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1e2a3a] hover:bg-[#2a3a4f] text-blue-300 font-bold text-xs border border-blue-500/30 transition-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    GSC Sitemap
+                  </a>
+                  <a
+                    href="https://search.google.com/search-console/url-inspection?resource_id=https%3A%2F%2Fwww.besteskort.online%2F&url=https%3A%2F%2Fwww.besteskort.online%2F"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1e2a3a] hover:bg-[#2a3a4f] text-blue-300 font-bold text-xs border border-blue-500/30 transition-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    GSC URL Inspection
+                  </a>
+                </div>
+              </div>
+              {gscUrls.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-emerald-400 font-mono">✅ {gscUrls.length} URL hazır {gscCopied ? '— panoya kopyalandı!' : ''}</span>
+                    <button
+                      type="button"
+                      onClick={async () => { await navigator.clipboard.writeText(gscUrls.join('\n')); setGscCopied(true); setTimeout(() => setGscCopied(false), 3000); }}
+                      className="text-[10px] text-blue-400 hover:text-blue-300 px-2 py-0.5 rounded-md hover:bg-blue-500/10 transition-colors"
+                    >
+                      Tekrar Kopyala
+                    </button>
+                  </div>
+                  <div className="max-h-32 overflow-y-auto rounded-lg bg-[#0a0f14] border border-[#30363d] p-2">
+                    {gscUrls.slice(0, 20).map((url, i) => (
+                      <div key={i} className="text-[10px] font-mono text-[#8b949e] hover:text-blue-400 truncate cursor-pointer" onClick={() => window.open(url, '_blank')}>
+                        {url}
+                      </div>
+                    ))}
+                    {gscUrls.length > 20 && (
+                      <div className="text-[10px] text-[#8b949e] font-mono pt-1 border-t border-[#30363d] mt-1">
+                        ... ve {gscUrls.length - 20} URL daha (hepsi kopyalandı)
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[#8b949e]">
+                    💡 <strong className="text-white">Nasıl kullanılır:</strong> Kopyala → GSC &quot;URL Inspection&quot; kutusuna yapıştır → her URL için &quot;Request Indexing&quot; tıkla. Günde max ~10-15 URL manuel istek yapılabilir.
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Akıllı Sıralı Kuyruk Canlı İlerleme Çubuğu */}
             {scanProgress && (
