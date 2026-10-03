@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { MapPin, Sparkles, Building2 } from 'lucide-react';
 import { getLocationBySlug, getAllLocations, getListings, getHomepageConfig } from '@/lib/data';
+import { getNearbyCityListings } from '@/lib/geoProximity';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import FaqAccordion from '@/components/seo/FaqAccordion';
@@ -210,11 +211,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CityPage({ params }: Props) {
   const { il: ilSlug } = await params;
 
-  const [location, listings, activeBanner, homepageConfig] = await Promise.all([
+  const [location, listings, activeBanner, homepageConfig, nearbyListings] = await Promise.all([
     getLocationBySlug(ilSlug),
     getListings({ ilSlug, limit: 120 }),
     getActiveBanner('ilan_detay'),
     getHomepageConfig(),
+    getNearbyCityListings({ targetIlSlug: ilSlug, limit: 12 }),
   ]);
 
   if (!location) {
@@ -337,19 +339,51 @@ export default async function CityPage({ params }: Props) {
 
         {/* ── 2. 3'LÜ YAN YANA İLAN GRID LİSTESİ VEYA KATEGORİLİ GÖSTERİM ──────────────── */}
         {listings.length === 0 ? (
-          <div className="p-10 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3 shadow-xl">
-            <p className="text-sm font-bold text-white font-heading">
-              {location.il} bölgesinde henüz ilan bulunmuyor.
-            </p>
-            <p className="text-xs text-[#8b949e]">
-              İlk ilanı siz vererek bu ilde zirvede yer alabilirsiniz.
-            </p>
-            <Link
-              href="/ilan-ver"
-              className="mt-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-xl active:scale-95 transition-all"
-            >
-              Hemen İlan Ver
-            </Link>
+          <div className="flex flex-col gap-5">
+            {/* Komşu Şehirlerden Öneriler Başlığı */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-[#161b22] to-[#161b22] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md shrink-0">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-heading font-black text-sm sm:text-base text-white">
+                    {location.il} Bölgesine En Yakın Aktif İlanlar
+                  </h3>
+                  <p className="text-xs text-[#8b949e]">
+                    {location.il} merkez ve ilçelerine en yakın komşu illerdeki teyitli VIP modeller
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/ilan-ver"
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-md active:scale-95 transition-all shrink-0 text-center"
+              >
+                + {location.il} İlk İlanı Ver
+              </Link>
+            </div>
+
+            {/* Yakın Şehirlerin İlanları (3'lü Grid) */}
+            {nearbyListings && nearbyListings.length > 0 ? (
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+                {nearbyListings.map((item: any) => (
+                  <CompactListingCard key={item._id} listing={item} />
+                ))}
+              </div>
+            ) : (
+              <div className="p-10 rounded-3xl bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3 shadow-xl">
+                <p className="text-sm font-bold text-white font-heading">
+                  {location.il} ve çevre illerde henüz aktif ilan bulunmuyor.
+                </p>
+                <Link
+                  href="/ilan-ver"
+                  className="mt-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-xl active:scale-95 transition-all"
+                >
+                  Hemen İlk İlanı Ver
+                </Link>
+              </div>
+            )}
           </div>
         ) : (
           <CategorizedListingsSection

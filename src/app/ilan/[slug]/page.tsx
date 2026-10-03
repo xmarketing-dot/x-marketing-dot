@@ -26,6 +26,7 @@ import {
   Users
 } from 'lucide-react';
 import { getListingBySlug, getListings, getActiveBanner, getAllLocations } from '@/lib/data';
+import { getSmartRecommendedListings } from '@/lib/geoProximity';
 import { generateListingSeoContent } from '@/lib/seoData';
 import WhatsAppButton, { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
@@ -154,13 +155,14 @@ export default async function ListingDetailPage({ params }: Props) {
     listing.slug
   );
 
-  // Benzer İlanlar (Aynı şehirdeki diğer ilanlar)
-  const similarListings = await getListings({
+  // Benzer & Akıllı Önerilen İlanlar (Aynı ilçe/il + komşu iller + düşük görüntülenmeye adil trafik)
+  const filteredSimilar = await getSmartRecommendedListings({
+    currentListingId: listing._id ? listing._id.toString() : undefined,
+    currentSlug: listing.slug,
     ilSlug: listing.ilSlug,
+    ilceSlug: listing.ilceSlug,
     limit: 6,
   });
-
-  const filteredSimilar = similarListings.filter((l: any) => l.slug !== listing.slug);
 
   const allImages = listing.fotograflar && listing.fotograflar.length > 0
     ? listing.fotograflar
@@ -478,23 +480,25 @@ export default async function ListingDetailPage({ params }: Props) {
 
       </div>
 
-      {/* ── 4. AYNI ŞEHİRDEKİ BENZER İLANLAR (2/3 SÜTUNLU GRID) ──────────────── */}
-      {filteredSimilar.length > 0 && (
+      {/* ── 4. AKILLI ÖNERİLEN İLANLAR (AYNI ŞEHİR & ÇEVRE İLLER — 3 SÜTUNLU GRID) ──────────────── */}
+      {filteredSimilar && filteredSimilar.length > 0 && (
         <div className="mt-4 flex flex-col gap-3 px-1 sm:px-4 max-w-4xl mx-auto w-full">
           <div className="flex items-center justify-between pb-1.5 border-b border-[#30363d]">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
-                <Layers className="w-4 h-4" />
+                <Sparkles className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
                 <h3 className="font-black text-sm text-white uppercase tracking-wider font-heading">
-                  {ilAdi} Bölgesindeki Diğer İlanlar
+                  Sana Özel Önerilen Diğer İlanlar
                 </h3>
-                <span className="text-[10px] text-[#8b949e]">Aynı şehirdeki diğer teyitli profiller</span>
+                <span className="text-[10px] text-[#8b949e]">
+                  {ilAdi} ve çevre bölgelerden özenle seçilmiş teyitli VIP modeller
+                </span>
               </div>
             </div>
             <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-black font-heading border border-amber-500/20">
-              {filteredSimilar.length} İlan
+              {filteredSimilar.length} Öneri
             </span>
           </div>
 
