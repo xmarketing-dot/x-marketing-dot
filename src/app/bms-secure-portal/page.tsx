@@ -513,10 +513,16 @@ export default function BmsSecurePortalDashboard() {
       ua.includes('applebot') ||
       ua.includes('whatsapp') ||
       ua.includes('telegrambot') ||
-      ua.includes('facebookexternalhit');
+      ua.includes('facebookexternalhit') ||
+      ua.includes('meta-externalagent') ||
+      ua.includes('meta-') ||
+      ua.includes('facebook') ||
+      ua.includes('instagram') ||
+      ua.includes('twitterbot') ||
+      ua.includes('xbot');
 
     if (isSearchEngine) {
-      return { isSuspicious: false, isSearchEngine: true, badge: '✅ Arama Motoru (Google/Yandex)', reasons: [] };
+      return { isSuspicious: false, isSearchEngine: true, badge: '✅ Arama Motoru / Sosyal Bot', reasons: [] };
     }
 
     const reasons: string[] = [];
