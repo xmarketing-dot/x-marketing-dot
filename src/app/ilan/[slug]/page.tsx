@@ -465,6 +465,36 @@ export default async function ListingDetailPage({ params }: Props) {
           initialComments={listing.anonimYorumlar || []}
         />
 
+        {/* ── 3.5 AKILLI ÖNERİLEN İLANLAR (YORUMLARIN HEMEN ALTINDA — 3 SÜTUNLU GRID) ──────────────── */}
+        {filteredSimilar && filteredSimilar.length > 0 && (
+          <div className="mt-4 flex flex-col gap-3 w-full">
+            <div className="flex items-center justify-between pb-1.5 border-b border-[#30363d]">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="font-black text-sm text-white uppercase tracking-wider font-heading">
+                    Sana Özel Önerilen Diğer İlanlar
+                  </h3>
+                  <span className="text-[10px] text-[#8b949e]">
+                    {ilAdi} ve çevre bölgelerden özenle seçilmiş teyitli VIP modeller
+                  </span>
+                </div>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-black font-heading border border-amber-500/20">
+                {filteredSimilar.length} Öneri
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+              {filteredSimilar.map((item: any) => (
+                <CompactListingCard key={item._id} listing={item} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ── SEO İÇERİĞİ: Google thin content cezasını önlemek için 300+ kelimeli benzersiz metin ──────────────── */}
         <div className="mt-2 p-4 sm:p-5 rounded-2xl bg-[#161b22]/60 border border-[#30363d]/50 flex flex-col gap-3 text-sm text-[#8b949e] leading-relaxed">
           <h2 className="text-xs font-black text-white/70 uppercase tracking-widest font-heading flex items-center gap-2">
@@ -479,36 +509,6 @@ export default async function ListingDetailPage({ params }: Props) {
         </div>
 
       </div>
-
-      {/* ── 4. AKILLI ÖNERİLEN İLANLAR (AYNI ŞEHİR & ÇEVRE İLLER — 3 SÜTUNLU GRID) ──────────────── */}
-      {filteredSimilar && filteredSimilar.length > 0 && (
-        <div className="mt-4 flex flex-col gap-3 px-1 sm:px-4 max-w-4xl mx-auto w-full">
-          <div className="flex items-center justify-between pb-1.5 border-b border-[#30363d]">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
-                <Sparkles className="w-4 h-4" />
-              </div>
-              <div className="flex flex-col">
-                <h3 className="font-black text-sm text-white uppercase tracking-wider font-heading">
-                  Sana Özel Önerilen Diğer İlanlar
-                </h3>
-                <span className="text-[10px] text-[#8b949e]">
-                  {ilAdi} ve çevre bölgelerden özenle seçilmiş teyitli VIP modeller
-                </span>
-              </div>
-            </div>
-            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-black font-heading border border-amber-500/20">
-              {filteredSimilar.length} Öneri
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
-            {filteredSimilar.map((item: any) => (
-              <CompactListingCard key={item._id} listing={item} />
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ── 5. TÜRKİYE 81 İL CRAWLER MATRİSİ (BÖLGESEL LINK AĞI) ──────────────── */}
       <div className="mt-6 px-1 sm:px-4 max-w-4xl mx-auto w-full">
