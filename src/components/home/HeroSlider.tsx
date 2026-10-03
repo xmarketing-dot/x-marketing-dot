@@ -113,6 +113,13 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
   const [activeIdx, setActiveIdx] = useState(0);
   const [touching, setTouching] = useState(false);
   const [touchStartX, setTouchStartX] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Sayfa tam yüklendiğinde slider'ı hazırla
+  useEffect(() => {
+    setIsLoaded(true);
+  }, []);
 
   // Sadece aktif olan GIF slide'larını al
   const effectivePromoSlides = React.useMemo(() => {
@@ -188,20 +195,18 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
 
   // 5 Slot Arasında Otomatik Dönen Rotasyon
   const next = useCallback(() => {
-    setActiveIdx((prev) => (prev + 1) % fiveSlots.length);
+    setActiveIdx((prev) => (prev + 1) % (fiveSlots.length || 1));
   }, [fiveSlots.length]);
 
   const prev = useCallback(() => {
-    setActiveIdx((prev) => (prev - 1 + fiveSlots.length) % fiveSlots.length);
+    setActiveIdx((prev) => (prev - 1 + (fiveSlots.length || 1)) % (fiveSlots.length || 1));
   }, [fiveSlots.length]);
 
   // ── MOBİL & DÜŞÜK GÜÇLÜ CİHAZ DOSTU ÖNBELLEKLEME ──────────
-  // Sadece aktif ve bir sonraki slaytın görselini hafifçe hazırlar,
-  // telefonun GPU'sunu ve ağ kanalını kitlemez.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const nextIdx = (activeIdx + 1) % fiveSlots.length;
+    const nextIdx = (activeIdx + 1) % (fiveSlots.length || 1);
     const targets = [fiveSlots[activeIdx], fiveSlots[nextIdx]].filter(Boolean);
 
     targets.forEach((slot) => {
@@ -213,11 +218,18 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
     });
   }, [activeIdx, fiveSlots]);
 
+  // ── AKILLI SLIDE ZAMANLAYICI (İlk slaytta 7.5s rahat okuma/tıklama süresi) ──────────
   useEffect(() => {
-    if (fiveSlots.length <= 1) return;
-    const timer = setInterval(next, 5000);
-    return () => clearInterval(timer);
-  }, [fiveSlots.length, next]);
+    if (!isLoaded || fiveSlots.length <= 1 || isHovered || touching) return;
+
+    // İlk açılışta kullanıcının WhatsApp veya Profili İncele butonuna rahatça tıklayabilmesi için 7.5 saniye bekle
+    const delay = activeIdx === 0 ? 7500 : 6000;
+    const timer = setTimeout(() => {
+      next();
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [isLoaded, fiveSlots.length, activeIdx, isHovered, touching, next]);
 
   const currentSlot = fiveSlots[activeIdx] || fiveSlots[0];
 
@@ -243,6 +255,8 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
   return (
     <div 
       className="relative w-full overflow-hidden bg-[#0d1117] min-h-[500px] sm:min-h-[540px] h-[70vh] max-h-[640px] flex flex-col justify-between select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       onTouchStart={e => { setTouching(true); setTouchStartX(e.touches[0].clientX); }}
       onTouchEnd={e => {
         if (!touching) return;
