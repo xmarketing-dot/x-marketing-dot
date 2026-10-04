@@ -19,7 +19,12 @@ import {
   CreditCard, 
   Loader2,
   Home,
-  ShieldCheck
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp,
+  MessageSquare,
+  HelpCircle,
+  ExternalLink
 } from 'lucide-react';
 import CryptoPaymentCard from '@/components/common/CryptoPaymentCard';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
@@ -60,6 +65,7 @@ export default function ChatPage() {
   });
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  const [showCrypto, setShowCrypto] = useState(false);
   const [bannedInfo, setBannedInfo] = useState<{ isBanned: boolean; banSebebi?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -73,7 +79,7 @@ export default function ChatPage() {
     }
   }, [messages]);
 
-  // 1. Mobile Virtual Keyboard Scroll Handler
+  // Mobile Virtual Keyboard Scroll Handler
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -94,7 +100,7 @@ export default function ChatPage() {
     };
   }, []);
 
-  // 2. Initialize / Validate user thread on mount
+  // Initialize / Validate user thread on mount
   useEffect(() => {
     const initThread = async () => {
       try {
@@ -133,15 +139,13 @@ export default function ChatPage() {
           document.cookie = `best_eskort_chat_thread_id=${data.thread._id};path=/;max-age=31536000;SameSite=Lax`;
           window.dispatchEvent(new Event('storage'));
         }
-      } catch (err) {
-        // Silent
-      }
+      } catch (err) {}
     };
 
     initThread();
   }, []);
 
-  // 3. Fetch initial message history & SSE
+  // Fetch initial message history & SSE
   useEffect(() => {
     if (!threadId) return;
 
@@ -164,12 +168,9 @@ export default function ChatPage() {
           const uniqueNew = incoming.filter((m) => !existingIds.has(m._id));
           return uniqueNew.length > 0 ? [...prev, ...uniqueNew] : prev;
         });
-      } catch (err) {
-        // Silent
-      }
+      } catch (err) {}
     });
 
-    // Otomatik senkronizasyon (SSE'ye ek olarak 2.5 saniyede bir sessiz kontrol — mesaj asla kaçmaz)
     const pollInterval = setInterval(() => {
       fetch(`/api/chat/messages?threadId=${threadId}`)
         .then((res) => res.json())
@@ -206,7 +207,6 @@ export default function ChatPage() {
     try {
       let activeThreadId = threadId;
 
-      // Ensure thread is created if not ready
       const savedUserStr = typeof window !== 'undefined' ? localStorage.getItem('panel_user_session') : null;
       let parsedUser: any = null;
       if (savedUserStr) {
@@ -243,7 +243,6 @@ export default function ChatPage() {
         return;
       }
 
-      // Optimistic message
       const tempId = `temp-${Date.now()}`;
       const optimisticMsg: Message = {
         _id: tempId,
@@ -255,7 +254,6 @@ export default function ChatPage() {
       };
       setMessages((prev) => [...prev, optimisticMsg]);
 
-      // Post message to backend
       const res = await fetch('/api/chat/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -275,7 +273,6 @@ export default function ChatPage() {
         );
       }
     } catch (e) {
-      // Silent
     } finally {
       setSending(false);
       setTimeout(() => {
@@ -285,257 +282,255 @@ export default function ChatPage() {
   };
 
   const quickPrompts = [
-    '👑 İlan Vermek İstiyorum (Fiyat ve Detay Alabilir miyim?)',
-    '✅ İlan Verdim / Onaylatmak İstiyorum',
-    '🚀 VIP Vitrin & Reklam Alanı Satın Almak İstiyorum',
-    '🔑 İlan Yönetim Panel Şifremi Almak İstiyorum',
-    '💳 Güncel IBAN / Kripto Ödeme Bilgisi Alabilir miyim?'
+    { icon: '👑', label: 'İlan Vermek İstiyorum', msg: '👑 Merhaba, ilan vermek istiyorum. Fiyat ve detayları alabilir miyim?' },
+    { icon: '✅', label: 'İlanımı Onaylat', msg: '✅ Merhaba, ilan formu doldurdum. Onay ve yayın süreci hakkında bilgi rica ederim.' },
+    { icon: '🚀', label: 'VIP Vitrin Al', msg: '🚀 Merhaba, ana sayfa VIP vitrin ve reklam alanları hakkında bilgi almak istiyorum.' },
+    { icon: '🔑', label: 'Panel Şifresi Al', msg: '🔑 Merhaba, ilan yönetim panel şifremi talep ediyorum.' },
+    { icon: '💳', label: 'Ödeme Bilgisi', msg: '💳 Merhaba, güncel IBAN veya Kripto (USDT) ödeme bilgilerini iletir misiniz?' }
   ];
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#0d1117] flex flex-col justify-between overflow-hidden max-w-lg mx-auto md:border-x md:border-[#30363d] shadow-2xl relative">
+    <div className="h-[100dvh] max-h-[100dvh] w-full bg-[#0a0d12] flex flex-col justify-between overflow-hidden max-w-lg mx-auto md:border-x md:border-[#21262d] shadow-2xl relative font-sans">
       
-      {/* ── 1. FLAWLESS RESPONSIVE TOP HEADER (NATIVE TELEGRAM / IOS MESSAGES STYLE) ──────────────── */}
-      <header className="shrink-0 h-14 sm:h-16 px-3 sm:px-4 bg-[#161b22]/95 backdrop-blur-xl border-b border-[#30363d] flex items-center justify-between z-30 shadow-md gap-2 w-full">
+      {/* ── 1. ULTRA-CLEAN TOP HEADER (APPLE MESSAGES / TELEGRAM STYLE) ──────────────── */}
+      <header className="shrink-0 h-14 sm:h-15 px-3 sm:px-4 bg-[#111620]/90 backdrop-blur-xl border-b border-[#21262d] flex items-center justify-between z-30 shadow-xs gap-2 w-full">
         
-        {/* Left: Back Arrow + Profile Avatar + Responsive Title */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+        {/* Sol: Geri + Profil Avatarı + Bilgi */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <Link 
             href="/"
-            className="p-1.5 sm:p-2 -ml-1 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors shrink-0"
-            title="Geri Dön"
+            className="p-1.5 -ml-1 rounded-xl bg-[#1c212c] hover:bg-[#252b39] text-[#8b949e] hover:text-white transition-all active:scale-95 shrink-0"
+            title="Ana Sayfaya Dön"
           >
             <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
           </Link>
 
           <div className="relative shrink-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/20">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 fill-slate-950 text-slate-950" />
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/15">
+              <Sparkles className="w-4.5 h-4.5 fill-slate-950 text-slate-950" />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-[#161b22] animate-pulse" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-[#111620] animate-pulse" />
           </div>
 
-          <div className="flex flex-col min-w-0 flex-1 text-left leading-tight">
+          <div className="flex flex-col min-w-0 text-left leading-none gap-1">
             <div className="flex items-center gap-1.5 truncate">
-              <span className="font-heading font-black text-xs sm:text-sm text-white truncate drop-shadow-sm">
-                Best VIP Destek
+              <span className="font-heading font-black text-xs sm:text-sm text-white truncate drop-shadow-xs">
+                VIP Canlı Destek
               </span>
-              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-400 font-black text-[8px] sm:text-[9px] uppercase border border-amber-500/30 shrink-0">
-                Yetkili
+              <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-400 font-black text-[9px] uppercase tracking-wider border border-amber-500/25 shrink-0">
+                Resmi
               </span>
             </div>
-            <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 truncate mt-0.5">
+            <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
               <span>Çevrimiçi &bull; Ortalama 2 dk</span>
             </span>
           </div>
         </div>
 
-        {/* Right: Compact WhatsApp Pill Button + Clean Home Button */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        {/* Sağ: WhatsApp Hap Butonu */}
+        <div className="flex items-center gap-2 shrink-0">
           <a
-            href={getAdminWhatsAppUrl('Merhaba, Best VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve onaylatmak istiyorum.')}
+            href={getAdminWhatsAppUrl('Merhaba, VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve bilgi almak istiyorum.')}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white text-[11px] sm:text-xs font-heading font-black flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all shrink-0"
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-heading font-black flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0"
             title="WhatsApp Destek Hattı"
           >
             <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-white shrink-0" />
             <span>WhatsApp</span>
           </a>
-
-          <Link
-            href="/"
-            className="p-2 sm:px-2.5 sm:py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white transition-colors border border-[#30363d] shrink-0 flex items-center gap-1"
-            title="Ana Sayfaya Dön"
-          >
-            <Home className="w-4 h-4" />
-            <span className="hidden md:inline text-xs font-bold">Ana Sayfa</span>
-          </Link>
         </div>
       </header>
 
-      {/* ── 2. SCROLLABLE MESSAGE AREA OR BANNED SCREEN ──────────────── */}
+      {/* ── 2. MESAJ ALANI VE KULLANICI DOSTU ZARİF KARTLAR ──────────────── */}
       {bannedInfo?.isBanned ? (
-        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-4 bg-[#0d1117]">
-          <div className="w-16 h-16 rounded-3xl bg-red-500/20 border border-red-500/40 text-red-400 flex items-center justify-center font-black animate-pulse shadow-2xl">
-            <Lock className="w-8 h-8 stroke-[2.5]" />
+        <main className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-4 bg-[#0a0d12]">
+          <div className="w-14 h-14 rounded-3xl bg-red-500/15 border border-red-500/30 text-red-400 flex items-center justify-center font-black animate-pulse shadow-xl">
+            <Lock className="w-7 h-7 stroke-[2.5]" />
           </div>
 
           <div className="flex flex-col gap-1 max-w-sm">
-            <h2 className="text-lg font-black text-white font-heading">Erişiminiz Kısıtlanmıştır</h2>
-            <p className="text-xs text-red-400 font-bold mt-1 bg-red-500/10 p-3 rounded-2xl border border-red-500/20">
-              {bannedInfo.banSebebi || 'Güvenlik ve kural ihlali nedeniyle canlı desteğe erişiminiz engellendi.'}
+            <h2 className="text-base font-black text-white font-heading">Erişim Kısıtlandı</h2>
+            <p className="text-xs text-red-400/90 font-medium mt-1 bg-red-500/10 p-3 rounded-2xl border border-red-500/20 leading-relaxed">
+              {bannedInfo.banSebebi || 'Güvenlik kuralları gereği canlı desteğe erişiminiz sınırlandırılmıştır.'}
             </p>
           </div>
 
           <Link
             href="/"
-            className="mt-2 px-5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-bold transition-all border border-[#30363d]"
+            className="mt-1 px-4 py-2 rounded-xl bg-[#1c212c] hover:bg-[#252b39] text-white text-xs font-bold transition-all border border-[#2d3342]"
           >
             Ana Sayfaya Dön
           </Link>
         </main>
       ) : (
-        <main className="flex-1 overflow-y-auto p-3.5 sm:p-4 flex flex-col gap-3.5 no-scrollbar">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 flex flex-col gap-3 no-scrollbar">
         
-        {/* ── KOCAMAN İLAN VERMEK İSTİYORUM & ADMIN WHATSAPP EYLEM BLOĞU ──────────────── */}
-        <div className="flex flex-col gap-2.5 p-4 rounded-3xl bg-gradient-to-b from-[#1c2333] via-[#161b22] to-[#12161f] border-2 border-amber-500/60 shadow-2xl relative overflow-hidden">
-          
-          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
-          
-          <div className="flex items-center justify-between pb-1">
-            <span className="font-heading font-black text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 fill-amber-400" />
-              <span>Hızlı İlan &amp; Destek Masası</span>
-            </span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px] border border-emerald-500/30 animate-pulse">
-              ● Temsilci Aktif
-            </span>
-          </div>
-
-          {/* KOCAMAN İLAN VERMEK İSTİYORUM BUTONU */}
-          <Link
-            href="/ilan-ver"
-            className="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-heading font-black text-sm uppercase tracking-wider shadow-xl shadow-amber-500/25 flex items-center justify-between group active:scale-[0.98] transition-all"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-black/20 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 fill-slate-950 text-slate-950" />
-              </div>
-              <div className="flex flex-col text-left leading-tight">
-                <span className="text-sm font-black tracking-wide">👑 İLAN VERMEK İSTİYORUM</span>
-                <span className="text-[10px] font-bold text-slate-900 opacity-90">Hemen Formu Doldur &amp; Yayınlat ➔</span>
-              </div>
+          {/* ── SADE, MİNİMAL VE KULLANIŞLI HIZLI AKSİYON KARTI ──────────────── */}
+          <div className="p-3.5 rounded-2xl bg-[#111620]/95 border border-[#21262d] shadow-sm flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-heading font-black text-white/90 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                <span>Hızlı İlan &amp; Destek Merkezi</span>
+              </span>
+              <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                7/24 Aktif
+              </span>
             </div>
-            <Zap className="w-5 h-5 fill-slate-950 text-slate-950 group-hover:scale-125 transition-transform" />
-          </Link>
 
-          {/* KOCAMAN ADMIN WHATSAPP BUTONU */}
-          <a
-            href={getAdminWhatsAppUrl('Merhaba, Best VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve VIP vitrin hakkında bilgi almak istiyorum.')}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3.5 px-5 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-xs sm:text-sm uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex items-center justify-between group active:scale-[0.98] transition-all"
-          >
-            <div className="flex items-center gap-2.5">
-              <OfficialWhatsAppIcon className="w-6 h-6 fill-white shrink-0" />
-              <div className="flex flex-col text-left leading-tight">
-                <span className="font-black">📲 ADMIN WHATSAPP DİREKT HATTI</span>
-                <span className="text-[10px] font-medium text-emerald-100 opacity-95">Yöneticiye WhatsApp'tan Anında Yaz</span>
-              </div>
-            </div>
-            <span className="text-xs bg-white/20 px-2 py-1 rounded-lg">TIKLA YAZ ➔</span>
-          </a>
-
-          {/* Kripto / Güvenlik Alt Notu */}
-          <div className="pt-2 border-t border-white/10 flex flex-col gap-2">
-            <CryptoPaymentCard />
-            <div className="flex items-center justify-between text-[10px] text-[#8b949e] px-1">
-              <span>⚡ Ortalama yanıt süresi: <strong>2-5 Dakika</strong></span>
-              <span>🔒 256-Bit Güvenli İletişim</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── HIZLI SORU / İLAN MESAJ BUTONLARI (KULLANICI DOKUNUNCA GÖNDERİR) ──────────────── */}
-        {messages.length === 0 && (
-          <div className="flex flex-col gap-2 my-1">
-            <span className="text-[11px] text-amber-400 font-heading font-black uppercase tracking-wider px-1 flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span>Hızlı Mesaj Gönder:</span>
-            </span>
-            <div className="flex flex-col gap-2">
-              {quickPrompts.map((prompt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSend(prompt)}
-                  className="text-left px-4 py-3 rounded-2xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] hover:border-amber-400 text-xs text-[#f0f6fc] font-bold transition-all active:scale-[0.98] shadow-md flex items-center justify-between group cursor-pointer"
-                >
-                  <span className="flex-1">{prompt}</span>
-                  <SendHorizontal className="w-4 h-4 text-amber-400 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Mesaj Balonları */}
-        {messages.map((msg) => {
-          const isAdmin = msg.gonderenTipi === 'admin';
-          return (
-            <div
-              key={msg._id}
-              className={`flex flex-col max-w-[85%] ${isAdmin ? 'self-start' : 'self-end items-end'}`}
-            >
-              <div
-                className={`p-3.5 rounded-3xl text-xs leading-relaxed shadow-lg whitespace-pre-wrap break-words ${
-                  isAdmin
-                    ? 'bg-[#161b22] text-[#f0f6fc] rounded-tl-sm border border-[#30363d]'
-                    : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-bold rounded-tr-sm shadow-amber-500/20'
-                }`}
+            {/* 2 EŞİT YAN YANA AKSİYON BUTONU */}
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href="/ilan-ver"
+                className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all text-center"
               >
-                {msg.mesaj.split(/(https?:\/\/[^\s]+)/g).map((part, idx) => {
-                  if (part.startsWith('http://') || part.startsWith('https://')) {
-                    return (
-                      <a
-                        key={idx}
-                        href={part}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-amber-400 underline font-black hover:text-amber-300 break-all block my-1.5 p-2 rounded-xl bg-amber-500/10 border border-amber-500/30"
-                      >
-                        🔗 {part}
-                      </a>
-                    );
-                  }
-                  return part;
-                })}
-              </div>
+                <span>👑 İlan Ver</span>
+              </Link>
 
-              <div className="flex items-center gap-1 mt-1 px-1.5 text-[9px] text-[#8b949e] font-medium">
-                <span>{new Date(msg.createdAt || Date.now()).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
-                {!isAdmin && <CheckCheck className="w-3 h-3 text-amber-400" />}
+              <a
+                href={getAdminWhatsAppUrl('Merhaba, VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve VIP vitrin hakkında bilgi almak istiyorum.')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all text-center"
+              >
+                <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
+                <span>WhatsApp</span>
+              </a>
+            </div>
+
+            {/* İsteğe Bağlı Kripto Bilgisi Akordiyonu */}
+            <div className="border-t border-[#1c212c] pt-2 flex flex-col">
+              <button
+                type="button"
+                onClick={() => setShowCrypto(!showCrypto)}
+                className="flex items-center justify-between text-[11px] text-[#8b949e] hover:text-white transition-colors py-0.5"
+              >
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Wallet className="w-3 h-3 text-amber-400" />
+                  <span>Kripto (USDT / TRC20) Ödeme Bilgileri</span>
+                </span>
+                {showCrypto ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+
+              {showCrypto && (
+                <div className="mt-2 animate-fadeIn">
+                  <CryptoPaymentCard />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ── ZARİF VE YATAY HIZLI MESAJ ÇİPLERİ (MESAJ YOKKEN GÖZÜKÜR) ──────────────── */}
+          {messages.length === 0 && (
+            <div className="flex flex-col gap-2 my-1">
+              <span className="text-[11px] text-[#8b949e] font-heading font-bold px-1 flex items-center gap-1">
+                <MessageSquare className="w-3 h-3 text-amber-400" />
+                <span>Sık Sorulan Hızlı Sorular:</span>
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {quickPrompts.map((p, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSend(p.msg)}
+                    className="text-left px-3 py-2.5 rounded-xl bg-[#111620] hover:bg-[#181f2c] border border-[#21262d] hover:border-amber-400/50 text-xs text-[#c9d1d9] hover:text-white font-medium transition-all active:scale-[0.98] flex items-center justify-between group shadow-2xs"
+                  >
+                    <span className="truncate flex items-center gap-1.5">
+                      <span>{p.icon}</span>
+                      <span className="truncate">{p.label}</span>
+                    </span>
+                    <SendHorizontal className="w-3.5 h-3.5 text-amber-400 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
+                  </button>
+                ))}
               </div>
             </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
-      </main>
+          )}
+
+          {/* ── MESAJ BALONLARI (CHAT BUBBLES) ──────────────── */}
+          {messages.map((msg) => {
+            const isAdmin = msg.gonderenTipi === 'admin';
+            return (
+              <div
+                key={msg._id}
+                className={`flex flex-col max-w-[85%] sm:max-w-[80%] ${isAdmin ? 'self-start' : 'self-end items-end'}`}
+              >
+                <div
+                  className={`p-3 rounded-2xl text-xs leading-relaxed shadow-sm whitespace-pre-wrap break-words ${
+                    isAdmin
+                      ? 'bg-[#151b26] text-[#e6edf3] rounded-tl-xs border border-[#283141]'
+                      : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-semibold rounded-tr-xs shadow-amber-500/10'
+                  }`}
+                >
+                  {msg.mesaj.split(/(https?:\/\/[^\s]+)/g).map((part, idx) => {
+                    if (part.startsWith('http://') || part.startsWith('https://')) {
+                      return (
+                        <a
+                          key={idx}
+                          href={part}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-amber-400 underline font-bold hover:text-amber-300 break-all block my-1 p-1.5 rounded-lg bg-black/20 border border-amber-500/20"
+                        >
+                          🔗 {part}
+                        </a>
+                      );
+                    }
+                    return part;
+                  })}
+                </div>
+
+                <div className="flex items-center gap-1 mt-0.5 px-1 text-[9px] text-[#6e7681] font-medium">
+                  <span>{new Date(msg.createdAt || Date.now()).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
+                  {!isAdmin && <CheckCheck className="w-3 h-3 text-amber-400" />}
+                </div>
+              </div>
+            );
+          })}
+          <div ref={messagesEndRef} />
+        </main>
       )}
 
-      {/* ── 3. FIXED BOTTOM INPUT (KLAVYE ÜSTÜNE TAM YAPIŞAN BAR) ─────────────── */}
+      {/* ── 3. FIXED BOTTOM INPUT BAR (KLAVYE VE MOBİLE TAM UYUMLU) ─────────────── */}
       {!bannedInfo?.isBanned && (
-        <footer className="shrink-0 p-2.5 sm:p-3 px-3 sm:px-4 bg-[#161b22] border-t border-[#30363d] z-30 pb-[max(env(safe-area-inset-bottom),10px)] flex flex-col gap-2">
-          {/* Hızlı Aksiyon Çipleri */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <Link
-              href="/ilan-ver"
-              className="px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-heading font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-md shrink-0 active:scale-95 transition-all"
+        <footer className="shrink-0 p-2 sm:p-2.5 px-3 sm:px-4 bg-[#111620]/95 backdrop-blur-xl border-t border-[#21262d] z-30 pb-[max(env(safe-area-inset-bottom),8px)] flex flex-col gap-1.5">
+          
+          {/* Hızlı Çipler (Yatay Scroll) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <button
+              type="button"
+              onClick={() => handleSend('👑 Merhaba, ilan vermek istiyorum. Fiyat ve detay alabilir miyim?')}
+              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-amber-400 font-bold text-[11px] border border-amber-500/20 shrink-0 active:scale-95 transition-all flex items-center gap-1"
             >
-              <Sparkles className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
-              <span>👑 İlan Vermek İstiyorum</span>
-            </Link>
-
-            <a
-              href={getAdminWhatsAppUrl('Merhaba, Best VIP üzerinden yazıyorum. İlan vermek ve onaylatmak istiyorum.')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-[11px] uppercase tracking-wider flex items-center gap-1 shadow-md shrink-0 active:scale-95 transition-all"
-            >
-              <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-white shrink-0" />
-              <span>📲 Admin WhatsApp</span>
-            </a>
+              <span>👑 İlan Ver</span>
+            </button>
 
             <button
               type="button"
-              onClick={() => handleSend('✅ İlan verdim, onay ve panel şifresi rica ediyorum.')}
-              className="px-3 py-1 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] font-bold text-[11px] border border-[#30363d] shrink-0 active:scale-95 transition-all"
+              onClick={() => handleSend('✅ İlanımı oluşturdum, onay ve kontrol rica ediyorum.')}
+              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-emerald-400 font-bold text-[11px] border border-emerald-500/20 shrink-0 active:scale-95 transition-all flex items-center gap-1"
             >
-              ✅ İlan Verdim
+              <span>✅ İlan Onayı</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSend('🔑 İlan yönetim paneli şifremi alabilir miyim?')}
+              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-[#c9d1d9] font-medium text-[11px] border border-[#283141] shrink-0 active:scale-95 transition-all"
+            >
+              🔑 Panel Şifresi
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleSend('💳 Ödeme bilgilerini alabilir miyim?')}
+              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-[#c9d1d9] font-medium text-[11px] border border-[#283141] shrink-0 active:scale-95 transition-all"
+            >
+              💳 Ödeme
             </button>
           </div>
 
+          {/* Form Input */}
           <form 
             onSubmit={(e) => { 
               e.preventDefault(); 
@@ -554,12 +549,13 @@ export default function ChatPage() {
                   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                 }, 250);
               }}
-              className="flex-1 px-4 py-3 rounded-2xl bg-[#21262d] border border-[#30363d] text-white text-[16px] sm:text-xs placeholder-[#8b949e] focus:outline-none focus:border-amber-400 transition-colors font-medium"
+              className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#181f2c] border border-[#283141] text-white text-xs placeholder-[#6e7681] focus:outline-none focus:border-amber-400 transition-colors font-medium shadow-inner"
             />
             <button
               type="submit"
               disabled={sending || !inputText.trim()}
-              className="w-11 h-11 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-lg shadow-amber-500/25 transition-all disabled:opacity-40 active:scale-95 flex items-center justify-center shrink-0"
+              className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black shadow-md shadow-amber-500/20 transition-all disabled:opacity-40 active:scale-95 flex items-center justify-center shrink-0"
+              title="Gönder"
             >
               {sending ? (
                 <Loader2 className="w-4 h-4 animate-spin stroke-[2.5]" />
@@ -574,4 +570,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
