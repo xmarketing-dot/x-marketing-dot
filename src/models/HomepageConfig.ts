@@ -202,7 +202,7 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
     },
     sliderIlanIds: [{ type: Schema.Types.ObjectId, ref: 'Listing' }],
     oneCikanKategoriler: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
-    adminWhatsApp: { type: String, default: '+6283829048050' },
+    adminWhatsApp: { type: String, default: '' },
   },
   { timestamps: true, autoIndex: false }
 );

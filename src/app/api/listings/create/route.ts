@@ -243,7 +243,7 @@ export async function POST(req: NextRequest) {
       const { generateAutoPackageMessage, ADMIN_PHONE_NUMBER } = await import('@/lib/siteConfig');
       const HomepageConfigModel = (await import('@/models/HomepageConfig')).default;
       const currentConfig = await HomepageConfigModel.findOne({ key: 'singleton' }).lean().catch(() => null);
-      const activeAdminPhone = currentConfig?.adminWhatsApp || ADMIN_PHONE_NUMBER;
+      const activeAdminPhone = currentConfig?.adminWhatsApp || '';
       const autoAdminReply = generateAutoPackageMessage(baslik, resolvedPassword, activeAdminPhone);
 
       const adminMsg = await ChatMessageModel.create({

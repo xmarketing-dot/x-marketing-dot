@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { 
-  getActiveAdminPhone, 
-  parsePhoneNumber, 
-  getAdminWhatsAppUrl, 
+import { useState, useEffect, useCallback } from 'react';
+import {
+  getActiveAdminPhone,
+  parsePhoneNumber,
+  getAdminWhatsAppUrl,
   setClientAdminWhatsApp,
-  FormattedPhoneDetails 
-} from '@/lib/siteConfig';
+  FormattedPhoneDetails,
+} from './siteConfig';
 
 export interface UseAdminWhatsAppReturn {
   phone: string;
@@ -18,64 +18,63 @@ export interface UseAdminWhatsAppReturn {
   details: FormattedPhoneDetails;
   getWaUrl: (customMessage?: string) => string;
   openWhatsApp: (customMessage?: string) => void;
-  syncWithServer: () => Promise<string | null>;
+  updatePhone: (newPhone: string) => void;
 }
 
-/**
- * React Hook for Real-Time Admin WhatsApp Number
- * Automatically re-renders when admin number changes via BMS portal, localStorage or custom events.
- */
 export function useAdminWhatsApp(): UseAdminWhatsAppReturn {
-  const [phone, setPhone] = useState<string>(() => getActiveAdminPhone());
+  const [phone, setPhone] = useState<string>(() => {
+    return getActiveAdminPhone();
+  });
+
+  const details = parsePhoneNumber(phone);
 
   useEffect(() => {
-    // 1. Initial check from memory or localStorage
-    const current = getActiveAdminPhone();
-    if (current && current !== phone) {
-      setPhone(current);
-    }
+    // 1. Storage & custom event listeners for instant sync across tabs / components
+    const handleUpdate = (e: any) => {
+      const updatedPhone = e?.detail !== undefined ? e.detail : getActiveAdminPhone();
+      setPhone(updatedPhone || '');
+    };
 
-    // 2. Real-time update listeners (across components, pages and tabs)
-    const handleUpdate = () => {
-      const fresh = getActiveAdminPhone();
-      setPhone(fresh);
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'bms_admin_whatsapp') {
+        setPhone(e.newValue || '');
+      }
     };
 
     window.addEventListener('bms_admin_phone_updated', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('storage', handleStorage);
 
     return () => {
       window.removeEventListener('bms_admin_phone_updated', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('storage', handleStorage);
     };
-  }, [phone]);
+  }, []);
 
-  const details = useMemo(() => parsePhoneNumber(phone), [phone]);
+  const getWaUrl = useCallback(
+    (customMessage?: string) => {
+      return getAdminWhatsAppUrl(customMessage, phone);
+    },
+    [phone]
+  );
 
-  const getWaUrl = useCallback((customMessage?: string) => {
-    return getAdminWhatsAppUrl(customMessage, phone);
-  }, [phone]);
-
-  const openWhatsApp = useCallback((customMessage?: string) => {
-    const livePhone = getActiveAdminPhone(phone);
-    const url = getAdminWhatsAppUrl(customMessage, livePhone);
-    if (typeof window !== 'undefined') {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
-  }, [phone]);
-
-  const syncWithServer = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/config?t=${Date.now()}`, { cache: 'no-store' });
-      const data = await res.json();
-      const serverPhone = data?.config?.adminWhatsApp || data?.adminPhone?.raw;
-      if (serverPhone) {
-        setClientAdminWhatsApp(serverPhone);
-        setPhone(serverPhone);
-        return serverPhone;
+  const openWhatsApp = useCallback(
+    (customMessage?: string) => {
+      const livePhone = getActiveAdminPhone() || phone;
+      const url = getAdminWhatsAppUrl(customMessage, livePhone);
+      if (typeof window !== 'undefined') {
+        if (url && url !== '#') {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        } else {
+          alert('Admin WhatsApp iletişim hattı henüz tanımlanmamış.');
+        }
       }
-    } catch (e) {}
-    return null;
+    },
+    [phone]
+  );
+
+  const updatePhone = useCallback((newPhone: string) => {
+    setClientAdminWhatsApp(newPhone);
+    setPhone(newPhone);
   }, []);
 
   return {
@@ -87,6 +86,6 @@ export function useAdminWhatsApp(): UseAdminWhatsAppReturn {
     details,
     getWaUrl,
     openWhatsApp,
-    syncWithServer,
+    updatePhone,
   };
 }

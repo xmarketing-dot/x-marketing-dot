@@ -82,7 +82,7 @@ export async function GET(req: Request) {
       }
     }
 
-    const activePhone = config?.adminWhatsApp || ADMIN_PHONE_NUMBER;
+    const activePhone = config?.adminWhatsApp || '';
     const adminPhone = parsePhoneNumber(activePhone);
 
     return NextResponse.json(

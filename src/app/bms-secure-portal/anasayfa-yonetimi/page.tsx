@@ -138,7 +138,7 @@ export default function AdminHomepageConfigPage() {
   const [bannerLink, setBannerLink] = useState('');
   const [bannerRozet, setBannerRozet] = useState('👑 VIP DUYURU');
   const [bannerAktif, setBannerAktif] = useState(true);
-  const [adminWhatsApp, setAdminWhatsApp] = useState('+6283829048050');
+  const [adminWhatsApp, setAdminWhatsApp] = useState('');
   const [savingAdminWa, setSavingAdminWa] = useState(false);
   const [adminWaSuccess, setAdminWaSuccess] = useState(false);
 
@@ -1124,7 +1124,7 @@ export default function AdminHomepageConfigPage() {
           <div className="flex items-center gap-2 bg-[#0d1117] border border-[#30363d] px-3 py-1.5 rounded-xl text-xs font-mono self-start lg:self-auto">
             <span className="text-[#8b949e] text-[10px]">Aktif Hat:</span>
             <span className="text-emerald-400 font-black">
-              {parsePhoneNumber(adminWhatsApp).formatted || '+62 838 2904 8050'}
+              {parsePhoneNumber(adminWhatsApp).formatted || 'Tanımlanmadı'}
             </span>
           </div>
         </div>
@@ -1139,7 +1139,7 @@ export default function AdminHomepageConfigPage() {
               type="text"
               value={adminWhatsApp}
               onChange={(e) => setAdminWhatsApp(e.target.value)}
-              placeholder="Yeni WhatsApp Numarası (Örn: +6283829048050 veya 0532...)"
+              placeholder="Yeni WhatsApp Numarası (Örn: +905xxxxxxxxx veya 0532...)"
               className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white font-mono text-xs sm:text-sm focus:border-emerald-500 focus:outline-none transition-colors"
             />
           </div>

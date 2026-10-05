@@ -591,7 +591,7 @@ function SiteYonetimiContent() {
                     type="text"
                     value={adminWhatsApp}
                     onChange={(e) => setAdminWhatsApp(e.target.value)}
-                    placeholder="Örn: 6283829048050 veya 905551234567"
+                    placeholder="Örn: 905xxxxxxxxx veya 905551234567"
                     className="w-full pl-3.5 pr-10 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-emerald-500/50 text-white font-mono text-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all shadow-inner"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400">
