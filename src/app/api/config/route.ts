@@ -4,6 +4,7 @@ import connectToDatabase from '@/lib/mongodb';
 import HomepageConfigModel from '@/models/HomepageConfig';
 import ListingModel from '@/models/Listing';
 import { checkAndExpireShowcases, checkAndExpirePopups } from '@/lib/vitrinManager';
+import { parsePhoneNumber, ADMIN_PHONE_NUMBER } from '@/lib/siteConfig';
 
 export const dynamic = 'force-dynamic';
 
@@ -81,10 +82,14 @@ export async function GET(req: Request) {
       }
     }
 
+    const activePhone = config?.adminWhatsApp || ADMIN_PHONE_NUMBER;
+    const adminPhone = parsePhoneNumber(activePhone);
+
     return NextResponse.json(
       { 
         config: JSON.parse(JSON.stringify(config)),
         detectedCity: detectedCity || null,
+        adminPhone,
       },
       {
         headers: {

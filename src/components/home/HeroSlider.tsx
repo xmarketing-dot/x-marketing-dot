@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
-import { getAdminWhatsAppNumber } from '@/lib/siteConfig';
+import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
 import { trackEvent } from '@/components/common/AnalyticsTracker';
 
 export interface DynamicHeroSlide {
@@ -57,6 +57,7 @@ interface HeroSliderProps {
   slides?: DynamicHeroSlide[];
   promoSlides?: PromoSlideItem[];
   banner?: any;
+  adminWhatsApp?: string;
 }
 
 // ── VİTRİN BOŞKEN DÖNECEK ÖZEL GIF & SLOGAN LİSTESİ ────────────────
@@ -108,7 +109,7 @@ const DEFAULT_EMPTY_VITRIN_SLIDES: PromoSlideItem[] = [
   },
 ];
 
-export default function HeroSlider({ slides = [], promoSlides = [], banner = null }: HeroSliderProps) {
+export default function HeroSlider({ slides = [], promoSlides = [], banner = null, adminWhatsApp }: HeroSliderProps) {
   const router = useRouter();
   const [activeIdx, setActiveIdx] = useState(0);
   const [touching, setTouching] = useState(false);
@@ -250,7 +251,6 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
   const origin = typeof window !== 'undefined' && window.location.origin
     ? window.location.origin
     : (process.env.NEXT_PUBLIC_SITE_URL || '');
-  const cleanAdminWaNumber = getAdminWhatsAppNumber();
 
   return (
     <div 
@@ -486,8 +486,10 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
         // BOŞ VİTRİN PROMO REKLAM KARTI
         (() => {
           const promo = currentSlot.promoData;
-          const promoWaMessage = encodeURIComponent(`Merhaba, ${origin} adresindeki Anasayfa VIP Vitrin Slot #${activeIdx + 1} Reklam Alanında yer almak istiyorum. Fiyat ve detaylar hakkında bilgi alabilir miyim?`);
-          const promoWaUrl = `https://wa.me/${cleanAdminWaNumber}?text=${promoWaMessage}`;
+          const promoWaUrl = getAdminWhatsAppUrl(
+            `Merhaba, ${origin} adresindeki Anasayfa VIP Vitrin Slot #${activeIdx + 1} Reklam Alanında yer almak istiyorum. Fiyat ve detaylar hakkında bilgi alabilir miyim?`,
+            adminWhatsApp
+          );
 
           return (
             <div className="relative z-30 px-3.5 pb-4 pt-2 flex flex-col gap-2 w-full max-w-2xl mx-auto text-left">

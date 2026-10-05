@@ -197,6 +197,7 @@ export async function POST(req: NextRequest) {
       bannerAktif,
       bannerRozet,
       duyurular,
+      adminWhatsApp,
       sliderIlanIds,
       ozelIlanReklam,
       ozelIlanReklamlar,
@@ -369,6 +370,10 @@ export async function POST(req: NextRequest) {
 
     if (Array.isArray(duyurular)) {
       updateData.duyurular = duyurular;
+    }
+
+    if (adminWhatsApp !== undefined) {
+      updateData.adminWhatsApp = String(adminWhatsApp).trim();
     }
 
     if (Array.isArray(sliderIlanIds)) {

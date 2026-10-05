@@ -44,6 +44,7 @@ export interface IHomepageConfig extends Document {
   ozelIlanReklamlar: IOzelIlanReklam[];
   duyurular: ITickerItem[];
   bosVitrinSliderlar: IBosVitrinSlider[];
+  adminWhatsApp?: string;
   sliderIlanIds: mongoose.Types.ObjectId[];
   oneCikanKategoriler: mongoose.Types.ObjectId[];
 }
@@ -201,6 +202,7 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
     },
     sliderIlanIds: [{ type: Schema.Types.ObjectId, ref: 'Listing' }],
     oneCikanKategoriler: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
+    adminWhatsApp: { type: String, default: '+6283829048050' },
   },
   { timestamps: true, autoIndex: false }
 );

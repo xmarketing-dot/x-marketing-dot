@@ -240,8 +240,11 @@ export async function POST(req: NextRequest) {
       });
 
       // 2. Otomatik Yönetici / Sistem Paket Bilgilendirme ve Ödeme Mesajı
-      const { generateAutoPackageMessage } = await import('@/lib/siteConfig');
-      const autoAdminReply = generateAutoPackageMessage(baslik, resolvedPassword);
+      const { generateAutoPackageMessage, ADMIN_PHONE_NUMBER } = await import('@/lib/siteConfig');
+      const HomepageConfigModel = (await import('@/models/HomepageConfig')).default;
+      const currentConfig = await HomepageConfigModel.findOne({ key: 'singleton' }).lean().catch(() => null);
+      const activeAdminPhone = currentConfig?.adminWhatsApp || ADMIN_PHONE_NUMBER;
+      const autoAdminReply = generateAutoPackageMessage(baslik, resolvedPassword, activeAdminPhone);
 
       const adminMsg = await ChatMessageModel.create({
         threadId: finalThreadId,

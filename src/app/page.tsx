@@ -299,6 +299,7 @@ export default async function HomePage() {
           slides={formattedShowcaseListings}
           promoSlides={homepageConfig?.bosVitrinSliderlar}
           banner={activeBanner}
+          adminWhatsApp={homepageConfig?.adminWhatsApp}
         />
       </section>
 

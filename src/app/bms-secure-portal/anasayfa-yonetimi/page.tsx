@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { turkeyProvinces } from '@/data/turkeyLocations';
+import { parsePhoneNumber, setClientAdminWhatsApp } from '@/lib/siteConfig';
 
 interface TickerItem {
   badge: string;
@@ -137,6 +138,9 @@ export default function AdminHomepageConfigPage() {
   const [bannerLink, setBannerLink] = useState('');
   const [bannerRozet, setBannerRozet] = useState('👑 VIP DUYURU');
   const [bannerAktif, setBannerAktif] = useState(true);
+  const [adminWhatsApp, setAdminWhatsApp] = useState('+6283829048050');
+  const [savingAdminWa, setSavingAdminWa] = useState(false);
+  const [adminWaSuccess, setAdminWaSuccess] = useState(false);
 
   // Rotating Ticker Announcements
   const [duyurular, setDuyurular] = useState<TickerItem[]>([
@@ -241,6 +245,10 @@ export default function AdminHomepageConfigPage() {
         setBannerLink(data.config.aktifBanner?.link || '/ilan-ver');
         setBannerRozet(data.config.aktifBanner?.rozet || '👑 VIP DUYURU');
         setBannerAktif(data.config.aktifBanner?.aktif ?? true);
+        if (data.config.adminWhatsApp) {
+          setAdminWhatsApp(data.config.adminWhatsApp);
+          setClientAdminWhatsApp(data.config.adminWhatsApp);
+        }
 
         // Multi-ad array loading
         if (Array.isArray(data.config.ozelIlanReklamlar) && data.config.ozelIlanReklamlar.length > 0) {
@@ -882,6 +890,33 @@ export default function AdminHomepageConfigPage() {
     await saveSpecialAdsToDb(ozelIlanReklamlar);
   };
 
+  const handleQuickSaveWhatsApp = async () => {
+    const trimmed = adminWhatsApp.trim();
+    if (!trimmed) {
+      alert('Lütfen geçerli bir telefon numarası girin.');
+      return;
+    }
+    setSavingAdminWa(true);
+    try {
+      const res = await fetch('/api/admin/homepage-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminWhatsApp: trimmed }),
+      });
+      if (res.ok) {
+        setClientAdminWhatsApp(trimmed);
+        setAdminWaSuccess(true);
+        setTimeout(() => setAdminWaSuccess(false), 5000);
+      } else {
+        alert('Numara kaydedilemedi');
+      }
+    } catch (e: any) {
+      alert('Hata: ' + e.message);
+    } finally {
+      setSavingAdminWa(false);
+    }
+  };
+
   const handleSaveAll = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setSaving(true);
@@ -901,6 +936,7 @@ export default function AdminHomepageConfigPage() {
           bannerAktif,
           bannerRozet,
           duyurular,
+          adminWhatsApp,
           sliderIlanIds: selectedListingIds,
           ozelIlanReklamlar,
           bosVitrinSliderlar,
@@ -1056,6 +1092,92 @@ export default function AdminHomepageConfigPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ── CANLI ADMİN WHATSAPP DESTEK HATTI YÖNETİM PANELİ (ANINDA CANLIYA AL) ──────────────── */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#111a14] via-[#161b22] to-[#121c16] border border-emerald-500/40 shadow-2xl flex flex-col gap-3.5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
+              <OfficialWhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6 fill-[#25D366]" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <h2 className="font-black text-sm sm:text-base text-white font-heading">
+                  Canlı Admin WhatsApp Destek Hattı
+                </h2>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono text-[9px] font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>CANLIDA AKTİF</span>
+                </span>
+              </div>
+              <p className="text-[11px] text-[#8b949e]">
+                Numaranız engellendiğinde/patladığında yeni numarayı buraya girip kaydedin. Deploy gerekmeden tüm sitede anında aktif olur.
+              </p>
+            </div>
+          </div>
+
+          {/* Aktif Numara Önizleme Rozeti */}
+          <div className="flex items-center gap-2 bg-[#0d1117] border border-[#30363d] px-3 py-1.5 rounded-xl text-xs font-mono self-start lg:self-auto">
+            <span className="text-[#8b949e] text-[10px]">Aktif Hat:</span>
+            <span className="text-emerald-400 font-black">
+              {parsePhoneNumber(adminWhatsApp).formatted || '+62 838 2904 8050'}
+            </span>
+          </div>
+        </div>
+
+        {/* Input & Aksiyon Butonları */}
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
+          <div className="relative flex-1 w-full">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#25D366]">
+              <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
+            </div>
+            <input
+              type="text"
+              value={adminWhatsApp}
+              onChange={(e) => setAdminWhatsApp(e.target.value)}
+              placeholder="Yeni WhatsApp Numarası (Örn: +6283829048050 veya 0532...)"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white font-mono text-xs sm:text-sm focus:border-emerald-500 focus:outline-none transition-colors"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            {/* WhatsApp Test Et Butonu */}
+            <a
+              href={`https://wa.me/${parsePhoneNumber(adminWhatsApp).raw}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-emerald-400 border border-emerald-500/30 text-xs font-bold font-heading flex items-center justify-center gap-1.5 transition-colors shadow-md"
+              title="Numaranın WhatsApp hesabının açık olduğunu test et"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Test Et</span>
+            </a>
+
+            {/* Hızlı Kaydet Butonu */}
+            <button
+              type="button"
+              onClick={handleQuickSaveWhatsApp}
+              disabled={savingAdminWa}
+              className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 font-black text-xs uppercase font-heading flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {savingAdminWa ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+              )}
+              <span>{savingAdminWa ? 'Kaydediliyor...' : 'Numarayı Kaydet & Yayına Al'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Başarı Bildirimi Toast */}
+        {adminWaSuccess && (
+          <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>✅ Yeni WhatsApp numarası kaydedildi! Sitedeki tüm butonlar ve paket mesajları anında bu numaraya bağlandı.</span>
+          </div>
+        )}
       </div>
 
       {message && (

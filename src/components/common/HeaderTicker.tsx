@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { setClientAdminWhatsApp } from '@/lib/siteConfig';
 
 interface TickerItem {
   badge: string;
@@ -52,6 +53,9 @@ export default function HeaderTicker() {
       .then((res) => res.json())
       .then((data) => {
         if (data.config) {
+          if (data.config.adminWhatsApp) {
+            setClientAdminWhatsApp(data.config.adminWhatsApp);
+          }
           // 1. Admin panelinden gelen duyurular listesi varsa doğrudan tek kaynak olarak kullan
           if (Array.isArray(data.config.duyurular) && data.config.duyurular.length > 0) {
             const list: TickerItem[] = data.config.duyurular
