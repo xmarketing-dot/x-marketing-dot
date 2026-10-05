@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Settings,
   ShieldCheck,
@@ -18,45 +19,134 @@ import {
   Flame,
   Sparkles,
   Search,
-  ArrowUpRight
+  ArrowUpRight,
+  Eye,
+  MousePointerClick,
+  XCircle,
+  TrendingUp,
+  Save,
+  RotateCcw,
+  AlertTriangle,
+  Laptop,
+  Smartphone,
+  ChevronLeft,
+  ChevronRight,
+  Upload,
+  Clock,
+  LayoutTemplate,
+  Image as ImageIcon,
+  ChevronDown,
+  ChevronUp,
+  X
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { parsePhoneNumber, setClientAdminWhatsApp } from '@/lib/siteConfig';
+import { smartUploadFile } from '@/lib/smartUpload';
 
-export default function SiteYonetimiPage() {
-  const [loading, setLoading] = useState(true);
+interface LogItem {
+  visitorId?: string;
+  ip?: string;
+  eventType: 'view' | 'click' | 'dismiss';
+  city?: string;
+  device?: string;
+  userAgent?: string;
+  createdAt: string;
+}
 
-  // 1. WhatsApp State
+interface AnnouncementState {
+  isActive: boolean;
+  campaignId: string;
+  displayType: 'drawer' | 'bar';
+  delaySeconds: number;
+  mediaUrl?: string;
+  mediaType?: 'gif' | 'image' | 'none';
+  title: string;
+  description?: string;
+  badgeText: string;
+  buttonText: string;
+  targetUrl: string;
+  openInNewTab: boolean;
+  stylePreset: 'fire' | 'emerald' | 'fuchsia' | 'cyber';
+  viewsCount: number;
+  clicksCount: number;
+  dismissCount: number;
+  uniqueViewsCount: number;
+  uniqueClicksCount: number;
+  ctr: string;
+  recentLogs: LogItem[];
+}
+
+function SiteYonetimiContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const initialTab = searchParams.get('tab') === 'duyuru' ? 'duyuru' : 'genel';
+  const [activeTab, setActiveTab] = useState<'genel' | 'duyuru'>(initialTab);
+
+  // Sync tab change with URL without hard reload
+  const handleTabChange = (tab: 'genel' | 'duyuru') => {
+    setActiveTab(tab);
+    const url = new URL(window.location.href);
+    if (tab === 'duyuru') {
+      url.searchParams.set('tab', 'duyuru');
+    } else {
+      url.searchParams.delete('tab');
+    }
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  // ─────────────────────────────────────────────────────────────
+  // 1. GENEL & WHATSAPP AYARLARI STATE
+  // ─────────────────────────────────────────────────────────────
+  const [loadingGenel, setLoadingGenel] = useState(true);
   const [adminWhatsApp, setAdminWhatsApp] = useState('');
   const [currentAdminWhatsApp, setCurrentAdminWhatsApp] = useState('');
   const [savingWhatsApp, setSavingWhatsApp] = useState(false);
   const [whatsAppSuccess, setWhatsAppSuccess] = useState(false);
 
-  // 2. Hero & Marka Metinleri State
   const [heroBaslik, setHeroBaslik] = useState('');
   const [heroAltBaslik, setHeroAltBaslik] = useState('');
   const [savingHero, setSavingHero] = useState(false);
   const [heroSuccess, setHeroSuccess] = useState(false);
 
-  // 3. Kayan Duyuru / Header Ticker State
-  const [bannerAktif, setBannerAktif] = useState(true);
-  const [bannerRozet, setBannerRozet] = useState('👑 VIP DUYURU');
-  const [bannerMetin, setBannerMetin] = useState('');
-  const [bannerLink, setBannerLink] = useState('/ilan-ver');
-  const [savingBanner, setSavingBanner] = useState(false);
-  const [bannerSuccess, setBannerSuccess] = useState(false);
-
-  // 4. SEO & Sistem Hızlı Aksiyon State
   const [pingingSeo, setPingingSeo] = useState(false);
   const [pingResult, setPingResult] = useState<any | null>(null);
 
-  useEffect(() => {
-    fetchConfig();
-  }, []);
+  // ─────────────────────────────────────────────────────────────
+  // 2. DUYURU & ÇEKMECE BİLDİRİM MERKEZİ STATE
+  // ─────────────────────────────────────────────────────────────
+  const [announcementData, setAnnouncementData] = useState<AnnouncementState | null>(null);
+  const [loadingDuyuru, setLoadingDuyuru] = useState(false);
+  const [savingDuyuru, setSavingDuyuru] = useState(false);
+  const [resettingCampaign, setResettingCampaign] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [duyuruFeedback, setDuyuruFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
-  const fetchConfig = async () => {
-    setLoading(true);
+  // Duyuru Form State
+  const [duyuruIsActive, setDuyuruIsActive] = useState(false);
+  const [displayType, setDisplayType] = useState<'drawer' | 'bar'>('drawer');
+  const [delaySeconds, setDelaySeconds] = useState<number>(3);
+  const [mediaUrl, setMediaUrl] = useState<string>('');
+  const [mediaType, setMediaType] = useState<'gif' | 'image' | 'none'>('none');
+  const [duyuruTitle, setDuyuruTitle] = useState('');
+  const [duyuruDescription, setDuyuruDescription] = useState('');
+  const [duyuruBadgeText, setDuyuruBadgeText] = useState('');
+  const [duyuruButtonText, setDuyuruButtonText] = useState('');
+  const [duyuruTargetUrl, setDuyuruTargetUrl] = useState('');
+  const [openInNewTab, setOpenInNewTab] = useState(true);
+  const [stylePreset, setStylePreset] = useState<'fire' | 'emerald' | 'fuchsia' | 'cyber'>('fire');
+
+  // Logs Table Filters & Pagination
+  const [logSearch, setLogSearch] = useState('');
+  const [logFilter, setLogFilter] = useState<'all' | 'view' | 'click' | 'dismiss'>('all');
+  const [logPage, setLogPage] = useState(1);
+  const [logsPerPage, setLogsPerPage] = useState<number | 'all'>(50);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Fetch Genel Ayarlar ──────────────────────────────────────
+  const fetchGenelConfig = async () => {
     try {
+      setLoadingGenel(true);
       const res = await fetch(`/api/admin/homepage-config?t=${Date.now()}`, {
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' }
@@ -71,19 +161,48 @@ export default function SiteYonetimiPage() {
         }
         setHeroBaslik(c.hero?.baslik || "Türkiye'nin En Güvenilir VIP Eskort İlan Platformu");
         setHeroAltBaslik(c.hero?.altBaslik || "81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları.");
-        setBannerAktif(c.aktifBanner?.aktif ?? true);
-        setBannerRozet(c.aktifBanner?.rozet || '👑 VIP DUYURU');
-        setBannerMetin(c.aktifBanner?.metin || '🎉 İlan verin, WhatsApp ile müşterilere anında ulaşın!');
-        setBannerLink(c.aktifBanner?.link || '/ilan-ver');
       }
-    } catch (e) {
-      // Silent error handling
+    } catch {
+      // silent
     } finally {
-      setLoading(false);
+      setLoadingGenel(false);
     }
   };
 
-  // WhatsApp Numarasını Kaydet
+  // ── Fetch Duyuru Barı Verileri ──────────────────────────────
+  const fetchDuyuruConfig = async () => {
+    try {
+      setLoadingDuyuru(true);
+      const res = await fetch('/api/admin/announcement-bar', { cache: 'no-store' });
+      const json = await res.json();
+      if (json.success && json.data) {
+        setAnnouncementData(json.data);
+        setDuyuruIsActive(json.data.isActive);
+        setDisplayType(json.data.displayType || 'drawer');
+        setDelaySeconds(typeof json.data.delaySeconds === 'number' ? json.data.delaySeconds : 3);
+        setMediaUrl(json.data.mediaUrl || '');
+        setMediaType(json.data.mediaType || 'none');
+        setDuyuruTitle(json.data.title || '');
+        setDuyuruDescription(json.data.description || '');
+        setDuyuruBadgeText(json.data.badgeText || '');
+        setDuyuruButtonText(json.data.buttonText || '');
+        setDuyuruTargetUrl(json.data.targetUrl || '');
+        setOpenInNewTab(json.data.openInNewTab ?? true);
+        setStylePreset(json.data.stylePreset || 'fire');
+      }
+    } catch (err: any) {
+      setDuyuruFeedback({ type: 'error', text: 'Duyuru verileri alınamadı: ' + err.message });
+    } finally {
+      setLoadingDuyuru(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGenelConfig();
+    fetchDuyuruConfig();
+  }, []);
+
+  // ── WhatsApp Kaydet ──────────────────────────────────────────
   const handleSaveWhatsApp = async () => {
     const trimmed = adminWhatsApp.trim();
     if (!trimmed) {
@@ -112,7 +231,7 @@ export default function SiteYonetimiPage() {
     }
   };
 
-  // Hero Metinlerini Kaydet
+  // ── Hero Metinlerini Kaydet ──────────────────────────────────
   const handleSaveHero = async () => {
     setSavingHero(true);
     try {
@@ -134,34 +253,7 @@ export default function SiteYonetimiPage() {
     }
   };
 
-  // Kayan Duyuru Metnini Kaydet
-  const handleSaveBanner = async () => {
-    setSavingBanner(true);
-    try {
-      const res = await fetch('/api/admin/homepage-config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          bannerAktif,
-          bannerRozet,
-          bannerMetin,
-          bannerLink
-        }),
-      });
-      if (res.ok) {
-        setBannerSuccess(true);
-        setTimeout(() => setBannerSuccess(false), 4000);
-      } else {
-        alert('Duyuru ayarları kaydedilemedi.');
-      }
-    } catch (e: any) {
-      alert('Hata: ' + e.message);
-    } finally {
-      setSavingBanner(false);
-    }
-  };
-
-  // Hızlı Google & Yandex IndexNow Ping
+  // ── SEO IndexNow Ping ────────────────────────────────────────
   const handlePingSeo = async () => {
     setPingingSeo(true);
     setPingResult(null);
@@ -176,21 +268,139 @@ export default function SiteYonetimiPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
-        <span className="text-xs font-mono text-[#8b949e]">Site ayarları yükleniyor...</span>
-      </div>
-    );
-  }
+  // ── Duyuru GIF / Görsel Yükle ────────────────────────────────
+  const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingMedia(true);
+    setDuyuruFeedback(null);
+    try {
+      const isGif = file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif');
+      const result = await smartUploadFile(file, `announcement_media_${Date.now()}.${isGif ? 'gif' : 'jpg'}`);
+      if (result.success && result.url) {
+        setMediaUrl(result.url);
+        setMediaType(isGif ? 'gif' : 'image');
+
+        await fetch('/api/admin/announcement-bar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            isActive: duyuruIsActive,
+            displayType,
+            delaySeconds: Number(delaySeconds) || 0,
+            mediaUrl: result.url,
+            mediaType: isGif ? 'gif' : 'image',
+            title: duyuruTitle,
+            description: duyuruDescription,
+            badgeText: duyuruBadgeText,
+            buttonText: duyuruButtonText,
+            targetUrl: duyuruTargetUrl,
+            openInNewTab,
+            stylePreset,
+          }),
+        });
+
+        setDuyuruFeedback({
+          type: 'success',
+          text: isGif ? '🎉 GIF başarıyla yüklendi ve kaydedildi!' : '🎉 Görsel başarıyla yüklendi ve kaydedildi!'
+        });
+      } else {
+        setDuyuruFeedback({ type: 'error', text: result.error || 'Medya yüklenemedi' });
+      }
+    } catch (err: any) {
+      setDuyuruFeedback({ type: 'error', text: 'Yükleme hatası: ' + err.message });
+    } finally {
+      setUploadingMedia(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      setTimeout(() => setDuyuruFeedback(null), 4000);
+    }
+  };
+
+  // ── Duyuru Ayarlarını Kaydet ─────────────────────────────────
+  const handleSaveDuyuru = async (forceActiveState?: boolean) => {
+    try {
+      setSavingDuyuru(true);
+      setDuyuruFeedback(null);
+      const activeToSave = typeof forceActiveState === 'boolean' ? forceActiveState : duyuruIsActive;
+
+      const res = await fetch('/api/admin/announcement-bar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          isActive: activeToSave,
+          displayType,
+          delaySeconds: Number(delaySeconds) || 0,
+          mediaUrl,
+          mediaType: mediaUrl ? (mediaUrl.includes('.gif') ? 'gif' : 'image') : 'none',
+          title: duyuruTitle,
+          description: duyuruDescription,
+          badgeText: duyuruBadgeText,
+          buttonText: duyuruButtonText,
+          targetUrl: duyuruTargetUrl,
+          openInNewTab,
+          stylePreset,
+        }),
+      });
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setAnnouncementData(json.data);
+        setDuyuruIsActive(json.data.isActive);
+        setDuyuruFeedback({ type: 'success', text: json.message || 'Duyuru & Çekmece ayarları güncellendi!' });
+      } else {
+        setDuyuruFeedback({ type: 'error', text: json.error || 'Kaydetme başarısız oldu' });
+      }
+    } catch (err: any) {
+      setDuyuruFeedback({ type: 'error', text: 'Hata: ' + err.message });
+    } finally {
+      setSavingDuyuru(false);
+      setTimeout(() => setDuyuruFeedback(null), 4000);
+    }
+  };
+
+  // ── Kampanyayı Sıfırla ──────────────────────────────────────
+  const handleResetCampaign = async () => {
+    if (!window.confirm("Bu işlem tüm sayaçları sıfırlayacak ve bildirimi daha önce görmüş/kapatmış olan tüm kullanıcılara tekrar TEK SEFERLİK gösterilmesini sağlayacaktır. Onaylıyor musunuz?")) {
+      return;
+    }
+
+    try {
+      setResettingCampaign(true);
+      setDuyuruFeedback(null);
+      const res = await fetch('/api/admin/announcement-bar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reset_campaign' }),
+      });
+
+      const json = await res.json();
+      if (json.success && json.data) {
+        setAnnouncementData(json.data);
+        setDuyuruIsActive(json.data.isActive);
+        setDuyuruFeedback({ type: 'success', text: 'Kampanya başarıyla sıfırlandı! Tüm ziyaretçiler tekrar 1 kez görecek.' });
+      }
+    } catch (err: any) {
+      setDuyuruFeedback({ type: 'error', text: 'Sıfırlama hatası: ' + err.message });
+    } finally {
+      setResettingCampaign(false);
+      setTimeout(() => setDuyuruFeedback(null), 4000);
+    }
+  };
+
+  const presetClasses = {
+    fire: 'from-amber-600 via-rose-600 to-red-700 border-amber-400/50 shadow-red-900/40 text-amber-50',
+    fuchsia: 'from-fuchsia-700 via-purple-700 to-pink-700 border-fuchsia-400/50 shadow-fuchsia-900/40 text-fuchsia-50',
+    emerald: 'from-emerald-600 via-teal-700 to-cyan-800 border-emerald-400/50 shadow-emerald-900/40 text-emerald-50',
+    cyber: 'from-indigo-700 via-violet-800 to-blue-900 border-indigo-400/50 shadow-indigo-900/40 text-indigo-50',
+  };
 
   const phoneDetails = parsePhoneNumber(adminWhatsApp || currentAdminWhatsApp);
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto text-left animate-fadeIn">
+    <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-6xl mx-auto text-left animate-fadeIn font-sans pb-12">
       
-      {/* ── 1. ÜST BAŞLIK VE SAYFA KİMLİĞİ ──────────────── */}
+      {/* ── 1. ÜST BAŞLIK VE SAYFA KİMLİĞİ (RESPONSIVE HEADER) ──────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-lg">
@@ -202,299 +412,1015 @@ export default function SiteYonetimiPage() {
                 Site &amp; Sistem Yönetimi
               </h1>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black font-mono">
-                GENEL AYARLAR
+                GENEL MERKEZ
               </span>
             </div>
             <p className="text-xs text-[#8b949e]">
-              Canlı WhatsApp destek hattı, anasayfa başlıkları, kayan duyuru barı ve hızlı sistem aksiyonları.
+              Canlı WhatsApp destek hattı, üst duyuru &amp; çekmece popup'ı, SEO ping ve anasayfa başlıkları.
             </p>
           </div>
         </div>
 
         <button
-          onClick={fetchConfig}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] text-xs font-bold font-heading transition-all shrink-0 self-start sm:self-auto"
+          onClick={() => {
+            fetchGenelConfig();
+            fetchDuyuruConfig();
+          }}
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] text-xs font-bold font-heading transition-all shrink-0 self-start sm:self-auto cursor-pointer"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Ayarları Yenile</span>
+          <RefreshCw className={`w-3.5 h-3.5 ${(loadingGenel || loadingDuyuru) ? 'animate-spin' : ''}`} />
+          <span>Verileri Yenile</span>
         </button>
       </div>
 
-      {/* ── 2. CANLI ADMİN WHATSAPP DESTEK HATTI (ÖNCELİKLİ & KRİTİK) ──────────────── */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-emerald-500/20">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
-              <OfficialWhatsAppIcon className="w-6 h-6 fill-[#25D366]" />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <h2 className="font-black text-base sm:text-lg text-white font-heading">
-                  Canlı Admin WhatsApp Destek Hattı
-                </h2>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono text-[10px] font-bold">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>CANLIDA AKTİF</span>
+      {/* ── 2. SEKMELER (SEGMENTED TABS - MOBILE FRIENDLY) ──────────────── */}
+      <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#161b22] border border-[#30363d] font-heading font-black text-xs">
+        <button
+          type="button"
+          onClick={() => handleTabChange('genel')}
+          className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'genel'
+              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 scale-[1.01]'
+              : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+          }`}
+        >
+          <OfficialWhatsAppIcon className="w-4 h-4 fill-current shrink-0" />
+          <span className="truncate">💬 WhatsApp &amp; Sistem</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabChange('duyuru')}
+          className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            activeTab === 'duyuru'
+              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 scale-[1.01]'
+              : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+          }`}
+        >
+          <Flame className="w-4 h-4 shrink-0" />
+          <span className="truncate">📢 Duyuru &amp; Çekmece</span>
+          {announcementData?.isActive && (
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0 hidden sm:inline-block" />
+          )}
+        </button>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* SEKME 1: WHATSAPP, HERO VE SİSTEM AYARLARI                            */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'genel' && (
+        <div className="flex flex-col gap-6 animate-fadeIn">
+          
+          {/* CANLI WHATSAPP HATTI */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-emerald-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
+                  <OfficialWhatsAppIcon className="w-6 h-6 fill-[#25D366]" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-black text-base sm:text-lg text-white font-heading">
+                      Canlı Admin WhatsApp Destek Hattı
+                    </h2>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono text-[10px] font-bold">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>CANLIDA AKTİF</span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#8b949e]">
+                    Sanal hat banlandığında yenisini yapıştırıp kaydedin. Deploy gerekmeden tüm sitede anında aktif olur.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 bg-[#0d1117] border border-emerald-500/40 px-3.5 py-2 rounded-2xl text-xs font-mono self-start lg:self-auto shadow-inner">
+                <span className="text-[#8b949e] text-[11px]">Sitedeki Hat:</span>
+                <span className="text-emerald-400 font-black text-sm">
+                  {phoneDetails.formatted || '+62 838 2904 8050'}
                 </span>
               </div>
-              <p className="text-xs text-[#8b949e]">
-                Sanal hat banlandığında yenisini yapıştırıp kaydedin. Deploy gerekmeden tüm sitede anında aktif olur.
-              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+              <div className="md:col-span-8 flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#c9d1d9] flex items-center gap-1.5">
+                  <span>Yeni / Güncel WhatsApp Numarası (Ülke kodu ile):</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={adminWhatsApp}
+                    onChange={(e) => setAdminWhatsApp(e.target.value)}
+                    placeholder="Örn: 6283829048050 veya +62 838 2904 8050"
+                    className="w-full pl-4 pr-10 py-3.5 rounded-2xl bg-[#0d1117] border border-emerald-500/50 text-white font-mono text-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all shadow-inner"
+                  />
+                  <div className="absolute right-3.5 top-3.5 text-emerald-400">
+                    <OfficialWhatsAppIcon className="w-5 h-5 fill-[#25D366]" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-4 flex items-center gap-2 pt-2 md:pt-6">
+                <button
+                  type="button"
+                  onClick={handleSaveWhatsApp}
+                  disabled={savingWhatsApp}
+                  className="flex-1 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-xl shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                >
+                  {savingWhatsApp ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Kaydediliyor...</span>
+                    </>
+                  ) : whatsAppSuccess ? (
+                    <>
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>Kaydedildi!</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
+                      <span>Hattı Güncelle</span>
+                    </>
+                  )}
+                </button>
+
+                {phoneDetails.raw && (
+                  <a
+                    href={phoneDetails.waLink || `https://wa.me/${phoneDetails.raw}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-3.5 rounded-2xl bg-[#161b22] hover:bg-[#21262d] text-emerald-400 border border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                    title="Canlı WhatsApp Hattını Test Et"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {whatsAppSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <span>
+                  Admin WhatsApp hattı başarıyla güncellendi. Tüm kullanıcılar, ilan sayfaları ve destek butonları artık yeni numaraya yönlendiriliyor.
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* ANASAYFA HERO VE MARKA METİNLERİ */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-[#30363d]">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0">
+                <Type className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-black text-base text-white font-heading">
+                  Anasayfa Hero &amp; Marka Metinleri
+                </h2>
+                <p className="text-xs text-[#8b949e]">
+                  Anasayfadaki ana vitrin başlığı ve alt açıklama metnini buradan yönetin.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 font-heading">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#8b949e]">
+                  Ana Vitrin Başlığı (H1):
+                </label>
+                <input
+                  type="text"
+                  value={heroBaslik}
+                  onChange={(e) => setHeroBaslik(e.target.value)}
+                  placeholder="Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
+                  className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-medium focus:border-amber-400 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-[#8b949e]">
+                  Alt Açıklama &amp; Slogan:
+                </label>
+                <input
+                  type="text"
+                  value={heroAltBaslik}
+                  onChange={(e) => setHeroAltBaslik(e.target.value)}
+                  placeholder="81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları."
+                  className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-medium focus:border-amber-400 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                {heroSuccess ? (
+                  <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Hero metinleri kaydedildi!</span>
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-[#8b949e]">
+                    Değişiklik anasayfada anında yansır.
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleSaveHero}
+                  disabled={savingHero}
+                  className="py-2.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
+                >
+                  {savingHero ? 'Kaydediliyor...' : 'Metinleri Kaydet'}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Aktif Numara Önizleme Rozeti */}
-          <div className="flex items-center gap-2 bg-[#0d1117] border border-emerald-500/40 px-3.5 py-2 rounded-2xl text-xs font-mono self-start lg:self-auto shadow-inner">
-            <span className="text-[#8b949e] text-[11px]">Sitedeki Hat:</span>
-            <span className="text-emerald-400 font-black text-sm">
-              {phoneDetails.formatted || '+62 838 2904 8050'}
-            </span>
-          </div>
-        </div>
-
-        {/* Input & Butonlar */}
-        <div className="flex flex-col sm:flex-row items-center gap-2.5">
-          <div className="relative flex-1 w-full">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#25D366]">
-              <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
+          {/* HIZLI SİSTEM & SEO AKSİYONLARI */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+            <div className="flex items-center gap-3 pb-3 border-b border-[#30363d]">
+              <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black shrink-0">
+                <Zap className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="font-black text-base text-white font-heading">
+                  Hızlı Sistem &amp; SEO Aksiyonları
+                </h2>
+                <p className="text-xs text-[#8b949e]">
+                  Arama motorlarına (Google &amp; Yandex IndexNow) anlık URL ping sinyali gönderin.
+                </p>
+              </div>
             </div>
-            <input
-              type="text"
-              value={adminWhatsApp}
-              onChange={(e) => setAdminWhatsApp(e.target.value)}
-              placeholder="Yeni WhatsApp Numarası (Örn: +6283829048050 veya 0532...)"
-              className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0d1117] border border-[#30363d] text-white font-mono text-sm focus:border-emerald-500 focus:outline-none transition-colors"
-            />
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0d1117] border border-[#21262d]">
+              <div className="flex flex-col">
+                <span className="font-heading font-black text-sm text-white">
+                  IndexNow &amp; Site Haritası Hızlı Ping
+                </span>
+                <span className="text-xs text-[#8b949e]">
+                  Yeni ilanları ve güncel sayfaları arama motorlarına anında taratmak için tetikleyin.
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handlePingSeo}
+                disabled={pingingSeo}
+                className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-heading font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+              >
+                {pingingSeo ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Ping Gönderiliyor...</span>
+                  </>
+                ) : (
+                  <>
+                    <Globe className="w-4 h-4" />
+                    <span>Şimdi Ping Gönder</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {pingResult && (
+              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-blue-500/30 text-xs font-mono text-blue-300">
+                <pre className="overflow-x-auto whitespace-pre-wrap">
+                  {JSON.stringify(pingResult, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-            {/* WhatsApp Test Et Butonu */}
-            <a
-              href={`https://wa.me/${phoneDetails.raw}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 sm:flex-none px-4 py-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-emerald-400 border border-emerald-500/30 text-xs font-bold font-heading flex items-center justify-center gap-1.5 transition-colors shadow-md"
-              title="Numaranın WhatsApp hesabının açık olduğunu test et"
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span>Test Et</span>
-            </a>
-
-            {/* Kaydet & Canlıya Al Butonu */}
-            <button
-              type="button"
-              onClick={handleSaveWhatsApp}
-              disabled={savingWhatsApp}
-              className="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 font-black text-xs uppercase font-heading flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/25 active:scale-95 transition-all disabled:opacity-50"
-            >
-              {savingWhatsApp ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Check className="w-4 h-4 stroke-[3]" />
-              )}
-              <span>{savingWhatsApp ? 'Kaydediliyor...' : 'Numarayı Kaydet & Canlıya Al'}</span>
-            </button>
-          </div>
         </div>
+      )}
 
-        {/* Canlı Kapsam Bildirimi */}
-        <div className="p-3 rounded-2xl bg-[#0d1117]/80 border border-[#21262d] text-xs text-[#8b949e] flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>
-            Bu numara kaydedildiği an <strong className="text-white">/chat</strong>, <strong className="text-white">/ilan-ver</strong>, <strong className="text-white">/reklam-ver</strong>, <strong className="text-white">/panelim</strong> ve ilan oluşturulduğunda gönderilen otomatik karşılama mesajlarında anında devreye girer.
-          </span>
-        </div>
-
-        {whatsAppSuccess && (
-          <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>✅ Yeni WhatsApp numarası başarıyla kaydedildi! Sitedeki tüm butonlar ve paket mesajları güncellendi.</span>
-          </div>
-        )}
-      </div>
-
-      {/* ── 3. ANASAYFA HERO & MARKA METİNLERİ ──────────────── */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#30363d]">
-          <div className="flex items-center gap-2.5">
-            <Type className="w-5 h-5 text-amber-400" />
-            <h2 className="font-black text-base sm:text-lg text-white font-heading">
-              Anasayfa Hero &amp; Marka Başlıkları
-            </h2>
-          </div>
-          <span className="text-[11px] text-[#8b949e]">Sitenin en üst vitrin metinleri</span>
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <div>
-            <label className="block text-xs font-bold text-[#8b949e] mb-1 font-heading">
-              Hero Ana Başlık (H1)
-            </label>
-            <input
-              type="text"
-              value={heroBaslik}
-              onChange={(e) => setHeroBaslik(e.target.value)}
-              placeholder="Örn: Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
-              className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs sm:text-sm focus:border-amber-400 focus:outline-none transition-colors"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-[#8b949e] mb-1 font-heading">
-              Hero Alt Başlık &amp; Açıklama
-            </label>
-            <textarea
-              rows={2}
-              value={heroAltBaslik}
-              onChange={(e) => setHeroAltBaslik(e.target.value)}
-              placeholder="Örn: 81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları."
-              className="w-full px-4 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs sm:text-sm focus:border-amber-400 focus:outline-none transition-colors"
-            />
-          </div>
-
-          <div className="flex justify-end pt-1">
-            <button
-              type="button"
-              onClick={handleSaveHero}
-              disabled={savingHero}
-              className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase font-heading flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all disabled:opacity-50"
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {/* SEKME 2: DUYURU & ÇEKMECE BİLDİRİM MERKEZİ                           */}
+      {/* ═══════════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'duyuru' && (
+        <div className="flex flex-col gap-6 animate-fadeIn">
+          
+          {/* FEEDBACK ALERT */}
+          {duyuruFeedback && (
+            <div
+              className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs font-bold animate-in fade-in slide-in-from-top-2 ${
+                duyuruFeedback.type === 'success'
+                  ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                  : 'bg-red-500/15 border-red-500/40 text-red-300'
+              }`}
             >
-              {savingHero ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
-              <span>{savingHero ? 'Kaydediliyor...' : 'Başlıkları Kaydet'}</span>
-            </button>
-          </div>
-
-          {heroSuccess && (
-            <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>✅ Anasayfa başlıkları başarıyla kaydedildi!</span>
+              <div className="flex items-center gap-2">
+                {duyuruFeedback.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
+                <span>{duyuruFeedback.text}</span>
+              </div>
+              <button onClick={() => setDuyuruFeedback(null)} className="text-white/60 hover:text-white">
+                <X className="w-4 h-4" />
+              </button>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* ── 4. KAYAN DUYURU & HEADER TICKER METİNLERİ ──────────────── */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#30363d]">
-          <div className="flex items-center gap-2.5">
-            <Megaphone className="w-5 h-5 text-amber-400" />
-            <h2 className="font-black text-base sm:text-lg text-white font-heading">
-              Kayan Üst Duyuru &amp; Header Ticker
-            </h2>
-          </div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-xs text-[#8b949e]">Duyuru Göster:</span>
-            <input
-              type="checkbox"
-              checked={bannerAktif}
-              onChange={(e) => setBannerAktif(e.target.checked)}
-              className="w-4 h-4 rounded text-amber-500 bg-[#0d1117] border-[#30363d] focus:ring-0 cursor-pointer"
-            />
-          </label>
-        </div>
+          {/* ── KPI STATS (DESKTOP 5-COL / MOBILE 2X2 GRID) ─────────────────── */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+            {/* 1. Durum */}
+            <div className={`p-4 rounded-2xl border transition-all col-span-2 sm:col-span-1 ${
+              duyuruIsActive
+                ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
+                : 'bg-red-500/10 border-red-500/40 shadow-lg shadow-red-500/5'
+            }`}>
+              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
+                <span>Yayın Durumu</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${duyuruIsActive ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}></span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className={`text-base sm:text-lg font-heading font-black ${duyuruIsActive ? 'text-emerald-300' : 'text-red-400'}`}>
+                  {duyuruIsActive ? 'YAYINDA' : 'PASİF'}
+                </span>
+                <button
+                  onClick={() => {
+                    const next = !duyuruIsActive;
+                    setDuyuruIsActive(next);
+                    handleSaveDuyuru(next);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                    duyuruIsActive ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30' : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
+                  }`}
+                >
+                  {duyuruIsActive ? 'Kapat' : 'Yayına Al'}
+                </button>
+              </div>
+            </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-xs font-bold text-[#8b949e] mb-1 font-heading">
-              Rozet Metni
-            </label>
-            <input
-              type="text"
-              value={bannerRozet}
-              onChange={(e) => setBannerRozet(e.target.value)}
-              placeholder="Örn: 👑 VIP DUYURU"
-              className="w-full px-3.5 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none transition-colors"
-            />
-          </div>
+            {/* 2. Kaç Kişi Gördü */}
+            <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
+                <span>Gören Kişi</span>
+                <Eye className="w-4 h-4 text-blue-400" />
+              </div>
+              <div className="mt-2">
+                <div className="text-xl sm:text-2xl font-heading font-black text-white font-mono">
+                  {announcementData?.uniqueViewsCount ?? 0}
+                </div>
+                <div className="text-[10px] text-[#8b949e] mt-0.5 truncate">
+                  Toplam: {announcementData?.viewsCount ?? 0} gösterim
+                </div>
+              </div>
+            </div>
 
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-bold text-[#8b949e] mb-1 font-heading">
-              Duyuru Metni
-            </label>
-            <input
-              type="text"
-              value={bannerMetin}
-              onChange={(e) => setBannerMetin(e.target.value)}
-              placeholder="Örn: 🎉 İlan verin, WhatsApp ile müşterilere anında ulaşın!"
-              className="w-full px-3.5 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none transition-colors"
-            />
-          </div>
-        </div>
+            {/* 3. Kaç Kişi Tıkladı */}
+            <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
+                <span>Tıklayan Kişi</span>
+                <MousePointerClick className="w-4 h-4 text-amber-400" />
+              </div>
+              <div className="mt-2">
+                <div className="text-xl sm:text-2xl font-heading font-black text-amber-300 font-mono">
+                  {announcementData?.uniqueClicksCount ?? 0}
+                </div>
+                <div className="text-[10px] text-[#8b949e] mt-0.5 truncate">
+                  Toplam: {announcementData?.clicksCount ?? 0} tık
+                </div>
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-xs font-bold text-[#8b949e] mb-1 font-heading">
-            Tıklanınca Gidilecek Link
-          </label>
-          <input
-            type="text"
-            value={bannerLink}
-            onChange={(e) => setBannerLink(e.target.value)}
-            placeholder="Örn: /ilan-ver veya /reklam-ver"
-            className="w-full px-3.5 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none transition-colors"
-          />
-        </div>
+            {/* 4. CTR */}
+            <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
+              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
+                <span>CTR Verimi</span>
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+              </div>
+              <div className="mt-2">
+                <div className="text-xl sm:text-2xl font-heading font-black text-emerald-300 font-mono">
+                  %{announcementData?.ctr ?? '0.0'}
+                </div>
+                <div className="text-[10px] text-[#8b949e] mt-0.5 truncate">
+                  Tıklanma oranı
+                </div>
+              </div>
+            </div>
 
-        <div className="flex justify-end pt-1">
-          <button
-            type="button"
-            onClick={handleSaveBanner}
-            disabled={savingBanner}
-            className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase font-heading flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all disabled:opacity-50"
-          >
-            {savingBanner ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
-            <span>{savingBanner ? 'Kaydediliyor...' : 'Duyuruyu Kaydet'}</span>
-          </button>
-        </div>
-
-        {bannerSuccess && (
-          <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>✅ Kayan duyuru ayarları başarıyla kaydedildi!</span>
-          </div>
-        )}
-      </div>
-
-      {/* ── 5. HIZLI SİSTEM & ARAMA MOTORU AKSİYONLARI ──────────────── */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#30363d]">
-          <div className="flex items-center gap-2.5">
-            <Zap className="w-5 h-5 text-amber-400" />
-            <h2 className="font-black text-base sm:text-lg text-white font-heading">
-              Hızlı Sistem &amp; Arama Motoru Aksiyonları
-            </h2>
-          </div>
-          <span className="text-[11px] text-emerald-400 font-bold">Otomatik API Senkronu</span>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0d1117] border border-[#21262d]">
-          <div className="flex flex-col gap-1">
-            <span className="font-black text-sm text-white font-heading flex items-center gap-2">
-              <Globe className="w-4 h-4 text-blue-400" />
-              <span>Google &amp; Yandex IndexNow Ping Gönder</span>
-            </span>
-            <p className="text-xs text-[#8b949e]">
-              Yeni eklenen ilanları ve sitemap URL'lerini arama motorlarına tek tıkla anında bildirir.
-            </p>
+            {/* 5. Kapatma */}
+            <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
+                <span>Kapatma (X)</span>
+                <XCircle className="w-4 h-4 text-rose-400" />
+              </div>
+              <div className="mt-2">
+                <div className="text-xl sm:text-2xl font-heading font-black text-rose-400 font-mono">
+                  {announcementData?.dismissCount ?? 0}
+                </div>
+                <div className="text-[10px] text-[#8b949e] mt-0.5 truncate">
+                  'X' butonuna basanlar
+                </div>
+              </div>
+            </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handlePingSeo}
-            disabled={pingingSeo}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 border border-amber-500/30 text-xs font-bold font-heading flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0"
-          >
-            {pingingSeo ? <Loader2 className="w-4 h-4 animate-spin text-amber-400" /> : <Radio className="w-4 h-4 text-amber-400" />}
-            <span>{pingingSeo ? 'Gönderiliyor...' : 'Arama Motorlarına Ping At'}</span>
-          </button>
-        </div>
+          {/* ── CANLI ÖNİZLEME (COLLAPSIBLE ON MOBILE) ────────────────────── */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#8b949e]">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>Canlı Önizleme ({displayType === 'drawer' ? 'Çekmece Popup' : 'Üst Sabit Bar'})</span>
+              </div>
 
-        {pingResult && (
-          <div className="p-3 rounded-2xl bg-slate-900 border border-[#30363d] text-xs font-mono text-emerald-300">
-            <pre className="whitespace-pre-wrap">{JSON.stringify(pingResult, null, 2)}</pre>
+              {/* Mobilde ekran kaplamasın diye açılır-kapanır toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono text-[#8b949e] hidden sm:inline">
+                  Gecikme: <span className="text-amber-300 font-bold">{delaySeconds} sn</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowMobilePreview(!showMobilePreview)}
+                  className="sm:hidden px-2.5 py-1 rounded-lg bg-[#21262d] text-amber-300 text-[10px] font-bold flex items-center gap-1 border border-[#363b42]"
+                >
+                  <span>{showMobilePreview ? 'Gizle' : 'Önizlemeyi Göster'}</span>
+                  {showMobilePreview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Önizleme İçeriği (Desktop'ta hep açık, mobilde butonla) */}
+            <div className={`${showMobilePreview ? 'block' : 'hidden'} sm:block`}>
+              {displayType === 'drawer' ? (
+                <div className="p-4 sm:p-6 rounded-2xl bg-[#0B0E14] border border-[#252B3B] flex justify-center items-center">
+                  <div className="w-full max-w-md bg-[#141824]/95 border border-amber-500/40 rounded-3xl shadow-2xl p-5 flex flex-col justify-between items-center text-center space-y-3.5">
+                    <div className="w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-1" />
+
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/50 shadow-inner">
+                      <Flame className="w-3.5 h-3.5 text-amber-400" />
+                      <span className="font-heading font-black text-xs text-amber-300 uppercase tracking-wider">
+                        {duyuruBadgeText || '👑 VIP DUYURU'}
+                      </span>
+                    </div>
+
+                    {mediaUrl && (
+                      <div className="relative w-full h-40 sm:h-48 rounded-2xl overflow-hidden border border-[#252B3B] bg-black/90 shadow-xl flex items-center justify-center p-1.5">
+                        <img
+                          src={mediaUrl}
+                          alt="Önizleme"
+                          className="w-full h-full object-contain max-h-[30vh] rounded-xl"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-1 px-2">
+                      <h3 className="text-lg sm:text-xl font-heading font-black tracking-tight leading-snug bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-300">
+                        {duyuruTitle || 'Türkiyenin en büyük eskort sitesi açıldı !'}
+                      </h3>
+                      {duyuruDescription && (
+                        <p className="text-xs text-[#9AA3B2] font-medium leading-relaxed line-clamp-2">
+                          {duyuruDescription}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="w-full space-y-2 pt-1">
+                      <div className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-heading font-black text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 shadow-xl shadow-amber-500/30">
+                        <span>{duyuruButtonText || 'Hemen İncele'}</span>
+                        <ExternalLink className="w-4 h-4 stroke-[3]" />
+                      </div>
+                      <div className="text-[10px] text-[#9AA3B2] font-medium">
+                        Daha sonra hatırlat veya kapat
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-1 rounded-2xl bg-[#0d1117] border border-[#21262d] overflow-hidden">
+                  <div className={`w-full bg-gradient-to-r ${presetClasses[stylePreset]} px-3 py-2 rounded-xl shadow-lg flex items-center justify-between text-xs`}>
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/30 font-black text-[10px] text-white">
+                        <Flame className="w-2.5 h-2.5 text-amber-300" />
+                        <span>{duyuruBadgeText || '🚀 YENİ'}</span>
+                      </span>
+                      <span className="font-heading font-black text-white truncate text-xs">
+                        {duyuruTitle || 'Türkiyenin en büyük eskort sitesi açıldı !'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="px-2.5 py-1 rounded bg-white text-slate-950 font-heading font-black text-[10px]">
+                        {duyuruButtonText || 'İncele →'}
+                      </span>
+                      <span className="p-1 rounded bg-black/20 text-white/80">
+                        <X className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* ── DUYURU FORM & KAMPANYA SIFIRLAMA (DESKTOP GRID / MOBILE STACK) ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Sol 2 Kolon: Form Ayarları */}
+            <div className="lg:col-span-2 p-5 sm:p-6 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-4">
+              <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-amber-400" />
+                <span>Bildirim Formatı &amp; İçerik</span>
+              </h2>
+
+              {/* Format ve Gecikme */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                    <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Bildirim Formatı</span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setDisplayType('drawer')}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                        displayType === 'drawer'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                          : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
+                      }`}
+                    >
+                      📱 Çekmece (Drawer)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDisplayType('bar')}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                        displayType === 'bar'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
+                          : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
+                      }`}
+                    >
+                      📌 Üst Sabit Bar
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Kaç Sn Sonra Açılsın?</span>
+                  </label>
+                  <select
+                    value={delaySeconds}
+                    onChange={(e) => setDelaySeconds(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs font-bold focus:border-amber-400 focus:outline-none cursor-pointer"
+                  >
+                    <option value={0}>0 saniye (Hemen Açılır)</option>
+                    <option value={1}>1 saniye sonra</option>
+                    <option value={2}>2 saniye sonra</option>
+                    <option value={3}>3 saniye sonra (Önerilen)</option>
+                    <option value={5}>5 saniye sonra</option>
+                    <option value={7}>7 saniye sonra</option>
+                    <option value={10}>10 saniye sonra</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Medya / GIF Yükleyici */}
+              <div className="p-3.5 rounded-xl bg-[#0d1117] border border-[#21262d] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Çekmece Görseli / Hareketli GIF</span>
+                  </label>
+                  {mediaUrl && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMediaUrl('');
+                        setMediaType('none');
+                      }}
+                      className="text-[11px] text-rose-400 hover:text-rose-300 font-bold cursor-pointer"
+                    >
+                      Medyayı Kaldır
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center gap-2.5">
+                  <input
+                    type="text"
+                    value={mediaUrl}
+                    onChange={(e) => {
+                      setMediaUrl(e.target.value);
+                      setMediaType(e.target.value.includes('.gif') ? 'gif' : 'image');
+                    }}
+                    placeholder="https://... veya dosya yükleyin"
+                    className="flex-1 w-full px-3 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58]"
+                  />
+
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleMediaUpload}
+                    accept="image/gif,image/jpeg,image/png,image/webp"
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingMedia}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer"
+                  >
+                    <Upload className={`w-3.5 h-3.5 ${uploadingMedia ? 'animate-bounce' : ''}`} />
+                    <span>{uploadingMedia ? 'Yükleniyor...' : 'GIF / Görsel Yükle'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Başlık, Açıklama ve Buton Metinleri */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-[#8b949e]">
+                    Duyuru Başlığı <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={duyuruTitle}
+                    onChange={(e) => setDuyuruTitle(e.target.value)}
+                    placeholder="Türkiyenin en büyük eskort sitesi açıldı !"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                  />
+                </div>
+
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-[#8b949e]">
+                    Açıklama Metni
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={duyuruDescription}
+                    onChange={(e) => setDuyuruDescription(e.target.value)}
+                    placeholder="VIP ilanları ve WhatsApp iletişim hatlarını hemen keşfedin."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58] resize-none"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#8b949e]">
+                    Sol Rozet Metni
+                  </label>
+                  <input
+                    type="text"
+                    value={duyuruBadgeText}
+                    onChange={(e) => setDuyuruBadgeText(e.target.value)}
+                    placeholder="🚀 YENİ AĞ"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-[#8b949e]">
+                    Aksiyon Butonu Metni
+                  </label>
+                  <input
+                    type="text"
+                    value={duyuruButtonText}
+                    onChange={(e) => setDuyuruButtonText(e.target.value)}
+                    placeholder="Hemen İncele →"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                  />
+                </div>
+
+                <div className="md:col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-[#8b949e]">
+                    Hedef Yönlendirme URL'si <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={duyuruTargetUrl}
+                    onChange={(e) => setDuyuruTargetUrl(e.target.value)}
+                    placeholder="https://... veya /ilan-ver"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-amber-300 font-mono text-xs font-bold placeholder-[#484f58]"
+                  />
+                </div>
+              </div>
+
+              {/* Tema Seçici */}
+              <div className="space-y-2 pt-2 border-t border-[#21262d]">
+                <label className="text-xs font-bold text-[#8b949e]">
+                  Renk &amp; Parlama Teması
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'fire', label: '🔥 Ateş Kırmızı', class: 'from-amber-600 to-red-700' },
+                    { id: 'fuchsia', label: '🔮 Siber Fuşya', class: 'from-fuchsia-700 to-pink-700' },
+                    { id: 'emerald', label: '🌿 Zümrüt Yeşil', class: 'from-emerald-600 to-teal-800' },
+                    { id: 'cyber', label: '⚡ Derin Mavi', class: 'from-indigo-700 to-blue-900' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setStylePreset(item.id as any)}
+                      className={`p-2.5 rounded-xl border font-bold text-xs flex items-center justify-between gap-1 transition-all cursor-pointer ${
+                        stylePreset === item.id
+                          ? 'bg-gradient-to-r ' + item.class + ' text-white border-white/60 shadow-md scale-[1.02]'
+                          : 'bg-[#0d1117] text-[#c9d1d9] border-[#30363d]'
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {stylePreset === item.id && <Check className="w-3.5 h-3.5 shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Alt Butonlar */}
+              <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#21262d]">
+                <label className="flex items-center gap-2 text-xs font-bold text-[#c9d1d9] cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={openInNewTab}
+                    onChange={(e) => setOpenInNewTab(e.target.checked)}
+                    className="w-4 h-4 rounded bg-[#0d1117] border-[#30363d] text-amber-500 focus:ring-0"
+                  />
+                  <span>Yeni Sekmede Aç (`target="_blank"`)</span>
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveDuyuru()}
+                  disabled={savingDuyuru}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-heading font-black text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>{savingDuyuru ? 'Kaydediliyor...' : 'Duyuruyu Kaydet'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Sağ Kolon: Kampanya Sıfırlama */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-4">
+              <div className="space-y-3">
+                <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
+                  <RotateCcw className="w-4 h-4 text-rose-400" />
+                  <span>Kampanya Sıfırlama</span>
+                </h2>
+
+                <div className="p-3.5 rounded-xl bg-[#0d1117] border border-[#21262d] space-y-2 text-xs text-[#8b949e]">
+                  <div className="font-bold text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span>Tek Seferlik Gösterim:</span>
+                  </div>
+                  <p>
+                    Ziyaretçi bildirimi görüp kapattığında tarayıcısına token atılır ve bir daha rahatsız edilmez.
+                  </p>
+                  <p className="pt-1.5 border-t border-[#21262d]">
+                    Aktif Kampanya ID: <span className="font-mono text-amber-300 font-bold">{announcementData?.campaignId || 'camp_v1'}</span>
+                  </p>
+                </div>
+
+                <p className="text-[11px] text-[#8b949e]">
+                  Duyuruyu güncellediğinizde aşağıdaki butona basarak tüm eski ziyaretçilerin kayıtlarını sıfırlayabilirsiniz.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleResetCampaign}
+                disabled={resettingCampaign}
+                className="w-full p-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 font-heading font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <RotateCcw className={`w-4 h-4 ${resettingCampaign ? 'animate-spin' : ''}`} />
+                <span>{resettingCampaign ? 'Sıfırlanıyor...' : '🔄 Kampanyayı Sıfırla (Herkese Göster)'}</span>
+              </button>
+            </div>
+
+          </div>
+
+          {/* ── ZİYARETÇİ ETKİLEŞİM GÜNLÜĞÜ (RESPONSIVE: WEB TABLE / MOBILE CARD FEED) ── */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
+                  <Radio className="w-4 h-4 text-blue-400" />
+                  <span>Duyuru Etkileşim Günlüğü</span>
+                </h2>
+                <p className="text-xs text-[#8b949e] mt-0.5">
+                  Duyuru &amp; Çekmece ile etkileşime geçen ziyaretçilerin anlık kayıtları
+                </p>
+              </div>
+              <span className="text-xs font-mono px-3 py-1 rounded-lg bg-[#0d1117] border border-[#21262d] text-[#8b949e] self-start sm:self-auto">
+                Toplam Kayıt: <span className="text-white font-bold">{announcementData?.recentLogs?.length || 0}</span>
+              </span>
+            </div>
+
+            {/* Arama ve Filtre */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-xl bg-[#0d1117] border border-[#21262d]">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={logSearch}
+                  onChange={(e) => {
+                    setLogSearch(e.target.value);
+                    setLogPage(1);
+                  }}
+                  placeholder="IP adresi veya şehir ile ara..."
+                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                {[
+                  { id: 'all', label: 'Tümü' },
+                  { id: 'click', label: '🎯 Tıklama' },
+                  { id: 'view', label: '👁️ Gösterim' },
+                  { id: 'dismiss', label: '❌ Kapatma' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => {
+                      setLogFilter(tab.id as any);
+                      setLogPage(1);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                      logFilter === tab.id
+                        ? 'bg-amber-500 text-slate-950 font-black shadow'
+                        : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#30363d]'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* LOG KAYITLARI GÖRÜNÜMÜ */}
+            {(() => {
+              const allLogs = announcementData?.recentLogs ? [...announcementData.recentLogs].reverse() : [];
+              const filtered = allLogs.filter((log) => {
+                if (logFilter !== 'all' && log.eventType !== logFilter) return false;
+                if (logSearch.trim()) {
+                  const q = logSearch.toLowerCase().trim();
+                  const ip = (log.ip || '').toLowerCase();
+                  const city = (log.city || '').toLowerCase();
+                  return ip.includes(q) || city.includes(q);
+                }
+                return true;
+              });
+
+              const limit = logsPerPage === 'all' ? filtered.length : logsPerPage;
+              const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
+              const currentPage = Math.min(logPage, totalPages);
+              const displayed = logsPerPage === 'all' ? filtered : filtered.slice((currentPage - 1) * limit, currentPage * limit);
+
+              if (displayed.length === 0) {
+                return (
+                  <div className="p-8 text-center text-[#8b949e] text-xs italic bg-[#0d1117] rounded-xl border border-[#21262d]">
+                    Kayıt bulunamadı.
+                  </div>
+                );
+              }
+
+              return (
+                <>
+                  {/* MOBİL GÖRÜNÜM: KART AKIŞI (YATAY SCROLL YOK - DOKUNMATİK UYUMLU) */}
+                  <div className="md:hidden flex flex-col gap-2.5">
+                    {displayed.map((log, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          {log.eventType === 'click' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
+                              🎯 Tıkladı (Siteye Gitti)
+                            </span>
+                          )}
+                          {log.eventType === 'view' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-bold">
+                              👁️ Görüntüledi
+                            </span>
+                          )}
+                          {log.eventType === 'dismiss' && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold">
+                              ❌ Kapattı ('X')
+                            </span>
+                          )}
+                          <span className="text-[10px] font-mono text-[#8b949e]">
+                            {new Date(log.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-[#c9d1d9] pt-1 border-t border-[#21262d]">
+                          <span className="font-bold text-white flex items-center gap-1">
+                            📍 {log.city || 'Bilinmiyor'}
+                          </span>
+                          <span className="font-mono text-[#8b949e] text-[11px]">
+                            {log.ip || 'anon'}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[11px]">
+                            {log.device === 'desktop' ? <Laptop className="w-3 h-3 text-blue-400" /> : <Smartphone className="w-3 h-3 text-emerald-400" />}
+                            <span className="capitalize">{log.device || 'Mobil'}</span>
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* DESKTOP GÖRÜNÜM: ZENGİN MASAÜSTÜ TABLOSU */}
+                  <div className="hidden md:block rounded-xl border border-[#21262d] overflow-x-auto max-h-[500px] overflow-y-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-[#0d1117] text-[#8b949e] uppercase font-mono font-bold text-[10px] border-b border-[#21262d] sticky top-0 z-10">
+                        <tr>
+                          <th className="p-3">Etkinlik</th>
+                          <th className="p-3">IP Adresi</th>
+                          <th className="p-3">Konum</th>
+                          <th className="p-3">Cihaz</th>
+                          <th className="p-3">Zaman</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#21262d] text-[#c9d1d9]">
+                        {displayed.map((log, i) => (
+                          <tr key={i} className="hover:bg-[#1f242c] transition-colors">
+                            <td className="p-3 font-bold">
+                              {log.eventType === 'click' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px]">
+                                  🎯 Tıkladı (Siteye Gitti)
+                                </span>
+                              )}
+                              {log.eventType === 'view' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px]">
+                                  👁️ Görüntüledi
+                                </span>
+                              )}
+                              {log.eventType === 'dismiss' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px]">
+                                  ❌ Kapattı ('X')
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3 font-mono text-[#8b949e]">
+                              {log.ip || 'anon'}
+                            </td>
+                            <td className="p-3 font-medium text-white">
+                              {log.city || 'Bilinmiyor'}
+                            </td>
+                            <td className="p-3 font-medium">
+                              <span className="inline-flex items-center gap-1">
+                                {log.device === 'desktop' ? <Laptop className="w-3.5 h-3.5 text-blue-400" /> : <Smartphone className="w-3.5 h-3.5 text-emerald-400" />}
+                                <span className="capitalize">{log.device || 'Mobil'}</span>
+                              </span>
+                            </td>
+                            <td className="p-3 font-mono text-[#8b949e]">
+                              {new Date(log.createdAt).toLocaleString('tr-TR')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Sayfalama */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between pt-2 text-xs text-[#8b949e]">
+                      <div>
+                        {filtered.length} kayıttan {(currentPage - 1) * limit + 1} - {Math.min(currentPage * limit, filtered.length)} gösteriliyor
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setLogPage((p) => Math.max(1, p - 1))}
+                          disabled={currentPage <= 1}
+                          className="p-1.5 rounded-lg bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <span className="px-2.5 py-1 rounded-lg bg-[#0d1117] border border-[#21262d] font-mono text-white text-xs">
+                          {currentPage} / {totalPages}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setLogPage((p) => Math.min(totalPages, p + 1))}
+                          disabled={currentPage >= totalPages}
+                          className="p-1.5 rounded-lg bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+
+        </div>
+      )}
 
     </div>
+  );
+}
+
+export default function SiteYonetimiPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+        <span className="text-xs font-mono text-[#8b949e]">Site Yönetimi Yükleniyor...</span>
+      </div>
+    }>
+      <SiteYonetimiContent />
+    </Suspense>
   );
 }
