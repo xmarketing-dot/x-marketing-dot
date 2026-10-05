@@ -29,7 +29,8 @@ import {
   Link2,
   Gift,
   Activity,
-  Flame
+  Flame,
+  Settings
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 
@@ -356,11 +357,22 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               className={`${getNavClass('/bms-secure-portal/derin-analiz')} justify-between`}
             >
               <div className="flex items-center gap-2.5">
-                <BarChart3 className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-300">Derin Analitik &amp; Müdavim</span>
+                <Activity className="w-4 h-4 text-amber-400" />
+                <span>Derin Analiz</span>
               </div>
-              <span className="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
-                MÜDAVİM
+            </Link>
+
+            <Link
+              href="/bms-secure-portal/site-yonetimi"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/site-yonetimi')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Settings className="w-4 h-4 text-amber-400" />
+                <span>Site Yönetimi</span>
+              </div>
+              <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
+                GENEL
               </span>
             </Link>
 
@@ -428,7 +440,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             >
               <div className="flex items-center gap-2.5">
                 <Sliders className="w-4 h-4 text-amber-400" />
-                <span>Anasayfa &amp; Banner</span>
+                <span>Vitrin &amp; Reklam Masası</span>
               </div>
               {badgeCounts.anasayfaBadge > 0 && (
                 <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-lg shadow-amber-500/40 animate-pulse border border-amber-300 shrink-0">
@@ -664,15 +676,19 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               <Link
                 href="/bms-secure-portal/derin-analiz"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-emerald-300 flex flex-col gap-1 border border-[#363b42] relative"
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
               >
-                <div className="flex items-center justify-between">
-                  <BarChart3 className="w-5 h-5 text-emerald-400" />
-                  <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[9px] font-black">
-                    MÜDAVİM
-                  </span>
-                </div>
+                <Activity className="w-5 h-5 text-amber-400" />
                 <span>2. Derin Analiz</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/site-yonetimi"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <Settings className="w-5 h-5 text-amber-400" />
+                <span>Site Yönetimi</span>
               </Link>
 
               <Link
