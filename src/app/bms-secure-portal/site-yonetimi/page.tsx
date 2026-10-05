@@ -19,7 +19,6 @@ import {
   Flame,
   Sparkles,
   Search,
-  ArrowUpRight,
   Eye,
   MousePointerClick,
   XCircle,
@@ -397,46 +396,46 @@ function SiteYonetimiContent() {
 
   const phoneDetails = parsePhoneNumber(adminWhatsApp || currentAdminWhatsApp);
 
-  // Ortak Önizleme Bileşeni
+  // Canlı Önizleme Kutusu
   const renderPreviewBox = () => {
     if (displayType === 'drawer') {
       return (
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#0B0E14] border border-[#252B3B] flex justify-center items-center w-full">
-          <div className="w-full max-w-sm bg-[#141824]/95 border border-amber-500/40 rounded-3xl shadow-2xl p-4 sm:p-5 flex flex-col justify-between items-center text-center space-y-3">
-            <div className="w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-1" />
+        <div className="p-3 sm:p-5 rounded-2xl bg-[#0B0E14] border border-[#252B3B] flex justify-center items-center w-full">
+          <div className="w-full max-w-sm bg-[#141824]/95 border border-amber-500/40 rounded-2xl sm:rounded-3xl shadow-2xl p-3.5 sm:p-5 flex flex-col justify-between items-center text-center space-y-2.5 sm:space-y-3">
+            <div className="w-10 sm:w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-0.5" />
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/50 shadow-inner">
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <Flame className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span className="font-heading font-black text-[11px] text-amber-300 uppercase tracking-wider">
                 {duyuruBadgeText || '👑 VIP DUYURU'}
               </span>
             </div>
 
             {mediaUrl && (
-              <div className="relative w-full h-36 sm:h-44 rounded-2xl overflow-hidden border border-[#252B3B] bg-black/90 shadow-xl flex items-center justify-center p-1.5">
+              <div className="relative w-full h-32 sm:h-44 rounded-xl sm:rounded-2xl overflow-hidden border border-[#252B3B] bg-black/90 shadow-xl flex items-center justify-center p-1">
                 <img
                   src={mediaUrl}
                   alt="Önizleme"
-                  className="w-full h-full object-contain max-h-[26vh] rounded-xl"
+                  className="w-full h-full object-contain max-h-[24vh] rounded-lg sm:rounded-xl"
                 />
               </div>
             )}
 
-            <div className="space-y-1 px-1">
-              <h3 className="text-base sm:text-lg font-heading font-black tracking-tight leading-snug bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-300">
+            <div className="space-y-1 px-1 w-full">
+              <h3 className="text-sm sm:text-lg font-heading font-black tracking-tight leading-snug bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-300 break-words">
                 {duyuruTitle || 'Türkiyenin en büyük eskort sitesi açıldı !'}
               </h3>
               {duyuruDescription && (
-                <p className="text-[11px] text-[#9AA3B2] font-medium leading-relaxed line-clamp-2">
+                <p className="text-[11px] text-[#9AA3B2] font-medium leading-relaxed line-clamp-2 break-words">
                   {duyuruDescription}
                 </p>
               )}
             </div>
 
             <div className="w-full space-y-1.5 pt-1">
-              <div className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-heading font-black text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 shadow-xl shadow-amber-500/30">
+              <div className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-heading font-black text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 shadow-xl shadow-amber-500/30">
                 <span>{duyuruButtonText || 'Hemen İncele'}</span>
-                <ExternalLink className="w-3.5 h-3.5 stroke-[3]" />
+                <ExternalLink className="w-3.5 h-3.5 stroke-[3] shrink-0" />
               </div>
               <div className="text-[10px] text-[#9AA3B2] font-medium">
                 Daha sonra hatırlat veya kapat
@@ -451,7 +450,7 @@ function SiteYonetimiContent() {
       <div className="p-1 rounded-2xl bg-[#0d1117] border border-[#21262d] overflow-hidden w-full">
         <div className={`w-full bg-gradient-to-r ${presetClasses[stylePreset]} px-3 py-2 rounded-xl shadow-lg flex items-center justify-between text-xs`}>
           <div className="flex items-center gap-2 truncate">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/30 font-black text-[10px] text-white">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/30 font-black text-[10px] text-white shrink-0">
               <Flame className="w-2.5 h-2.5 text-amber-300" />
               <span>{duyuruBadgeText || '🚀 YENİ'}</span>
             </span>
@@ -473,25 +472,25 @@ function SiteYonetimiContent() {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-full text-left font-sans animate-fadeIn pb-16">
+    <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-full text-left font-sans animate-fadeIn pb-20 md:pb-12">
       
-      {/* ── 1. ÜST BAŞLIK VE SAYFA KİMLİĞİ (RESPONSIVE HEADER) ──────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl w-full">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-lg">
-            <Settings className="w-6 h-6" />
+      {/* ── 1. ÜST BAŞLIK VE SAYFA KİMLİĞİ (PRO RESPONSIVE HEADER) ─────────── */}
+      <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-lg mt-0.5 sm:mt-0">
+            <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h1 className="font-black text-lg sm:text-2xl text-white font-heading tracking-tight">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-black text-base sm:text-xl md:text-2xl text-white font-heading tracking-tight">
                 Site &amp; Sistem Yönetimi
               </h1>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black font-mono">
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] sm:text-[10px] font-black font-mono">
                 GENEL MERKEZ
               </span>
             </div>
-            <p className="text-xs text-[#8b949e]">
-              Canlı WhatsApp destek hattı, üst duyuru &amp; çekmece popup'ı, SEO ping ve anasayfa başlıkları.
+            <p className="text-[11px] sm:text-xs text-[#8b949e] mt-0.5 line-clamp-1 sm:line-clamp-none">
+              WhatsApp destek hattı, çekmece popup'ı, SEO ping ve metinler.
             </p>
           </div>
         </div>
@@ -501,41 +500,42 @@ function SiteYonetimiContent() {
             fetchGenelConfig();
             fetchDuyuruConfig();
           }}
-          className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] text-xs font-bold font-heading transition-all shrink-0 self-start sm:self-auto cursor-pointer"
+          className="self-end sm:self-auto flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] text-xs font-bold font-heading transition-all shrink-0 cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${(loadingGenel || loadingDuyuru) ? 'animate-spin' : ''}`} />
-          <span>Verileri Yenile</span>
+          <span className="hidden sm:inline">Verileri Yenile</span>
+          <span className="sm:hidden">Yenile</span>
         </button>
       </div>
 
-      {/* ── 2. SEKMELER (SEGMENTED TABS - MOBILE FRIENDLY) ──────────────── */}
-      <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#161b22] border border-[#30363d] font-heading font-black text-xs w-full">
+      {/* ── 2. SEKMELER (CLEAN PILL SELECTOR) ──────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-1.5 sm:gap-2 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl bg-[#161b22] border border-[#30363d] font-heading font-black text-xs w-full">
         <button
           type="button"
           onClick={() => handleTabChange('genel')}
-          className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             activeTab === 'genel'
-              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 scale-[1.01]'
+              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 font-black'
               : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
           }`}
         >
           <OfficialWhatsAppIcon className="w-4 h-4 fill-current shrink-0" />
-          <span className="truncate">💬 WhatsApp &amp; Sistem</span>
+          <span className="truncate">WhatsApp &amp; Sistem</span>
         </button>
 
         <button
           type="button"
           onClick={() => handleTabChange('duyuru')}
-          className={`py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
             activeTab === 'duyuru'
-              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 scale-[1.01]'
+              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 font-black'
               : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
           }`}
         >
           <Flame className="w-4 h-4 shrink-0" />
-          <span className="truncate">📢 Duyuru &amp; Çekmece</span>
+          <span className="truncate">Duyuru &amp; Çekmece</span>
           {announcementData?.isActive && (
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0 hidden sm:inline-block" />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
           )}
         </button>
       </div>
@@ -544,78 +544,82 @@ function SiteYonetimiContent() {
       {/* SEKME 1: WHATSAPP, HERO VE SİSTEM AYARLARI                            */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'genel' && (
-        <div className="flex flex-col gap-6 animate-fadeIn w-full">
+        <div className="flex flex-col gap-4 sm:gap-6 animate-fadeIn w-full">
           
-          {/* CANLI WHATSAPP HATTI (FULL WIDTH RESPONSIVE) */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-4 w-full">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-emerald-500/20">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
-                  <OfficialWhatsAppIcon className="w-6 h-6 fill-[#25D366]" />
+          {/* CANLI WHATSAPP HATTI (PROFESSIONAL RESPONSIVE CARD) */}
+          <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-3.5 sm:gap-4 w-full">
+            
+            {/* Header: Başlık & Durum */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-emerald-500/20">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
+                  <OfficialWhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6 fill-[#25D366]" />
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-black text-base sm:text-lg text-white font-heading">
-                      Canlı Admin WhatsApp Destek Hattı
+                    <h2 className="font-black text-sm sm:text-lg text-white font-heading truncate">
+                      Canlı WhatsApp Destek Hattı
                     </h2>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono text-[10px] font-bold">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono text-[9px] sm:text-[10px] font-bold">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                       <span>CANLIDA AKTİF</span>
                     </span>
                   </div>
-                  <p className="text-xs text-[#8b949e]">
-                    Sanal hat banlandığında yenisini yapıştırıp kaydedin. Deploy gerekmeden tüm sitede anında aktif olur.
+                  <p className="text-[11px] sm:text-xs text-[#8b949e]">
+                    Yeni numarayı kaydedin; kod ve deploy gerekmeden tüm sitede anında güncellenir.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 bg-[#0d1117] border border-emerald-500/40 px-3.5 py-2 rounded-2xl text-xs font-mono self-start lg:self-auto shadow-inner">
-                <span className="text-[#8b949e] text-[11px]">Sitedeki Hat:</span>
-                <span className="text-emerald-400 font-black text-sm">
+              {/* Sitedeki Hat Rozeti */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0d1117] border border-emerald-500/30 text-xs font-mono self-start sm:self-auto shrink-0">
+                <span className="text-[#8b949e] text-[10px] sm:text-[11px]">Sitedeki Hat:</span>
+                <span className="text-emerald-400 font-black text-xs sm:text-sm">
                   {phoneDetails.formatted || '+62 838 2904 8050'}
                 </span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center w-full">
-              <div className="md:col-span-8 flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-[#c9d1d9] flex items-center gap-1.5">
-                  <span>Yeni / Güncel WhatsApp Numarası (Ülke kodu ile):</span>
+            {/* Input & Butonlar */}
+            <div className="flex flex-col md:flex-row items-stretch md:items-end gap-2.5 sm:gap-3 w-full">
+              <div className="flex-1 flex flex-col gap-1.5">
+                <label className="text-[11px] sm:text-xs font-bold text-[#c9d1d9]">
+                  WhatsApp Telefon Numarası (Ülke kodu ile):
                 </label>
                 <div className="relative w-full">
                   <input
                     type="text"
                     value={adminWhatsApp}
                     onChange={(e) => setAdminWhatsApp(e.target.value)}
-                    placeholder="Örn: 6283829048050 veya +62 838 2904 8050"
-                    className="w-full pl-4 pr-10 py-3.5 rounded-2xl bg-[#0d1117] border border-emerald-500/50 text-white font-mono text-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all shadow-inner"
+                    placeholder="Örn: 6283829048050 veya 905551234567"
+                    className="w-full pl-3.5 pr-10 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-emerald-500/50 text-white font-mono text-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all shadow-inner"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-emerald-400">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400">
                     <OfficialWhatsAppIcon className="w-5 h-5 fill-[#25D366]" />
                   </div>
                 </div>
               </div>
 
-              <div className="md:col-span-4 flex items-center gap-2 pt-2 md:pt-6 w-full">
+              <div className="flex items-center gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={handleSaveWhatsApp}
                   disabled={savingWhatsApp}
-                  className="flex-1 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-xl shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 sm:flex-initial py-3 sm:py-3.5 px-5 sm:px-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-xl shadow-emerald-500/25 active:scale-95 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 cursor-pointer min-h-[44px]"
                 >
                   {savingWhatsApp ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                       <span>Kaydediliyor...</span>
                     </>
                   ) : whatsAppSuccess ? (
                     <>
-                      <Check className="w-4 h-4 stroke-[3]" />
+                      <Check className="w-4 h-4 stroke-[3] shrink-0" />
                       <span>Kaydedildi!</span>
                     </>
                   ) : (
                     <>
-                      <ShieldCheck className="w-4 h-4 stroke-[2.5]" />
+                      <ShieldCheck className="w-4 h-4 stroke-[2.5] shrink-0" />
                       <span>Hattı Güncelle</span>
                     </>
                   )}
@@ -626,10 +630,10 @@ function SiteYonetimiContent() {
                     href={phoneDetails.waLink || `https://wa.me/${phoneDetails.raw}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-3.5 rounded-2xl bg-[#161b22] hover:bg-[#21262d] text-emerald-400 border border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center justify-center shrink-0 cursor-pointer"
+                    className="py-3 sm:py-3.5 px-3.5 rounded-xl sm:rounded-2xl bg-[#161b22] hover:bg-[#21262d] text-emerald-400 border border-emerald-500/30 hover:border-emerald-400 transition-all flex items-center justify-center shrink-0 cursor-pointer min-h-[44px]"
                     title="Canlı WhatsApp Hattını Test Et"
                   >
-                    <ExternalLink className="w-5 h-5" />
+                    <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5" />
                   </a>
                 )}
               </div>
@@ -639,35 +643,35 @@ function SiteYonetimiContent() {
               <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-in fade-in">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>
-                  Admin WhatsApp hattı başarıyla güncellendi. Tüm kullanıcılar, ilan sayfaları ve destek butonları artık yeni numaraya yönlendiriliyor.
+                  Admin WhatsApp hattı başarıyla güncellendi. Tüm kullanıcılar ve destek butonları artık yeni numaraya yönlendiriliyor.
                 </span>
               </div>
             )}
           </div>
 
           {/* 2-COLUMN RESPONSIVE GRID FOR HERO METİNLERİ & SEO PING */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             
             {/* ANASAYFA HERO VE MARKA METİNLERİ */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-4">
+            <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-3.5 sm:gap-4">
               <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 pb-3 border-b border-[#30363d]">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0">
-                    <Type className="w-5 h-5" />
+                <div className="flex items-center gap-2.5 sm:gap-3 pb-2.5 sm:pb-3 border-b border-[#30363d]">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0">
+                    <Type className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <h2 className="font-black text-base text-white font-heading">
+                    <h2 className="font-black text-sm sm:text-base text-white font-heading">
                       Anasayfa Hero &amp; Marka Metinleri
                     </h2>
-                    <p className="text-xs text-[#8b949e]">
+                    <p className="text-[11px] sm:text-xs text-[#8b949e]">
                       Anasayfadaki ana vitrin başlığı ve alt açıklama metni.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-3 font-heading">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-[#8b949e]">
+                <div className="flex flex-col gap-2.5 font-heading">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] sm:text-xs font-bold text-[#8b949e]">
                       Ana Vitrin Başlığı (H1):
                     </label>
                     <input
@@ -675,12 +679,12 @@ function SiteYonetimiContent() {
                       value={heroBaslik}
                       onChange={(e) => setHeroBaslik(e.target.value)}
                       placeholder="Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
-                      className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-medium focus:border-amber-400 focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs sm:text-sm font-medium focus:border-amber-400 focus:outline-none transition-colors"
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-[#8b949e]">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] sm:text-xs font-bold text-[#8b949e]">
                       Alt Açıklama &amp; Slogan:
                     </label>
                     <textarea
@@ -688,21 +692,21 @@ function SiteYonetimiContent() {
                       value={heroAltBaslik}
                       onChange={(e) => setHeroAltBaslik(e.target.value)}
                       placeholder="81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları."
-                      className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-medium focus:border-amber-400 focus:outline-none transition-colors resize-none"
+                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs sm:text-sm font-medium focus:border-amber-400 focus:outline-none transition-colors resize-none"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-[#30363d]">
+              <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-[#30363d]">
                 {heroSuccess ? (
                   <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
                     <span>Kaydedildi!</span>
                   </span>
                 ) : (
-                  <span className="text-[11px] text-[#8b949e]">
-                    Anasayfada anında güncellenir.
+                  <span className="text-[10px] sm:text-[11px] text-[#8b949e]">
+                    Anasayfada anında yansır.
                   </span>
                 )}
 
@@ -710,7 +714,7 @@ function SiteYonetimiContent() {
                   type="button"
                   onClick={handleSaveHero}
                   disabled={savingHero}
-                  className="py-2.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer"
+                  className="py-2.5 px-4 sm:px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[40px]"
                 >
                   {savingHero ? 'Kaydediliyor...' : 'Metinleri Kaydet'}
                 </button>
@@ -718,33 +722,33 @@ function SiteYonetimiContent() {
             </div>
 
             {/* HIZLI SİSTEM & SEO AKSİYONLARI */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-4">
+            <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-3.5 sm:gap-4">
               <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3 pb-3 border-b border-[#30363d]">
-                  <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black shrink-0">
-                    <Zap className="w-5 h-5" />
+                <div className="flex items-center gap-2.5 sm:gap-3 pb-2.5 sm:pb-3 border-b border-[#30363d]">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black shrink-0">
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
-                    <h2 className="font-black text-base text-white font-heading">
+                    <h2 className="font-black text-sm sm:text-base text-white font-heading">
                       Hızlı Sistem &amp; SEO Aksiyonları
                     </h2>
-                    <p className="text-xs text-[#8b949e]">
+                    <p className="text-[11px] sm:text-xs text-[#8b949e]">
                       Google ve Yandex IndexNow arama motoru sinyali.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 p-4 rounded-2xl bg-[#0d1117] border border-[#21262d]">
-                  <span className="font-heading font-black text-sm text-white">
+                <div className="flex flex-col gap-1.5 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#21262d]">
+                  <span className="font-heading font-black text-xs sm:text-sm text-white">
                     IndexNow &amp; Site Haritası Hızlı Ping
                   </span>
-                  <span className="text-xs text-[#8b949e]">
+                  <span className="text-[11px] sm:text-xs text-[#8b949e]">
                     Yeni ilanları ve güncel sayfaları arama motorlarına anında taratmak için tek tıkla ping sinyali gönderin.
                   </span>
                 </div>
 
                 {pingResult && (
-                  <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-blue-500/30 text-xs font-mono text-blue-300 max-h-36 overflow-y-auto">
+                  <div className="p-3 rounded-xl bg-[#0d1117] border border-blue-500/30 text-[11px] font-mono text-blue-300 max-h-32 overflow-y-auto">
                     <pre className="whitespace-pre-wrap">
                       {JSON.stringify(pingResult, null, 2)}
                     </pre>
@@ -752,24 +756,24 @@ function SiteYonetimiContent() {
                 )}
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-[#30363d]">
-                <span className="text-[11px] text-[#8b949e]">
-                  IndexNow API v2 Protokolü
+              <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-[#30363d]">
+                <span className="text-[10px] sm:text-[11px] text-[#8b949e]">
+                  IndexNow Protokolü
                 </span>
                 <button
                   type="button"
                   onClick={handlePingSeo}
                   disabled={pingingSeo}
-                  className="py-2.5 px-5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-heading font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+                  className="py-2.5 px-4 sm:px-5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-heading font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 cursor-pointer min-h-[40px]"
                 >
                   {pingingSeo ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                       <span>Ping Gönderiliyor...</span>
                     </>
                   ) : (
                     <>
-                      <Globe className="w-4 h-4" />
+                      <Globe className="w-4 h-4 shrink-0" />
                       <span>Şimdi Ping Gönder</span>
                     </>
                   )}
@@ -786,12 +790,12 @@ function SiteYonetimiContent() {
       {/* SEKME 2: DUYURU & ÇEKMECE BİLDİRİM MERKEZİ                           */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'duyuru' && (
-        <div className="flex flex-col gap-6 animate-fadeIn w-full">
+        <div className="flex flex-col gap-4 sm:gap-6 animate-fadeIn w-full">
           
           {/* FEEDBACK ALERT */}
           {duyuruFeedback && (
             <div
-              className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs font-bold animate-in fade-in slide-in-from-top-2 w-full ${
+              className={`p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border flex items-center justify-between gap-3 text-xs font-bold animate-in fade-in slide-in-from-top-2 w-full ${
                 duyuruFeedback.type === 'success'
                   ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
                   : 'bg-red-500/15 border-red-500/40 text-red-300'
@@ -807,20 +811,20 @@ function SiteYonetimiContent() {
             </div>
           )}
 
-          {/* ── KPI STATS (FULLY FLUID 5-COL DESKTOP / 2-COL MOBILE) ────────── */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4 w-full">
+          {/* ── KPI STATS (CLEAN RESPONSIVE METRIC CARDS) ─────────────────── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-4 w-full">
             {/* 1. Durum */}
-            <div className={`p-4 rounded-2xl border transition-all col-span-2 sm:col-span-1 ${
+            <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all col-span-2 sm:col-span-1 ${
               duyuruIsActive
                 ? 'bg-emerald-500/10 border-emerald-500/40 shadow-lg shadow-emerald-500/5'
                 : 'bg-red-500/10 border-red-500/40 shadow-lg shadow-red-500/5'
             }`}>
-              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
+              <div className="flex items-center justify-between text-[11px] sm:text-xs text-[#8b949e] font-bold">
                 <span>Yayın Durumu</span>
-                <span className={`w-2.5 h-2.5 rounded-full ${duyuruIsActive ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}></span>
+                <span className={`w-2 h-2 rounded-full ${duyuruIsActive ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`}></span>
               </div>
               <div className="mt-2 flex items-center justify-between">
-                <span className={`text-base sm:text-lg font-heading font-black ${duyuruIsActive ? 'text-emerald-300' : 'text-red-400'}`}>
+                <span className={`text-sm sm:text-base font-heading font-black ${duyuruIsActive ? 'text-emerald-300' : 'text-red-400'}`}>
                   {duyuruIsActive ? 'YAYINDA' : 'PASİF'}
                 </span>
                 <button
@@ -839,45 +843,45 @@ function SiteYonetimiContent() {
             </div>
 
             {/* 2. Kaç Kişi Gördü */}
-            <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
+              <div className="flex items-center justify-between text-[11px] sm:text-xs text-[#8b949e] font-bold">
                 <span>Gören Kişi</span>
-                <Eye className="w-4 h-4 text-blue-400" />
+                <Eye className="w-3.5 h-3.5 text-blue-400" />
               </div>
-              <div className="mt-2">
-                <div className="text-xl sm:text-2xl font-heading font-black text-white font-mono">
+              <div className="mt-1.5">
+                <div className="text-lg sm:text-2xl font-heading font-black text-white font-mono">
                   {announcementData?.uniqueViewsCount ?? 0}
                 </div>
                 <div className="text-[10px] text-[#8b949e] mt-0.5 truncate">
-                  Toplam: {announcementData?.viewsCount ?? 0} gösterim
+                  Toplam: {announcementData?.viewsCount ?? 0}
                 </div>
               </div>
             </div>
 
             {/* 3. Kaç Kişi Tıkladı */}
-            <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
-                <span>Tıklayan Kişi</span>
-                <MousePointerClick className="w-4 h-4 text-amber-400" />
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
+              <div className="flex items-center justify-between text-[11px] sm:text-xs text-[#8b949e] font-bold">
+                <span>Tıklayan</span>
+                <MousePointerClick className="w-3.5 h-3.5 text-amber-400" />
               </div>
-              <div className="mt-2">
-                <div className="text-xl sm:text-2xl font-heading font-black text-amber-300 font-mono">
+              <div className="mt-1.5">
+                <div className="text-lg sm:text-2xl font-heading font-black text-amber-300 font-mono">
                   {announcementData?.uniqueClicksCount ?? 0}
                 </div>
                 <div className="text-[10px] text-[#8b949e] mt-0.5 truncate">
-                  Toplam: {announcementData?.clicksCount ?? 0} tık
+                  Toplam: {announcementData?.clicksCount ?? 0}
                 </div>
               </div>
             </div>
 
             {/* 4. CTR */}
-            <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
-              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between">
+              <div className="flex items-center justify-between text-[11px] sm:text-xs text-[#8b949e] font-bold">
                 <span>CTR Verimi</span>
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
               </div>
-              <div className="mt-2">
-                <div className="text-xl sm:text-2xl font-heading font-black text-emerald-300 font-mono">
+              <div className="mt-1.5">
+                <div className="text-lg sm:text-2xl font-heading font-black text-emerald-300 font-mono">
                   %{announcementData?.ctr ?? '0.0'}
                 </div>
                 <div className="text-[10px] text-[#8b949e] mt-0.5 truncate">
@@ -887,59 +891,59 @@ function SiteYonetimiContent() {
             </div>
 
             {/* 5. Kapatma */}
-            <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between col-span-2 sm:col-span-1">
-              <div className="flex items-center justify-between text-xs text-[#8b949e] font-bold">
-                <span>Kapatma (X)</span>
-                <XCircle className="w-4 h-4 text-rose-400" />
+            <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between col-span-2 sm:col-span-1">
+              <div className="flex items-center justify-between text-[11px] sm:text-xs text-[#8b949e] font-bold">
+                <span>Kapatan (X)</span>
+                <XCircle className="w-3.5 h-3.5 text-rose-400" />
               </div>
-              <div className="mt-2">
-                <div className="text-xl sm:text-2xl font-heading font-black text-rose-400 font-mono">
+              <div className="mt-1.5">
+                <div className="text-lg sm:text-2xl font-heading font-black text-rose-400 font-mono">
                   {announcementData?.dismissCount ?? 0}
                 </div>
                 <div className="text-[10px] text-[#8b949e] mt-0.5 truncate">
-                  'X' butonuna basanlar
+                  Kapatma adedi
                 </div>
               </div>
             </div>
           </div>
 
           {/* ── MOBİL ÖZEL KATLANABİLİR ÖNİZLEME (ONLY VISIBLE ON < XL) ────── */}
-          <div className="xl:hidden p-4 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-3 w-full">
+          <div className="xl:hidden p-3.5 sm:p-4 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-2.5 w-full">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-[#8b949e]">
-                <Sparkles className="w-4 h-4 text-amber-400" />
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#8b949e]">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                 <span>Canlı Önizleme ({displayType === 'drawer' ? 'Çekmece' : 'Üst Bar'})</span>
               </div>
               <button
                 type="button"
                 onClick={() => setShowMobilePreview(!showMobilePreview)}
-                className="px-3 py-1.5 rounded-xl bg-[#21262d] text-amber-300 text-xs font-bold flex items-center gap-1.5 border border-[#363b42] cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-[#21262d] text-amber-300 text-xs font-bold flex items-center gap-1 border border-[#363b42] cursor-pointer"
               >
-                <span>{showMobilePreview ? 'Gizle' : 'Önizlemeyi Göster'}</span>
-                {showMobilePreview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                <span>{showMobilePreview ? 'Gizle' : 'Önizle'}</span>
+                {showMobilePreview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
             </div>
             {showMobilePreview && (
-              <div className="pt-2 animate-in fade-in">
+              <div className="pt-1.5 animate-in fade-in">
                 {renderPreviewBox()}
               </div>
             )}
           </div>
 
           {/* ── 2-COLUMN MAIN RESPONSIVE WORK AREA ON DESKTOP (XL+) ────────── */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 w-full items-start">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 w-full items-start">
             
             {/* SOL KOLON (XL: 7 / 2XL: 8): FORM VE AYARLAR */}
-            <div className="xl:col-span-7 2xl:col-span-8 p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl space-y-5 w-full">
-              <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
+            <div className="xl:col-span-7 2xl:col-span-8 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl space-y-4 sm:space-y-5 w-full">
+              <h2 className="text-sm sm:text-base font-heading font-black text-white flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-amber-400" />
                 <span>Duyuru İçerik &amp; Format Yapılandırması</span>
               </h2>
 
               {/* Format ve Gecikme */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#21262d]">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                  <label className="text-[11px] sm:text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
                     <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
                     <span>Bildirim Formatı</span>
                   </label>
@@ -947,39 +951,39 @@ function SiteYonetimiContent() {
                     <button
                       type="button"
                       onClick={() => setDisplayType('drawer')}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         displayType === 'drawer'
                           ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
                           : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
                       }`}
                     >
-                      📱 Çekmece (Drawer)
+                      📱 Çekmece
                     </button>
                     <button
                       type="button"
                       onClick={() => setDisplayType('bar')}
-                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                      className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         displayType === 'bar'
                           ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
                           : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
                       }`}
                     >
-                      📌 Üst Sabit Bar
+                      📌 Üst Bar
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                  <label className="text-[11px] sm:text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Kaç Sn Sonra Açılsın?</span>
+                    <span>Gecikme Süresi</span>
                   </label>
                   <select
                     value={delaySeconds}
                     onChange={(e) => setDelaySeconds(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs font-bold focus:border-amber-400 focus:outline-none cursor-pointer"
+                    className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs font-bold focus:border-amber-400 focus:outline-none cursor-pointer"
                   >
-                    <option value={0}>0 saniye (Hemen Açılır)</option>
+                    <option value={0}>0 sn (Hemen Açılır)</option>
                     <option value={1}>1 saniye sonra</option>
                     <option value={2}>2 saniye sonra</option>
                     <option value={3}>3 saniye sonra (Önerilen)</option>
@@ -991,11 +995,11 @@ function SiteYonetimiContent() {
               </div>
 
               {/* Medya / GIF Yükleyici */}
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] space-y-2.5">
+              <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#21262d] space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
+                  <label className="text-[11px] sm:text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Çekmece Görseli / Hareketli GIF</span>
+                    <span>Çekmece Görseli / GIF</span>
                   </label>
                   {mediaUrl && (
                     <button
@@ -1011,7 +1015,7 @@ function SiteYonetimiContent() {
                   )}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full">
+                <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
                   <input
                     type="text"
                     value={mediaUrl}
@@ -1019,8 +1023,8 @@ function SiteYonetimiContent() {
                       setMediaUrl(e.target.value);
                       setMediaType(e.target.value.includes('.gif') ? 'gif' : 'image');
                     }}
-                    placeholder="https://... veya dosya yükleyin"
-                    className="flex-1 w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58]"
+                    placeholder="https://... veya dosya seçin"
+                    className="flex-1 w-full px-3 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58]"
                   />
 
                   <input
@@ -1035,18 +1039,18 @@ function SiteYonetimiContent() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingMedia}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer min-h-[40px]"
                   >
                     <Upload className={`w-3.5 h-3.5 ${uploadingMedia ? 'animate-bounce' : ''}`} />
-                    <span>{uploadingMedia ? 'Yükleniyor...' : 'GIF / Görsel Yükle'}</span>
+                    <span>{uploadingMedia ? 'Yükleniyor...' : 'Görsel / GIF Seç'}</span>
                   </button>
                 </div>
               </div>
 
               {/* Başlık, Açıklama ve Buton Metinleri */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-xs font-bold text-[#8b949e]">
+                  <label className="text-[11px] sm:text-xs font-bold text-[#8b949e]">
                     Duyuru Başlığı <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -1054,12 +1058,12 @@ function SiteYonetimiContent() {
                     value={duyuruTitle}
                     onChange={(e) => setDuyuruTitle(e.target.value)}
                     placeholder="Türkiyenin en büyük eskort sitesi açıldı !"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
                   />
                 </div>
 
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-xs font-bold text-[#8b949e]">
+                  <label className="text-[11px] sm:text-xs font-bold text-[#8b949e]">
                     Açıklama Metni
                   </label>
                   <textarea
@@ -1067,38 +1071,38 @@ function SiteYonetimiContent() {
                     value={duyuruDescription}
                     onChange={(e) => setDuyuruDescription(e.target.value)}
                     placeholder="VIP ilanları ve WhatsApp iletişim hatlarını hemen keşfedin."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58] resize-none"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58] resize-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#8b949e]">
+                  <label className="text-[11px] sm:text-xs font-bold text-[#8b949e]">
                     Sol Rozet Metni
                   </label>
                   <input
                     type="text"
                     value={duyuruBadgeText}
                     onChange={(e) => setDuyuruBadgeText(e.target.value)}
-                    placeholder="🚀 YENİ AĞ"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                    placeholder="🚀 YENİ"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#8b949e]">
-                    Aksiyon Butonu Metni
+                  <label className="text-[11px] sm:text-xs font-bold text-[#8b949e]">
+                    Aksiyon Butonu
                   </label>
                   <input
                     type="text"
                     value={duyuruButtonText}
                     onChange={(e) => setDuyuruButtonText(e.target.value)}
                     placeholder="Hemen İncele →"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
                   />
                 </div>
 
                 <div className="md:col-span-2 space-y-1">
-                  <label className="text-xs font-bold text-[#8b949e]">
+                  <label className="text-[11px] sm:text-xs font-bold text-[#8b949e]">
                     Hedef Yönlendirme URL'si <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -1106,22 +1110,22 @@ function SiteYonetimiContent() {
                     value={duyuruTargetUrl}
                     onChange={(e) => setDuyuruTargetUrl(e.target.value)}
                     placeholder="https://... veya /ilan-ver"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-amber-300 font-mono text-xs font-bold placeholder-[#484f58]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] focus:border-amber-400 focus:outline-none text-amber-300 font-mono text-xs font-bold placeholder-[#484f58]"
                   />
                 </div>
               </div>
 
               {/* Tema Seçici */}
               <div className="space-y-2 pt-2 border-t border-[#21262d]">
-                <label className="text-xs font-bold text-[#8b949e]">
-                  Renk &amp; Parlama Teması
+                <label className="text-[11px] sm:text-xs font-bold text-[#8b949e]">
+                  Renk Teması
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
                   {[
-                    { id: 'fire', label: '🔥 Ateş Kırmızı', class: 'from-amber-600 to-red-700' },
-                    { id: 'fuchsia', label: '🔮 Siber Fuşya', class: 'from-fuchsia-700 to-pink-700' },
-                    { id: 'emerald', label: '🌿 Zümrüt Yeşil', class: 'from-emerald-600 to-teal-800' },
-                    { id: 'cyber', label: '⚡ Derin Mavi', class: 'from-indigo-700 to-blue-900' },
+                    { id: 'fire', label: '🔥 Ateş', class: 'from-amber-600 to-red-700' },
+                    { id: 'fuchsia', label: '🔮 Siber', class: 'from-fuchsia-700 to-pink-700' },
+                    { id: 'emerald', label: '🌿 Zümrüt', class: 'from-emerald-600 to-teal-800' },
+                    { id: 'cyber', label: '⚡ Mavi', class: 'from-indigo-700 to-blue-900' },
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -1129,11 +1133,11 @@ function SiteYonetimiContent() {
                       onClick={() => setStylePreset(item.id as any)}
                       className={`p-2.5 rounded-xl border font-bold text-xs flex items-center justify-between gap-1 transition-all cursor-pointer ${
                         stylePreset === item.id
-                          ? 'bg-gradient-to-r ' + item.class + ' text-white border-white/60 shadow-md scale-[1.02]'
+                          ? 'bg-gradient-to-r ' + item.class + ' text-white border-white/60 shadow-md scale-[1.01]'
                           : 'bg-[#0d1117] text-[#c9d1d9] border-[#30363d]'
                       }`}
                     >
-                      <span>{item.label}</span>
+                      <span className="truncate">{item.label}</span>
                       {stylePreset === item.id && <Check className="w-3.5 h-3.5 shrink-0" />}
                     </button>
                   ))}
@@ -1141,7 +1145,7 @@ function SiteYonetimiContent() {
               </div>
 
               {/* Alt Butonlar */}
-              <div className="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#21262d]">
+              <div className="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-[#21262d]">
                 <label className="flex items-center gap-2 text-xs font-bold text-[#c9d1d9] cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -1149,16 +1153,16 @@ function SiteYonetimiContent() {
                     onChange={(e) => setOpenInNewTab(e.target.checked)}
                     className="w-4 h-4 rounded bg-[#0d1117] border-[#30363d] text-amber-500 focus:ring-0"
                   />
-                  <span>Yeni Sekmede Aç (`target="_blank"`)</span>
+                  <span>Yeni Sekmede Aç</span>
                 </label>
 
                 <button
                   type="button"
                   onClick={() => handleSaveDuyuru()}
                   disabled={savingDuyuru}
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-heading font-black text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-heading font-black text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
                 >
-                  <Save className="w-4 h-4" />
+                  <Save className="w-4 h-4 shrink-0" />
                   <span>{savingDuyuru ? 'Kaydediliyor...' : 'Duyuruyu Kaydet'}</span>
                 </button>
               </div>
@@ -1171,7 +1175,7 @@ function SiteYonetimiContent() {
               <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl space-y-3 w-full">
                 <div className="flex items-center justify-between pb-2 border-b border-[#30363d]">
                   <div className="flex items-center gap-2 text-xs font-bold text-[#8b949e]">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
                     <span>Canlı Önizleme ({displayType === 'drawer' ? 'Çekmece' : 'Üst Bar'})</span>
                   </div>
                   <span className="text-[11px] font-mono text-amber-300 font-bold">
@@ -1185,13 +1189,13 @@ function SiteYonetimiContent() {
               <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-4 w-full">
                 <div className="space-y-3">
                   <h3 className="text-sm font-heading font-black text-white flex items-center gap-2">
-                    <RotateCcw className="w-4 h-4 text-rose-400" />
+                    <RotateCcw className="w-4 h-4 text-rose-400 shrink-0" />
                     <span>Tekrar Gösterim &amp; Sıfırlama</span>
                   </h3>
 
                   <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] space-y-2 text-xs text-[#8b949e]">
                     <div className="font-bold text-white flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                       <span>Tek Seferlik Gösterim:</span>
                     </div>
                     <p>
@@ -1211,7 +1215,7 @@ function SiteYonetimiContent() {
                   type="button"
                   onClick={handleResetCampaign}
                   disabled={resettingCampaign}
-                  className="w-full p-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 font-heading font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full p-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 font-heading font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
                 >
                   <RotateCcw className={`w-4 h-4 ${resettingCampaign ? 'animate-spin' : ''}`} />
                   <span>{resettingCampaign ? 'Sıfırlanıyor...' : '🔄 Kampanyayı Sıfırla (Herkese Göster)'}</span>
@@ -1223,26 +1227,26 @@ function SiteYonetimiContent() {
           </div>
 
           {/* ── ZİYARETÇİ ETKİLEŞİM GÜNLÜĞÜ (FULL WIDTH RESPONSIVE) ─────────── */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl space-y-4 w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl space-y-3.5 sm:space-y-4 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
-                <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
-                  <Radio className="w-4 h-4 text-blue-400" />
+                <h2 className="text-sm sm:text-base font-heading font-black text-white flex items-center gap-2">
+                  <Radio className="w-4 h-4 text-blue-400 shrink-0" />
                   <span>Duyuru Etkileşim Günlüğü</span>
                 </h2>
-                <p className="text-xs text-[#8b949e] mt-0.5">
+                <p className="text-[11px] sm:text-xs text-[#8b949e] mt-0.5">
                   Duyuru &amp; Çekmece ile etkileşime geçen ziyaretçilerin anlık kayıtları
                 </p>
               </div>
-              <span className="text-xs font-mono px-3 py-1 rounded-lg bg-[#0d1117] border border-[#21262d] text-[#8b949e] self-start sm:self-auto">
-                Toplam Kayıt: <span className="text-white font-bold">{announcementData?.recentLogs?.length || 0}</span>
+              <span className="text-[11px] sm:text-xs font-mono px-2.5 py-1 rounded-lg bg-[#0d1117] border border-[#21262d] text-[#8b949e] self-start sm:self-auto">
+                Kayıt: <span className="text-white font-bold">{announcementData?.recentLogs?.length || 0}</span>
               </span>
             </div>
 
             {/* Arama ve Filtre */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-2xl bg-[#0d1117] border border-[#21262d] w-full">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#21262d] w-full">
               <div className="relative flex-1">
-                <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={logSearch}
@@ -1250,8 +1254,8 @@ function SiteYonetimiContent() {
                     setLogSearch(e.target.value);
                     setLogPage(1);
                   }}
-                  placeholder="IP adresi veya şehir ile ara..."
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                  placeholder="IP veya şehir ile ara..."
+                  className="w-full pl-8 sm:pl-9 pr-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
@@ -1269,7 +1273,7 @@ function SiteYonetimiContent() {
                       setLogFilter(tab.id as any);
                       setLogPage(1);
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                       logFilter === tab.id
                         ? 'bg-amber-500 text-slate-950 font-black shadow'
                         : 'bg-[#161b22] text-[#8b949e] hover:text-white border border-[#30363d]'
@@ -1302,7 +1306,7 @@ function SiteYonetimiContent() {
 
               if (displayed.length === 0) {
                 return (
-                  <div className="p-8 text-center text-[#8b949e] text-xs italic bg-[#0d1117] rounded-2xl border border-[#21262d] w-full">
+                  <div className="p-6 text-center text-[#8b949e] text-xs italic bg-[#0d1117] rounded-xl sm:rounded-2xl border border-[#21262d] w-full">
                     Kayıt bulunamadı.
                   </div>
                 );
@@ -1310,23 +1314,23 @@ function SiteYonetimiContent() {
 
               return (
                 <div className="w-full">
-                  {/* MOBİL GÖRÜNÜM: KART AKIŞI (YATAY SCROLL YOK - DOKUNMATİK UYUMLU) */}
-                  <div className="md:hidden flex flex-col gap-2.5 w-full">
+                  {/* MOBİL GÖRÜNÜM: DOKUNMATİK UYUMLU KART AKIŞI (SIKIŞMA VE YATAY SCROLL YOK) */}
+                  <div className="md:hidden flex flex-col gap-2 w-full">
                     {displayed.map((log, i) => (
-                      <div key={i} className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-2">
+                      <div key={i} className="p-3 rounded-xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
                           {log.eventType === 'click' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-bold">
                               🎯 Tıkladı (Siteye Gitti)
                             </span>
                           )}
                           {log.eventType === 'view' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[10px] font-bold">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[9px] font-bold">
                               👁️ Görüntüledi
                             </span>
                           )}
                           {log.eventType === 'dismiss' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-bold">
                               ❌ Kapattı ('X')
                             </span>
                           )}
@@ -1335,15 +1339,15 @@ function SiteYonetimiContent() {
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs text-[#c9d1d9] pt-1.5 border-t border-[#21262d]">
-                          <span className="font-bold text-white flex items-center gap-1">
+                        <div className="flex items-center justify-between text-xs text-[#c9d1d9] pt-1 border-t border-[#21262d]/60">
+                          <span className="font-bold text-white text-[11px]">
                             📍 {log.city || 'Bilinmiyor'}
                           </span>
-                          <span className="font-mono text-[#8b949e] text-[11px]">
+                          <span className="font-mono text-[#8b949e] text-[10px]">
                             {log.ip || 'anon'}
                           </span>
-                          <span className="inline-flex items-center gap-1 text-[11px]">
-                            {log.device === 'desktop' ? <Laptop className="w-3.5 h-3.5 text-blue-400" /> : <Smartphone className="w-3.5 h-3.5 text-emerald-400" />}
+                          <span className="inline-flex items-center gap-1 text-[10px]">
+                            {log.device === 'desktop' ? <Laptop className="w-3 h-3 text-blue-400" /> : <Smartphone className="w-3 h-3 text-emerald-400" />}
                             <span className="capitalize">{log.device || 'Mobil'}</span>
                           </span>
                         </div>
@@ -1406,20 +1410,20 @@ function SiteYonetimiContent() {
 
                   {/* Sayfalama */}
                   {totalPages > 1 && (
-                    <div className="flex items-center justify-between pt-3 text-xs text-[#8b949e] w-full">
-                      <div>
+                    <div className="flex items-center justify-between pt-2.5 text-xs text-[#8b949e] w-full">
+                      <div className="text-[11px]">
                         {filtered.length} kayıttan {(currentPage - 1) * limit + 1} - {Math.min(currentPage * limit, filtered.length)} gösteriliyor
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => setLogPage((p) => Math.max(1, p - 1))}
                           disabled={currentPage <= 1}
                           className="p-1.5 rounded-lg bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer"
                         >
-                          <ChevronLeft className="w-4 h-4" />
+                          <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
-                        <span className="px-2.5 py-1 rounded-lg bg-[#0d1117] border border-[#21262d] font-mono text-white text-xs">
+                        <span className="px-2 py-1 rounded-lg bg-[#0d1117] border border-[#21262d] font-mono text-white text-[11px]">
                           {currentPage} / {totalPages}
                         </span>
                         <button
@@ -1428,7 +1432,7 @@ function SiteYonetimiContent() {
                           disabled={currentPage >= totalPages}
                           className="p-1.5 rounded-lg bg-[#0d1117] hover:bg-[#21262d] border border-[#30363d] disabled:opacity-40 disabled:cursor-not-allowed text-white cursor-pointer"
                         >
-                          <ChevronRight className="w-4 h-4" />
+                          <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
