@@ -397,11 +397,86 @@ function SiteYonetimiContent() {
 
   const phoneDetails = parsePhoneNumber(adminWhatsApp || currentAdminWhatsApp);
 
+  // Ortak Önizleme Bileşeni
+  const renderPreviewBox = () => {
+    if (displayType === 'drawer') {
+      return (
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0B0E14] border border-[#252B3B] flex justify-center items-center w-full">
+          <div className="w-full max-w-sm bg-[#141824]/95 border border-amber-500/40 rounded-3xl shadow-2xl p-4 sm:p-5 flex flex-col justify-between items-center text-center space-y-3">
+            <div className="w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-1" />
+
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/50 shadow-inner">
+              <Flame className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-heading font-black text-[11px] text-amber-300 uppercase tracking-wider">
+                {duyuruBadgeText || '👑 VIP DUYURU'}
+              </span>
+            </div>
+
+            {mediaUrl && (
+              <div className="relative w-full h-36 sm:h-44 rounded-2xl overflow-hidden border border-[#252B3B] bg-black/90 shadow-xl flex items-center justify-center p-1.5">
+                <img
+                  src={mediaUrl}
+                  alt="Önizleme"
+                  className="w-full h-full object-contain max-h-[26vh] rounded-xl"
+                />
+              </div>
+            )}
+
+            <div className="space-y-1 px-1">
+              <h3 className="text-base sm:text-lg font-heading font-black tracking-tight leading-snug bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-300">
+                {duyuruTitle || 'Türkiyenin en büyük eskort sitesi açıldı !'}
+              </h3>
+              {duyuruDescription && (
+                <p className="text-[11px] text-[#9AA3B2] font-medium leading-relaxed line-clamp-2">
+                  {duyuruDescription}
+                </p>
+              )}
+            </div>
+
+            <div className="w-full space-y-1.5 pt-1">
+              <div className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-heading font-black text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 shadow-xl shadow-amber-500/30">
+                <span>{duyuruButtonText || 'Hemen İncele'}</span>
+                <ExternalLink className="w-3.5 h-3.5 stroke-[3]" />
+              </div>
+              <div className="text-[10px] text-[#9AA3B2] font-medium">
+                Daha sonra hatırlat veya kapat
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-1 rounded-2xl bg-[#0d1117] border border-[#21262d] overflow-hidden w-full">
+        <div className={`w-full bg-gradient-to-r ${presetClasses[stylePreset]} px-3 py-2 rounded-xl shadow-lg flex items-center justify-between text-xs`}>
+          <div className="flex items-center gap-2 truncate">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/30 font-black text-[10px] text-white">
+              <Flame className="w-2.5 h-2.5 text-amber-300" />
+              <span>{duyuruBadgeText || '🚀 YENİ'}</span>
+            </span>
+            <span className="font-heading font-black text-white truncate text-xs">
+              {duyuruTitle || 'Türkiyenin en büyük eskort sitesi açıldı !'}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="px-2.5 py-1 rounded bg-white text-slate-950 font-heading font-black text-[10px]">
+              {duyuruButtonText || 'İncele →'}
+            </span>
+            <span className="p-1 rounded bg-black/20 text-white/80">
+              <X className="w-3 h-3" />
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-6xl mx-auto text-left animate-fadeIn font-sans pb-12">
+    <div className="flex flex-col gap-6 w-full max-w-full text-left font-sans animate-fadeIn pb-16">
       
       {/* ── 1. ÜST BAŞLIK VE SAYFA KİMLİĞİ (RESPONSIVE HEADER) ──────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl w-full">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-lg">
             <Settings className="w-6 h-6" />
@@ -426,7 +501,7 @@ function SiteYonetimiContent() {
             fetchGenelConfig();
             fetchDuyuruConfig();
           }}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] text-xs font-bold font-heading transition-all shrink-0 self-start sm:self-auto cursor-pointer"
+          className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] text-xs font-bold font-heading transition-all shrink-0 self-start sm:self-auto cursor-pointer"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${(loadingGenel || loadingDuyuru) ? 'animate-spin' : ''}`} />
           <span>Verileri Yenile</span>
@@ -434,7 +509,7 @@ function SiteYonetimiContent() {
       </div>
 
       {/* ── 2. SEKMELER (SEGMENTED TABS - MOBILE FRIENDLY) ──────────────── */}
-      <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#161b22] border border-[#30363d] font-heading font-black text-xs">
+      <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-[#161b22] border border-[#30363d] font-heading font-black text-xs w-full">
         <button
           type="button"
           onClick={() => handleTabChange('genel')}
@@ -469,17 +544,17 @@ function SiteYonetimiContent() {
       {/* SEKME 1: WHATSAPP, HERO VE SİSTEM AYARLARI                            */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'genel' && (
-        <div className="flex flex-col gap-6 animate-fadeIn">
+        <div className="flex flex-col gap-6 animate-fadeIn w-full">
           
-          {/* CANLI WHATSAPP HATTI */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-4">
+          {/* CANLI WHATSAPP HATTI (FULL WIDTH RESPONSIVE) */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-4 w-full">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-emerald-500/20">
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
                   <OfficialWhatsAppIcon className="w-6 h-6 fill-[#25D366]" />
                 </div>
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="font-black text-base sm:text-lg text-white font-heading">
                       Canlı Admin WhatsApp Destek Hattı
                     </h2>
@@ -502,12 +577,12 @@ function SiteYonetimiContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center w-full">
               <div className="md:col-span-8 flex flex-col gap-1.5">
                 <label className="text-xs font-bold text-[#c9d1d9] flex items-center gap-1.5">
                   <span>Yeni / Güncel WhatsApp Numarası (Ülke kodu ile):</span>
                 </label>
-                <div className="relative">
+                <div className="relative w-full">
                   <input
                     type="text"
                     value={adminWhatsApp}
@@ -521,7 +596,7 @@ function SiteYonetimiContent() {
                 </div>
               </div>
 
-              <div className="md:col-span-4 flex items-center gap-2 pt-2 md:pt-6">
+              <div className="md:col-span-4 flex items-center gap-2 pt-2 md:pt-6 w-full">
                 <button
                   type="button"
                   onClick={handleSaveWhatsApp}
@@ -570,58 +645,64 @@ function SiteYonetimiContent() {
             )}
           </div>
 
-          {/* ANASAYFA HERO VE MARKA METİNLERİ */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-            <div className="flex items-center gap-3 pb-3 border-b border-[#30363d]">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0">
-                <Type className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="font-black text-base text-white font-heading">
-                  Anasayfa Hero &amp; Marka Metinleri
-                </h2>
-                <p className="text-xs text-[#8b949e]">
-                  Anasayfadaki ana vitrin başlığı ve alt açıklama metnini buradan yönetin.
-                </p>
-              </div>
-            </div>
+          {/* 2-COLUMN RESPONSIVE GRID FOR HERO METİNLERİ & SEO PING */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+            
+            {/* ANASAYFA HERO VE MARKA METİNLERİ */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-4">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 pb-3 border-b border-[#30363d]">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0">
+                    <Type className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-black text-base text-white font-heading">
+                      Anasayfa Hero &amp; Marka Metinleri
+                    </h2>
+                    <p className="text-xs text-[#8b949e]">
+                      Anasayfadaki ana vitrin başlığı ve alt açıklama metni.
+                    </p>
+                  </div>
+                </div>
 
-            <div className="flex flex-col gap-3 font-heading">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-[#8b949e]">
-                  Ana Vitrin Başlığı (H1):
-                </label>
-                <input
-                  type="text"
-                  value={heroBaslik}
-                  onChange={(e) => setHeroBaslik(e.target.value)}
-                  placeholder="Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
-                  className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-medium focus:border-amber-400 focus:outline-none transition-colors"
-                />
+                <div className="flex flex-col gap-3 font-heading">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#8b949e]">
+                      Ana Vitrin Başlığı (H1):
+                    </label>
+                    <input
+                      type="text"
+                      value={heroBaslik}
+                      onChange={(e) => setHeroBaslik(e.target.value)}
+                      placeholder="Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
+                      className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-medium focus:border-amber-400 focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-[#8b949e]">
+                      Alt Açıklama &amp; Slogan:
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={heroAltBaslik}
+                      onChange={(e) => setHeroAltBaslik(e.target.value)}
+                      placeholder="81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları."
+                      className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-medium focus:border-amber-400 focus:outline-none transition-colors resize-none"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-[#8b949e]">
-                  Alt Açıklama &amp; Slogan:
-                </label>
-                <input
-                  type="text"
-                  value={heroAltBaslik}
-                  onChange={(e) => setHeroAltBaslik(e.target.value)}
-                  placeholder="81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları."
-                  className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-medium focus:border-amber-400 focus:outline-none transition-colors"
-                />
-              </div>
-
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between pt-3 border-t border-[#30363d]">
                 {heroSuccess ? (
                   <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Hero metinleri kaydedildi!</span>
+                    <span>Kaydedildi!</span>
                   </span>
                 ) : (
                   <span className="text-[11px] text-[#8b949e]">
-                    Değişiklik anasayfada anında yansır.
+                    Anasayfada anında güncellenir.
                   </span>
                 )}
 
@@ -635,61 +716,67 @@ function SiteYonetimiContent() {
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* HIZLI SİSTEM & SEO AKSİYONLARI */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-            <div className="flex items-center gap-3 pb-3 border-b border-[#30363d]">
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black shrink-0">
-                <Zap className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="font-black text-base text-white font-heading">
-                  Hızlı Sistem &amp; SEO Aksiyonları
-                </h2>
-                <p className="text-xs text-[#8b949e]">
-                  Arama motorlarına (Google &amp; Yandex IndexNow) anlık URL ping sinyali gönderin.
-                </p>
-              </div>
-            </div>
+            {/* HIZLI SİSTEM & SEO AKSİYONLARI */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-4">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-3 pb-3 border-b border-[#30363d]">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black shrink-0">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-black text-base text-white font-heading">
+                      Hızlı Sistem &amp; SEO Aksiyonları
+                    </h2>
+                    <p className="text-xs text-[#8b949e]">
+                      Google ve Yandex IndexNow arama motoru sinyali.
+                    </p>
+                  </div>
+                </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0d1117] border border-[#21262d]">
-              <div className="flex flex-col">
-                <span className="font-heading font-black text-sm text-white">
-                  IndexNow &amp; Site Haritası Hızlı Ping
-                </span>
-                <span className="text-xs text-[#8b949e]">
-                  Yeni ilanları ve güncel sayfaları arama motorlarına anında taratmak için tetikleyin.
-                </span>
-              </div>
+                <div className="flex flex-col gap-2 p-4 rounded-2xl bg-[#0d1117] border border-[#21262d]">
+                  <span className="font-heading font-black text-sm text-white">
+                    IndexNow &amp; Site Haritası Hızlı Ping
+                  </span>
+                  <span className="text-xs text-[#8b949e]">
+                    Yeni ilanları ve güncel sayfaları arama motorlarına anında taratmak için tek tıkla ping sinyali gönderin.
+                  </span>
+                </div>
 
-              <button
-                type="button"
-                onClick={handlePingSeo}
-                disabled={pingingSeo}
-                className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-heading font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
-              >
-                {pingingSeo ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Ping Gönderiliyor...</span>
-                  </>
-                ) : (
-                  <>
-                    <Globe className="w-4 h-4" />
-                    <span>Şimdi Ping Gönder</span>
-                  </>
+                {pingResult && (
+                  <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-blue-500/30 text-xs font-mono text-blue-300 max-h-36 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap">
+                      {JSON.stringify(pingResult, null, 2)}
+                    </pre>
+                  </div>
                 )}
-              </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-[#30363d]">
+                <span className="text-[11px] text-[#8b949e]">
+                  IndexNow API v2 Protokolü
+                </span>
+                <button
+                  type="button"
+                  onClick={handlePingSeo}
+                  disabled={pingingSeo}
+                  className="py-2.5 px-5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-heading font-black text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 cursor-pointer"
+                >
+                  {pingingSeo ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Ping Gönderiliyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-4 h-4" />
+                      <span>Şimdi Ping Gönder</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
-            {pingResult && (
-              <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-blue-500/30 text-xs font-mono text-blue-300">
-                <pre className="overflow-x-auto whitespace-pre-wrap">
-                  {JSON.stringify(pingResult, null, 2)}
-                </pre>
-              </div>
-            )}
           </div>
 
         </div>
@@ -699,12 +786,12 @@ function SiteYonetimiContent() {
       {/* SEKME 2: DUYURU & ÇEKMECE BİLDİRİM MERKEZİ                           */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'duyuru' && (
-        <div className="flex flex-col gap-6 animate-fadeIn">
+        <div className="flex flex-col gap-6 animate-fadeIn w-full">
           
           {/* FEEDBACK ALERT */}
           {duyuruFeedback && (
             <div
-              className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs font-bold animate-in fade-in slide-in-from-top-2 ${
+              className={`p-4 rounded-2xl border flex items-center justify-between gap-3 text-xs font-bold animate-in fade-in slide-in-from-top-2 w-full ${
                 duyuruFeedback.type === 'success'
                   ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
                   : 'bg-red-500/15 border-red-500/40 text-red-300'
@@ -714,14 +801,14 @@ function SiteYonetimiContent() {
                 {duyuruFeedback.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertTriangle className="w-4 h-4 shrink-0" />}
                 <span>{duyuruFeedback.text}</span>
               </div>
-              <button onClick={() => setDuyuruFeedback(null)} className="text-white/60 hover:text-white">
+              <button onClick={() => setDuyuruFeedback(null)} className="text-white/60 hover:text-white cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
           )}
 
-          {/* ── KPI STATS (DESKTOP 5-COL / MOBILE 2X2 GRID) ─────────────────── */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* ── KPI STATS (FULLY FLUID 5-COL DESKTOP / 2-COL MOBILE) ────────── */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4 w-full">
             {/* 1. Durum */}
             <div className={`p-4 rounded-2xl border transition-all col-span-2 sm:col-span-1 ${
               duyuruIsActive
@@ -816,114 +903,41 @@ function SiteYonetimiContent() {
             </div>
           </div>
 
-          {/* ── CANLI ÖNİZLEME (COLLAPSIBLE ON MOBILE) ────────────────────── */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-3">
+          {/* ── MOBİL ÖZEL KATLANABİLİR ÖNİZLEME (ONLY VISIBLE ON < XL) ────── */}
+          <div className="xl:hidden p-4 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-3 w-full">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold text-[#8b949e]">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>Canlı Önizleme ({displayType === 'drawer' ? 'Çekmece Popup' : 'Üst Sabit Bar'})</span>
+                <span>Canlı Önizleme ({displayType === 'drawer' ? 'Çekmece' : 'Üst Bar'})</span>
               </div>
-
-              {/* Mobilde ekran kaplamasın diye açılır-kapanır toggle */}
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono text-[#8b949e] hidden sm:inline">
-                  Gecikme: <span className="text-amber-300 font-bold">{delaySeconds} sn</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowMobilePreview(!showMobilePreview)}
-                  className="sm:hidden px-2.5 py-1 rounded-lg bg-[#21262d] text-amber-300 text-[10px] font-bold flex items-center gap-1 border border-[#363b42]"
-                >
-                  <span>{showMobilePreview ? 'Gizle' : 'Önizlemeyi Göster'}</span>
-                  {showMobilePreview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
+              <button
+                type="button"
+                onClick={() => setShowMobilePreview(!showMobilePreview)}
+                className="px-3 py-1.5 rounded-xl bg-[#21262d] text-amber-300 text-xs font-bold flex items-center gap-1.5 border border-[#363b42] cursor-pointer"
+              >
+                <span>{showMobilePreview ? 'Gizle' : 'Önizlemeyi Göster'}</span>
+                {showMobilePreview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+            {showMobilePreview && (
+              <div className="pt-2 animate-in fade-in">
+                {renderPreviewBox()}
               </div>
-            </div>
-
-            {/* Önizleme İçeriği (Desktop'ta hep açık, mobilde butonla) */}
-            <div className={`${showMobilePreview ? 'block' : 'hidden'} sm:block`}>
-              {displayType === 'drawer' ? (
-                <div className="p-4 sm:p-6 rounded-2xl bg-[#0B0E14] border border-[#252B3B] flex justify-center items-center">
-                  <div className="w-full max-w-md bg-[#141824]/95 border border-amber-500/40 rounded-3xl shadow-2xl p-5 flex flex-col justify-between items-center text-center space-y-3.5">
-                    <div className="w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-1" />
-
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/50 shadow-inner">
-                      <Flame className="w-3.5 h-3.5 text-amber-400" />
-                      <span className="font-heading font-black text-xs text-amber-300 uppercase tracking-wider">
-                        {duyuruBadgeText || '👑 VIP DUYURU'}
-                      </span>
-                    </div>
-
-                    {mediaUrl && (
-                      <div className="relative w-full h-40 sm:h-48 rounded-2xl overflow-hidden border border-[#252B3B] bg-black/90 shadow-xl flex items-center justify-center p-1.5">
-                        <img
-                          src={mediaUrl}
-                          alt="Önizleme"
-                          className="w-full h-full object-contain max-h-[30vh] rounded-xl"
-                        />
-                      </div>
-                    )}
-
-                    <div className="space-y-1 px-2">
-                      <h3 className="text-lg sm:text-xl font-heading font-black tracking-tight leading-snug bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-amber-200 to-yellow-300">
-                        {duyuruTitle || 'Türkiyenin en büyük eskort sitesi açıldı !'}
-                      </h3>
-                      {duyuruDescription && (
-                        <p className="text-xs text-[#9AA3B2] font-medium leading-relaxed line-clamp-2">
-                          {duyuruDescription}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="w-full space-y-2 pt-1">
-                      <div className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-heading font-black text-xs uppercase tracking-wider text-center flex items-center justify-center gap-1.5 shadow-xl shadow-amber-500/30">
-                        <span>{duyuruButtonText || 'Hemen İncele'}</span>
-                        <ExternalLink className="w-4 h-4 stroke-[3]" />
-                      </div>
-                      <div className="text-[10px] text-[#9AA3B2] font-medium">
-                        Daha sonra hatırlat veya kapat
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-1 rounded-2xl bg-[#0d1117] border border-[#21262d] overflow-hidden">
-                  <div className={`w-full bg-gradient-to-r ${presetClasses[stylePreset]} px-3 py-2 rounded-xl shadow-lg flex items-center justify-between text-xs`}>
-                    <div className="flex items-center gap-2 truncate">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/30 font-black text-[10px] text-white">
-                        <Flame className="w-2.5 h-2.5 text-amber-300" />
-                        <span>{duyuruBadgeText || '🚀 YENİ'}</span>
-                      </span>
-                      <span className="font-heading font-black text-white truncate text-xs">
-                        {duyuruTitle || 'Türkiyenin en büyük eskort sitesi açıldı !'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="px-2.5 py-1 rounded bg-white text-slate-950 font-heading font-black text-[10px]">
-                        {duyuruButtonText || 'İncele →'}
-                      </span>
-                      <span className="p-1 rounded bg-black/20 text-white/80">
-                        <X className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
-          {/* ── DUYURU FORM & KAMPANYA SIFIRLAMA (DESKTOP GRID / MOBILE STACK) ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ── 2-COLUMN MAIN RESPONSIVE WORK AREA ON DESKTOP (XL+) ────────── */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 w-full items-start">
             
-            {/* Sol 2 Kolon: Form Ayarları */}
-            <div className="lg:col-span-2 p-5 sm:p-6 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-4">
+            {/* SOL KOLON (XL: 7 / 2XL: 8): FORM VE AYARLAR */}
+            <div className="xl:col-span-7 2xl:col-span-8 p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl space-y-5 w-full">
               <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-amber-400" />
-                <span>Bildirim Formatı &amp; İçerik</span>
+                <span>Duyuru İçerik &amp; Format Yapılandırması</span>
               </h2>
 
               {/* Format ve Gecikme */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d]">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
                     <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
@@ -933,7 +947,7 @@ function SiteYonetimiContent() {
                     <button
                       type="button"
                       onClick={() => setDisplayType('drawer')}
-                      className={`py-2 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         displayType === 'drawer'
                           ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
                           : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
@@ -944,7 +958,7 @@ function SiteYonetimiContent() {
                     <button
                       type="button"
                       onClick={() => setDisplayType('bar')}
-                      className={`py-2 px-3 rounded-lg text-xs font-bold transition-all border cursor-pointer ${
+                      className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         displayType === 'bar'
                           ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-sm'
                           : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
@@ -963,7 +977,7 @@ function SiteYonetimiContent() {
                   <select
                     value={delaySeconds}
                     onChange={(e) => setDelaySeconds(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs font-bold focus:border-amber-400 focus:outline-none cursor-pointer"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs font-bold focus:border-amber-400 focus:outline-none cursor-pointer"
                   >
                     <option value={0}>0 saniye (Hemen Açılır)</option>
                     <option value={1}>1 saniye sonra</option>
@@ -977,7 +991,7 @@ function SiteYonetimiContent() {
               </div>
 
               {/* Medya / GIF Yükleyici */}
-              <div className="p-3.5 rounded-xl bg-[#0d1117] border border-[#21262d] space-y-2.5">
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] space-y-2.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-[#8b949e] flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
@@ -997,7 +1011,7 @@ function SiteYonetimiContent() {
                   )}
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-2.5">
+                <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full">
                   <input
                     type="text"
                     value={mediaUrl}
@@ -1006,7 +1020,7 @@ function SiteYonetimiContent() {
                       setMediaType(e.target.value.includes('.gif') ? 'gif' : 'image');
                     }}
                     placeholder="https://... veya dosya yükleyin"
-                    className="flex-1 w-full px-3 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58]"
+                    className="flex-1 w-full px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58]"
                   />
 
                   <input
@@ -1030,7 +1044,7 @@ function SiteYonetimiContent() {
               </div>
 
               {/* Başlık, Açıklama ve Buton Metinleri */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 w-full">
                 <div className="md:col-span-2 space-y-1">
                   <label className="text-xs font-bold text-[#8b949e]">
                     Duyuru Başlığı <span className="text-red-400">*</span>
@@ -1102,7 +1116,7 @@ function SiteYonetimiContent() {
                 <label className="text-xs font-bold text-[#8b949e]">
                   Renk &amp; Parlama Teması
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
                   {[
                     { id: 'fire', label: '🔥 Ateş Kırmızı', class: 'from-amber-600 to-red-700' },
                     { id: 'fuchsia', label: '🔮 Siber Fuşya', class: 'from-fuchsia-700 to-pink-700' },
@@ -1150,47 +1164,66 @@ function SiteYonetimiContent() {
               </div>
             </div>
 
-            {/* Sağ Kolon: Kampanya Sıfırlama */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-4">
-              <div className="space-y-3">
-                <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
-                  <RotateCcw className="w-4 h-4 text-rose-400" />
-                  <span>Kampanya Sıfırlama</span>
-                </h2>
-
-                <div className="p-3.5 rounded-xl bg-[#0d1117] border border-[#21262d] space-y-2 text-xs text-[#8b949e]">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span>Tek Seferlik Gösterim:</span>
+            {/* SAĞ KOLON (XL: 5 / 2XL: 4): DESKTOP CANLI ÖNİZLEME & KAMPANYA SIFIRLAMA (STICKY) */}
+            <div className="hidden xl:flex xl:col-span-5 2xl:col-span-4 flex-col gap-5 xl:sticky xl:top-6">
+              
+              {/* Canlı Önizleme Kartı */}
+              <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl space-y-3 w-full">
+                <div className="flex items-center justify-between pb-2 border-b border-[#30363d]">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#8b949e]">
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <span>Canlı Önizleme ({displayType === 'drawer' ? 'Çekmece' : 'Üst Bar'})</span>
                   </div>
-                  <p>
-                    Ziyaretçi bildirimi görüp kapattığında tarayıcısına token atılır ve bir daha rahatsız edilmez.
-                  </p>
-                  <p className="pt-1.5 border-t border-[#21262d]">
-                    Aktif Kampanya ID: <span className="font-mono text-amber-300 font-bold">{announcementData?.campaignId || 'camp_v1'}</span>
+                  <span className="text-[11px] font-mono text-amber-300 font-bold">
+                    {delaySeconds} sn sonra
+                  </span>
+                </div>
+                {renderPreviewBox()}
+              </div>
+
+              {/* Kampanya Sıfırlama Kartı */}
+              <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col justify-between gap-4 w-full">
+                <div className="space-y-3">
+                  <h3 className="text-sm font-heading font-black text-white flex items-center gap-2">
+                    <RotateCcw className="w-4 h-4 text-rose-400" />
+                    <span>Tekrar Gösterim &amp; Sıfırlama</span>
+                  </h3>
+
+                  <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] space-y-2 text-xs text-[#8b949e]">
+                    <div className="font-bold text-white flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span>Tek Seferlik Gösterim:</span>
+                    </div>
+                    <p>
+                      Ziyaretçi bildirimi görüp kapattığında tarayıcısına token atılır ve bir daha rahatsız edilmez.
+                    </p>
+                    <p className="pt-1.5 border-t border-[#21262d]">
+                      Kampanya ID: <span className="font-mono text-amber-300 font-bold">{announcementData?.campaignId || 'camp_v1'}</span>
+                    </p>
+                  </div>
+
+                  <p className="text-[11px] text-[#8b949e]">
+                    Duyuruyu güncellediğinizde butona basarak tüm eski ziyaretçilerin kayıtlarını sıfırlayabilirsiniz.
                   </p>
                 </div>
 
-                <p className="text-[11px] text-[#8b949e]">
-                  Duyuruyu güncellediğinizde aşağıdaki butona basarak tüm eski ziyaretçilerin kayıtlarını sıfırlayabilirsiniz.
-                </p>
+                <button
+                  type="button"
+                  onClick={handleResetCampaign}
+                  disabled={resettingCampaign}
+                  className="w-full p-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 font-heading font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <RotateCcw className={`w-4 h-4 ${resettingCampaign ? 'animate-spin' : ''}`} />
+                  <span>{resettingCampaign ? 'Sıfırlanıyor...' : '🔄 Kampanyayı Sıfırla (Herkese Göster)'}</span>
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={handleResetCampaign}
-                disabled={resettingCampaign}
-                className="w-full p-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 font-heading font-black text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <RotateCcw className={`w-4 h-4 ${resettingCampaign ? 'animate-spin' : ''}`} />
-                <span>{resettingCampaign ? 'Sıfırlanıyor...' : '🔄 Kampanyayı Sıfırla (Herkese Göster)'}</span>
-              </button>
             </div>
 
           </div>
 
-          {/* ── ZİYARETÇİ ETKİLEŞİM GÜNLÜĞÜ (RESPONSIVE: WEB TABLE / MOBILE CARD FEED) ── */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-[#161b22] border border-[#30363d] space-y-4">
+          {/* ── ZİYARETÇİ ETKİLEŞİM GÜNLÜĞÜ (FULL WIDTH RESPONSIVE) ─────────── */}
+          <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl space-y-4 w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h2 className="text-base font-heading font-black text-white flex items-center gap-2">
@@ -1207,7 +1240,7 @@ function SiteYonetimiContent() {
             </div>
 
             {/* Arama ve Filtre */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-xl bg-[#0d1117] border border-[#21262d]">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 rounded-2xl bg-[#0d1117] border border-[#21262d] w-full">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -1218,7 +1251,7 @@ function SiteYonetimiContent() {
                     setLogPage(1);
                   }}
                   placeholder="IP adresi veya şehir ile ara..."
-                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
@@ -1269,18 +1302,18 @@ function SiteYonetimiContent() {
 
               if (displayed.length === 0) {
                 return (
-                  <div className="p-8 text-center text-[#8b949e] text-xs italic bg-[#0d1117] rounded-xl border border-[#21262d]">
+                  <div className="p-8 text-center text-[#8b949e] text-xs italic bg-[#0d1117] rounded-2xl border border-[#21262d] w-full">
                     Kayıt bulunamadı.
                   </div>
                 );
               }
 
               return (
-                <>
+                <div className="w-full">
                   {/* MOBİL GÖRÜNÜM: KART AKIŞI (YATAY SCROLL YOK - DOKUNMATİK UYUMLU) */}
-                  <div className="md:hidden flex flex-col gap-2.5">
+                  <div className="md:hidden flex flex-col gap-2.5 w-full">
                     {displayed.map((log, i) => (
-                      <div key={i} className="p-3 rounded-xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-2">
+                      <div key={i} className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-2">
                         <div className="flex items-center justify-between">
                           {log.eventType === 'click' && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
@@ -1302,7 +1335,7 @@ function SiteYonetimiContent() {
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs text-[#c9d1d9] pt-1 border-t border-[#21262d]">
+                        <div className="flex items-center justify-between text-xs text-[#c9d1d9] pt-1.5 border-t border-[#21262d]">
                           <span className="font-bold text-white flex items-center gap-1">
                             📍 {log.city || 'Bilinmiyor'}
                           </span>
@@ -1310,7 +1343,7 @@ function SiteYonetimiContent() {
                             {log.ip || 'anon'}
                           </span>
                           <span className="inline-flex items-center gap-1 text-[11px]">
-                            {log.device === 'desktop' ? <Laptop className="w-3 h-3 text-blue-400" /> : <Smartphone className="w-3 h-3 text-emerald-400" />}
+                            {log.device === 'desktop' ? <Laptop className="w-3.5 h-3.5 text-blue-400" /> : <Smartphone className="w-3.5 h-3.5 text-emerald-400" />}
                             <span className="capitalize">{log.device || 'Mobil'}</span>
                           </span>
                         </div>
@@ -1319,7 +1352,7 @@ function SiteYonetimiContent() {
                   </div>
 
                   {/* DESKTOP GÖRÜNÜM: ZENGİN MASAÜSTÜ TABLOSU */}
-                  <div className="hidden md:block rounded-xl border border-[#21262d] overflow-x-auto max-h-[500px] overflow-y-auto">
+                  <div className="hidden md:block rounded-2xl border border-[#21262d] overflow-x-auto max-h-[500px] overflow-y-auto w-full">
                     <table className="w-full text-left text-xs">
                       <thead className="bg-[#0d1117] text-[#8b949e] uppercase font-mono font-bold text-[10px] border-b border-[#21262d] sticky top-0 z-10">
                         <tr>
@@ -1373,7 +1406,7 @@ function SiteYonetimiContent() {
 
                   {/* Sayfalama */}
                   {totalPages > 1 && (
-                    <div className="flex items-center justify-between pt-2 text-xs text-[#8b949e]">
+                    <div className="flex items-center justify-between pt-3 text-xs text-[#8b949e] w-full">
                       <div>
                         {filtered.length} kayıttan {(currentPage - 1) * limit + 1} - {Math.min(currentPage * limit, filtered.length)} gösteriliyor
                       </div>
@@ -1400,7 +1433,7 @@ function SiteYonetimiContent() {
                       </div>
                     </div>
                   )}
-                </>
+                </div>
               );
             })()}
           </div>
