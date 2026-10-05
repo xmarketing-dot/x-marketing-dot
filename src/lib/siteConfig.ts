@@ -33,10 +33,15 @@ let _clientDynamicPhone: string | null = null;
  */
 export function setClientAdminWhatsApp(phone: string) {
   if (!phone || !phone.trim()) return;
-  _clientDynamicPhone = phone.trim();
+  const trimmed = phone.trim();
+  const changed = _clientDynamicPhone !== trimmed;
+  _clientDynamicPhone = trimmed;
   if (typeof window !== 'undefined') {
     try {
       localStorage.setItem('bms_admin_whatsapp', _clientDynamicPhone);
+      if (changed) {
+        window.dispatchEvent(new CustomEvent('bms_admin_phone_updated', { detail: _clientDynamicPhone }));
+      }
     } catch (e) {}
   }
 }
@@ -201,3 +206,5 @@ Profilinizin daha fazla müşteriye ulaşması ve listelerde en üstte yer almas
 BEST ESKORT
 ✨ Daha fazla görünürlük, daha fazla erişim.`;
 }
+
+export { useAdminWhatsApp } from './useAdminWhatsApp';

@@ -44,7 +44,7 @@ import {
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
-import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
+import { useAdminWhatsApp } from '@/lib/siteConfig';
 
 // ── DESIGN SPEC TOKENS ──
 // bg-primary: #0B0E14
@@ -58,6 +58,7 @@ import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
 
 export default function UcretsizIlanPage() {
   const router = useRouter();
+  const { getWaUrl, openWhatsApp } = useAdminWhatsApp();
 
   // Form State
   const [kategori, setKategori] = useState<string>('vip');
@@ -482,10 +483,14 @@ export default function UcretsizIlanPage() {
             </a>
 
             <a
-              href={getAdminWhatsAppUrl(`Merhaba, 24 saatlik ücretsiz VIP ilan başvurusu yaptım (${eskortIsmi}). Şifrem: ${successData.password}. İlanımı onaylar mısınız?`)}
+              href={getWaUrl(`Merhaba, 24 saatlik ücretsiz VIP ilan başvurusu yaptım (${eskortIsmi}). Şifrem: ${successData.password}. İlanımı onaylar mısınız?`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full h-12 rounded-2xl bg-[#1C2233] hover:bg-[#252B3B] text-[#F5F6FA] font-bold text-xs border border-[#252B3B] flex items-center justify-center gap-2 active:scale-[0.97] transition-all"
+              onClick={(e) => {
+                e.preventDefault();
+                openWhatsApp(`Merhaba, 24 saatlik ücretsiz VIP ilan başvurusu yaptım (${eskortIsmi}). Şifrem: ${successData.password}. İlanımı onaylar mısınız?`);
+              }}
+              className="w-full h-12 rounded-2xl bg-[#1C2233] hover:bg-[#252B3B] text-[#F5F6FA] font-bold text-xs border border-[#252B3B] flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer"
             >
               <OfficialWhatsAppIcon className="w-4 h-4 fill-[#00E0A4]" />
               <span>WhatsApp ile Hızlı Onay Al</span>
@@ -917,9 +922,13 @@ export default function UcretsizIlanPage() {
             </div>
 
             <a
-              href={getAdminWhatsAppUrl('Merhaba, ücretsiz ilan vermek ve vitrin desteği almak için admin üzerinden işlem yapmak istiyorum.')}
+              href={getWaUrl('Merhaba, ücretsiz ilan vermek ve vitrin desteği almak için admin üzerinden işlem yapmak istiyorum.')}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                openWhatsApp('Merhaba, ücretsiz ilan vermek ve vitrin desteği almak için admin üzerinden işlem yapmak istiyorum.');
+              }}
               className="w-full h-12.5 sm:h-13 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold text-[14px] shadow-lg shadow-green-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />

@@ -951,6 +951,9 @@ export default function AdminHomepageConfigPage() {
       });
 
       if (res.ok) {
+        if (adminWhatsApp && adminWhatsApp.trim()) {
+          setClientAdminWhatsApp(adminWhatsApp.trim());
+        }
         setMessage({
           type: 'success',
           text: selectedListingIds.length === 0

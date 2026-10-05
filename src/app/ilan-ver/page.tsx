@@ -36,10 +36,11 @@ import {
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
-import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
+import { useAdminWhatsApp } from '@/lib/siteConfig';
 
 export default function CreateListingPage() {
   const router = useRouter();
+  const { getWaUrl, openWhatsApp } = useAdminWhatsApp();
   const [step, setStep] = useState<1 | 2>(1); // 1: Paket Seçimi, 2: İlan Bilgileri Formu
 
   const [formData, setFormData] = useState({
@@ -403,10 +404,14 @@ export default function CreateListingPage() {
         {/* CANLI DESTEK, WHATSAPP & DÜZENLEME BUTONLARI */}
         <div className="flex flex-col gap-3 w-full font-heading mt-1">
           <a
-            href={getAdminWhatsAppUrl(`Merhaba, "${formData.baslik}" başlıklı ilanımı oluşturdum. İlan Düzenleme Şifrem: ${generatedPassword}. İlanımın hızlı onayı ve ödeme için yazıyorum.`)}
+            href={getWaUrl(`Merhaba, "${formData.baslik}" başlıklı ilanımı oluşturdum. İlan Düzenleme Şifrem: ${generatedPassword}. İlanımın hızlı onayı ve ödeme için yazıyorum.`)}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-4 px-6 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-sm shadow-xl shadow-green-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider"
+            onClick={(e) => {
+              e.preventDefault();
+              openWhatsApp(`Merhaba, "${formData.baslik}" başlıklı ilanımı oluşturdum. İlan Düzenleme Şifrem: ${generatedPassword}. İlanımın hızlı onayı ve ödeme için yazıyorum.`);
+            }}
+            className="w-full py-4 px-6 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-sm shadow-xl shadow-green-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer"
           >
             <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
             <span>WhatsApp ile Hızlı Onay Al ➔</span>
@@ -640,9 +645,13 @@ export default function CreateListingPage() {
           </div>
 
           <a
-            href={getAdminWhatsAppUrl(`Merhaba, "${currentTierObj.name}" paketiyle ilan vermek istiyorum. Admin üzerinden doğrudan ilan kaydı ve vitrin desteği alabilir miyim?`)}
+            href={getWaUrl(`Merhaba, "${currentTierObj.name}" paketiyle ilan vermek istiyorum. Admin üzerinden doğrudan ilan kaydı ve vitrin desteği alabilir miyim?`)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => {
+              e.preventDefault();
+              openWhatsApp(`Merhaba, "${currentTierObj.name}" paketiyle ilan vermek istiyorum. Admin üzerinden doğrudan ilan kaydı ve vitrin desteği alabilir miyim?`);
+            }}
             className="w-full py-4 px-5 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-sm shadow-xl shadow-green-500/25 active:scale-95 transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider cursor-pointer"
           >
             <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />
@@ -1031,9 +1040,13 @@ export default function CreateListingPage() {
           </div>
 
           <a
-            href={getAdminWhatsAppUrl(`Merhaba, "${formData.baslik || 'Yeni İlan'}" için ilan vermek istiyorum. Admin üzerinden doğrudan ilan kaydı ve vitrin desteği alabilir miyim?`)}
+            href={getWaUrl(`Merhaba, "${formData.baslik || 'Yeni İlan'}" için ilan vermek istiyorum. Admin üzerinden doğrudan ilan kaydı ve vitrin desteği alabilir miyim?`)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => {
+              e.preventDefault();
+              openWhatsApp(`Merhaba, "${formData.baslik || 'Yeni İlan'}" için ilan vermek istiyorum. Admin üzerinden doğrudan ilan kaydı ve vitrin desteği alabilir miyim?`);
+            }}
             className="w-full py-4 px-5 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-sm shadow-xl shadow-green-500/25 active:scale-95 transition-all flex items-center justify-center gap-2.5 uppercase tracking-wider cursor-pointer"
           >
             <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />

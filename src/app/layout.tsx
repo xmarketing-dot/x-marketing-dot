@@ -6,6 +6,7 @@ import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
 import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
 import GlobalKeyboardHandler from '@/components/common/GlobalKeyboardHandler';
+import AdminWhatsAppSync from '@/components/common/AdminWhatsAppSync';
 import { Analytics } from '@vercel/analytics/next';
 import React, { Suspense } from 'react';
 
@@ -230,6 +231,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
+        <AdminWhatsAppSync />
         <GlobalKeyboardHandler />
         <Suspense fallback={null}>
           <AnalyticsTracker />

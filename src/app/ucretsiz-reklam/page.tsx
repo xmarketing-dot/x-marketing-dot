@@ -25,7 +25,7 @@ import {
 import ImageCropModal from '@/components/common/ImageCropModal';
 import { smartUploadFile } from '@/lib/smartUpload';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
-import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
+import { useAdminWhatsApp } from '@/lib/siteConfig';
 
 // ── DESIGN SPEC TOKENS ──
 // bg-primary: #0B0E14
@@ -39,6 +39,7 @@ import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
 
 export default function UcretsizReklamPage() {
   const router = useRouter();
+  const { getWaUrl, openWhatsApp } = useAdminWhatsApp();
 
   // Form State
   const [formData, setFormData] = useState({
@@ -427,10 +428,14 @@ export default function UcretsizReklamPage() {
             </a>
 
             <a
-              href={getAdminWhatsAppUrl(`Merhaba, 24 saatlik ücretsiz 21:9 banner başvurusu yaptım (${formData.baslik}). Şifrem: ${successData.password}. Reklamımı onaylar mısınız?`)}
+              href={getWaUrl(`Merhaba, 24 saatlik ücretsiz 21:9 banner başvurusu yaptım (${formData.baslik}). Şifrem: ${successData.password}. Reklamımı onaylar mısınız?`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full h-12 rounded-2xl bg-[#1C2233] hover:bg-[#252B3B] text-[#F5F6FA] font-bold text-xs border border-[#252B3B] flex items-center justify-center gap-2 active:scale-[0.97] transition-all"
+              onClick={(e) => {
+                e.preventDefault();
+                openWhatsApp(`Merhaba, 24 saatlik ücretsiz 21:9 banner başvurusu yaptım (${formData.baslik}). Şifrem: ${successData.password}. Reklamımı onaylar mısınız?`);
+              }}
+              className="w-full h-12 rounded-2xl bg-[#1C2233] hover:bg-[#252B3B] text-[#F5F6FA] font-bold text-xs border border-[#252B3B] flex items-center justify-center gap-2 active:scale-[0.97] transition-all cursor-pointer"
             >
               <OfficialWhatsAppIcon className="w-4 h-4 fill-[#00E0A4]" />
               <span>WhatsApp ile Hızlı Onay Al</span>
@@ -873,9 +878,13 @@ export default function UcretsizReklamPage() {
             </div>
 
             <a
-              href={getAdminWhatsAppUrl('Merhaba, sitede 21:9 tepe banner reklamı yayınlatmak ve reklam vermek için doğrudan admin desteği almak istiyorum.')}
+              href={getWaUrl('Merhaba, sitede 21:9 tepe banner reklamı yayınlatmak ve reklam vermek için doğrudan admin desteği almak istiyorum.')}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault();
+                openWhatsApp('Merhaba, sitede 21:9 tepe banner reklamı yayınlatmak ve reklam vermek için doğrudan admin desteği almak istiyorum.');
+              }}
               className="w-full h-12.5 sm:h-13 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold text-[14px] shadow-lg shadow-green-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <OfficialWhatsAppIcon className="w-5 h-5 fill-white shrink-0" />

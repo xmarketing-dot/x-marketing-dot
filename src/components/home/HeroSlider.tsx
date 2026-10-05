@@ -518,7 +518,17 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
                   href={promoWaUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-3 sm:py-3.5 px-3 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 text-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const url = getAdminWhatsAppUrl(
+                      `Merhaba, ${origin} adresindeki Anasayfa VIP Vitrin Slot #${activeIdx + 1} Reklam Alanında yer almak istiyorum. Fiyat ve detaylar hakkında bilgi alabilir miyim?`,
+                      adminWhatsApp
+                    );
+                    if (typeof window !== 'undefined') {
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
+                  className="py-3 sm:py-3.5 px-3 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 text-center cursor-pointer"
                   title="WhatsApp ile Reklam Ver"
                 >
                   <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-white shrink-0" />

@@ -48,10 +48,11 @@ import {
 import { turkeyProvinces } from '@/data/turkeyLocations';
 import CryptoPaymentCard from '@/components/common/CryptoPaymentCard';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
-import { getAdminWhatsAppUrl, getAdminWhatsAppNumber } from '@/lib/siteConfig';
+import { useAdminWhatsApp } from '@/lib/siteConfig';
 
 export default function PanelimPage() {
   const router = useRouter();
+  const { getWaUrl, openWhatsApp } = useAdminWhatsApp();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [listings, setListings] = useState<any[]>([]);
@@ -1594,10 +1595,14 @@ export default function PanelimPage() {
                 </button>
 
                 <a
-                  href={getAdminWhatsAppUrl(`Merhaba, ${selectedVitrinListing.baslik} ilanım için ${vitrinPaketiSecimi === 'gunluk' ? 'GÜNLÜK (2.000 ₺)' : 'HAFTALIK (6.000 ₺)'} vitrin satın almak istiyorum.`)}
+                  href={getWaUrl(`Merhaba, ${selectedVitrinListing.baslik} ilanım için ${vitrinPaketiSecimi === 'gunluk' ? 'GÜNLÜK (2.000 ₺)' : 'HAFTALIK (6.000 ₺)'} vitrin satın almak istiyorum.`)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 rounded-2xl bg-[#22c55e] text-white font-heading font-bold text-xs flex items-center justify-center gap-2 text-center"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openWhatsApp(`Merhaba, ${selectedVitrinListing.baslik} ilanım için ${vitrinPaketiSecimi === 'gunluk' ? 'GÜNLÜK (2.000 ₺)' : 'HAFTALIK (6.000 ₺)'} vitrin satın almak istiyorum.`);
+                  }}
+                  className="w-full py-3 rounded-2xl bg-[#22c55e] hover:bg-emerald-600 text-white font-heading font-bold text-xs flex items-center justify-center gap-2 text-center transition-colors cursor-pointer"
                 >
                   <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
                   <span>WhatsApp ile Hızlı Onay Al</span>
@@ -1826,10 +1831,14 @@ export default function PanelimPage() {
 
                 {/* WhatsApp ile Doğrudan Hızlı Onay */}
                 <a
-                  href={getAdminWhatsAppUrl(`Merhaba, ${selectedPopupListing.baslik} ilanım için ${popupGunSecimi} GÜNLÜK (${(popupGunSecimi * 1000).toLocaleString('tr-TR')} ₺) ÖZEL MODAL POPUP REKLAMI satın almak istiyorum.`)}
+                  href={getWaUrl(`Merhaba, ${selectedPopupListing.baslik} ilanım için ${popupGunSecimi} GÜNLÜK (${(popupGunSecimi * 1000).toLocaleString('tr-TR')} ₺) ÖZEL MODAL POPUP REKLAMI satın almak istiyorum.`)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3.5 rounded-2xl bg-[#22c55e] hover:bg-emerald-600 text-white font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-2 text-center shadow-lg transition-all"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    openWhatsApp(`Merhaba, ${selectedPopupListing.baslik} ilanım için ${popupGunSecimi} GÜNLÜK (${(popupGunSecimi * 1000).toLocaleString('tr-TR')} ₺) ÖZEL MODAL POPUP REKLAMI satın almak istiyorum.`);
+                  }}
+                  className="w-full py-3.5 rounded-2xl bg-[#22c55e] hover:bg-emerald-600 text-white font-heading font-black text-xs sm:text-sm flex items-center justify-center gap-2 text-center shadow-lg transition-all cursor-pointer"
                 >
                   <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
                   <span>WhatsApp ile Anında Canlı Yayına Al</span>

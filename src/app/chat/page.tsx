@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import CryptoPaymentCard from '@/components/common/CryptoPaymentCard';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
-import { getAdminWhatsAppUrl } from '@/lib/siteConfig';
+import { useAdminWhatsApp } from '@/lib/siteConfig';
 
 interface Message {
   _id: string;
@@ -48,6 +48,7 @@ function getSavedThreadId(): string | null {
 }
 
 export default function ChatPage() {
+  const { getWaUrl, openWhatsApp } = useAdminWhatsApp();
   const [threadId, setThreadId] = useState<string | null>(() => {
     return getSavedThreadId();
   });
@@ -331,10 +332,14 @@ export default function ChatPage() {
         {/* Sağ: WhatsApp Hap Butonu */}
         <div className="flex items-center gap-2 shrink-0">
           <a
-            href={getAdminWhatsAppUrl('Merhaba, VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve bilgi almak istiyorum.')}
+            href={getWaUrl('Merhaba, VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve bilgi almak istiyorum.')}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-heading font-black flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0"
+            onClick={(e) => {
+              e.preventDefault();
+              openWhatsApp('Merhaba, VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve bilgi almak istiyorum.');
+            }}
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-heading font-black flex items-center gap-1.5 shadow-sm active:scale-95 transition-all shrink-0 cursor-pointer"
             title="WhatsApp Destek Hattı"
           >
             <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-white shrink-0" />
@@ -390,10 +395,14 @@ export default function ChatPage() {
               </Link>
 
               <a
-                href={getAdminWhatsAppUrl('Merhaba, VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve VIP vitrin hakkında bilgi almak istiyorum.')}
+                href={getWaUrl('Merhaba, VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve VIP vitrin hakkında bilgi almak istiyorum.')}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="py-2.5 px-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all text-center"
+                onClick={(e) => {
+                  e.preventDefault();
+                  openWhatsApp('Merhaba, VIP Canlı Destek üzerinden yazıyorum. İlan vermek ve VIP vitrin hakkında bilgi almak istiyorum.');
+                }}
+                className="py-2.5 px-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-heading font-black text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all text-center cursor-pointer"
               >
                 <OfficialWhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
                 <span>WhatsApp</span>
