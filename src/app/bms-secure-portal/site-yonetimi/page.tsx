@@ -575,7 +575,7 @@ function SiteYonetimiContent() {
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0d1117] border border-emerald-500/30 text-xs font-mono self-start sm:self-auto shrink-0">
                 <span className="text-[#8b949e] text-[10px] sm:text-[11px]">Sitedeki Hat:</span>
                 <span className="text-emerald-400 font-black text-xs sm:text-sm">
-                  {phoneDetails.formatted || '+62 838 2904 8050'}
+                  {phoneDetails.formatted || 'Tanımlanmadı'}
                 </span>
               </div>
             </div>
