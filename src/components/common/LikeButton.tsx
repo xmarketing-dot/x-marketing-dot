@@ -60,8 +60,8 @@ export default function LikeButton({
     }
   };
 
-  // 0 ise bile en az 12-45 arası gerçekçi bir sosyal kanıt gösterilsin veya gerçek sayı
-  const displayCount = likes > 0 ? likes : 28;
+  // 0 ise bile en az 180-450 arası gerçekçi bir sosyal kanıt gösterilsin veya gerçek sayı
+  const displayCount = likes > 0 ? likes : 185;
 
   return (
     <button

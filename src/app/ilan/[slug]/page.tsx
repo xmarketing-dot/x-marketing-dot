@@ -175,6 +175,21 @@ export default async function ListingDetailPage({ params }: Props) {
   const isGold = rozet === 'gold';
   const isPassive = Boolean(listing.isPassive);
 
+  // ── GERÇEKÇİ FOMO / SOSYAL KANIT SAYILARI (300, 500, 1000+ ARALIĞINDA) ──
+  const slugHash = (listing.slug || '')
+    .split('')
+    .reduce((acc: number, char: string, i: number) => acc + char.charCodeAt(0) * (i + 1), 0);
+
+  const hourlyViewers = isUltraVip
+    ? 850 + (slugHash % 480) // 850 - 1.329 kişi (1000'li sayılara rahatça ulaşır)
+    : isVip
+    ? 620 + (slugHash % 390) // 620 - 1.009 kişi
+    : isGold
+    ? 450 + (slugHash % 280) // 450 - 729 kişi
+    : 310 + (slugHash % 240); // 310 - 549 kişi
+
+  const lastBookingMinutes = 2 + (slugHash % 14); // 2 - 15 dakika önce
+
   // WhatsApp URL for Sticky Bar (Supports Turkish & International Numbers)
   const formattedNumber = isPassive ? '' : formatWhatsAppNumber(listing.whatsappNumara);
   const listingFullUrl = `${siteUrl}/ilan/${listing.slug}`;
@@ -375,7 +390,7 @@ export default async function ListingDetailPage({ params }: Props) {
                 initialLikes={
                   typeof listing.likeSayisi === 'number' && listing.likeSayisi > 0
                     ? listing.likeSayisi
-                    : (isUltraVip ? 315 : isVip ? 218 : isGold ? 142 : 76)
+                    : (isUltraVip ? 420 + (slugHash % 180) : isVip ? 310 + (slugHash % 140) : isGold ? 220 + (slugHash % 90) : 140 + (slugHash % 60))
                 }
               />
             </div>
@@ -396,7 +411,7 @@ export default async function ListingDetailPage({ params }: Props) {
             <div className="flex items-center gap-3 text-[11px] sm:text-xs text-slate-300 font-medium">
               <span className="flex items-center gap-1 text-amber-300 font-semibold">
                 <Flame className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" />
-                <span>Son 1 saatte <strong>{14 + ((listing.slug || '').charCodeAt(0) % 28)}</strong> kişi inceledi</span>
+                <span>Son 1 saatte <strong>{hourlyViewers.toLocaleString('tr-TR')}</strong> kişi inceledi</span>
               </span>
               <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-slate-600"></span>
               <span className="text-slate-400 flex items-center gap-1">
@@ -482,7 +497,7 @@ export default async function ListingDetailPage({ params }: Props) {
             {!isPassive && (
               <p className="text-center text-[10.5px] text-emerald-400/90 font-medium flex items-center justify-center gap-1.5">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>Son randevu talebi <strong>{6 + ((listing.slug || '').charCodeAt(0) % 22)} dakika önce</strong> iletildi</span>
+                <span>Son randevu talebi <strong>{lastBookingMinutes} dakika önce</strong> iletildi</span>
               </p>
             )}
           </div>
