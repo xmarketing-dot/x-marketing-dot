@@ -28,6 +28,8 @@ import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CategorizedListingsSection from '@/components/home/CategorizedListingsSection';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
 import { turkeyProvinces } from '@/data/turkeyLocations';
+import FaqAccordion from '@/components/seo/FaqAccordion';
+import { generateTurkeyHomeFaq, generateHomeSeoGraph } from '@/lib/seoData';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,20 +38,20 @@ export async function generateMetadata(): Promise<Metadata> {
   const ogImageUrl = `${siteUrl}/api/og/site`;
 
   return {
-    title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
-    description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları. Bağımsız eskortlar, VIP vitrin ilanları ve doğrudan WhatsApp iletişim hatları.',
+    title: 'İstanbul Escort, Ankara, İzmir & Türkiye VIP Eskort Bayanlar | Best Eskort',
+    description: 'İstanbul, Ankara, İzmir ve 81 ilde teyitli eskort bayan ilanları 2026. Bağımsız VIP eskortlar, kapora yok, elden ödeme garantisi, gerçek fotoğraflar ve doğrudan WhatsApp iletişim hatları.',
     keywords: [
+      'istanbul escort', 'istanbul eskort', 'ankara escort', 'ankara eskort',
+      'izmir escort', 'izmir eskort', 'antalya escort', 'bursa escort',
       'eskort ilanları', 'escort ilanları', 'eskort bayan', 'escort bayan',
       'bağımsız eskort türkiye', 'vip eskort ilanları', 'vip escort',
-      'istanbul eskort', 'istanbul escort', 'ankara eskort', 'ankara escort',
-      'izmir eskort', 'antalya eskort', 'bursa eskort', 'adana eskort',
-      'whatsapp eskort', 'eskort numaraları',
+      'whatsapp eskort', 'eskort numaraları', 'kapora yok eskort',
     ],
     metadataBase: new URL(siteUrl),
     alternates: { canonical: siteUrl },
     openGraph: {
-      title: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
-      description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları ve doğrudan WhatsApp iletişim hatları.',
+      title: 'İstanbul Escort, Ankara, İzmir & Türkiye VIP Eskort Bayanlar | Best Eskort',
+      description: '81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları, kapora yok garantisi ve doğrudan WhatsApp iletişim hatları.',
       url: siteUrl,
       type: 'website',
       locale: 'tr_TR',
@@ -85,6 +87,10 @@ const TIER_ORDER: Record<string, number> = {
 
 export default async function HomePage() {
   await connectToDatabase();
+
+  const siteUrl = getSiteUrl();
+  const homeFaq = generateTurkeyHomeFaq();
+  const homeGraph = generateHomeSeoGraph(siteUrl, homeFaq);
 
   const [locations, rawListings, homepageConfig, activeBanner] = await Promise.all([
     getAllLocations(),
@@ -200,8 +206,6 @@ export default async function HomePage() {
     'Karadeniz Bölgesi': locations.filter((l: any) => ['samsun', 'trabzon', 'ordu', 'giresun', 'rize', 'artvin', 'zonguldak', 'karabuk', 'bartin', 'kastamonu', 'sinop', 'bolu', 'duzce', 'amasya', 'corum', 'tokat', 'gumushane', 'bayburt'].includes(l.ilSlug)),
     'Güneydoğu & Doğu Anadolu': locations.filter((l: any) => ['gaziantep', 'diyarbakir', 'sanliurfa', 'batman', 'mardin', 'adiyaman', 'sirnak', 'siirt', 'kilis', 'malatya', 'elazig', 'erzurum', 'van', 'agri', 'kars', 'igdir', 'ardahan', 'mus', 'bingol', 'bitlis', 'hakkari', 'tunceli', 'erzincan'].includes(l.ilSlug)),
   };
-
-  const siteUrl = getSiteUrl();
 
   // ── JSON-LD SCHEMA OBJECTS (Google & Yandex Rich Snippets) ──
   const webSiteSchema = {
@@ -422,6 +426,18 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ── GOOGLE RICH SNIPPET FAQ ACCORDION & SCHEMA ──────────────── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeGraph) }}
+      />
+      <section className="px-3 sm:px-4 mt-6">
+        <FaqAccordion
+          title="Best Eskort — Sıkça Sorulan Sorular &amp; Güvenli Rehber"
+          items={homeFaq}
+        />
       </section>
 
       {/* ── 7. TÜRKİYE 81 İL CRAWLER MATRİSİ (SEO DİZİNİ - DARALTILMIŞ / NATIVE KOMPAKT) ──────────────── */}

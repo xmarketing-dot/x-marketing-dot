@@ -289,3 +289,59 @@ export function generateListingSeoContent(
   };
 }
 
+/**
+ * Ana Sayfa Zengin Google FAQPage Schema ve Sıkça Sorulan Sorular Havuzu
+ */
+export function generateTurkeyHomeFaq(): FaqItem[] {
+  return [
+    {
+      question: 'Best Eskort üzerindeki eskort bayan profilleri doğrulanmış mı?',
+      answer: 'Sitemizdeki tüm eskort ve bağımsız model profilleri admin ekibimiz tarafından telefon ve fotoğraf teyidinden geçirilmektedir. Teyitli rozeti bulunan ilanlarda sahte görsel kullanımı engellenerek gerçek fotoğraflar güvence altına alınır.',
+    },
+    {
+      question: 'Görüşmelerde kapora veya ön ödeme talep ediliyor mu?',
+      answer: 'Kesinlikle hayır! Best Eskort olarak kullanıcılarımızı internet dolandırıcılığına karşı uyarıyoruz: Randevu öncesinde sizden kapora, taksi parası veya güvence bedeli talep eden kişilere asla para göndermeyiniz. Ödemeler yalnızca buluşma anında elden gerçekleşir.',
+    },
+    {
+      question: 'İstanbul, Ankara ve İzmir gibi metropollerde eskortlara nasıl ulaşabilirim?',
+      answer: 'Şehir menümüzden İstanbul, Ankara, İzmir, Antalya ve Bursa başta olmak üzere 81 ili seçebilir; Şişli, Kadıköy, Beşiktaş, Çankaya, Alsancak gibi popüler ilçelerde hizmet veren bağımsız VIP modellere doğrudan WhatsApp butonuyla anında ulaşabilirsiniz.',
+    },
+    {
+      question: 'WhatsApp üzerinden iletişimde gizlilik ve güvenlik nasıl sağlanır?',
+      answer: 'Tüm görüşmeler doğrudan modelin kendi WhatsApp hattı üzerinden uçtan uca şifreli gerçekleşir. Platformumuz hiçbir kullanıcı verisini veya IP kaydını saklamaz; tam gizlilik esastır.',
+    },
+  ];
+}
+
+/**
+ * Ana Sayfa Schema.org WebSite + FAQPage + BreadcrumbList Graph
+ */
+export function generateHomeSeoGraph(siteUrl: string, faqItems: FaqItem[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': `${siteUrl}/#website`,
+        'url': siteUrl,
+        'name': 'Best Eskort — Türkiye VIP Eskort & İlan Platformu',
+        'description': '81 il ve tüm ilçelerde doğrulanmış güncel VIP eskort ilanları ve bağımsız modeller kataloğu.',
+        'inLanguage': 'tr-TR',
+      },
+      {
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+          {
+            '@type': 'ListItem',
+            'position': 1,
+            'name': 'Ana Sayfa',
+            'item': siteUrl,
+          },
+        ],
+      },
+      generateFaqSchema(faqItems),
+    ],
+  };
+}
+
+
