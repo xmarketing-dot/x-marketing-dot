@@ -56,6 +56,14 @@ export default function SpecialAdPopup() {
   }, [pathname]);
 
   useEffect(() => {
+    // 0. Search bot check: Arama motoru botlarına asla popup gösterme
+    if (typeof navigator !== 'undefined') {
+      const ua = navigator.userAgent.toLowerCase();
+      if (/googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|crawler|spider|robot/i.test(ua)) {
+        return;
+      }
+    }
+
     // 1. Strictly MOBILE-ONLY: Don't show on desktop web, admin portal or chat
     if (pathname?.startsWith('/bms-secure-portal') || pathname === '/chat') {
       return;

@@ -33,6 +33,14 @@ export default function GlobalAnnouncementBar() {
     let isMounted = true;
     let timerId: any = null;
 
+    // Arama motoru botlarına asla drawer/duyuru açma
+    if (typeof navigator !== 'undefined') {
+      const ua = navigator.userAgent.toLowerCase();
+      if (/googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|crawler|spider|robot/i.test(ua)) {
+        return;
+      }
+    }
+
     // Masaüstünde (Web / Desktop) kesinlikle çalıştırma ve gösterme
     const isMobileDevice = () => typeof window !== 'undefined' && window.innerWidth < 768;
 

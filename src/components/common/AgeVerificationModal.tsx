@@ -11,6 +11,14 @@ interface AgeVerificationModalProps {
 }
 
 export default function AgeVerificationModal({ isOpen, onConfirm, onReject }: AgeVerificationModalProps) {
+  // Arama motoru botlarına (Googlebot, YandexBot vb.) asla engel modalı gösterme
+  if (typeof navigator !== 'undefined') {
+    const ua = navigator.userAgent.toLowerCase();
+    if (/googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|crawler|spider|robot/i.test(ua)) {
+      return null;
+    }
+  }
+
   if (!isOpen) return null;
 
   return (
@@ -63,10 +71,10 @@ export default function AgeVerificationModal({ isOpen, onConfirm, onReject }: Ag
 
           <button
             type="button"
-            onClick={onReject ? onReject : () => { window.location.href = 'https://www.google.com'; }}
-            className="w-full py-3 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer border border-[#30363d]"
+            onClick={onReject || onConfirm}
+            className="w-full py-2.5 px-6 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer border border-[#30363d]"
           >
-            18 Yaşından Küçüğüm / Ayrıl (Google)
+            18 Yaşından Küçüğüm / Vazgeç
           </button>
         </div>
 

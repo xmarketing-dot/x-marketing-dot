@@ -24,11 +24,20 @@ export default function MobileShell({ children }: MobileShellProps) {
   const isPanelimPage = pathname === '/panelim';
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAgeModalOpen, setIsAgeModalOpen] = useState(false);
+  const [isSearchBot, setIsSearchBot] = useState(false);
 
   useEffect(() => {
     try {
+      if (typeof navigator !== 'undefined') {
+        const ua = navigator.userAgent.toLowerCase();
+        const botDetected = /googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|crawler|spider|robot/i.test(ua);
+        if (botDetected) {
+          setIsSearchBot(true);
+          return; // Arama botlarına asla yaş doğrulama açılmaz
+        }
+      }
       if (typeof window !== 'undefined' && window.innerWidth >= 768) {
-        return; // Masaüstünde asla kontrol etme / açma
+        return; // Masaüstünde normal kullanıcılara açılmaz
       }
       const verified = localStorage.getItem('age_verified_2026');
       if (!verified) {
@@ -96,9 +105,9 @@ export default function MobileShell({ children }: MobileShellProps) {
 
       {/* ── 1. MASAÜSTÜ (WEB / DESKTOP) GÖRÜNÜMÜ: X-MARKETING TECH KURUMSAL PLATFORM ──────────────── */}
       <div className="hidden md:flex flex-col min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
-        {isDedicatedFormPage ? (
+        {isDedicatedFormPage || isSearchBot ? (
           <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans overflow-x-hidden flex flex-col w-full">
-            <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8">
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8">
               {children}
             </main>
             <SeoBacklinkFooter />
