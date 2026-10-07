@@ -5,6 +5,8 @@ import { getRequestSiteUrl } from '@/lib/siteUrl';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
 import { headers } from 'next/headers';
 
+import ListingModel from '@/models/Listing';
+
 // Dinamik çalışma: Gelen her domain/subdomain kendi sitemap'ini üretir
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +20,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const [locations, listings] = await Promise.all([
     getAllLocations(),
-    getListings({ limit: 5000 }),
+    ListingModel.find({ status: { $in: ['yayinda', 'suresi_doldu', 'pasif'] } })
+      .select('slug ilSlug ilceSlug anaFotograf fotograflar createdAt updatedAt status')
+      .sort({ createdAt: -1 })
+      .limit(5000)
+      .lean(),
   ]);
 
   const now = new Date();
@@ -149,14 +155,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       listing.fotograflar.forEach((f: any) => addImage(typeof f === 'string' ? f : f?.url));
     }
 
+    const isPassiveListing = listing.status === 'suresi_doldu' || listing.status === 'pasif';
     const listingDate = new Date(listing.updatedAt || listing.createdAt || now);
     const daysSinceUpdate = (now.getTime() - listingDate.getTime()) / (1000 * 60 * 60 * 24);
-    const listingPriority = daysSinceUpdate < 7 ? 0.9 : daysSinceUpdate < 30 ? 0.8 : 0.7;
+    const listingPriority = isPassiveListing ? 0.6 : (daysSinceUpdate < 7 ? 0.9 : daysSinceUpdate < 30 ? 0.8 : 0.7);
 
     routes.push({
       url: `${siteUrl}/ilan/${listing.slug}`,
       lastModified: listingDate,
-      changeFrequency: 'weekly',
+      changeFrequency: isPassiveListing ? 'monthly' : 'weekly',
       priority: listingPriority,
       ...(images.length > 0 ? { images: images.slice(0, 5) } : {}),
     });

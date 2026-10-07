@@ -215,18 +215,30 @@ export const getListingBySlug = cache(async (slug: string) => {
   const now = new Date();
   const listing = await ListingModel.findOne({
     slug,
-    status: 'yayinda',
-    $or: [
-      { paketBitisTarihi: { $exists: false } },
-      { paketBitisTarihi: null },
-      { paketBitisTarihi: { $gt: now } }
-    ]
+    status: { $in: ['yayinda', 'suresi_doldu', 'pasif'] },
   })
     .populate('kategoriId')
     .lean();
 
   if (!listing) return null;
-  return JSON.parse(JSON.stringify(listing));
+
+  const isPassive =
+    listing.status === 'suresi_doldu' ||
+    listing.status === 'pasif' ||
+    (listing.paketBitisTarihi ? new Date(listing.paketBitisTarihi) <= now : false);
+
+  const cleanListing = JSON.parse(JSON.stringify(listing));
+  cleanListing.isPassive = isPassive;
+
+  // GÜVENLİK VE GİZLİLİK KİLİDİ:
+  // Pasif / süresi dolmuş ilanın telefon ve WhatsApp numarasını sunucu katmanında sıfırla.
+  // Tarayıcı kaynak kodundan (F12) veya ağ trafiğinden numara asla okunamaz.
+  if (isPassive) {
+    cleanListing.whatsappNumara = '';
+    cleanListing.whatsappOzelMesaj = '';
+  }
+
+  return cleanListing;
 });
 
 import BannerAdModel from '../models/BannerAd';

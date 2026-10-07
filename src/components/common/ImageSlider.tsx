@@ -12,6 +12,7 @@ interface ImageSliderProps {
   priority?: boolean;
   badge?: string | null;
   className?: string;
+  isPassive?: boolean;
 }
 
 export default function ImageSlider({
@@ -21,6 +22,7 @@ export default function ImageSlider({
   priority = false,
   badge = null,
   className = '',
+  isPassive = false,
 }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -114,17 +116,24 @@ export default function ImageSlider({
           unoptimized
           loading="lazy"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 800px"
-          className="object-cover transition-all duration-700 ease-out group-hover:scale-105 cursor-pointer"
+          className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 cursor-pointer ${
+            isPassive ? 'grayscale contrast-125 brightness-90' : ''
+          }`}
           onClick={openFullscreen}
         />
 
         {/* Badge Overlay */}
-        {badge && (
+        {isPassive ? (
+          <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-950/90 backdrop-blur-xl border border-rose-500 text-rose-300 font-black text-xs uppercase tracking-wider shadow-2xl font-heading">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping mr-0.5"></span>
+            <span>🔴 PASİF İLAN</span>
+          </div>
+        ) : badge ? (
           <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-950/90 backdrop-blur-xl border border-amber-400 text-amber-400 font-black text-xs uppercase tracking-wider shadow-2xl font-heading">
             <Sparkles className="w-3.5 h-3.5 fill-amber-400" />
             <span>{badge}</span>
           </div>
-        )}
+        ) : null}
 
         {/* Fullscreen Trigger Button */}
         <button
@@ -144,6 +153,20 @@ export default function ImageSlider({
             {typeof window !== 'undefined' && window.location.hostname ? window.location.hostname.replace(/^www\./, '') : 'besteskort.online'}
           </span>
         </div>
+
+        {/* ── PASİF İLAN / SÜRESİ DOLDU ŞERİT BANT (SAHİBİNDEN STYLE) ── */}
+        {isPassive && (
+          <div className="absolute inset-0 z-25 flex items-center justify-center pointer-events-none overflow-hidden bg-black/40 backdrop-blur-[1px]">
+            <div className="w-[140%] py-3.5 sm:py-5 bg-gradient-to-r from-red-600/95 via-rose-700/95 to-red-600/95 text-white shadow-2xl -rotate-12 border-y-2 border-amber-400/90 flex flex-col items-center justify-center px-4 text-center">
+              <div className="flex items-center gap-2 font-heading font-black text-sm sm:text-lg tracking-wider uppercase text-amber-200 drop-shadow-md">
+                <span>⚠️ İLAN SÜRESİ SONA ERMİŞTİR</span>
+              </div>
+              <div className="text-[11px] sm:text-xs font-black font-sans tracking-widest uppercase text-white/95 mt-0.5">
+                İLAN PASİFE ALINMIŞTIR
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Navigation Arrows */}
         {safeImages.length > 1 && (
@@ -248,7 +271,7 @@ export default function ImageSlider({
               alt={`${alt} - Tam Ekran`}
               fill
               unoptimized
-              className="object-contain p-2"
+              className={`object-contain p-2 ${isPassive ? 'grayscale contrast-125 brightness-90' : ''}`}
             />
 
             {/* Sahibinden-Style Diagonal Semi-Transparent Fullscreen Watermark */}
@@ -260,6 +283,20 @@ export default function ImageSlider({
                 {typeof window !== 'undefined' && window.location.hostname ? window.location.hostname.replace(/^www\./, '') : 'besteskort.online'}
               </span>
             </div>
+
+            {/* ── PASİF İLAN / SÜRESİ DOLDU TAM EKRAN ŞERİT BANT ── */}
+            {isPassive && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none overflow-hidden bg-black/40">
+                <div className="w-[140%] py-4 sm:py-6 bg-gradient-to-r from-red-600/95 via-rose-700/95 to-red-600/95 text-white shadow-2xl -rotate-12 border-y-2 border-amber-400/90 flex flex-col items-center justify-center px-4 text-center">
+                  <div className="flex items-center gap-2 font-heading font-black text-base sm:text-2xl tracking-wider uppercase text-amber-200 drop-shadow-md">
+                    <span>⚠️ İLAN SÜRESİ SONA ERMİŞTİR</span>
+                  </div>
+                  <div className="text-xs sm:text-base font-black font-sans tracking-widest uppercase text-white/95 mt-1">
+                    İLAN PASİFE ALINMIŞTIR
+                  </div>
+                </div>
+              </div>
+            )}
 
             {safeImages.length > 1 && (
               <>

@@ -23,7 +23,8 @@ import {
   Flame,
   Clock,
   Zap,
-  Users
+  Users,
+  AlertTriangle,
 } from 'lucide-react';
 import { getListingBySlug, getListings, getActiveBanner, getAllLocations } from '@/lib/data';
 import { getSmartRecommendedListings } from '@/lib/geoProximity';
@@ -172,15 +173,16 @@ export default async function ListingDetailPage({ params }: Props) {
   const isUltraVip = rozet === 'ultravip';
   const isVip = rozet === 'vip';
   const isGold = rozet === 'gold';
+  const isPassive = Boolean(listing.isPassive);
 
   // WhatsApp URL for Sticky Bar (Supports Turkish & International Numbers)
-  const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
+  const formattedNumber = isPassive ? '' : formatWhatsAppNumber(listing.whatsappNumara);
   const listingFullUrl = `${siteUrl}/ilan/${listing.slug}`;
   const locationLabel = ilAdi && ilceAdi && ilAdi.toLowerCase() !== ilceAdi.toLowerCase()
     ? `${ilAdi} - ${ilceAdi} Eskort`
     : `${ilceAdi || ilAdi} Eskort`;
   const prefilledMessage = `Merhaba, ben ${listingFullUrl} adresindeki "${locationLabel} — ${listing.baslik}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`;
-  const waUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(prefilledMessage)}`;
+  const waUrl = isPassive ? '' : `https://wa.me/${formattedNumber}?text=${encodeURIComponent(prefilledMessage)}`;
 
   // İl bazlı gerçek koordinat haritası
   const geoMap: Record<string, { lat: number; lng: number }> = {
@@ -220,7 +222,7 @@ export default async function ListingDetailPage({ params }: Props) {
         name: `${listing.baslik} - ${ilceAdi} ${ilAdi} Eskort`,
         description: listing.aciklama,
         image: allImages.map((f: any) => f.url),
-        telephone: listing.whatsappNumara,
+        telephone: isPassive ? undefined : (listing.whatsappNumara || undefined),
         url: canonicalUrl,
         address: {
           '@type': 'PostalAddress',
@@ -248,7 +250,7 @@ export default async function ListingDetailPage({ params }: Props) {
           addressCountry: 'TR',
         },
         image: allImages[0]?.url || undefined,
-        telephone: listing.whatsappNumara || undefined,
+        telephone: isPassive ? undefined : (listing.whatsappNumara || undefined),
       },
     ],
   };
@@ -269,9 +271,37 @@ export default async function ListingDetailPage({ params }: Props) {
             images={allImages}
             alt={`${listing.baslik} ${ilceAdi} eskort`}
             aspectRatio="aspect-[3/4] sm:aspect-[4/5] min-h-[480px] h-[68vh] max-h-[640px]"
-            badge={`${rozet.toUpperCase()} VİTRİN`}
+            badge={isPassive ? null : `${rozet.toUpperCase()} VİTRİN`}
+            isPassive={isPassive}
           />
         </div>
+
+        {/* ── PASİF İLAN UYARI BANNERI ──────────────── */}
+        {isPassive && (
+          <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-red-950/80 via-zinc-900 to-red-950/80 border-2 border-red-500/50 text-red-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center shrink-0 border border-red-500/40 shadow-inner">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+              </div>
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="font-heading font-black text-sm sm:text-base text-white uppercase tracking-wide flex items-center gap-2">
+                  <span>İLAN SÜRESİ SONA ERMİŞTİR</span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-500/30 text-red-200 border border-red-500/40">PASİF</span>
+                </span>
+                <p className="text-xs text-red-300/80 leading-relaxed">
+                  Bu modelin yayın süresi dolduğu için telefon ve WhatsApp iletişim bilgileri gizlenmiştir.
+                </p>
+              </div>
+            </div>
+            <Link
+              href={isGenel ? `/${listing.ilSlug}` : `/${listing.ilSlug}/${listing.ilceSlug}`}
+              className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-heading font-bold text-xs uppercase tracking-wide transition-all shadow-md shrink-0 flex items-center gap-1.5 self-stretch sm:self-auto justify-center"
+            >
+              <span>Aktif İlanları İncele</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
 
         {/* ── SPONSORLU VIP BANNER (Kenarlara Sıfır) ──────────────── */}
         <div className="w-full px-0">
@@ -307,26 +337,35 @@ export default async function ListingDetailPage({ params }: Props) {
           {/* Orta Satır: Rozetler & Beğeni (Like) */}
           <div className="flex items-center justify-between gap-2 pb-1 border-b border-[#30363d]/70 flex-wrap">
             <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 text-[11px] font-black uppercase font-heading border border-emerald-500/30">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>%100 Doğrulanmış</span>
-              </span>
-
-              {isUltraVip || isVip ? (
-                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 text-[10px] font-black uppercase font-heading shadow-md">
-                  <Crown className="w-3 h-3 fill-slate-950" />
-                  <span>VIP MODEL</span>
-                </span>
-              ) : isGold ? (
-                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 text-[10px] font-black uppercase font-heading shadow-md">
-                  <Award className="w-3 h-3" />
-                  <span>GOLD MODEL</span>
+              {isPassive ? (
+                <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-300 text-[11px] font-black uppercase font-heading border border-rose-500/40">
+                  <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                  <span>SÜRESİ DOLDU (PASİF)</span>
                 </span>
               ) : (
-                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-700 text-slate-200 text-[10px] font-black uppercase font-heading shadow-md">
-                  <Medal className="w-3 h-3" />
-                  <span>SILVER MODEL</span>
+                <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 text-[11px] font-black uppercase font-heading border border-emerald-500/30">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>%100 Doğrulanmış</span>
                 </span>
+              )}
+
+              {!isPassive && (
+                isUltraVip || isVip ? (
+                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 text-[10px] font-black uppercase font-heading shadow-md">
+                    <Crown className="w-3 h-3 fill-slate-950" />
+                    <span>VIP MODEL</span>
+                  </span>
+                ) : isGold ? (
+                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 text-[10px] font-black uppercase font-heading shadow-md">
+                    <Award className="w-3 h-3" />
+                    <span>GOLD MODEL</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-700 text-slate-200 text-[10px] font-black uppercase font-heading shadow-md">
+                    <Medal className="w-3 h-3" />
+                    <span>SILVER MODEL</span>
+                  </span>
+                )
               )}
             </div>
 
@@ -417,10 +456,12 @@ export default async function ListingDetailPage({ params }: Props) {
             </div>
 
             <div className="p-2.5 rounded-xl bg-[#21262d]/60 border border-[#30363d] flex items-center gap-2">
-              <OfficialWhatsAppIcon className="w-4 h-4 fill-emerald-400 shrink-0" />
+              <OfficialWhatsAppIcon className={`w-4 h-4 shrink-0 ${isPassive ? 'fill-rose-400' : 'fill-emerald-400'}`} />
               <div className="flex flex-col min-w-0">
                 <span className="text-[10px] text-[#8b949e]">İletişim Hattı</span>
-                <span className="font-bold text-white truncate">Direkt WhatsApp</span>
+                <span className={`font-bold truncate ${isPassive ? 'text-rose-400' : 'text-white'}`}>
+                  {isPassive ? 'İletişim Kapalı' : 'Direkt WhatsApp'}
+                </span>
               </div>
             </div>
           </div>
@@ -428,19 +469,22 @@ export default async function ListingDetailPage({ params }: Props) {
           {/* Sayfa İçi Büyük WhatsApp Butonu & FOMO Alt Bar */}
           <div className="pt-1 flex flex-col gap-1.5">
             <WhatsAppButton
-              numara={listing.whatsappNumara}
+              numara={isPassive ? '' : listing.whatsappNumara}
               baslik={listing.baslik}
               listingId={listing._id ? listing._id.toString() : listing.id}
               slug={listing.slug}
               il={ilAdi}
               ilce={ilceAdi}
               customMessage={listing.whatsappOzelMesaj}
-              label="WhatsApp İle Hemen Görüş"
+              label={isPassive ? '🚫 İlan Yayında Değil (İletişim Kapalı)' : 'WhatsApp İle Hemen Görüş'}
+              disabled={isPassive}
             />
-            <p className="text-center text-[10.5px] text-emerald-400/90 font-medium flex items-center justify-center gap-1.5">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              <span>Son randevu talebi <strong>{6 + ((listing.slug || '').charCodeAt(0) % 22)} dakika önce</strong> iletildi</span>
-            </p>
+            {!isPassive && (
+              <p className="text-center text-[10.5px] text-emerald-400/90 font-medium flex items-center justify-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span>Son randevu talebi <strong>{6 + ((listing.slug || '').charCodeAt(0) % 22)} dakika önce</strong> iletildi</span>
+              </p>
+            )}
           </div>
 
           <div className="pt-1 flex items-center justify-center">
@@ -470,15 +514,21 @@ export default async function ListingDetailPage({ params }: Props) {
           <div className="mt-4 flex flex-col gap-3 w-full">
             <div className="flex items-center justify-between pb-1.5 border-b border-[#30363d]">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md">
+                <div className={`w-7 h-7 rounded-xl flex items-center justify-center font-black shadow-md ${
+                  isPassive ? 'bg-rose-600 text-white' : 'bg-amber-500 text-slate-950'
+                }`}>
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
                   <h3 className="font-black text-sm text-white uppercase tracking-wider font-heading">
-                    Sana Özel Önerilen Diğer İlanlar
+                    {isPassive
+                      ? `📍 ${ilceAdi} / ${ilAdi} Bölgesindeki Aktif ve Canlı İlanlar`
+                      : 'Sana Özel Önerilen Diğer İlanlar'}
                   </h3>
                   <span className="text-[10px] text-[#8b949e]">
-                    {ilAdi} ve çevre bölgelerden özenle seçilmiş teyitli VIP modeller
+                    {isPassive
+                      ? 'Bu ilan pasife alındığı için aynı bölgedeki doğrulanmış aktif modelleri inceleyebilirsiniz'
+                      : `${ilAdi} ve çevre bölgelerden özenle seçilmiş teyitli VIP modeller`}
                   </span>
                 </div>
               </div>
@@ -568,17 +618,29 @@ export default async function ListingDetailPage({ params }: Props) {
 
       {/* ── 6. MOBİLDE ALTA YAPIŞIK SABİT İLETİŞİM BARI (STICKY WHATSAPP ACTION BAR) ──────────────── */}
       <div className="fixed bottom-0 inset-x-0 z-40 bg-[#0d1117]/95 backdrop-blur-xl border-t border-[#30363d] p-3 px-4 shadow-[0_-10px_30px_rgba(0,0,0,0.8)] pb-[max(env(safe-area-inset-bottom),12px)]">
-        <div className="max-w-2xl mx-auto w-full">
-          <WhatsAppButton
-            numara={listing.whatsappNumara}
-            baslik={listing.baslik}
-            listingId={listing._id ? listing._id.toString() : listing.id}
-            slug={listing.slug}
-            il={ilAdi}
-            ilce={ilceAdi}
-            customMessage={listing.whatsappOzelMesaj}
-            label="WhatsApp ile İletişime Geç"
-          />
+        <div className="max-w-2xl mx-auto w-full flex items-center gap-2.5">
+          <div className="flex-1">
+            <WhatsAppButton
+              numara={isPassive ? '' : listing.whatsappNumara}
+              baslik={listing.baslik}
+              listingId={listing._id ? listing._id.toString() : listing.id}
+              slug={listing.slug}
+              il={ilAdi}
+              ilce={ilceAdi}
+              customMessage={listing.whatsappOzelMesaj}
+              label={isPassive ? '🚫 İlan Yayında Değil' : 'WhatsApp ile İletişime Geç'}
+              disabled={isPassive}
+            />
+          </div>
+          {isPassive && (
+            <Link
+              href={isGenel ? `/${listing.ilSlug}` : `/${listing.ilSlug}/${listing.ilceSlug}`}
+              className="py-3.5 sm:py-4 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm font-heading shrink-0 shadow-lg transition-all flex items-center gap-1 active:scale-95"
+            >
+              <span>Aktif İlanlar</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          )}
         </div>
       </div>
 

@@ -13,6 +13,7 @@ interface ContactButtonsProps {
   compact?: boolean;
   className?: string;
   label?: string;
+  disabled?: boolean;
 }
 
 export const OfficialWhatsAppIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
@@ -40,7 +41,28 @@ export default function WhatsAppButton({
   compact = false,
   className = '',
   label,
+  disabled = false,
 }: ContactButtonsProps) {
+  // Pasif veya numarasız ilanlarda butonu tamamen etkisizleştir ve gizlilik kilidini aç
+  if (disabled || !numara) {
+    return (
+      <div className={`w-full ${className}`}>
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          className={`w-full flex items-center justify-center gap-2 rounded-2xl bg-[#161b22] border border-rose-500/30 text-rose-300/80 font-bold tracking-wide shadow-none cursor-not-allowed select-none font-heading ${
+            compact ? 'py-3 px-4 text-xs' : 'py-3.5 sm:py-4 px-5 text-xs sm:text-sm'
+          }`}
+          title="Bu ilan yayından kaldırılmış veya süresi dolmuştur. İletişim bilgileri kapalıdır."
+        >
+          <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+          <span>{label || '🚫 İlan Yayında Değil (İletişim Kapalı)'}</span>
+        </button>
+      </div>
+    );
+  }
+
   const formattedNumber = formatWhatsAppNumber(numara);
 
   const origin = typeof window !== 'undefined' && window.location.origin
