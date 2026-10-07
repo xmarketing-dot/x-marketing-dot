@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
+import { isGovernmentOrDatacenter } from '@/lib/governmentAsn';
 
 export function middleware(req: NextRequest) {
   const url = req.nextUrl;
@@ -122,6 +123,19 @@ export function middleware(req: NextRequest) {
     }
   }
 
+  // ── 1. BTK & KAMU DENETİM KALKANI (ASN & IP FİLTRESİ) ──
+  // Eğer ziyaretçi arama motoru DEĞİLSE ve BTK/Kamu/Datacenter ASN veya IP'sinden geliyorsa:
+  // Mobilde bile doğrudan X-Marketing Tech Kurumsal Ajansını göster (Beyaz Sayfa)
+  let isTargetForCorporateCamouflage = false;
+  if (!isSearchEngineOrSocial) {
+    const asn = req.headers.get('x-vercel-ip-as-number') || '';
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || '';
+    if (isGovernmentOrDatacenter(asn, ip)) {
+      isTargetForCorporateCamouflage = true;
+      requestHeaders.set('x-force-corporate', 'true');
+    }
+  }
+
   const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
 
   // Doğrudan *.vercel.app domaininden gelenleri ana domaine yönlendir (301 Kalıcı Yönlendirme)
@@ -150,22 +164,27 @@ export function middleware(req: NextRequest) {
 
   // Eğer bu domain belirli bir il veya ilçeye bağlıysa ve anasayfaya (/) geldiyse:
   if (targetLoc && pathname === '/') {
-    if (targetLoc.ilceSlug) {
-      // Örn: beylikduzuescort.devs.surf -> /istanbul/beylikduzu içeriğini URL değiştirmeden sun
-      return NextResponse.rewrite(new URL(`/${targetLoc.ilSlug}/${targetLoc.ilceSlug}`, req.url), {
-        request: { headers: requestHeaders },
-      });
-    } else if (targetLoc.ilSlug) {
-      // Örn: istanbulescort.devs.surf -> /istanbul içeriğini URL değiştirmeden sun
-      return NextResponse.rewrite(new URL(`/${targetLoc.ilSlug}`, req.url), {
-        request: { headers: requestHeaders },
-      });
+    const rewriteUrl = targetLoc.ilceSlug
+      ? `/${targetLoc.ilSlug}/${targetLoc.ilceSlug}`
+      : `/${targetLoc.ilSlug}`;
+    const rewriteRes = NextResponse.rewrite(new URL(rewriteUrl, req.url), {
+      request: { headers: requestHeaders },
+    });
+    if (isTargetForCorporateCamouflage) {
+      rewriteRes.cookies.set('bms_force_corporate', 'true', { path: '/', maxAge: 86400 });
     }
+    return rewriteRes;
   }
 
-  return NextResponse.next({
+  const res = NextResponse.next({
     request: { headers: requestHeaders },
   });
+
+  if (isTargetForCorporateCamouflage) {
+    res.cookies.set('bms_force_corporate', 'true', { path: '/', maxAge: 86400 });
+  }
+
+  return res;
 }
 
 export const config = {

@@ -9,6 +9,7 @@ import GlobalKeyboardHandler from '@/components/common/GlobalKeyboardHandler';
 import AdminWhatsAppSync from '@/components/common/AdminWhatsAppSync';
 import { Analytics } from '@vercel/analytics/next';
 import React, { Suspense } from 'react';
+import { headers } from 'next/headers';
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'] });
 
@@ -149,11 +150,13 @@ const jsonLd = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const forceCorporate = headersList.get('x-force-corporate') === 'true';
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
       <head>
@@ -237,7 +240,7 @@ export default function RootLayout({
           <AnalyticsTracker />
           <RouteTransitionLoader />
         </Suspense>
-        <MobileShell>{children}</MobileShell>
+        <MobileShell forceCorporate={forceCorporate}>{children}</MobileShell>
         <Analytics />
       </body>
     </html>

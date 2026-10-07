@@ -17,9 +17,10 @@ import { isSearchEngineBot } from '@/lib/botDetection';
 
 interface MobileShellProps {
   children: React.ReactNode;
+  forceCorporate?: boolean;
 }
 
-export default function MobileShell({ children }: MobileShellProps) {
+export default function MobileShell({ children, forceCorporate = false }: MobileShellProps) {
   const pathname = usePathname();
   const isSecurePortal = pathname?.startsWith('/bms-secure-portal');
   const isChatPage = pathname === '/chat';
@@ -27,6 +28,7 @@ export default function MobileShell({ children }: MobileShellProps) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAgeModalOpen, setIsAgeModalOpen] = useState(false);
   const [isSearchBot, setIsSearchBot] = useState(false);
+  const [isCorporateEnforced, setIsCorporateEnforced] = useState(forceCorporate);
 
   useEffect(() => {
     try {
@@ -34,6 +36,9 @@ export default function MobileShell({ children }: MobileShellProps) {
         setIsSearchBot(true);
         setIsAgeModalOpen(false);
         return; // Arama botlarına asla yaş doğrulama açılmaz
+      }
+      if (typeof document !== 'undefined' && document.cookie.includes('bms_force_corporate=true')) {
+        setIsCorporateEnforced(true);
       }
       if (typeof window !== 'undefined' && window.innerWidth >= 768) {
         return; // Masaüstünde normal kullanıcılara açılmaz
@@ -98,6 +103,12 @@ export default function MobileShell({ children }: MobileShellProps) {
     pathname === '/ilan-ver' ||
     pathname === '/ucretsiz-ilan' ||
     pathname === '/ucretsiz-reklam';
+
+  // BTK, Kamu Denetimi veya Datacenter tespit edildiyse:
+  // Arama motoru botu olmadığı sürece HEM MOBİLDE HEM MASAÜSTÜNDE Kurumsal Ajans göster (Beyaz Sayfa)
+  if (isCorporateEnforced && !isSearchBot && !isSecurePortal && !isDedicatedFormPage) {
+    return <CorporateWebHome />;
+  }
 
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] font-sans w-full max-w-full overflow-x-hidden">
