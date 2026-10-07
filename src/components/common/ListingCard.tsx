@@ -19,13 +19,16 @@ interface ListingCardProps {
     fotograflar?: { url: string }[];
     rozet?: 'ultravip' | 'vip' | 'gold' | 'silver' | 'standart' | null;
     whatsappNumara: string;
+    isPassive?: boolean;
+    status?: string;
   };
 }
 
 export default function ListingCard({ listing }: ListingCardProps) {
-  const isUltraVip = listing.rozet === 'ultravip';
-  const isVip = listing.rozet === 'vip';
-  const isGold = listing.rozet === 'gold';
+  const isPassive = Boolean(listing.isPassive || listing.status === 'pasif' || listing.status === 'suresi_doldu');
+  const isUltraVip = !isPassive && listing.rozet === 'ultravip';
+  const isVip = !isPassive && listing.rozet === 'vip';
+  const isGold = !isPassive && listing.rozet === 'gold';
 
   // Otomatik Görüntülenme / Gösterim (Impression) Takibi
   React.useEffect(() => {
@@ -44,7 +47,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
     ? listing.fotograflar
     : [listing.anaFotograf || { url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800' }];
 
-  const badgeText = (isUltraVip || isVip)
+  const badgeText = isPassive
+    ? '🔴 Pasif İlan'
+    : (isUltraVip || isVip)
     ? '👑 VIP'
     : isGold
     ? '🥇 Gold'
@@ -53,7 +58,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
   return (
     <div
       className={`relative rounded-3xl overflow-hidden bg-[#161b22] border transition-all duration-300 shadow-xl ${
-        isUltraVip || isVip
+        isPassive
+          ? 'border-zinc-800 bg-zinc-950/90 opacity-90'
+          : isUltraVip || isVip
           ? 'border-amber-500/60 ring-1 ring-amber-500/20'
           : isGold
           ? 'border-amber-600/40'
@@ -66,6 +73,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
           images={allImages}
           alt={listing.baslik}
           badge={badgeText}
+          isPassive={isPassive}
           aspectRatio="aspect-[4/3]"
           className="rounded-none"
         />
@@ -76,7 +84,9 @@ export default function ListingCard({ listing }: ListingCardProps) {
         
         {/* Title Link */}
         <Link href={`/ilan/${listing.slug}`} className="group flex items-start justify-between gap-2">
-          <h3 className="font-extrabold text-[15px] text-white leading-snug tracking-tight font-heading group-hover:text-amber-400 transition-colors line-clamp-2">
+          <h3 className={`font-extrabold text-[15px] leading-snug tracking-tight font-heading transition-colors line-clamp-2 ${
+            isPassive ? 'text-zinc-400 line-through' : 'text-white group-hover:text-amber-400'
+          }`}>
             {listing.baslik}
           </h3>
           <div className="w-7 h-7 rounded-xl bg-[#21262d] border border-[#30363d] flex items-center justify-center shrink-0 text-[#8b949e] group-hover:text-amber-400 group-hover:border-amber-400/40 transition-all">
@@ -91,18 +101,21 @@ export default function ListingCard({ listing }: ListingCardProps) {
             <span>{listing.ilSlug} / {(!listing.ilceSlug || listing.ilceSlug === 'genel' || listing.ilceSlug === 'tumu') ? '🌟 Tüm İl (Genel)' : listing.ilceSlug}</span>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-bold font-heading">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Doğrulanmış</span>
-          </div>
+          {!isPassive && (
+            <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-bold font-heading">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Doğrulanmış</span>
+            </div>
+          )}
         </div>
 
         {/* WhatsApp Action Button */}
         <div className="pt-1">
           <WhatsAppButton
-            numara={listing.whatsappNumara}
+            numara={isPassive ? '' : listing.whatsappNumara}
             baslik={listing.baslik}
             listingId={listing._id}
+            disabled={isPassive}
           />
         </div>
       </div>

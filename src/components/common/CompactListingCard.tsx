@@ -19,14 +19,17 @@ interface CompactListingCardProps {
     fotograflar?: { url: string }[];
     rozet?: 'ultravip' | 'vip' | 'gold' | 'silver' | 'standart' | null;
     whatsappNumara: string;
+    isPassive?: boolean;
+    status?: string;
   };
 }
 
 export default function CompactListingCard({ listing }: CompactListingCardProps) {
+  const isPassive = Boolean(listing.isPassive || listing.status === 'pasif' || listing.status === 'suresi_doldu');
   const rozet = listing.rozet || 'silver';
-  const isVip = rozet === 'vip' || rozet === 'ultravip';
-  const isGold = rozet === 'gold';
-  const isSilver = rozet === 'silver' || rozet === 'standart';
+  const isVip = !isPassive && (rozet === 'vip' || rozet === 'ultravip');
+  const isGold = !isPassive && rozet === 'gold';
+  const isSilver = !isPassive && (rozet === 'silver' || rozet === 'standart');
 
   // Extract all unique images with robust string/object format support
   const allImages = React.useMemo(() => {
@@ -34,7 +37,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     const pushImg = (val: any) => {
       if (!val) return;
       const url = typeof val === 'string' ? val : val?.url;
-      if (typeof url === 'string' && url.trim() && !list.includes(url.trim())) {
+      if (typeof url === 'string' && url.trim() && !list.push(url.trim())) {
         list.push(url.trim());
       }
     };
@@ -49,11 +52,12 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     return list;
   }, [listing.anaFotograf, listing.fotograflar]);
 
-  // Gerçekçi durum dağılımı: Herkes aynı anda aktif olamaz (~%65 çevrimiçi)
+  // Gerçekçi durum dağılımı: Pasif ilanlar asla online görünmez
   const isOnline = React.useMemo(() => {
+    if (isPassive) return false;
     const hash = (listing.slug || listing._id || 'a').charCodeAt(0) + (listing.slug || '').length;
     return hash % 3 !== 0;
-  }, [listing.slug, listing._id]);
+  }, [isPassive, listing.slug, listing._id]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -146,9 +150,10 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     : (ilceName ? `${ilceName} Eskort` : (ilName ? `${ilName} Eskort` : ''));
   const adLabel = locName ? `${locName} — ${listing.baslik}` : listing.baslik;
   const message = encodeURIComponent(`Merhaba, ben ${cardUrl} adresindeki "${adLabel}" ilanınızdan geliyorum. Görüşme ve detaylar hakkında bilgi alabilir miyim?`);
-  const waUrl = `https://wa.me/${formattedNumber}?text=${message}`;
+  const waUrl = isPassive ? '#' : `https://wa.me/${formattedNumber}?text=${message}`;
 
   const handleWaClick = () => {
+    if (isPassive) return;
     if (listing._id) {
       trackEvent('whatsapp_click', {
         listingId: listing._id,
@@ -168,12 +173,14 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   return (
     <div
       ref={cardRef}
-      className={`group relative aspect-[3/4.8] sm:aspect-[3/4.5] w-full rounded-lg sm:rounded-xl overflow-hidden bg-[#0d1117] border transition-all duration-300 shadow-md hover:shadow-xl select-none ${
-        isVip
-          ? 'border-amber-500/75 hover:border-amber-400 shadow-amber-500/10 ring-1 ring-amber-500/20'
+      className={`group relative aspect-[3/4.8] sm:aspect-[3/4.5] w-full rounded-lg sm:rounded-xl overflow-hidden bg-[#0d1117] border transition-all duration-300 shadow-md select-none ${
+        isPassive
+          ? 'border-zinc-800/80 bg-zinc-950/90 opacity-90'
+          : isVip
+          ? 'border-amber-500/75 hover:border-amber-400 shadow-amber-500/10 ring-1 ring-amber-500/20 hover:shadow-xl'
           : isGold
-          ? 'border-yellow-500/60 hover:border-yellow-400 shadow-yellow-500/10 ring-1 ring-yellow-500/15'
-          : 'border-slate-600/50 hover:border-slate-400 shadow-slate-500/5 ring-1 ring-slate-400/10'
+          ? 'border-yellow-500/60 hover:border-yellow-400 shadow-yellow-500/10 ring-1 ring-yellow-500/15 hover:shadow-xl'
+          : 'border-slate-600/50 hover:border-slate-400 shadow-slate-500/5 ring-1 ring-slate-400/10 hover:shadow-xl'
       }`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -200,38 +207,58 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
                 fill
                 loading="lazy"
                 sizes="(max-width: 640px) 33vw, 240px"
-                className="object-cover object-top"
+                className={`object-cover object-top ${
+                  isPassive ? 'grayscale contrast-125 brightness-75' : ''
+                }`}
               />
             </div>
           );
         })}
       </Link>
 
+      {/* Pasif İlan Çapraz Şerit (Ribbon) */}
+      {isPassive && (
+        <div className="absolute inset-0 z-15 pointer-events-none flex items-center justify-center overflow-hidden">
+          <div className="w-[140%] py-1 bg-rose-600/90 text-white font-black text-[8px] sm:text-[9.5px] tracking-wider uppercase text-center -rotate-25 shadow-lg border-y border-rose-400/50 backdrop-blur-xs font-heading">
+            ⚠️ SÜRESİ DOLDU
+          </div>
+        </div>
+      )}
+
       {/* Üst Rozetler */}
       <div className="absolute top-1.5 left-1.5 right-1.5 z-20 flex items-center justify-between pointer-events-none">
         <div>
-          {isVip && (
-            <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 font-black text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
-              <Crown className="w-2.5 h-2.5 fill-slate-950" />
-              <span>VIP</span>
+          {isPassive ? (
+            <span className="px-1.5 py-0.5 rounded bg-zinc-900/95 border border-zinc-700/80 text-zinc-300 font-extrabold text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+              <span>PASİF</span>
             </span>
-          )}
-          {isGold && (
-            <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
-              <Award className="w-2.5 h-2.5" />
-              <span>GOLD</span>
-            </span>
-          )}
-          {isSilver && (
-            <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-slate-300 via-slate-200 to-slate-400 text-slate-950 font-black text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
-              <Medal className="w-2.5 h-2.5" />
-              <span>SILVER</span>
-            </span>
+          ) : (
+            <>
+              {isVip && (
+                <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 text-slate-950 font-black text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
+                  <Crown className="w-2.5 h-2.5 fill-slate-950" />
+                  <span>VIP</span>
+                </span>
+              )}
+              {isGold && (
+                <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
+                  <Award className="w-2.5 h-2.5" />
+                  <span>GOLD</span>
+                </span>
+              )}
+              {isSilver && (
+                <span className="px-1.5 py-0.5 rounded bg-gradient-to-r from-slate-300 via-slate-200 to-slate-400 text-slate-950 font-black text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-0.5">
+                  <Medal className="w-2.5 h-2.5" />
+                  <span>SILVER</span>
+                </span>
+              )}
+            </>
           )}
         </div>
 
         <div className="flex items-center gap-1">
-          {/* Canlı Online Nabzı (Metinsiz, Sadece Şık LED Nokta) */}
+          {/* Canlı Online Nabzı */}
           {isOnline && (
             <span className="p-1 rounded-full bg-black/75 backdrop-blur-md border border-emerald-500/40 shadow-sm flex items-center justify-center">
               <span className="relative flex h-1.5 w-1.5">
@@ -241,15 +268,17 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
             </span>
           )}
 
-          <span className="px-1.5 py-0.5 rounded bg-emerald-500/90 backdrop-blur-xs text-slate-950 font-black text-[8.5px] sm:text-[9.5px] font-heading shadow-md flex items-center gap-0.5 ring-1 ring-emerald-400/40">
-            <ShieldCheck className="w-2.5 h-2.5 stroke-[3]" />
-            <span>Teyitli</span>
-          </span>
+          {!isPassive && (
+            <span className="px-1.5 py-0.5 rounded bg-emerald-500/90 backdrop-blur-xs text-slate-950 font-black text-[8.5px] sm:text-[9.5px] font-heading shadow-md flex items-center gap-0.5 ring-1 ring-emerald-400/40">
+              <ShieldCheck className="w-2.5 h-2.5 stroke-[3]" />
+              <span>Teyitli</span>
+            </span>
+          )}
         </div>
       </div>
 
       {/* Fotoğraf Nokta Göstergeleri */}
-      {allImages.length > 1 && (
+      {allImages.length > 1 && !isPassive && (
         <div className="absolute bottom-[58px] sm:bottom-[64px] left-0 right-0 z-20 flex items-center justify-center gap-1 pointer-events-none">
           {allImages.map((_, dotIdx) => (
             <span
@@ -271,13 +300,13 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
         </span>
       </div>
 
-      {/* ── 2. BAŞLIK, KONUM VE WHATSAPP BUTONU (Doğrudan Fotoğrafın Altında Yüzen Katman) ──────────────── */}
+      {/* ── 2. BAŞLIK, KONUM VE WHATSAPP BUTONU ──────────────── */}
       <div className="absolute inset-x-0 bottom-0 z-20 p-1.5 sm:p-2 pt-6 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex flex-col gap-1.5 pointer-events-auto">
         {/* Başlık ve İl */}
         <div className="flex items-center justify-between gap-1">
           <Link href={`/ilan/${listing.slug}`} className="block min-w-0 flex-1">
             <h3 className={`font-black text-[10.5px] sm:text-xs text-white leading-tight font-heading transition-colors line-clamp-1 truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] ${
-              isVip ? 'group-hover:text-amber-300' : isGold ? 'group-hover:text-yellow-300' : 'group-hover:text-slate-200'
+              isPassive ? 'text-zinc-400 line-through' : isVip ? 'group-hover:text-amber-300' : isGold ? 'group-hover:text-yellow-300' : 'group-hover:text-slate-200'
             }`}>
               {listing.baslik}
             </h3>
@@ -289,18 +318,29 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
           </span>
         </div>
 
-        {/* GENİŞ WHATSAPP BUTONU */}
-        <a
-          href={waUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleWaClick}
-          className="w-full py-1.5 sm:py-2 px-2 rounded-md sm:rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10.5px] sm:text-xs tracking-wide shadow-md active:scale-98 transition-all flex items-center justify-center gap-1.5 font-heading"
-          title="WhatsApp ile İletişime Geç"
-        >
-          <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-white shrink-0" />
-          <span>WhatsApp</span>
-        </a>
+        {/* WHATSAPP BUTONU (Pasif İlanlar İçin Kilitli & Güvenli) */}
+        {isPassive ? (
+          <button
+            type="button"
+            disabled
+            className="w-full py-1.5 sm:py-2 px-2 rounded-md sm:rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-500 font-bold text-[10px] sm:text-[11px] cursor-not-allowed flex items-center justify-center gap-1.5 select-none font-heading"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+            <span className="truncate">İlan Pasif (İletişim Kapalı)</span>
+          </button>
+        ) : (
+          <a
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={handleWaClick}
+            className="w-full py-1.5 sm:py-2 px-2 rounded-md sm:rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10.5px] sm:text-xs tracking-wide shadow-md active:scale-98 transition-all flex items-center justify-center gap-1.5 font-heading"
+            title="WhatsApp ile İletişime Geç"
+          >
+            <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-white shrink-0" />
+            <span>WhatsApp</span>
+          </a>
+        )}
       </div>
     </div>
   );

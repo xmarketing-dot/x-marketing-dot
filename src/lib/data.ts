@@ -147,12 +147,7 @@ export async function getListings({
 
   const nowDate = new Date();
   const query: any = {
-    status: 'yayinda',
-    $or: [
-      { paketBitisTarihi: { $exists: false } },
-      { paketBitisTarihi: null },
-      { paketBitisTarihi: { $gt: nowDate } }
-    ]
+    status: { $in: ['yayinda', 'suresi_doldu', 'pasif'] },
   };
 
   if (ilSlug) query.ilSlug = ilSlug;
@@ -171,22 +166,41 @@ export async function getListings({
     }
   }
 
-const TIER_ORDER_MAP: Record<string, number> = {
-  vip: 1,
-  ultravip: 1,
-  gold: 2,
-  silver: 3,
-  standart: 4,
-};
+  const TIER_ORDER_MAP: Record<string, number> = {
+    vip: 1,
+    ultravip: 1,
+    gold: 2,
+    silver: 3,
+    standart: 4,
+  };
 
   // Include fotograflar so compact card auto-slider works, and siraNo for pinned rank ordering
   const listings = await ListingModel.find(query)
-    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf fotograflar createdAt status siraNo isPromo')
+    .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf fotograflar createdAt status siraNo isPromo paketBitisTarihi')
     .sort({ createdAt: -1 })
     .limit(limit)
     .lean();
 
-  const sortedListings = (listings as any[]).sort((a: any, b: any) => {
+  const cleanedListings = (listings as any[]).map((l: any) => {
+    const isPassive =
+      l.status === 'suresi_doldu' ||
+      l.status === 'pasif' ||
+      (l.paketBitisTarihi ? new Date(l.paketBitisTarihi) <= nowDate : false);
+
+    return {
+      ...l,
+      isPassive,
+      // GÜVENLİK KİLİDİ: Pasif ilanların telefon numarasını istemciye asla iletme
+      whatsappNumara: isPassive ? '' : l.whatsappNumara,
+    };
+  });
+
+  const sortedListings = cleanedListings.sort((a: any, b: any) => {
+    // 0. Aktif ilanlar HER ZAMAN pasif ilanların önünde (üstünde) yer alır!
+    const passA = a.isPassive ? 1 : 0;
+    const passB = b.isPassive ? 1 : 0;
+    if (passA !== passB) return passA - passB;
+
     // 1. Manuel Sabit Sıra Önceliği (1 = 1. Sıra, 2 = 2. Sıra vb.)
     const sA = (a.siraNo && a.siraNo > 0) ? a.siraNo : 999999;
     const sB = (b.siraNo && b.siraNo > 0) ? b.siraNo : 999999;
