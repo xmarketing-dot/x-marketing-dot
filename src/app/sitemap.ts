@@ -7,8 +7,8 @@ import { headers } from 'next/headers';
 
 import ListingModel from '@/models/Listing';
 
-// Dinamik çalışma: Gelen her domain/subdomain kendi sitemap'ini üretir
-export const dynamic = 'force-dynamic';
+// 1 saat önbellek: Botlar her sitemap çağırdığında Vercel Edge CDN'den 0ms döner, sunucu maliyetini sıfırlar
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = await getRequestSiteUrl();

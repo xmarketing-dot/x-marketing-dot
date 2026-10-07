@@ -31,7 +31,7 @@ import { turkeyProvinces } from '@/data/turkeyLocations';
 import FaqAccordion from '@/components/seo/FaqAccordion';
 import { generateTurkeyHomeFaq, generateHomeSeoGraph } from '@/lib/seoData';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60; // 60 saniye ISR önbellek (Vercel Fluid CPU ve fonksiyon kotasını korur)
 
 export async function generateMetadata(): Promise<Metadata> {
   const siteUrl = getSiteUrl();
