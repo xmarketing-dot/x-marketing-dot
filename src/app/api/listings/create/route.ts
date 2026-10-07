@@ -3,13 +3,13 @@ import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
 import { getSiteUrl } from '@/lib/siteUrl';
 
-function generateSlug(ilce: string, baslik: string, tamAd?: string): string {
+function generateSlug(il: string, ilce: string, baslik: string, tamAd?: string): string {
   const trMap: Record<string, string> = {
     ç: 'c', Ç: 'c', ğ: 'g', Ğ: 'g', ı: 'i', İ: 'i', ö: 'o', Ö: 'o', ş: 's', Ş: 's', ü: 'u', Ü: 'u'
   };
 
   const toClean = (str: string) =>
-    str
+    (str || '')
       .split('')
       .map((char) => trMap[char] || char)
       .join('')
@@ -18,25 +18,33 @@ function generateSlug(ilce: string, baslik: string, tamAd?: string): string {
       .replace(/\s+/g, ' ')
       .trim();
 
-  const cleanIlce = toClean(ilce).replace(/\s+/g, '-');
-  
+  const cleanIl = toClean(il).replace(/\s+/g, '-');
+  const isGenelIlce = !ilce || ilce === 'genel' || ilce === 'tumu' || toClean(ilce) === cleanIl;
+  const cleanIlce = isGenelIlce ? '' : toClean(ilce).replace(/\s+/g, '-');
+
   // Prefer tamAd (e.g. "Ceren", "Merve Özdemir") or first 1-2 distinctive words from baslik
   let coreName = '';
   if (tamAd && tamAd.trim()) {
     coreName = toClean(tamAd);
   } else {
-    // Extract distinctive words from baslik, removing ilce or repetitive keywords
+    // Extract distinctive words from baslik, removing il, ilce or repetitive keywords
+    const stopWords = ['eskort', 'escort', 'bayan', 'vip', 'bayanlar', 'model', 'masaj', 'partner', 'genel', 'geneli'];
     const words = toClean(baslik)
       .split(' ')
-      .filter((w) => w && w !== cleanIlce && !['eskort', 'escort', 'bayan', 'vip', 'bayanlar'].includes(w));
-    
-    coreName = words.slice(0, 2).join(' ') || toClean(baslik).split(' ').slice(0, 2).join(' ');
+      .filter((w) => w && w !== cleanIl && w !== cleanIlce && !stopWords.includes(w));
+
+    coreName = words.slice(0, 2).join(' ') || 'model';
   }
 
   const cleanCore = coreName.replace(/\s+/g, '-');
   const randomHex = Math.random().toString(36).substring(2, 7);
 
-  const basePart = cleanCore ? `${cleanIlce}-${cleanCore}` : cleanIlce;
+  const parts: string[] = [];
+  if (cleanIl) parts.push(cleanIl);
+  if (cleanIlce && cleanIlce !== cleanIl) parts.push(cleanIlce);
+  if (cleanCore) parts.push(cleanCore);
+
+  const basePart = parts.length > 0 ? parts.join('-') : (cleanIl || 'ilan');
   return `${basePart}-${randomHex}`;
 }
 
@@ -70,7 +78,7 @@ export async function POST(req: NextRequest) {
     const forwardedFor = req.headers.get('x-forwarded-for');
     const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '127.0.0.1';
 
-    const slug = generateSlug((ilceSlug === 'genel' || ilceSlug === 'tumu') ? ilSlug : ilceSlug, baslik, tamAd);
+    const slug = generateSlug(ilSlug, ilceSlug, baslik, tamAd);
     const imageUrl = anaFotografUrl && anaFotografUrl.trim() !== ''
       ? anaFotografUrl
       : 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800';
