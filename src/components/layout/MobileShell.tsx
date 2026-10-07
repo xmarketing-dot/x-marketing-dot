@@ -13,6 +13,8 @@ import CorporateWebHome from '@/components/corporate/CorporateWebHome';
 import AgeVerificationModal from '@/components/common/AgeVerificationModal';
 import GlobalAnnouncementBar from '@/components/common/GlobalAnnouncementBar';
 
+import { isSearchEngineBot } from '@/lib/botDetection';
+
 interface MobileShellProps {
   children: React.ReactNode;
 }
@@ -28,13 +30,10 @@ export default function MobileShell({ children }: MobileShellProps) {
 
   useEffect(() => {
     try {
-      if (typeof navigator !== 'undefined') {
-        const ua = navigator.userAgent.toLowerCase();
-        const botDetected = /googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|crawler|spider|robot/i.test(ua);
-        if (botDetected) {
-          setIsSearchBot(true);
-          return; // Arama botlarına asla yaş doğrulama açılmaz
-        }
+      if (isSearchEngineBot()) {
+        setIsSearchBot(true);
+        setIsAgeModalOpen(false);
+        return; // Arama botlarına asla yaş doğrulama açılmaz
       }
       if (typeof window !== 'undefined' && window.innerWidth >= 768) {
         return; // Masaüstünde normal kullanıcılara açılmaz

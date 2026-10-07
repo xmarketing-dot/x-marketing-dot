@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ExternalLink, Flame, Sparkles, ChevronRight, ArrowUpRight, Zap, Crown } from 'lucide-react';
+import { isSearchEngineBot } from '@/lib/botDetection';
 
 interface AnnouncementData {
   isActive: boolean;
@@ -34,11 +35,8 @@ export default function GlobalAnnouncementBar() {
     let timerId: any = null;
 
     // Arama motoru botlarına asla drawer/duyuru açma
-    if (typeof navigator !== 'undefined') {
-      const ua = navigator.userAgent.toLowerCase();
-      if (/googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|crawler|spider|robot/i.test(ua)) {
-        return;
-      }
+    if (isSearchEngineBot()) {
+      return;
     }
 
     // Masaüstünde (Web / Desktop) kesinlikle çalıştırma ve gösterme

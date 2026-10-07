@@ -4,6 +4,8 @@ import React from 'react';
 import { ShieldAlert, Check, Lock } from 'lucide-react';
 import CorporateLogo from './CorporateLogo';
 
+import { isSearchEngineBot } from '@/lib/botDetection';
+
 interface AgeVerificationModalProps {
   isOpen: boolean;
   onConfirm: () => void;
@@ -11,18 +13,15 @@ interface AgeVerificationModalProps {
 }
 
 export default function AgeVerificationModal({ isOpen, onConfirm, onReject }: AgeVerificationModalProps) {
-  // Arama motoru botlarına (Googlebot, YandexBot vb.) asla engel modalı gösterme
-  if (typeof navigator !== 'undefined') {
-    const ua = navigator.userAgent.toLowerCase();
-    if (/googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|crawler|spider|robot/i.test(ua)) {
-      return null;
-    }
+  // Arama motoru botlarına (Googlebot, Google-InspectionTool, YandexBot vb.) asla engel modalı gösterme
+  if (isSearchEngineBot()) {
+    return null;
   }
 
   if (!isOpen) return null;
 
   return (
-    <div className="md:hidden fixed inset-0 z-[99999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 select-none text-left">
+    <div className="md:hidden fixed inset-0 z-[99999] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200 select-none text-left">
       <div className="w-full max-w-md bg-[#161b22] border-2 border-amber-500/50 rounded-3xl p-6 sm:p-8 shadow-[0_0_60px_rgba(245,158,11,0.2)] flex flex-col items-center text-center gap-5">
         
         {/* +18 Rozeti & Güvenlik İkonu */}

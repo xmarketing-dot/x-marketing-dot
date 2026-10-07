@@ -5,8 +5,9 @@ import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { X, Flame, ChevronRight, Crown, MapPin, ShieldCheck } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
-import { formatWhatsAppNumber } from '@/lib/format';
 import { trackEvent } from '@/components/common/AnalyticsTracker';
+import { isSearchEngineBot } from '@/lib/botDetection';
+import { formatWhatsAppNumber } from '@/lib/format';
 
 interface SpecialAdItem {
   _id?: string;
@@ -57,11 +58,8 @@ export default function SpecialAdPopup() {
 
   useEffect(() => {
     // 0. Search bot check: Arama motoru botlarına asla popup gösterme
-    if (typeof navigator !== 'undefined') {
-      const ua = navigator.userAgent.toLowerCase();
-      if (/googlebot|bingbot|yandex|duckduckbot|slurp|baiduspider|crawler|spider|robot/i.test(ua)) {
-        return;
-      }
+    if (isSearchEngineBot()) {
+      return;
     }
 
     // 1. Strictly MOBILE-ONLY: Don't show on desktop web, admin portal or chat
@@ -164,7 +162,7 @@ export default function SpecialAdPopup() {
           setCurrentAd(selected);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [pathname, currentCitySlug]);
 
   useEffect(() => {
@@ -331,15 +329,15 @@ export default function SpecialAdPopup() {
   };
 
   return (
-    <div 
+    <div
       onClick={handleClose}
       className="md:hidden fixed inset-0 z-[999999] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-300 select-none overflow-y-auto"
     >
-      <div 
+      <div
         onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-[360px] sm:max-w-[380px] rounded-[32px] overflow-hidden bg-[#12161f] border-2 border-amber-400 shadow-[0_0_90px_rgba(245,158,11,0.7)] flex flex-col animate-in zoom-in-95 duration-300 my-auto"
       >
-        
+
         {/* Kapat Butonu (Sağ Üst) */}
         <button
           type="button"
@@ -351,7 +349,7 @@ export default function SpecialAdPopup() {
         </button>
 
         {/* ── 1. DİKEY (PORTRAIT) FOTOĞRAF ALANI ──────────────── */}
-        <div 
+        <div
           onClick={handleGoToAd}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -361,9 +359,8 @@ export default function SpecialAdPopup() {
           {photos.map((src, idx) => (
             <div
               key={idx}
-              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-                idx === activePhotoIdx ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-              }`}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${idx === activePhotoIdx ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                }`}
             >
               <Image
                 src={src}
@@ -395,9 +392,8 @@ export default function SpecialAdPopup() {
                     e.stopPropagation();
                     setActivePhotoIdx(idx);
                   }}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    idx === activePhotoIdx ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/40'
-                  }`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${idx === activePhotoIdx ? 'w-5 bg-amber-400' : 'w-1.5 bg-white/40'
+                    }`}
                 />
               ))}
             </div>
@@ -417,7 +413,7 @@ export default function SpecialAdPopup() {
                 Doğrulanmış
               </span>
             </div>
-            <h3 
+            <h3
               onClick={handleGoToAd}
               className="text-lg font-black text-white font-heading hover:text-amber-400 transition-colors line-clamp-1 cursor-pointer"
             >
@@ -456,9 +452,8 @@ export default function SpecialAdPopup() {
             <button
               type="button"
               onClick={handleGoToAd}
-              className={`${
-                waUrl ? 'col-span-1' : 'col-span-2'
-              } py-3 px-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20 active:scale-95 transition-all`}
+              className={`${waUrl ? 'col-span-1' : 'col-span-2'
+                } py-3 px-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20 active:scale-95 transition-all`}
             >
               <span>İlanı İncele</span>
               <ChevronRight className="w-4 h-4 stroke-[3]" />
