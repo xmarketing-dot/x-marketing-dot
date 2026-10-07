@@ -160,7 +160,7 @@ export default async function DistrictPage({ params }: Props) {
 
   // 1. İlanları Aktif ve Pasif olarak ayır
   const activeListings = listings.filter((l: any) => !l.isPassive);
-  const passiveListings = listings.filter((l: any) => l.isPassive).slice(0, 2);
+  const passiveListings = listings.filter((l: any) => l.isPassive);
 
   // Bu ilçenin en çok görüntülenen 1-2 vitrin ilanı (Sadece aktiflerden)
   const districtShowcaseSlides = getTopShowcaseSlides(activeListings, 2);

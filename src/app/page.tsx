@@ -27,7 +27,6 @@ import HeroSlider from '@/components/home/HeroSlider';
 import CategoryShowcase from '@/components/home/CategoryShowcase';
 import CategorizedListingsSection from '@/components/home/CategorizedListingsSection';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
-import FreePromoFooterBanner from '@/components/common/FreePromoFooterBanner';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 
 export const dynamic = 'force-dynamic';
@@ -96,8 +95,8 @@ export default async function HomePage() {
 
   // 1. İlanları Aktif ve Pasif olarak kesin çizgilerle ayır
   const activeListings = rawListings.filter((l: any) => !l.isPassive);
-  // Anasayfada pasiflerin hepsi listelenmez; sadece en son sırada en fazla 1-2 tane örnek gösterilir
-  const passiveListings = rawListings.filter((l: any) => l.isPassive).slice(0, 2);
+  // Pasif ilanların tümü listenin en altında gösterilir
+  const passiveListings = rawListings.filter((l: any) => l.isPassive);
 
   // Sort ONLY ACTIVE listings strictly by Manual Sıra Önceliği (siraNo), Tier Priority (VIP -> Gold -> Silver), Paid first, and then by Date
   const allSortedActive = [...activeListings].sort((a: any, b: any) => {
@@ -383,9 +382,6 @@ export default async function HomePage() {
           </div>
         </div>
       </div>
-
-      {/* ── 5.1 24 SAAT %100 ÜCRETSİZ TANITIM KAMPANYASI (VIP İLAN & BANNER) ──────────────── */}
-      <FreePromoFooterBanner />
 
       {/* ── 6. E-E-A-T SEO REHBERİ (NATIVE TRUST POINTS) ──────────────── */}
       <section className="px-3 sm:px-4 mt-4">

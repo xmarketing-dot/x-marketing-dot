@@ -38,9 +38,13 @@ export default function SearchClient({ locations, initialListings, initialQuery 
 
     if (selectedTier !== 'all') {
       if (selectedTier === 'vip') {
-        result = result.filter((l) => l.rozet === 'vip' || l.rozet === 'ultravip');
+        result = result.filter((l) => !l.isPassive && (l.rozet === 'vip' || l.rozet === 'ultravip'));
+      } else if (selectedTier === 'gold') {
+        result = result.filter((l) => !l.isPassive && l.rozet === 'gold');
+      } else if (selectedTier === 'silver') {
+        result = result.filter((l) => !l.isPassive && (l.rozet === 'silver' || !l.rozet || l.rozet === 'standart'));
       } else {
-        result = result.filter((l) => l.rozet === selectedTier);
+        result = result.filter((l) => !l.isPassive && l.rozet === selectedTier);
       }
     }
 

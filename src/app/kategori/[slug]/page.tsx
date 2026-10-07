@@ -158,7 +158,7 @@ export default async function CategoryDetailPage({ params }: Props) {
 
   // 1. İlanları Aktif ve Pasif olarak ayır
   const activeListings = allListings.filter((l: any) => !l.isPassive);
-  const passiveListings = allListings.filter((l: any) => l.isPassive).slice(0, 2);
+  const passiveListings = allListings.filter((l: any) => l.isPassive);
 
   // Filter listings by this specific tier (combining ultravip into vip) - SADECE AKTİF İLANLAR
   // KURAL: 3 Günlük ücretsiz promosyon ilanları ilk 3 sıraya oturmaz, 4. sıradan itibaren listelenir

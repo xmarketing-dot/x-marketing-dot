@@ -27,8 +27,8 @@ export default function CategorizedListingsSection({
   const displayedVip = vipListings.slice(0, 50);
   const displayedGold = goldListings.slice(0, 100);
   const displayedSilver = silverListings.slice(0, 200);
-  // Pasif ilanlar en fazla 1-2 adet olarak listenin en sonunda gösterilir
-  const displayedPassive = (passiveListings || []).slice(0, 2);
+  // Pasif ilanların tümü listenin en sonunda ayrı bölümde gösterilir
+  const displayedPassive = passiveListings || [];
   const displayedAll = allListings;
 
   const hasCategorized = vipListings.length > 0 || goldListings.length > 0 || silverListings.length > 0;
