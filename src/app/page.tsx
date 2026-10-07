@@ -94,8 +94,13 @@ export default async function HomePage() {
     getActiveBanner('anasayfa'),
   ]);
 
-  // Sort all listings strictly by Manual Sıra Önceliği (siraNo), Tier Priority (VIP -> Gold -> Silver), Paid first, and then by Date
-  const allSortedListings = [...rawListings].sort((a: any, b: any) => {
+  // 1. İlanları Aktif ve Pasif olarak kesin çizgilerle ayır
+  const activeListings = rawListings.filter((l: any) => !l.isPassive);
+  // Anasayfada pasiflerin hepsi listelenmez; sadece en son sırada en fazla 1-2 tane örnek gösterilir
+  const passiveListings = rawListings.filter((l: any) => l.isPassive).slice(0, 2);
+
+  // Sort ONLY ACTIVE listings strictly by Manual Sıra Önceliği (siraNo), Tier Priority (VIP -> Gold -> Silver), Paid first, and then by Date
+  const allSortedActive = [...activeListings].sort((a: any, b: any) => {
     // 1. Manuel Sabit Sıra Önceliği (1 = 1. Sıra, 2 = 2. Sıra vb.)
     const sA = (a.siraNo && a.siraNo > 0) ? a.siraNo : 999999;
     const sB = (b.siraNo && b.siraNo > 0) ? b.siraNo : 999999;
@@ -113,21 +118,23 @@ export default async function HomePage() {
     return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
   });
 
+  const allSortedListings = [...allSortedActive, ...passiveListings];
+
   // Süresi dolmuş vitrin ilanlarını anında temizle ve kullanıcıları bilgilendir
   await checkAndExpireShowcases().catch(() => { });
 
-  // Group listings by package tier (Ücretsiz promosyonlar ilk 3'e oturmaz, ücretli ilk 3 önde durur)
-  const paidVipListings = allSortedListings.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && !l.isPromo);
-  const promoVipListings = allSortedListings.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && l.isPromo);
+  // Group ONLY ACTIVE listings by package tier (Pasif ilanlar VIP veya Gold vitrinine ASLA sızamaz!)
+  const paidVipListings = allSortedActive.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && !l.isPromo);
+  const promoVipListings = allSortedActive.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && l.isPromo);
 
   // İlk 3'ü kesinlikle ücretlilerden oluştur, varsa 4. sıradan itibaren promosyonları ekle
   const vipListings = [...paidVipListings.slice(0, 3), ...paidVipListings.slice(3), ...promoVipListings];
 
-  const goldListings = allSortedListings.filter((l: any) => l.rozet === 'gold');
-  const silverListings = allSortedListings.filter((l: any) => l.rozet === 'silver' || !l.rozet || l.rozet === 'standart');
+  const goldListings = allSortedActive.filter((l: any) => l.rozet === 'gold');
+  const silverListings = allSortedActive.filter((l: any) => l.rozet === 'silver' || !l.rozet || l.rozet === 'standart');
 
   // Fallback if none in specific tier, pick top available
-  const displayVip = vipListings.length > 0 ? vipListings : allSortedListings.slice(0, 4);
+  const displayVip = vipListings.length > 0 ? vipListings : allSortedActive.slice(0, 4);
 
   // Dynamic Selected Showcase from Admin Homepage Config (Sadece adminin seçtiği vitrin ilanları)
   const hasConfig = Boolean(homepageConfig && Array.isArray(homepageConfig.sliderIlanIds));
@@ -352,12 +359,13 @@ export default async function HomePage() {
         />
       </section>
 
-      {/* 4. KATEGORİLERE GÖRE AYRILMIŞ İLAN LİSTELERİ (VIP EN ÜSTTE, GOLD ORTADA, SILVER EN ALTTA + DAHA FAZLA GÖSTER) */}
+      {/* 4. KATEGORİLERE GÖRE AYRILMIŞ İLAN LİSTELERİ (VIP EN ÜSTTE, GOLD ORTADA, SILVER EN ALTTA + EN DİPTE EN FAZLA 1-2 PASİF) */}
       <CategorizedListingsSection
         vipListings={vipListings}
         goldListings={goldListings}
         silverListings={silverListings}
         allListings={allSortedListings}
+        passiveListings={passiveListings}
         banner={activeBanner}
       />
 

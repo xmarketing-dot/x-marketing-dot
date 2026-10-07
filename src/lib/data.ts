@@ -175,10 +175,11 @@ export async function getListings({
   };
 
   // Include fotograflar so compact card auto-slider works, and siraNo for pinned rank ordering
+  // Havuzu geniş çekerek aktif ilanların pasifler yüzünden kotadan düşmesini önlüyoruz
   const listings = await ListingModel.find(query)
     .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf fotograflar createdAt status siraNo isPromo paketBitisTarihi')
     .sort({ createdAt: -1 })
-    .limit(limit)
+    .limit(limit ? Math.max(limit * 2, 250) : 500)
     .lean();
 
   const cleanedListings = (listings as any[]).map((l: any) => {
@@ -220,7 +221,8 @@ export async function getListings({
     return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
   });
 
-  return JSON.parse(JSON.stringify(sortedListings));
+  const finalResult = limit ? sortedListings.slice(0, limit) : sortedListings;
+  return JSON.parse(JSON.stringify(finalResult));
 }
 
 export const getListingBySlug = cache(async (slug: string) => {

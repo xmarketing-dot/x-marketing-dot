@@ -156,9 +156,13 @@ export default async function CategoryDetailPage({ params }: Props) {
     getHomepageConfig(),
   ]);
 
-  // Filter listings by this specific tier (combining ultravip into vip)
+  // 1. İlanları Aktif ve Pasif olarak ayır
+  const activeListings = allListings.filter((l: any) => !l.isPassive);
+  const passiveListings = allListings.filter((l: any) => l.isPassive).slice(0, 2);
+
+  // Filter listings by this specific tier (combining ultravip into vip) - SADECE AKTİF İLANLAR
   // KURAL: 3 Günlük ücretsiz promosyon ilanları ilk 3 sıraya oturmaz, 4. sıradan itibaren listelenir
-  const rawCategoryListings = allListings.filter((l: any) => {
+  const rawCategoryListings = activeListings.filter((l: any) => {
     if (slug === 'vip') return l.rozet === 'vip' || l.rozet === 'ultravip';
     if (slug === 'silver') return l.rozet === 'silver' || !l.rozet || l.rozet === 'standart';
     return l.rozet === slug;
@@ -286,6 +290,25 @@ export default async function CategoryDetailPage({ params }: Props) {
               >
                 Hemen İlan Ver
               </Link>
+            </div>
+          )}
+
+          {/* Pasif İlanlar (En Fazla 1-2 Adet, En Dipte) */}
+          {passiveListings.length > 0 && (
+            <div className="mt-4 flex flex-col gap-2 opacity-85">
+              <div className="flex items-center justify-between pb-1 border-b border-zinc-800">
+                <span className="text-xs font-bold text-zinc-400 font-heading">
+                  ⏳ Süresi Dolan Son İlanlar
+                </span>
+                <span className="text-[10px] text-zinc-500 font-mono">
+                  Pasif ({passiveListings.length})
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+                {passiveListings.map((listing: any) => (
+                  <CompactListingCard key={listing._id} listing={listing} />
+                ))}
+              </div>
             </div>
           )}
         </div>

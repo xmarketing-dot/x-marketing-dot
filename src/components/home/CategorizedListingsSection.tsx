@@ -11,6 +11,7 @@ interface CategorizedListingsSectionProps {
   goldListings: any[];
   silverListings: any[];
   allListings: any[];
+  passiveListings?: any[];
   banner?: any;
 }
 
@@ -19,12 +20,15 @@ export default function CategorizedListingsSection({
   goldListings,
   silverListings,
   allListings,
+  passiveListings,
   banner,
 }: CategorizedListingsSectionProps) {
   // Kontenjan sınırları: VIP (50), Gold (100), Silver (200) - Tümü doğrudan gösterilir
   const displayedVip = vipListings.slice(0, 50);
   const displayedGold = goldListings.slice(0, 100);
   const displayedSilver = silverListings.slice(0, 200);
+  // Pasif ilanlar en fazla 1-2 adet olarak listenin en sonunda gösterilir
+  const displayedPassive = (passiveListings || []).slice(0, 2);
   const displayedAll = allListings;
 
   const hasCategorized = vipListings.length > 0 || goldListings.length > 0 || silverListings.length > 0;
@@ -152,6 +156,37 @@ export default function CategorizedListingsSection({
                   </div>
                 )}
               </React.Fragment>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── 4. SÜRESİ DOLAN / PASİF İLANLAR (EN SON SIRADA, EN FAZLA 1-2 TANE) ── */}
+      {displayedPassive.length > 0 && (
+        <section className="px-1.5 sm:px-4 flex flex-col gap-2 opacity-85">
+          <div className="flex items-center justify-between pb-1.5 border-b border-zinc-800">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-zinc-900 border border-zinc-800 text-rose-400 flex items-center justify-center font-black">
+                <span className="text-xs">⚠️</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <h2 className="font-black text-xs sm:text-sm text-zinc-400 uppercase tracking-wider font-heading">
+                  Süresi Dolan Son İlanlar
+                </h2>
+                <span className="px-1.5 py-0.5 rounded-full bg-zinc-900 text-rose-400 border border-rose-900/40 text-[8px] sm:text-[9px] font-heading font-black">
+                  İLETİŞİM KAPALI
+                </span>
+              </div>
+            </div>
+            <span className="text-[10px] text-zinc-500 font-mono">
+              Pasif ({displayedPassive.length})
+            </span>
+          </div>
+
+          {/* 3'LÜ YAN YANA İLAN GRID */}
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+            {displayedPassive.map((listing: any, index: number) => (
+              <CompactListingCard key={listing._id || index} listing={listing} />
             ))}
           </div>
         </section>

@@ -223,17 +223,21 @@ export default async function CityPage({ params }: Props) {
     notFound();
   }
 
-  // Bu şehrin en çok görüntülenen 1-2 vitrin ilanı
-  const cityShowcaseSlides = getTopShowcaseSlides(listings, 2);
+  // 1. İlanları Aktif ve Pasif olarak ayır
+  const activeListings = listings.filter((l: any) => !l.isPassive);
+  const passiveListings = listings.filter((l: any) => l.isPassive).slice(0, 2);
 
-  // Kategorilere göre listeleri ayır (VIP, Gold, Silver)
+  // Bu şehrin en çok görüntülenen 1-2 vitrin ilanı (Sadece aktiflerden)
+  const cityShowcaseSlides = getTopShowcaseSlides(activeListings, 2);
+
+  // Kategorilere göre listeleri ayır (SADECE AKTİF İLANLAR)
   // KURAL: 3 Günlük ücretsiz promosyon ilanları ilk 3 sıraya oturmaz, 4. sıradan itibaren listelenir
-  const rawVipListings = listings.filter((l: any) => l.rozet === 'vip' || l.rozet === 'ultravip');
+  const rawVipListings = activeListings.filter((l: any) => l.rozet === 'vip' || l.rozet === 'ultravip');
   const paidVip = rawVipListings.filter((l: any) => !l.isPromo);
   const promoVip = rawVipListings.filter((l: any) => l.isPromo);
   const vipListings = [...paidVip.slice(0, 3), ...paidVip.slice(3), ...promoVip];
-  const goldListings = listings.filter((l: any) => l.rozet === 'gold');
-  const silverListings = listings.filter((l: any) => l.rozet === 'silver' || !l.rozet || l.rozet === 'standart');
+  const goldListings = activeListings.filter((l: any) => l.rozet === 'gold');
+  const silverListings = activeListings.filter((l: any) => l.rozet === 'silver' || !l.rozet || l.rozet === 'standart');
 
   const siteUrl = await getRequestSiteUrl();
   const pageUrl = `${siteUrl}/${location.ilSlug}`;
@@ -391,6 +395,7 @@ export default async function CityPage({ params }: Props) {
             goldListings={goldListings}
             silverListings={silverListings}
             allListings={listings}
+            passiveListings={passiveListings}
           />
         )}
 

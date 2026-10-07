@@ -13,7 +13,13 @@ export function getTopShowcaseSlides(listings: any[], count: number = 2): Dynami
     return [];
   }
 
-  const sorted = [...listings].sort((a: any, b: any) => {
+  // Pasif ilanlar ASLA vitrin/hero slider olarak seçilemez!
+  const activeOnly = listings.filter((l: any) => !l.isPassive && l.status !== 'pasif' && l.status !== 'suresi_doldu');
+  if (activeOnly.length === 0) {
+    return [];
+  }
+
+  const sorted = [...activeOnly].sort((a: any, b: any) => {
     // 1. Vitrin flag
     const aVitrin = Boolean(a.isVitrin || a.vitrinIstegi);
     const bVitrin = Boolean(b.isVitrin || b.vitrinIstegi);
