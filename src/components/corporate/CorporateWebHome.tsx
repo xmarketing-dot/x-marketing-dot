@@ -92,8 +92,8 @@ export default function CorporateWebHome() {
     },
   ];
 
-  const filteredServices = activeTab === 'all' 
-    ? services 
+  const filteredServices = activeTab === 'all'
+    ? services
     : services.filter(s => s.category === activeTab);
 
   const stats = [
@@ -105,11 +105,11 @@ export default function CorporateWebHome() {
 
   return (
     <div className="flex flex-col w-full bg-slate-50 text-slate-900 font-sans selection:bg-blue-600 selection:text-white">
-      
+
       {/* ── 1. KURUMSAL DESKTOP STICKY NAVBAR (LIGHT MODE) ──────────────── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
-          
+
           {/* Sol: Logo */}
           <Link href="/" className="flex items-center gap-3.5 group">
             <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black shadow-lg shadow-blue-500/25 group-hover:scale-105 transition-transform">
@@ -151,7 +151,7 @@ export default function CorporateWebHome() {
       {/* ── 2. HERO SECTION: KURUMSAL BAŞLIK, SLOGAN & GÖRSEL ──────────────── */}
       <section className="relative pt-16 pb-24 overflow-hidden bg-gradient-to-b from-white via-slate-50 to-slate-100 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-          
+
           {/* Sol Kolon: Başlık & Değer Önerisi */}
           <div className="flex-1 flex flex-col gap-6 text-left z-10">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold w-fit">
@@ -209,7 +209,7 @@ export default function CorporateWebHome() {
           {/* Sağ Kolon: Modern Dashboard Preview Mockup */}
           <div className="flex-1 w-full max-w-xl z-10">
             <div className="relative rounded-3xl bg-white p-4 sm:p-6 border border-slate-200 shadow-2xl shadow-slate-300/50">
-              
+
               {/* Window Header */}
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
@@ -298,7 +298,7 @@ export default function CorporateWebHome() {
       {/* ── 4. UZMANLIK ALANLARI & HİZMETLER (SERVICES) ──────────────── */}
       <section id="hizmetler" className="py-24 bg-slate-50 border-b border-slate-200 text-left">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col gap-12">
-          
+
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="flex flex-col gap-3 max-w-2xl">
               <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-heading">
@@ -323,11 +323,10 @@ export default function CorporateWebHome() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                    activeTab === tab.id
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === tab.id
                       ? 'bg-blue-600 text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
+                    }`}
                 >
                   {tab.label}
                 </button>
@@ -380,7 +379,7 @@ export default function CorporateWebHome() {
       {/* ── 5. TEKNOLOJİ YIĞINI & MİMARİ STANDARTLARI ──────────────── */}
       <section id="teknolojiler" className="py-24 bg-white border-b border-slate-200 text-left">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col gap-16">
-          
+
           <div className="text-center max-w-3xl mx-auto flex flex-col gap-3">
             <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-heading">
               Gelişmiş Teknoloji Altyapımız
@@ -464,7 +463,7 @@ export default function CorporateWebHome() {
       {/* ── 6. ÇALIŞMA SÜRECİ (HOW WE WORK) ──────────────── */}
       <section id="surec" className="py-24 bg-slate-50 border-b border-slate-200 text-left">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col gap-16">
-          
+
           <div className="flex flex-col gap-3 max-w-2xl">
             <span className="text-xs font-bold text-blue-600 uppercase tracking-widest font-heading">
               Geliştirme &amp; Başarı Adımları
@@ -517,9 +516,9 @@ export default function CorporateWebHome() {
       {/* ── 7. İLETİŞİM & TEKLİF ALMA ALANI (CONTACT CTA) ──────────────── */}
       <section id="iletisim" className="py-24 bg-white text-left">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          
+
           <div className="p-10 lg:p-16 rounded-[36px] bg-gradient-to-br from-slate-900 via-slate-950 to-blue-950 text-white shadow-2xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-12">
-            
+
             <div className="flex flex-col gap-6 max-w-2xl z-10">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold w-fit">
                 <Sparkles className="w-4 h-4 text-blue-400" />
