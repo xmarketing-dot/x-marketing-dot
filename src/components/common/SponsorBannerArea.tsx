@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Sparkles, Flame, Zap } from 'lucide-react';
+import ExoClickBanner from '@/components/ads/ExoClickBanner';
 
 export interface BannerAdData {
   _id: string;
@@ -113,9 +114,12 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     );
   }
 
-  // 3. REKLAM YOKSA -> KOMPAKT, SÜREKLİ ANİMASYONLU RGB CASINO / BAHİS / ADULT REKLAM ALANI
+  // 3. REKLAM YOKSA -> EXOCLICK BANNER + REKLAM VER ALANI
   return (
-    <div className="w-full sponsor-banner-container no-safe-blur my-1 sm:my-1.5 select-none">
+    <div className="w-full sponsor-banner-container no-safe-blur my-1.5 sm:my-2 select-none flex flex-col items-center gap-1.5">
+      {/* ExoClick 6050980 Casino/Adult Banner */}
+      <ExoClickBanner zoneId="6050980" className="w-full" />
+
       <Link
         href="/reklam-ver"
         onClick={handleEmptyBannerClick}
