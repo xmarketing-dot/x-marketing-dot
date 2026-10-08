@@ -9,7 +9,7 @@ import {
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
   Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
   Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3, X, Copy,
-  PhoneCall, ArrowRight, SlidersHorizontal, Users
+  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
@@ -64,6 +64,24 @@ export default function BmsSecurePortalDashboard() {
   const [gscLoading, setGscLoading] = useState(false);
   const [gscCopied, setGscCopied] = useState(false);
   const [gscCityCopied, setGscCityCopied] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [serperApiKeyInput, setSerperApiKeyInput] = useState('');
+  const [apiKeySaveMsg, setApiKeySaveMsg] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedKey = localStorage.getItem('bms_serper_api_key');
+      if (savedKey) setSerperApiKeyInput(savedKey);
+    }
+  }, []);
+
+  const handleSaveApiKey = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('bms_serper_api_key', serperApiKeyInput.trim());
+      setApiKeySaveMsg('✅ API Anahtarı Kaydedildi!');
+      setTimeout(() => setApiKeySaveMsg(''), 3000);
+    }
+  };
 
 
   const handleAdminListingSave = async (e: React.FormEvent) => {
@@ -268,11 +286,12 @@ export default function BmsSecurePortalDashboard() {
     if (!newKeywordInput.trim()) return;
 
     setKeywordLoading(true);
+    const activeKey = serperApiKeyInput.trim() || (typeof window !== 'undefined' ? localStorage.getItem('bms_serper_api_key') || '' : '');
     try {
       const res = await fetch('/api/admin/seo/rank-check', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyword: newKeywordInput.trim() }),
+        body: JSON.stringify({ keyword: newKeywordInput.trim(), serperApiKey: activeKey }),
       });
       const json = await res.json();
       if (json.success) {
@@ -304,13 +323,14 @@ export default function BmsSecurePortalDashboard() {
 
   const handleScanRankings = async (id?: string) => {
     setScanningRankings(true);
+    const activeKey = serperApiKeyInput.trim() || (typeof window !== 'undefined' ? localStorage.getItem('bms_serper_api_key') || '' : '');
     try {
       if (id) {
         // Tek bir kelimeyi tara
         const res = await fetch('/api/admin/seo/rank-check', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id }),
+          body: JSON.stringify({ id, serperApiKey: activeKey }),
         });
         const json = await res.json();
         if (json.keywords) {
@@ -328,7 +348,7 @@ export default function BmsSecurePortalDashboard() {
             const res = await fetch('/api/admin/seo/rank-check', {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: target._id }),
+              body: JSON.stringify({ id: target._id, serperApiKey: activeKey }),
             });
             const json = await res.json();
             if (json.keywords) {
@@ -3038,6 +3058,20 @@ export default function BmsSecurePortalDashboard() {
               <div className="flex flex-wrap items-center gap-2.5">
                 <button
                   type="button"
+                  onClick={() => setShowApiKeyModal(!showApiKeyModal)}
+                  className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl font-bold text-xs border transition-all shrink-0 ${
+                    showApiKeyModal
+                      ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20'
+                      : 'bg-[#21262d] hover:bg-[#30363d] text-blue-300 border-[#30363d]'
+                  }`}
+                  title="Google SERP Motoru ve Serper API Anahtarını Yönet"
+                >
+                  <Key className="w-3.5 h-3.5 text-blue-400" />
+                  <span>🔑 Google API / Motor Ayarı</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => handleBoostAndPing()}
                   disabled={boostingPing}
                   className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
@@ -3054,10 +3088,65 @@ export default function BmsSecurePortalDashboard() {
                   className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
                 >
                   <Zap className={`w-4 h-4 ${scanningRankings ? 'animate-spin text-slate-950' : 'fill-slate-950'}`} />
-                  <span>{scanningRankings ? 'Yandex Taranıyor...' : '⚡ Tüm Sıralamaları Canlı Tara'}</span>
+                  <span>{scanningRankings ? 'Yandex & Google Taranıyor...' : '⚡ Tüm Sıralamaları Canlı Tara'}</span>
                 </button>
               </div>
             </div>
+
+            {/* Google API & Motor Ayar Paneli */}
+            {showApiKeyModal && (
+              <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-3 animate-fadeIn shadow-xl">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2 text-blue-400 font-bold text-xs">
+                    <Key className="w-4 h-4 shrink-0" />
+                    <span>Google & SERP Motoru Ayarları</span>
+                  </div>
+                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                    {serperApiKeyInput.trim() ? '🟢 Özel Serper API Anahtarı Aktif' : '🔵 Ücretsiz Organik Fallback (DDG) Aktif'}
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-[#8b949e]">
+                  🟡 <strong>Yandex TR:</strong> Hiçbir API anahtarı veya kredi gerektirmez, direkt canlı taranır.<br />
+                  🔍 <strong>Google TR:</strong> Google bot korumasını aşmak için Serper API kullanılır veya kredi bittiğinde otomatik Organik Web Motoru devreye girer. Ücretsiz <strong>2.500 Google arama kredisi</strong> almak için <a href="https://serper.dev" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline font-bold">serper.dev</a> adresine herhangi bir e-posta ile kayıt olup API anahtarınızı yapıştırabilirsiniz:
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center gap-2">
+                  <input
+                    type="password"
+                    placeholder="Serper API Key yapıştırın (örn: 8078961d0c92...)"
+                    value={serperApiKeyInput}
+                    onChange={(e) => setSerperApiKeyInput(e.target.value)}
+                    className="w-full sm:flex-1 px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs font-mono focus:border-blue-400 focus:outline-none"
+                  />
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={handleSaveApiKey}
+                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors shrink-0"
+                    >
+                      Kaydet
+                    </button>
+                    {serperApiKeyInput && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSerperApiKeyInput('');
+                          if (typeof window !== 'undefined') localStorage.removeItem('bms_serper_api_key');
+                        }}
+                        className="px-3 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white font-bold text-xs transition-colors shrink-0"
+                        title="Anahtarı Temizle"
+                      >
+                        Temizle
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {apiKeySaveMsg && (
+                  <span className="text-xs font-bold text-emerald-400 font-mono">{apiKeySaveMsg}</span>
+                )}
+              </div>
+            )}
 
             {boostPingResult && (
               <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-white flex flex-col gap-3 animate-fadeIn shadow-xl">
@@ -3324,7 +3413,8 @@ export default function BmsSecurePortalDashboard() {
                       keyword: string,
                       engine: 'google' | 'yandex',
                       foundDomain?: string,
-                      foundUrl?: string
+                      foundUrl?: string,
+                      foundEngine?: string
                     ) => {
                       const searchUrl = engine === 'yandex' 
                         ? `https://yandex.com.tr/search/?text=${encodeURIComponent(keyword)}&lr=11508`
@@ -3366,15 +3456,22 @@ export default function BmsSecurePortalDashboard() {
 
                       return (
                         <div className="flex flex-col gap-1 items-start">
-                          <a
-                            href={searchUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="group inline-block"
-                            title={`${engine === 'yandex' ? 'Yandex TR' : 'Google TR'} üzerinde canlı sonuçları yeni sekmede gör`}
-                          >
-                            {badgeContent}
-                          </a>
+                          <div className="flex items-center gap-1">
+                            <a
+                              href={searchUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group inline-block"
+                              title={`${engine === 'yandex' ? 'Yandex TR' : 'Google TR'} üzerinde canlı sonuçları yeni sekmede gör`}
+                            >
+                              {badgeContent}
+                            </a>
+                            {engine === 'google' && foundEngine === 'ddg_organic' && pos > 0 && (
+                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20" title="DuckDuckGo TR Organik Arama İndeksi">
+                                Organik
+                              </span>
+                            )}
+                          </div>
                           {pos > 0 && (foundDomain || foundUrl) && (
                             <a
                               href={foundUrl || `https://${foundDomain}`}
@@ -3454,7 +3551,7 @@ export default function BmsSecurePortalDashboard() {
 
                         {/* Google Sırası */}
                         <td className="py-3.5 px-3">
-                          {renderPosBadge(posG, item.keyword, 'google', item.googleFoundDomain, item.googleFoundUrl)}
+                          {renderPosBadge(posG, item.keyword, 'google', item.googleFoundDomain, item.googleFoundUrl, item.googleFoundEngine)}
                         </td>
 
                         {/* Yandex Sırası */}

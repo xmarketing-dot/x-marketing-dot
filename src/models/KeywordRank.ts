@@ -16,6 +16,7 @@ export interface IKeywordRank extends Document {
   topCompetitors: ICompetitor[];
   googleFoundUrl?: string;
   googleFoundDomain?: string;
+  googleFoundEngine?: string;
   // Yandex Canlı Sıralamaları
   yandexPosition?: number;
   previousYandexPosition?: number;
@@ -48,6 +49,7 @@ const KeywordRankSchema = new Schema<IKeywordRank>(
     topCompetitors: [CompetitorSchema],
     googleFoundUrl: { type: String, default: '' },
     googleFoundDomain: { type: String, default: '' },
+    googleFoundEngine: { type: String, default: '' },
     yandexPosition: { type: Number, default: 0 },
     previousYandexPosition: { type: Number, default: 0 },
     yandexChange: { type: Number, default: 0 },
