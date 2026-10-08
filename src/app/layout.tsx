@@ -232,6 +232,13 @@ export default async function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2136071183930796"
           crossOrigin="anonymous"
         />
+
+        {/* ExoClick Ad Provider */}
+        <script
+          async
+          type="application/javascript"
+          src="https://a.magsrv.com/ad-provider.js"
+        />
       </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
         <AdminWhatsAppSync />

@@ -47,7 +47,7 @@ export default function ExoClickBanner({ zoneId = '6050980', className = '' }: P
   return (
     <div
       ref={containerRef}
-      className={`w-full flex flex-col items-center justify-center overflow-hidden my-1 sm:my-2 ${className}`}
+      className={`w-full flex flex-col items-center justify-center overflow-hidden my-1.5 sm:my-2 min-h-[75px] ${className}`}
     >
       <ins
         className="eas6a97888e10"
