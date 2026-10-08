@@ -618,13 +618,20 @@ export async function PUT(req: NextRequest) {
         else if (prevY > 0 && currY === 0) changeY = -prevY;
       }
 
-      // Google değişim hesabı
+      // Google değişim hesabı & Blokaj Koruması
       const prevG = item.currentPosition || 0;
-      const currG = googleResult.position || 0;
+      let currG = googleResult.position || 0;
       let changeG = 0;
-      if (prevG > 0 && currG > 0) changeG = prevG - currG;
-      else if (prevG === 0 && currG > 0) changeG = currG;
-      else if (prevG > 0 && currG === 0) changeG = -prevG;
+
+      if (currG === 0 && prevG > 0) {
+        // Blokaj / Captcha / Hata durumunda mevcut Google sıralamasını koru, sıfırlama!
+        currG = prevG;
+        changeG = 0;
+      } else {
+        if (prevG > 0 && currG > 0) changeG = prevG - currG;
+        else if (prevG === 0 && currG > 0) changeG = currG;
+        else if (prevG > 0 && currG === 0) changeG = -prevG;
+      }
 
       item.previousYandexPosition = prevY;
       item.yandexPosition = currY;
@@ -638,10 +645,12 @@ export async function PUT(req: NextRequest) {
       item.previousPosition = prevG;
       item.currentPosition = currG;
       item.change = changeG;
-      item.topCompetitors = googleResult.competitors;
-      item.googleFoundUrl = googleResult.foundUrl || '';
-      item.googleFoundDomain = googleResult.foundDomain || '';
-      item.googleFoundEngine = googleResult.engine || 'none';
+      if (googleResult.competitors && googleResult.competitors.length > 0) {
+        item.topCompetitors = googleResult.competitors;
+      }
+      if (googleResult.foundUrl) item.googleFoundUrl = googleResult.foundUrl;
+      if (googleResult.foundDomain) item.googleFoundDomain = googleResult.foundDomain;
+      if (googleResult.engine && googleResult.engine !== 'none') item.googleFoundEngine = googleResult.engine;
       if (currG > 0 && (item.bestPosition === 0 || currG < item.bestPosition)) {
         item.bestPosition = currG;
       }
