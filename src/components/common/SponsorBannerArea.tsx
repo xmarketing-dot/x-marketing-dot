@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Sparkles, Flame, Zap } from 'lucide-react';
 import ExoClickBanner from '@/components/ads/ExoClickBanner';
 
 export interface BannerAdData {
@@ -60,14 +58,6 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     }).catch(() => { });
   };
 
-  const handleEmptyBannerClick = () => {
-    fetch('/api/banners/click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isBoşAlan: true, konum }),
-    }).catch(() => { });
-  };
-
   const isHero = konum === 'anasayfa_hero' || konum === 'anasayfa' || konum === 'her_ikisi';
 
   // 1. REKLAM YÜKLENİYOR SKELETON'I
@@ -114,65 +104,10 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     );
   }
 
-  // 3. REKLAM YOKSA -> EXOCLICK BANNER + REKLAM VER ALANI
+  // 3. REKLAM YOKSA -> SADECE EXOCLICK BANNER (Bizim kutu tamamen kaldırıldı)
   return (
-    <div className="w-full sponsor-banner-container no-safe-blur my-1.5 sm:my-2 select-none flex flex-col items-center gap-1.5">
-      {/* ExoClick 6050980 Casino/Adult Banner */}
+    <div className="w-full sponsor-banner-container no-safe-blur my-1 sm:my-1.5 select-none flex flex-col items-center justify-center">
       <ExoClickBanner zoneId="6050980" className="w-full" />
-
-      <Link
-        href="/reklam-ver"
-        onClick={handleEmptyBannerClick}
-        className="group relative block w-full rounded-2xl overflow-hidden cursor-pointer border-2 border-dashed animate-rgb-neon-border bg-gradient-to-r from-[#0d0714] via-[#170a24] to-[#0d0714] transition-all duration-300"
-      >
-        {/* ── SÜREKLİ KAYAN LAZER IŞIK ŞERİDİ (Continuous Laser Sweep) ── */}
-        <div className="absolute top-0 left-0 w-[40%] h-full bg-gradient-to-r from-transparent via-amber-300/25 to-transparent skew-x-[-25deg] animate-continuous-laser pointer-events-none z-30" />
-
-        {/* Arka Plan Dinamik Neon Işık Yayılımları */}
-        <div className="absolute -left-8 -top-8 w-40 h-40 bg-fuchsia-600/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-        <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-amber-500/30 rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-
-        {/* ── KOMPAKT VE YOĞUN İÇERİK ŞERİDİ ───────────────────────────── */}
-        <div className="relative z-20 px-3 py-2.5 sm:px-5 sm:py-3 md:px-6 md:py-3.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
-
-          {/* Sol: Casino / Bahis / Adult Rozeti & Ana Başlık */}
-          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0 w-full sm:w-auto text-left">
-
-            {/* Yanıp Sönen Casino Rozeti */}
-            <div className="shrink-0 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-gradient-to-r from-rose-600 via-fuchsia-600 to-amber-500 text-white font-mono font-black text-[10px] sm:text-xs flex items-center gap-1.5 animate-badge-fire shadow-md">
-              <span className="animate-spin text-xs">🎰</span>
-              <span className="tracking-tight whitespace-nowrap">CASINO &amp; ADULT</span>
-            </div>
-
-            {/* Başlık ve Trafik Vurgusu */}
-            <div className="flex flex-col min-w-0 leading-tight">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-heading font-black text-xs sm:text-sm md:text-base text-white tracking-tight drop-shadow-md truncate">
-                  BU ALANA ÖZEL REKLAM VER!
-                </span>
-                <span className="hidden md:inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-400 bg-amber-500/15 px-2 py-0.2 rounded-full border border-amber-500/30">
-                  <Zap className="w-2.5 h-2.5 fill-amber-400" />
-                  <span>50.000+ Canlı Oyuncu/Müşteri</span>
-                </span>
-              </div>
-              <p className="text-[10px] sm:text-xs text-slate-300 font-medium truncate mt-0.5">
-                Casino, Bahis ve VIP Hizmetlerinizi zirveye taşıyın • Anında yayına girin
-              </p>
-            </div>
-
-          </div>
-
-          {/* Sağ: Parlayan 3D Neon Buton */}
-          <div className="shrink-0 w-full sm:w-auto flex items-center justify-end">
-            <div className="w-full sm:w-auto px-4 py-1.5 sm:px-5 sm:py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 font-heading font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.6)] group-hover:shadow-[0_0_30px_rgba(245,158,11,0.9)] group-hover:scale-105 active:scale-95 transition-all">
-              <span>TIKLA REKLAM VER 👆</span>
-              <ArrowRight className="w-3.5 h-3.5 stroke-[3] group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-        </div>
-
-      </Link>
     </div>
   );
 }
