@@ -71,7 +71,10 @@ export function middleware(req: NextRequest) {
     ua.includes('discordbot') ||
     ua.includes('slackbot') ||
     ua.includes('linkedinbot') ||
-    ua.includes('pinterest');
+    ua.includes('pinterest') ||
+    ua.includes('exoclick') ||
+    ua.includes('trafficstars') ||
+    ua.includes('adsterra');
 
   if (!isSearchEngineOrSocial) {
     const pathLower = pathname.toLowerCase();
