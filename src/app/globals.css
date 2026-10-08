@@ -240,22 +240,29 @@ html[data-keyboard-open="true"] .fixed.bottom-0:not(.chat-input-bar):not(.keyboa
   animation: badgeFirePulse 1.8s ease-in-out infinite;
 }
 
-/* ExoClick Full-Width Responsive Banner Adaptation */
+/* ExoClick Full-Width Responsive 300x100 Mobile Banner */
 .exoclick-responsive-box.has-ad ins.eas6a97888e10 {
-  display: block !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   width: 100% !important;
   max-width: 100% !important;
-  height: auto !important;
-  aspect-ratio: 3 / 1 !important;
+  height: 100px !important;
+  max-height: 100px !important;
+  overflow: hidden !important;
+  margin: 0 auto !important;
 }
 
 .exoclick-responsive-box.has-ad ins.eas6a97888e10 img,
 .exoclick-responsive-box.has-ad ins.eas6a97888e10 a,
+.exoclick-responsive-box.has-ad ins.eas6a97888e10 video,
 .exoclick-responsive-box.has-ad ins.eas6a97888e10 iframe {
   display: block !important;
   width: 100% !important;
   max-width: 100% !important;
-  height: 100% !important;
+  height: 100px !important;
+  max-height: 100px !important;
   object-fit: cover !important;
   border-radius: 0.85rem !important;
+  margin: 0 auto !important;
 }
