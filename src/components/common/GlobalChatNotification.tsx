@@ -96,7 +96,7 @@ export default function GlobalChatNotification() {
 
       let lastSeenMessageId = '';
 
-      // Polling fallback every 5s when tab is active (100% reliable across serverless)
+      // Polling fallback every 25s when tab is active (lightweight serverless friendly)
       const pollCustomerMessages = async () => {
         if (typeof document !== 'undefined' && document.hidden) return;
         try {
@@ -118,33 +118,11 @@ export default function GlobalChatNotification() {
         } catch (e) {}
       };
 
-      const pollInterval = setInterval(pollCustomerMessages, 5000);
+      const pollInterval = setInterval(pollCustomerMessages, 25000);
       pollCustomerMessages();
-
-      let eventSource: EventSource | null = null;
-      try {
-        eventSource = new EventSource(`/api/chat/sse?threadId=${savedThreadId}`);
-        eventSource.addEventListener('new_message', (event) => {
-          try {
-            const incoming = JSON.parse(event.data);
-            const adminMessages = Array.isArray(incoming) 
-              ? incoming.filter((m: any) => m.gonderenTipi === 'admin')
-              : incoming.gonderenTipi === 'admin' ? [incoming] : [];
-
-            if (adminMessages.length > 0) {
-              const last = adminMessages[adminMessages.length - 1];
-              if (last._id !== lastSeenMessageId) {
-                lastSeenMessageId = last._id;
-                triggerAdminMsg(last.mesaj);
-              }
-            }
-          } catch (err) {}
-        });
-      } catch (e) {}
 
       return () => {
         clearInterval(pollInterval);
-        if (eventSource) eventSource.close();
       };
     }
   }, [isChatPage, pathname]);

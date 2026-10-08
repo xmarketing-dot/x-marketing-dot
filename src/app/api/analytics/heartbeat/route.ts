@@ -6,7 +6,17 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
-    const { recordId, durationSeconds } = await req.json();
+    let body: any = null;
+    try {
+      body = await req.json();
+    } catch {
+      const text = await req.text();
+      try {
+        body = JSON.parse(text);
+      } catch {}
+    }
+
+    const { recordId, durationSeconds } = body || {};
     if (!recordId || typeof durationSeconds !== 'number') {
       return NextResponse.json({ success: false }, { status: 400 });
     }

@@ -345,31 +345,55 @@ export default function AnalyticsTracker() {
       })
       .catch(() => {});
 
-    // Duration ping interval
+    // Duration ping interval & exit beacon optimization (reduces Vercel invocations by ~90%)
     if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
-    let secondsSpent = 5;
+    const startTime = Date.now();
 
-    durationIntervalRef.current = setInterval(() => {
-      secondsSpent += 10;
-      if (secondsSpent > 600) {
-        if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
-        return;
-      }
+    const sendHeartbeat = (finalSeconds?: number) => {
+      const recId = activeRecordIdRef.current;
+      if (!recId) return;
+      const durationSeconds = finalSeconds ?? Math.min(600, Math.max(3, Math.round((Date.now() - startTime) / 1000)));
 
-      if (activeRecordIdRef.current) {
+      const payload = JSON.stringify({
+        recordId: recId,
+        durationSeconds,
+      });
+
+      if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+        const blob = new Blob([payload], { type: 'application/json' });
+        navigator.sendBeacon('/api/analytics/heartbeat', blob);
+      } else {
         fetch('/api/analytics/heartbeat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            recordId: activeRecordIdRef.current,
-            durationSeconds: secondsSpent,
-          }),
+          body: payload,
+          keepalive: true,
         }).catch(() => {});
       }
-    }, 10000);
+    };
+
+    // Low-frequency heartbeat: Every 60s instead of aggressive 10s spam
+    durationIntervalRef.current = setInterval(() => {
+      const elapsed = Math.round((Date.now() - startTime) / 1000);
+      if (elapsed > 600) {
+        if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+        return;
+      }
+      sendHeartbeat(elapsed);
+    }, 60000);
+
+    const handleExit = () => {
+      sendHeartbeat();
+    };
+
+    window.addEventListener('visibilitychange', handleExit);
+    window.addEventListener('beforeunload', handleExit);
 
     return () => {
       if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
+      sendHeartbeat();
+      window.removeEventListener('visibilitychange', handleExit);
+      window.removeEventListener('beforeunload', handleExit);
     };
   }, [pathname]);
 
