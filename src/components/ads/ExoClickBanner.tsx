@@ -47,14 +47,16 @@ export default function ExoClickBanner({ zoneId = '6050980', className = '' }: P
   return (
     <div
       ref={containerRef}
-      className={`w-full flex flex-col items-center justify-center overflow-hidden my-1.5 sm:my-2 min-h-[75px] ${className}`}
+      className={`w-full flex flex-col items-center justify-center overflow-hidden my-1 sm:my-2 ${className}`}
     >
-      <ins
-        className="eas6a97888e10"
-        data-zoneid={zoneId}
-        data-keywords="keywords"
-        style={{ display: 'inline-block', maxWidth: '100%' }}
-      />
+      <div className="w-full max-w-[330px] flex items-center justify-center rounded-2xl bg-[#090d16]/90 border border-amber-500/20 p-1.5 shadow-lg shadow-black/50 overflow-hidden">
+        <ins
+          className="eas6a97888e10"
+          data-zoneid={zoneId}
+          data-keywords="keywords"
+          style={{ display: 'inline-block', maxWidth: '100%' }}
+        />
+      </div>
     </div>
   );
 }
