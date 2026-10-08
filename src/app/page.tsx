@@ -314,7 +314,7 @@ export default async function HomePage() {
       </section>
 
       {/* 2. SPONSOR BANNER REKLAM ALANI */}
-      <div className="w-full px-0">
+      <div className="w-full px-2 sm:px-4">
         <SponsorBannerArea konum="anasayfa" initialBanner={activeBanner} />
       </div>
 

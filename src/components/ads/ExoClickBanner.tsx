@@ -46,16 +46,16 @@ export default function ExoClickBanner({ zoneId = '6050980', className = '' }: P
   return (
     <div
       ref={containerRef}
-      className={`w-full flex flex-col items-center justify-center my-2 select-none ${className}`}
+      className={`w-full flex flex-col items-center justify-center my-1.5 sm:my-2 select-none exoclick-responsive-box ${className}`}
     >
-      <div className="flex items-center justify-center max-w-[320px] rounded-xl overflow-hidden shadow-lg border border-amber-500/20 bg-[#090d16]">
+      <div className="w-full rounded-2xl overflow-hidden shadow-lg border border-amber-500/40 bg-gradient-to-r from-[#0d1117] via-[#161b22] to-[#0d1117] p-1">
         <ins
           className="eas6a97888e10"
           data-zoneid={zoneId}
           data-keywords="casino,slot,bet,dating,escort,live"
           data-block-ad-types="0"
           data-ex-av="name"
-          style={{ display: 'inline-block', width: '300px', height: '100px' }}
+          style={{ display: 'block', width: '100%', height: 'auto', aspectRatio: '3 / 1' }}
         />
       </div>
     </div>

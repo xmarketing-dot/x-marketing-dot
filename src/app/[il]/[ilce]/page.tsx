@@ -283,7 +283,7 @@ export default async function DistrictPage({ params }: Props) {
         </div>
 
         {/* ── 1.25 ÖZEL SPONSORLU VIP BANNER REKLAMI (TÜM İLÇELERDE SABİT) ──────────────── */}
-        <div className="w-full px-0">
+        <div className="w-full px-1.5 sm:px-4">
           <SponsorBannerArea konum="her_ikisi" initialBanner={activeBanner} />
         </div>
 
