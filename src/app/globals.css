@@ -241,7 +241,7 @@ html[data-keyboard-open="true"] .fixed.bottom-0:not(.chat-input-bar):not(.keyboa
 }
 
 /* ExoClick Full-Width Responsive Banner Adaptation */
-.exoclick-responsive-box ins.eas6a97888e10 {
+.exoclick-responsive-box.has-ad ins.eas6a97888e10 {
   display: block !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -249,9 +249,9 @@ html[data-keyboard-open="true"] .fixed.bottom-0:not(.chat-input-bar):not(.keyboa
   aspect-ratio: 3 / 1 !important;
 }
 
-.exoclick-responsive-box ins.eas6a97888e10 img,
-.exoclick-responsive-box ins.eas6a97888e10 a,
-.exoclick-responsive-box ins.eas6a97888e10 iframe {
+.exoclick-responsive-box.has-ad ins.eas6a97888e10 img,
+.exoclick-responsive-box.has-ad ins.eas6a97888e10 a,
+.exoclick-responsive-box.has-ad ins.eas6a97888e10 iframe {
   display: block !important;
   width: 100% !important;
   max-width: 100% !important;
