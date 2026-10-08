@@ -26,7 +26,6 @@ export const BLOCKED_ASNS = new Set<string>([
   '42926',  // Radore Veri Merkezi (TR)
   '49505',  // DGN Teknoloji (TR)
   '58224',  // Netinternet (TR)
-  '61138',  // Comnet (TR)
   '203020', // PremierDC (TR)
 ]);
 
