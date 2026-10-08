@@ -98,7 +98,7 @@ export default function ExoClickBanner({ zoneId = '6050980', className = '' }: P
       <div
         className={
           hasAd
-            ? 'w-full max-w-[330px] flex items-center justify-center rounded-2xl bg-[#090d16]/90 border border-amber-500/20 p-1.5 shadow-lg shadow-black/50 overflow-hidden'
+            ? 'w-full max-w-[320px] flex items-center justify-center rounded-xl bg-[#090d16]/90 border border-amber-500/25 p-1 shadow-lg shadow-black/50 overflow-hidden'
             : ''
         }
       >
@@ -106,7 +106,9 @@ export default function ExoClickBanner({ zoneId = '6050980', className = '' }: P
           ref={insRef}
           className="eas6a97888e10"
           data-zoneid={zoneId}
-          data-keywords="keywords"
+          data-keywords="casino,slot,bet,dating,escort,live"
+          data-block-ad-types="0"
+          data-ex-av="name"
           style={{ display: 'inline-block', maxWidth: '100%' }}
         />
       </div>
