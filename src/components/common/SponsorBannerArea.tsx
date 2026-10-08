@@ -104,10 +104,6 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     );
   }
 
-  // 3. REKLAM YOKSA -> SADECE EXOCLICK BANNER (Bizim kutu tamamen kaldırıldı)
-  return (
-    <div className="w-full sponsor-banner-container no-safe-blur my-1 sm:my-1.5 select-none flex flex-col items-center justify-center">
-      <ExoClickBanner zoneId="6050980" className="w-full" />
-    </div>
-  );
+  // 3. REKLAM YOKSA -> SADECE EXOCLICK BANNER (Reklam gelene kadar 0px yer kaplar)
+  return <ExoClickBanner zoneId="6050980" />;
 }

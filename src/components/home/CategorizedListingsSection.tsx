@@ -67,7 +67,7 @@ export default function CategorizedListingsSection({
               <React.Fragment key={listing._id || index}>
                 <CompactListingCard listing={listing} />
                 {(index + 1) % 12 === 0 && index < displayedVip.length - 1 && (
-                  <div className="col-span-3 my-2 w-full">
+                  <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
                   </div>
                 )}
@@ -109,7 +109,7 @@ export default function CategorizedListingsSection({
               <React.Fragment key={listing._id || index}>
                 <CompactListingCard listing={listing} />
                 {(index + 1) % 12 === 0 && index < displayedGold.length - 1 && (
-                  <div className="col-span-3 my-2 w-full">
+                  <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
                   </div>
                 )}
@@ -151,7 +151,7 @@ export default function CategorizedListingsSection({
               <React.Fragment key={listing._id || index}>
                 <CompactListingCard listing={listing} />
                 {(index + 1) % 12 === 0 && index < displayedSilver.length - 1 && (
-                  <div className="col-span-3 my-2 w-full">
+                  <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
                   </div>
                 )}
@@ -215,7 +215,7 @@ export default function CategorizedListingsSection({
               <React.Fragment key={listing._id || index}>
                 <CompactListingCard listing={listing} />
                 {(index + 1) % 12 === 0 && index < displayedAll.length - 1 && (
-                  <div className="col-span-3 my-2 w-full">
+                  <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
                   </div>
                 )}
