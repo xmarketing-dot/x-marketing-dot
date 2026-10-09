@@ -5462,66 +5462,64 @@ export default function BmsSecurePortalDashboard() {
         return (
           <div 
             onClick={() => setShowActiveVisitorsModal(false)}
-            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-2 sm:p-5 animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-200"
           >
             <div 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-5xl bg-[#0d1117] border border-[#30363d] rounded-[28px] sm:rounded-[36px] shadow-[0_25px_80px_rgba(0,0,0,0.95)] flex flex-col text-left animate-in zoom-in-95 duration-200 max-h-[94vh] sm:max-h-[90vh] overflow-hidden"
+              className="w-full max-w-5xl bg-[#0d1117] border-t sm:border border-[#30363d] rounded-t-[32px] sm:rounded-[28px] shadow-[0_25px_80px_rgba(0,0,0,0.95)] flex flex-col text-left max-h-[92vh] sm:max-h-[88vh] overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-250"
             >
-              {/* Modal Başlığı & Radar Kontrol Merkezi */}
-              <div className="p-4 sm:p-6 border-b border-[#30363d] bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-fuchsia-500/10 shrink-0 flex flex-col gap-3.5">
+              {/* Mobil Drawer Tutamacı (Pull bar) */}
+              <div className="w-12 h-1.5 bg-[#30363d] rounded-full mx-auto mt-2.5 sm:hidden shrink-0" />
+
+              {/* Kurumsal Radar Başlık Barı */}
+              <div className="p-4 sm:p-6 border-b border-[#262c36] bg-[#161b22] shrink-0 flex flex-col gap-3.5">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="relative shrink-0">
-                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/30">
-                        <Activity className="w-6 h-6 animate-pulse" />
-                      </div>
-                      <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[#161b22]"></span>
-                      </span>
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Activity className="w-5 h-5 animate-pulse" />
                     </div>
 
                     <div className="flex flex-col min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-black text-base sm:text-2xl text-white font-heading tracking-tight truncate">
+                        <h3 className="font-bold text-base sm:text-xl text-white font-heading tracking-tight">
                           Canlı Ziyaretçi &amp; İlan İzleme Radarı
                         </h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-black flex items-center gap-1.5 shadow-sm">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-bold flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
                           {rawActiveList.length} Aktif Kullanıcı
                         </span>
                       </div>
-                      <span className="text-[11px] sm:text-xs text-[#8b949e] mt-0.5 hidden xs:inline">
-                        Kullanıcıların hangi domainde gezdiklerini ve anlık inceledikleri sayfaları canlı takip edin.
+                      <span className="text-[11px] text-[#8b949e] hidden xs:inline mt-0.5">
+                        Gerçek zamanlı domain ayrımı ve kullanıcıların şu anda aktif olarak incelediği sayfalar.
                       </span>
                     </div>
                   </div>
 
                   <button 
                     onClick={() => setShowActiveVisitorsModal(false)} 
-                    className="p-2 sm:p-2.5 rounded-2xl bg-[#21262d] text-[#8b949e] hover:text-white hover:bg-[#30363d] transition-all shrink-0 border border-[#30363d] active:scale-95"
+                    className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white hover:bg-[#30363d] transition-colors shrink-0 border border-[#30363d]"
                     title="Kapat"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {/* 🌟 1. KATMAN: KRİSTAL NETLİKTE DOMAIN SEÇİCİ (EN ÖNEMLİ KISIM) */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1 border-t border-[#21262d]">
-                  <div className="flex items-center gap-1.5 p-1 bg-[#090d13] border border-[#21262d] rounded-2xl w-full sm:w-auto overflow-x-auto scrollbar-none">
+                {/* Kurumsal Segmented Domain Seçici & Sayfa Filtreleri */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2 border-t border-[#21262d]">
+                  {/* Domain Tabları */}
+                  <div className="flex items-center gap-1.5 p-1 bg-[#090d14] border border-[#21262d] rounded-xl w-full sm:w-auto overflow-x-auto scrollbar-none">
                     <button
                       type="button"
                       onClick={() => setRadarDomainFilter('all')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                         radarDomainFilter === 'all'
-                          ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30'
+                          ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
                           : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
                       }`}
                     >
                       <Globe className="w-3.5 h-3.5" />
                       <span>Tüm Siteler</span>
-                      <span className="px-1.5 py-0.2 rounded-md bg-black/20 text-[10px] font-mono">
+                      <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono">
                         {rawActiveList.length}
                       </span>
                     </button>
@@ -5529,14 +5527,14 @@ export default function BmsSecurePortalDashboard() {
                     <button
                       type="button"
                       onClick={() => setRadarDomainFilter('besteskort')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                         radarDomainFilter === 'besteskort'
-                          ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/30 ring-2 ring-emerald-400'
+                          ? 'bg-emerald-500 text-slate-950 font-black shadow-sm'
                           : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30'
                       }`}
                     >
                       <span>🌟 besteskort.online</span>
-                      <span className="px-1.5 py-0.2 rounded-md bg-black/25 text-[10px] font-mono font-black">
+                      <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
                         {besteskortCount}
                       </span>
                     </button>
@@ -5544,28 +5542,28 @@ export default function BmsSecurePortalDashboard() {
                     <button
                       type="button"
                       onClick={() => setRadarDomainFilter('escturkiye')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                         radarDomainFilter === 'escturkiye'
-                          ? 'bg-fuchsia-500 text-white font-black shadow-md shadow-fuchsia-500/30 ring-2 ring-fuchsia-400'
+                          ? 'bg-fuchsia-500 text-white font-black shadow-sm'
                           : 'text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-950/30'
                       }`}
                     >
                       <span>🚀 escturkiye.devs.surf</span>
-                      <span className="px-1.5 py-0.2 rounded-md bg-black/25 text-[10px] font-mono font-black">
+                      <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
                         {escturkiyeCount}
                       </span>
                     </button>
                   </div>
 
-                  {/* 2. KATMAN: SAYFA TÜRÜ FİLTRELERİ */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 sm:pb-0">
+                  {/* Kategori Filtre Butonları */}
+                  <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 sm:pb-0">
                     <button
                       type="button"
                       onClick={() => setRadarTypeFilter('all')}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border shrink-0 ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 ${
                         radarTypeFilter === 'all'
                           ? 'bg-slate-700 text-white border-slate-600'
-                          : 'bg-[#161b22] text-[#8b949e] border-[#21262d] hover:text-white'
+                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-white'
                       }`}
                     >
                       Tüm Sayfalar
@@ -5573,53 +5571,50 @@ export default function BmsSecurePortalDashboard() {
                     <button
                       type="button"
                       onClick={() => setRadarTypeFilter('listing')}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
                         radarTypeFilter === 'listing'
-                          ? 'bg-amber-500/25 text-amber-300 border-amber-500/50'
-                          : 'bg-[#161b22] text-[#8b949e] border-[#21262d] hover:text-amber-300'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-amber-300'
                       }`}
                     >
-                      <span>👑 İlan Bakanlar</span>
-                      <span className="font-mono text-[10px] opacity-75">({listingViewingCount})</span>
+                      <span>👑 İlan Bakanlar ({listingViewingCount})</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setRadarTypeFilter('city')}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
                         radarTypeFilter === 'city'
-                          ? 'bg-purple-500/25 text-purple-300 border-purple-500/50'
-                          : 'bg-[#161b22] text-[#8b949e] border-[#21262d] hover:text-purple-300'
+                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/50'
+                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-purple-300'
                       }`}
                     >
-                      <span>📍 Şehir Gezenler</span>
-                      <span className="font-mono text-[10px] opacity-75">({cityViewingCount})</span>
+                      <span>📍 Şehir Gezenler ({cityViewingCount})</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setRadarTypeFilter('search')}
-                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
                         radarTypeFilter === 'search'
-                          ? 'bg-cyan-500/25 text-cyan-300 border-cyan-500/50'
-                          : 'bg-[#161b22] text-[#8b949e] border-[#21262d] hover:text-cyan-300'
+                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
+                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-cyan-300'
                       }`}
                     >
-                      <span>🔍 Arama</span>
-                      <span className="font-mono text-[10px] opacity-75">({searchCount})</span>
+                      <span>🔍 Arama ({searchCount})</span>
                     </button>
                   </div>
                 </div>
               </div>
 
-              {/* ZİYARETÇİ KARTLARI LİSTESİ */}
-              <div className="overflow-y-auto flex-1 p-3 sm:p-6 flex flex-col gap-3 custom-scrollbar bg-[#090d13]">
+              {/* ZİYARETÇİ AKIŞI (KURUMSAL TEK-KATMAN DÜZEN, KART İÇİNDE KART YOK) */}
+              <div className="overflow-y-auto flex-1 p-3 sm:p-5 flex flex-col gap-2.5 custom-scrollbar bg-[#090d14]">
                 {filteredList.length === 0 ? (
                   <div className="py-20 text-center text-xs text-[#8b949e] flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                      <Activity className="w-8 h-8 text-emerald-400 animate-pulse" />
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                      <Activity className="w-7 h-7 text-emerald-400 animate-pulse" />
                     </div>
-                    <span className="text-base font-bold text-white">Seçilen Filtrede Aktif Ziyaretçi Bulunamadı</span>
+                    <span className="text-sm font-bold text-white">Seçilen Filtrede Aktif Ziyaretçi Bulunamadı</span>
                     <span className="text-xs text-[#8b949e] max-w-sm">
-                      Farklı bir site filtresi seçebilir veya tüm ziyaretçileri görüntülemek için filtreyi sıfırlayabilirsiniz.
+                      Farklı bir site filtresi seçebilir veya tüm ziyaretçileri görmek için sıfırlayabilirsiniz.
                     </span>
                     <button
                       type="button"
@@ -5627,7 +5622,7 @@ export default function BmsSecurePortalDashboard() {
                         setRadarDomainFilter('all');
                         setRadarTypeFilter('all');
                       }}
-                      className="mt-2 px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500 hover:text-slate-950 transition-all"
+                      className="mt-1 px-4 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500 hover:text-slate-950 transition-all"
                     >
                       Filtreleri Sıfırla
                     </button>
@@ -5647,203 +5642,140 @@ export default function BmsSecurePortalDashboard() {
                     return (
                       <div 
                         key={v.sessionKey || idx} 
-                        className="relative rounded-2xl sm:rounded-3xl bg-[#12161f] hover:bg-[#151a24] border border-[#262c38] hover:border-[#384252] transition-all p-4 sm:p-5 flex flex-col gap-3.5 shadow-xl group overflow-hidden"
+                        className="relative rounded-2xl bg-[#161b22] border border-[#262c36] hover:border-[#384252] transition-colors p-3.5 sm:p-4 flex flex-col gap-2.5"
                       >
-                        {/* Sol tarafta domain renk neon şeridi (3px) */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 ${
-                          dom.id === 'escturkiye' 
-                            ? 'bg-fuchsia-500 shadow-[0_0_12px_rgba(217,70,239,0.8)]' 
-                            : 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]'
+                        {/* Sol tarafta ince domain renk çizgisi (3px) */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${
+                          dom.id === 'escturkiye' ? 'bg-fuchsia-500' : 'bg-emerald-500'
                         }`} />
 
-                        {/* 1. ÜST BİLGİ SATIRI: Domain Rozeti, Konum, Cihaz, IP, Kaynak ve Süre */}
-                        <div className="flex items-center justify-between gap-2.5 flex-wrap">
-                          {/* Sol Kısım: Belirgin Domain + Konum */}
+                        {/* 1. SATIR: SİTE DOMAİNİ + KONUM + CİHAZ + IP + KAYNAK + ZAMAN */}
+                        <div className="flex items-center justify-between gap-2.5 flex-wrap pl-1.5">
+                          {/* Sol Kısım: Domain Rozeti & Temel Bilgiler */}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black border shadow-sm ${dom.badgeStyle}`}>
-                              <span className="w-2 h-2 rounded-full bg-current animate-ping" />
-                              <span>{dom.icon} {dom.name}</span>
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold border ${dom.badgeStyle}`}>
+                              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                              <span>{dom.name}</span>
                             </span>
 
                             <span className="text-xs text-white font-bold flex items-center gap-1">
                               <span>📍 {v.city || 'İstanbul'}</span>
                             </span>
-                            <span className="text-xs text-[#8b949e] flex items-center gap-1 font-medium">
-                              <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 PC'}</span>
-                              {v.browser && <span>({v.browser})</span>}
+                            <span className="text-xs text-[#8b949e]">
+                              • {v.device === 'mobile' ? 'Mobil' : 'Masaüstü'} {v.browser ? `(${v.browser})` : ''}
                             </span>
                             {v.ip && (
-                              <span className="text-[11px] font-mono text-[#8b949e] bg-[#090d14] border border-[#262c38] px-2 py-0.5 rounded-lg">
-                                {v.ip}
+                              <span className="text-[11px] font-mono text-[#8b949e]">
+                                • IP: {v.ip}
                               </span>
                             )}
                           </div>
 
-                          {/* Sağ Kısım: Kaynak & Zaman */}
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <span className={`text-[11px] font-mono font-bold px-2.5 py-1 rounded-xl border flex items-center gap-1 ${ref.badge}`}>
+                          {/* Sağ Kısım: Kaynak ve Zaman */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 ${ref.badge}`}>
                               <span>{ref.icon}</span>
                               <span className="hidden xs:inline">{ref.name}</span>
                             </span>
-                            <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <span className="text-[11px] font-mono text-emerald-400 font-bold flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                               <span>{timeStr}</span>
                             </span>
                           </div>
                         </div>
 
-                        {/* 2. AKTİVİTE / ŞU AN NE İNCELİYOR? (FERAH VE NET KART BÖLÜMÜ) */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0a0d14] border border-[#222834] rounded-xl sm:rounded-2xl p-3 sm:p-4">
-                          <div className="flex items-start sm:items-center gap-3 min-w-0">
-                            {/* Aksiyon İkonu */}
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 border ${
-                              act.type === 'listing' ? 'bg-amber-500/15 border-amber-500/30 text-amber-300' :
-                              act.type === 'city' ? 'bg-purple-500/15 border-purple-500/30 text-purple-300' :
-                              act.type === 'search' ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-300' :
-                              'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
-                            }`}>
-                              {act.actionIcon}
-                            </div>
-
-                            <div className="flex flex-col min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${act.badgeStyle}`}>
-                                  {act.badgeLabel}
-                                </span>
-                                <span className="text-xs font-mono text-amber-400 font-bold truncate max-w-[260px] sm:max-w-md">
-                                  {v.path || '/'}
-                                </span>
-                              </div>
-
-                              <h4 className="text-sm sm:text-base font-extrabold text-white truncate">
+                        {/* 2. SATIR: NE İNCELİYOR? (KART İÇİNDE KART YOK, DOĞRUDAN VE NET) */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pl-1.5">
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${act.badgeStyle}`}>
+                                {act.badgeLabel}
+                              </span>
+                              <span className="text-sm sm:text-base font-bold text-white truncate">
                                 {act.displayTitle}
-                              </h4>
-
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs font-mono text-amber-400 font-medium">
+                                {v.path || '/'}
+                              </span>
                               {v.searchKeyword && (
-                                <span className="text-xs text-cyan-300 font-mono mt-0.5">
-                                  🔍 Arama: <strong>&quot;{v.searchKeyword}&quot;</strong>
+                                <span className="text-xs text-cyan-300 font-mono">
+                                  (Aranan: &quot;{v.searchKeyword}&quot;)
                                 </span>
                               )}
                             </div>
                           </div>
 
-                          {/* Doğrudan Sitede Sayfayı Aç Butonu */}
+                          {/* Sağdaki Sayfayı Aç Butonu */}
                           <a
                             href={targetDirectUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={`px-3.5 py-2 rounded-xl text-xs font-black shrink-0 flex items-center justify-center gap-1.5 transition-all self-end sm:self-center border shadow-sm active:scale-95 ${
-                              dom.id === 'escturkiye'
-                                ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40 hover:bg-fuchsia-500 hover:text-white'
-                                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
-                            }`}
-                            title={`${dom.name} sitesinde aç`}
+                            className="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white border border-[#30363d] text-xs font-bold shrink-0 flex items-center gap-1.5 transition-colors self-end sm:self-center"
                           >
-                            <span>{dom.title}&apos;de Aç</span>
+                            <span>Siteyi Aç</span>
                             <ExternalLink className="w-3.5 h-3.5" />
                           </a>
                         </div>
 
-                        {/* 3. YOLCULUK AKIŞI: BUTON SAĞDA & 1- EN BAŞTA KRONOLOJİK */}
+                        {/* 3. SATIR: YOLCULUK AKIŞI (BUTON SAĞDA, 1- EN BAŞTA KRONOLOJİK) */}
                         {v.totalActions > 1 && (() => {
                           const chronologicalHistory = [...v.history].sort(
                             (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
                           );
-                          const firstVisitedTime = new Date(chronologicalHistory[0].createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
                           return (
-                            <div className="pt-2 border-t border-[#222834] flex flex-col gap-2">
-                              {/* Alt Bar: Sol = Özet Bilgi, Sağ = Yolculuk Butonu (Kullanıcı Talebi) */}
+                            <div className="pt-2 border-t border-[#21262d] flex flex-col gap-1.5 pl-1.5">
                               <div className="flex items-center justify-between gap-2 flex-wrap">
-                                <div className="flex items-center gap-2 text-xs text-[#8b949e]">
-                                  <span className="text-amber-400 font-bold flex items-center gap-1">
-                                    <Route className="w-3.5 h-3.5" />
-                                    <span>Toplam {v.totalActions} Sayfa Gezdi</span>
-                                  </span>
-                                  <span>•</span>
-                                  <span>İlk Giriş: {firstVisitedTime}</span>
-                                  <span>•</span>
-                                  <span>{v.pages?.length || 1} Farklı Sayfa</span>
-                                </div>
+                                <span className="text-xs text-[#8b949e]">
+                                  🔥 Toplam <strong className="text-white">{v.totalActions}</strong> sayfa gezdi • {v.pages?.length || 1} farklı URL
+                                </span>
 
-                                {/* SAĞDAKİ BUTON */}
+                                {/* SAĞDAKİ YOLCULUK BUTONU */}
                                 <button
                                   type="button"
                                   onClick={() => setRadarExpandedKey(isExpanded ? null : (v.sessionKey || idx.toString()))}
-                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 border active:scale-95 shrink-0 ml-auto ${
-                                    isExpanded 
-                                      ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black' 
-                                      : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
-                                  }`}
+                                  className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 py-1 px-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 transition-all shrink-0 ml-auto active:scale-95"
                                 >
-                                  <span>Yolculuk Akışı ({v.totalActions} Adım)</span>
+                                  <span>Yolculuk Akışı ({v.totalActions})</span>
                                   {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                 </button>
                               </div>
 
-                              {/* Akordeon Açıldığında: 1- EN BAŞTA KRONOLOJİK SIRALAMA */}
+                              {/* 1- EN BAŞTA KRONOLOJİK ADIMLAR */}
                               {isExpanded && (
-                                <div className="p-3 bg-[#0a0d14] border border-amber-500/30 rounded-xl flex flex-col gap-1.5 animate-in fade-in duration-200">
-                                  <div className="flex items-center justify-between pb-1.5 border-b border-[#222834] text-[10px] font-mono text-[#8b949e]">
-                                    <span className="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                                      <span>⏱️ Ziyaretçi Adım Geçmişi (İlk Girişten Güncele)</span>
-                                    </span>
-                                    <span>Saat / Süre</span>
-                                  </div>
-
-                                  <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
-                                    {chronologicalHistory.map((step: any, stepIdx: number) => {
-                                      const isFirst = stepIdx === 0;
-                                      const isLatest = stepIdx === chronologicalHistory.length - 1;
-                                      return (
-                                        <div
-                                          key={step._id || stepIdx}
-                                          className={`flex items-center justify-between gap-2 text-xs font-mono py-1.5 px-3 rounded-lg border transition-all ${
+                                <div className="pt-2 flex flex-col gap-1 border-t border-[#21262d] mt-1">
+                                  {chronologicalHistory.map((step: any, stepIdx: number) => {
+                                    const isFirst = stepIdx === 0;
+                                    const isLatest = stepIdx === chronologicalHistory.length - 1;
+                                    return (
+                                      <div
+                                        key={step._id || stepIdx}
+                                        className="flex items-center justify-between gap-2 text-xs font-mono py-1 px-2 text-[#8b949e] hover:text-white rounded hover:bg-[#0d1117] transition-colors"
+                                      >
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <span className={`w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center shrink-0 ${
                                             isLatest 
-                                              ? 'bg-emerald-500/10 border-emerald-500/40 text-white' 
+                                              ? 'bg-emerald-500 text-slate-950 font-black' 
                                               : isFirst 
-                                              ? 'bg-amber-500/5 border-amber-500/20 text-[#c9d1d9]' 
-                                              : 'bg-[#12161f] border-[#222834] text-[#8b949e]'
-                                          }`}
-                                        >
-                                          <div className="flex items-center gap-2 min-w-0">
-                                            <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-black shrink-0 ${
-                                              isLatest 
-                                                ? 'bg-emerald-500 text-slate-950' 
-                                                : isFirst 
-                                                ? 'bg-amber-500 text-slate-950' 
-                                                : 'bg-[#222834] text-[#8b949e]'
-                                            }`}>
-                                              {stepIdx + 1}
-                                            </span>
-                                            <span className="text-white truncate font-medium" title={step.path}>
-                                              {step.path || '/'}
-                                            </span>
-                                            {isFirst && (
-                                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold shrink-0">
-                                                İlk Giriş
-                                              </span>
-                                            )}
-                                            {isLatest && (
-                                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/25 text-emerald-300 font-bold shrink-0 flex items-center gap-1">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                                                Şu An Burada
-                                              </span>
-                                            )}
-                                          </div>
-
-                                          <div className="flex items-center gap-2 shrink-0 text-[11px] text-[#8b949e]">
-                                            {step.durationSeconds > 0 && (
-                                              <span className="text-emerald-400 font-bold">{step.durationSeconds}s</span>
-                                            )}
-                                            <span>
-                                              {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                            </span>
-                                          </div>
+                                              ? 'bg-amber-500 text-slate-950 font-black' 
+                                              : 'bg-[#21262d] text-[#8b949e]'
+                                          }`}>
+                                            {stepIdx + 1}
+                                          </span>
+                                          <span className="text-white truncate" title={step.path}>
+                                            {step.path || '/'}
+                                          </span>
+                                          {isFirst && <span className="text-[9px] text-amber-400 font-bold">(İlk Giriş)</span>}
+                                          {isLatest && <span className="text-[9px] text-emerald-400 font-bold">(Şu An Burada 🟢)</span>}
                                         </div>
-                                      );
-                                    })}
-                                  </div>
+                                        <span className="text-[11px] text-[#8b949e] shrink-0">
+                                          {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                        </span>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
@@ -5855,11 +5787,11 @@ export default function BmsSecurePortalDashboard() {
                 )}
               </div>
 
-              {/* Modal Alt Footer Bar */}
-              <div className="p-3.5 sm:p-5 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between gap-2 shrink-0">
+              {/* Kurumsal Alt Footer */}
+              <div className="p-3 sm:p-4 border-t border-[#262c36] bg-[#161b22] flex items-center justify-between gap-2 shrink-0">
                 <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                  <span className="hidden sm:inline">Radar canlı verileri otomatik olarak senkronize eder.</span>
+                  <span className="hidden sm:inline">Radar verileri 15 saniyede bir otomatik senkronize edilir.</span>
                   <span className="sm:hidden">Otomatik Canlı Senkronizasyon</span>
                 </span>
                 <button
@@ -5868,9 +5800,9 @@ export default function BmsSecurePortalDashboard() {
                     setShowActiveVisitorsModal(false);
                     setActiveTab('live_visitors');
                   }}
-                  className="px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-2xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/30 text-xs font-black font-heading flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
                 >
-                  <span>Tüm Canlı Akış Loglarına Git</span>
+                  <span>Tüm Canlı Akış Logları</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
