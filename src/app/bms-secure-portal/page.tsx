@@ -4444,42 +4444,60 @@ export default function BmsSecurePortalDashboard() {
                     </div>
 
                     {/* Akordeon: Kullanıcı Gezinme Yolculuğu */}
-                    {isExpanded && gv.history.length > 0 && (
-                      <div className="pt-2 border-t border-[#21262d] flex flex-col gap-1.5 bg-[#070a0f] p-2.5 rounded-xl border border-amber-500/20 animate-fadeIn">
-                        <div className="flex items-center justify-between pb-1 border-b border-[#21262d]">
-                          <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                            <Route className="w-3 h-3" />
-                            <span>Gezinme Akışı ({gv.totalViews} Sayfa)</span>
-                          </span>
-                          <span className="text-[9px] text-[#8b949e] font-mono">En Yeniden İlke</span>
+                    {isExpanded && gv.history.length > 0 && (() => {
+                      const chronologicalHistory = [...gv.history].sort(
+                        (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                      );
+
+                      return (
+                        <div className="pt-2 border-t border-[#21262d] flex flex-col gap-1.5 bg-[#070a0f] p-2.5 rounded-xl border border-amber-500/20 animate-fadeIn">
+                          <div className="flex items-center justify-between pb-1 border-b border-[#21262d]">
+                            <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                              <Route className="w-3 h-3" />
+                              <span>Gezinme Akışı ({gv.totalViews} Sayfa)</span>
+                            </span>
+                            <span className="text-[9px] text-[#8b949e] font-mono">İlk Girişten Son Adıma</span>
+                          </div>
+                          <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-1">
+                            {chronologicalHistory.map((step: any, idx: number) => {
+                              const isLatest = idx === chronologicalHistory.length - 1;
+                              return (
+                                <div
+                                  key={step._id || idx}
+                                  className={`flex items-center justify-between gap-1.5 text-[10px] font-mono py-1 px-2 rounded-lg border ${
+                                    isLatest 
+                                      ? 'bg-amber-500/10 border-amber-500/30' 
+                                      : 'bg-[#161b22] border-[#21262d]'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className="text-[9px] font-bold text-amber-400 w-4 shrink-0">
+                                      #{idx + 1}
+                                    </span>
+                                    <span className="text-white truncate max-w-[170px] sm:max-w-[220px]" title={step.path}>
+                                      {step.path}
+                                    </span>
+                                    {isLatest && (
+                                      <span className="text-[8px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0">
+                                        Son Adım
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0 text-[#8b949e]">
+                                    <span className="text-emerald-400 font-bold">
+                                      {step.durationSeconds > 0 ? `${step.durationSeconds}s` : '0s'}
+                                    </span>
+                                    <span>
+                                      {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                        <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-1">
-                          {gv.history.map((step: any, idx: number) => (
-                            <div
-                              key={step._id || idx}
-                              className="flex items-center justify-between gap-1.5 text-[10px] font-mono py-1 px-2 rounded-lg bg-[#161b22] border border-[#21262d]"
-                            >
-                              <div className="flex items-center gap-1.5 min-w-0">
-                                <span className="text-[9px] font-bold text-amber-400/80 w-4 shrink-0">
-                                  #{gv.history.length - idx}
-                                </span>
-                                <span className="text-white truncate max-w-[170px] sm:max-w-[220px]" title={step.path}>
-                                  {step.path}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 shrink-0 text-[#8b949e]">
-                                <span className="text-emerald-400 font-bold">
-                                  {step.durationSeconds > 0 ? `${step.durationSeconds}s` : '0s'}
-                                </span>
-                                <span>
-                                  {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 );
               })
@@ -4696,22 +4714,32 @@ export default function BmsSecurePortalDashboard() {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                                  {gv.history.map((step: any, stepIdx: number) => (
-                                    <div key={step._id || stepIdx} className="p-2 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2 text-xs font-mono">
-                                      <div className="flex items-center gap-1.5 min-w-0">
-                                        <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded shrink-0">
-                                          #{gv.history.length - stepIdx}
-                                        </span>
-                                        <span className="text-white truncate max-w-[200px]" title={step.path}>
-                                          {step.path}
-                                        </span>
+                                  {[...gv.history].sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).map((step: any, stepIdx: number, arr: any[]) => {
+                                    const isLatest = stepIdx === arr.length - 1;
+                                    return (
+                                      <div key={step._id || stepIdx} className={`p-2 rounded-xl border flex items-center justify-between gap-2 text-xs font-mono ${
+                                        isLatest ? 'bg-amber-500/10 border-amber-500/40' : 'bg-[#0d1117] border-[#30363d]'
+                                      }`}>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="text-[10px] font-black text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded shrink-0">
+                                            #{stepIdx + 1}
+                                          </span>
+                                          <span className="text-white truncate max-w-[200px]" title={step.path}>
+                                            {step.path}
+                                          </span>
+                                          {isLatest && (
+                                            <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0">
+                                              Son
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 shrink-0 text-[#8b949e] text-[10px]">
+                                          <span className="text-emerald-400 font-bold">{step.durationSeconds > 0 ? `${step.durationSeconds}s` : '0s'}</span>
+                                          <span>{new Date(step.createdAt).toLocaleTimeString('tr-TR')}</span>
+                                        </div>
                                       </div>
-                                      <div className="flex items-center gap-1.5 shrink-0 text-[#8b949e] text-[10px]">
-                                        <span className="text-emerald-400 font-bold">{step.durationSeconds > 0 ? `${step.durationSeconds}s` : '0s'}</span>
-                                        <span>{new Date(step.createdAt).toLocaleTimeString('tr-TR')}</span>
-                                      </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               </div>
                             </td>
@@ -5619,155 +5647,208 @@ export default function BmsSecurePortalDashboard() {
                     return (
                       <div 
                         key={v.sessionKey || idx} 
-                        className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-md ${dom.cardBorder} ${dom.hoverGlow} group`}
+                        className="relative rounded-2xl sm:rounded-3xl bg-[#12161f] hover:bg-[#151a24] border border-[#262c38] hover:border-[#384252] transition-all p-4 sm:p-5 flex flex-col gap-3.5 shadow-xl group overflow-hidden"
                       >
-                        {/* 1. SATIR: SİTE DOMAİNİ + ZAMAN + CİHAZ + ŞEHİR + KAYNAK */}
+                        {/* Sol tarafta domain renk neon şeridi (3px) */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1 sm:w-1.5 ${
+                          dom.id === 'escturkiye' 
+                            ? 'bg-fuchsia-500 shadow-[0_0_12px_rgba(217,70,239,0.8)]' 
+                            : 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]'
+                        }`} />
+
+                        {/* 1. ÜST BİLGİ SATIRI: Domain Rozeti, Konum, Cihaz, IP, Kaynak ve Süre */}
                         <div className="flex items-center justify-between gap-2.5 flex-wrap">
-                          {/* Sol Kısım: Belirgin Site Rozeti */}
+                          {/* Sol Kısım: Belirgin Domain + Konum */}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl font-mono font-black text-xs border shadow-sm ${dom.badgeStyle}`}>
-                              <span className="w-2 h-2 rounded-full bg-current animate-ping"></span>
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black border shadow-sm ${dom.badgeStyle}`}>
+                              <span className="w-2 h-2 rounded-full bg-current animate-ping" />
                               <span>{dom.icon} {dom.name}</span>
                             </span>
 
-                            {/* Cihaz ve Şehir */}
-                            <div className="flex items-center gap-1.5 text-xs text-[#8b949e]">
-                              <span className="inline-flex items-center gap-1 text-white font-bold">
-                                <span>📍 {v.city || 'İstanbul'}</span>
+                            <span className="text-xs text-white font-bold flex items-center gap-1">
+                              <span>📍 {v.city || 'İstanbul'}</span>
+                            </span>
+                            <span className="text-xs text-[#8b949e] flex items-center gap-1 font-medium">
+                              <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 PC'}</span>
+                              {v.browser && <span>({v.browser})</span>}
+                            </span>
+                            {v.ip && (
+                              <span className="text-[11px] font-mono text-[#8b949e] bg-[#090d14] border border-[#262c38] px-2 py-0.5 rounded-lg">
+                                {v.ip}
                               </span>
-                              <span>•</span>
-                              <span className="inline-flex items-center gap-1">
-                                {v.device === 'mobile' ? (
-                                  <Smartphone className="w-3.5 h-3.5 text-purple-400" />
-                                ) : (
-                                  <Monitor className="w-3.5 h-3.5 text-blue-400" />
-                                )}
-                                <span>{v.device === 'mobile' ? 'Mobil' : 'Masaüstü'}</span>
-                              </span>
-                              {v.ip && (
-                                <>
-                                  <span>•</span>
-                                  <span className="font-mono text-[11px] text-[#8b949e] px-1.5 py-0.5 rounded bg-[#0d1117] border border-[#21262d]">
-                                    {v.ip}
-                                  </span>
-                                </>
+                            )}
+                          </div>
+
+                          {/* Sağ Kısım: Kaynak & Zaman */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className={`text-[11px] font-mono font-bold px-2.5 py-1 rounded-xl border flex items-center gap-1 ${ref.badge}`}>
+                              <span>{ref.icon}</span>
+                              <span className="hidden xs:inline">{ref.name}</span>
+                            </span>
+                            <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span>{timeStr}</span>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 2. AKTİVİTE / ŞU AN NE İNCELİYOR? (FERAH VE NET KART BÖLÜMÜ) */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0a0d14] border border-[#222834] rounded-xl sm:rounded-2xl p-3 sm:p-4">
+                          <div className="flex items-start sm:items-center gap-3 min-w-0">
+                            {/* Aksiyon İkonu */}
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 border ${
+                              act.type === 'listing' ? 'bg-amber-500/15 border-amber-500/30 text-amber-300' :
+                              act.type === 'city' ? 'bg-purple-500/15 border-purple-500/30 text-purple-300' :
+                              act.type === 'search' ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-300' :
+                              'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                            }`}>
+                              {act.actionIcon}
+                            </div>
+
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                                <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${act.badgeStyle}`}>
+                                  {act.badgeLabel}
+                                </span>
+                                <span className="text-xs font-mono text-amber-400 font-bold truncate max-w-[260px] sm:max-w-md">
+                                  {v.path || '/'}
+                                </span>
+                              </div>
+
+                              <h4 className="text-sm sm:text-base font-extrabold text-white truncate">
+                                {act.displayTitle}
+                              </h4>
+
+                              {v.searchKeyword && (
+                                <span className="text-xs text-cyan-300 font-mono mt-0.5">
+                                  🔍 Arama: <strong>&quot;{v.searchKeyword}&quot;</strong>
+                                </span>
                               )}
                             </div>
                           </div>
 
-                          {/* Sağ Kısım: Zaman & Trafik Kaynağı */}
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/20 flex items-center gap-1.5 shadow-sm">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                              <span>{timeStr}</span>
-                            </span>
-                            <span className={`px-2.5 py-1 rounded-xl text-xs font-mono font-bold border flex items-center gap-1 ${ref.badge}`}>
-                              <span>{ref.icon}</span>
-                              <span className="hidden xs:inline">{ref.name}</span>
-                            </span>
-                          </div>
+                          {/* Doğrudan Sitede Sayfayı Aç Butonu */}
+                          <a
+                            href={targetDirectUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`px-3.5 py-2 rounded-xl text-xs font-black shrink-0 flex items-center justify-center gap-1.5 transition-all self-end sm:self-center border shadow-sm active:scale-95 ${
+                              dom.id === 'escturkiye'
+                                ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40 hover:bg-fuchsia-500 hover:text-white'
+                                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
+                            }`}
+                            title={`${dom.name} sitesinde aç`}
+                          >
+                            <span>{dom.title}&apos;de Aç</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
                         </div>
 
-                        {/* 2. SATIR: NE YAPIYOR? (AKTİF SAYFA VE İLAN VİTRİNİ) */}
-                        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col sm:flex-row sm:items-center justify-between gap-3 group-hover:border-[#30363d] transition-colors">
-                          <div className="flex flex-col min-w-0">
-                            {/* Aksiyon Türü ve Yol */}
-                            <div className="flex items-center gap-2 flex-wrap mb-1">
-                              <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black font-heading tracking-wider flex items-center gap-1 border ${act.badgeStyle}`}>
-                                <span>{act.actionIcon}</span>
-                                <span>{act.badgeLabel}</span>
-                              </span>
+                        {/* 3. YOLCULUK AKIŞI: BUTON SAĞDA & 1- EN BAŞTA KRONOLOJİK */}
+                        {v.totalActions > 1 && (() => {
+                          const chronologicalHistory = [...v.history].sort(
+                            (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                          );
+                          const firstVisitedTime = new Date(chronologicalHistory[0].createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
-                              <span className="font-mono text-xs text-amber-400 font-bold truncate max-w-[220px] sm:max-w-md bg-[#161b22] px-2 py-0.5 rounded-md border border-[#21262d]">
-                                {v.path || '/'}
-                              </span>
-                            </div>
-
-                            {/* Sayfa / İlan Başlığı */}
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm sm:text-base text-white font-extrabold truncate">
-                                {act.displayTitle}
-                              </span>
-                            </div>
-
-                            {/* Arama Kelimesi Varsa */}
-                            {v.searchKeyword && (
-                              <div className="flex items-center gap-1.5 mt-1 text-xs text-cyan-300 font-mono bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-lg w-fit">
-                                <Search className="w-3 h-3 text-cyan-400" />
-                                <span>Aranan: <strong>&quot;{v.searchKeyword}&quot;</strong></span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Doğrudan İlgili Sitede Sayfayı Aç Butonu */}
-                          <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                            <a 
-                              href={targetDirectUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`px-3.5 py-2 rounded-xl sm:rounded-2xl text-xs font-black font-heading shrink-0 flex items-center gap-1.5 transition-all shadow-md active:scale-95 border ${
-                                dom.id === 'escturkiye'
-                                  ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40 hover:bg-fuchsia-500 hover:text-white'
-                                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
-                              }`}
-                              title={`${dom.name} sitesinde aç`}
-                            >
-                              <span>{dom.title}&apos;de Aç</span>
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                          </div>
-                        </div>
-
-                        {/* 3. SATIR: GEZİNME AKIŞI (EĞER BİRDEN FAZLA SAYFA GEZDİYSE) */}
-                        {v.totalActions > 1 && (
-                          <div className="flex flex-col gap-2 pt-1 border-t border-[#21262d]">
-                            <div className="flex items-center justify-between">
-                              <button
-                                type="button"
-                                onClick={() => setRadarExpandedKey(isExpanded ? null : (v.sessionKey || idx.toString()))}
-                                className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 py-1 px-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 active:scale-95 transition-all"
-                              >
-                                <Route className="w-3.5 h-3.5" />
-                                <span>🔥 Bu Ziyaretçi Toplam {v.totalActions} Sayfa Gezdi ({v.pages?.length || 1} Farklı Sayfa)</span>
-                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5 ml-1" /> : <ChevronDown className="w-3.5 h-3.5 ml-1" />}
-                              </button>
-
-                              <span className="text-[11px] text-[#8b949e] font-mono hidden sm:inline">
-                                Tarayıcı: {v.browser || 'Chrome'} • {v.os || 'Android'}
-                              </span>
-                            </div>
-
-                            {/* Akordeon: Ziyaretçinin Adım Adım Gezinme Geçmişi */}
-                            {isExpanded && v.history && v.history.length > 0 && (
-                              <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-[#090d13] border border-amber-500/20 animate-in fade-in duration-200">
-                                <div className="text-[10px] font-black text-amber-400/90 uppercase tracking-wider flex items-center justify-between pb-1 border-b border-[#21262d]">
-                                  <span>Ziyaret Akışı Kronolojisi</span>
-                                  <span className="font-mono text-[#8b949e]">Son Adımdan İlk Adıma</span>
+                          return (
+                            <div className="pt-2 border-t border-[#222834] flex flex-col gap-2">
+                              {/* Alt Bar: Sol = Özet Bilgi, Sağ = Yolculuk Butonu (Kullanıcı Talebi) */}
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <div className="flex items-center gap-2 text-xs text-[#8b949e]">
+                                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                                    <Route className="w-3.5 h-3.5" />
+                                    <span>Toplam {v.totalActions} Sayfa Gezdi</span>
+                                  </span>
+                                  <span>•</span>
+                                  <span>İlk Giriş: {firstVisitedTime}</span>
+                                  <span>•</span>
+                                  <span>{v.pages?.length || 1} Farklı Sayfa</span>
                                 </div>
-                                <div className="flex flex-col gap-1 max-h-48 overflow-y-auto pr-1">
-                                  {v.history.map((step: any, sIdx: number) => (
-                                    <div 
-                                      key={step._id || sIdx}
-                                      className="flex items-center justify-between gap-2 text-xs font-mono py-1 px-2.5 rounded-lg bg-[#161b22] border border-[#21262d]"
-                                    >
-                                      <div className="flex items-center gap-2 min-w-0">
-                                        <span className="text-[10px] font-bold text-amber-400/70 shrink-0">
-                                          #{v.history.length - sIdx}
-                                        </span>
-                                        <span className="text-white truncate" title={step.path}>
-                                          {step.path || '/'}
-                                        </span>
-                                      </div>
-                                      <span className="text-[11px] text-[#8b949e] shrink-0">
-                                        {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
+
+                                {/* SAĞDAKİ BUTON */}
+                                <button
+                                  type="button"
+                                  onClick={() => setRadarExpandedKey(isExpanded ? null : (v.sessionKey || idx.toString()))}
+                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 border active:scale-95 shrink-0 ml-auto ${
+                                    isExpanded 
+                                      ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black' 
+                                      : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                                  }`}
+                                >
+                                  <span>Yolculuk Akışı ({v.totalActions} Adım)</span>
+                                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                                </button>
                               </div>
-                            )}
-                          </div>
-                        )}
+
+                              {/* Akordeon Açıldığında: 1- EN BAŞTA KRONOLOJİK SIRALAMA */}
+                              {isExpanded && (
+                                <div className="p-3 bg-[#0a0d14] border border-amber-500/30 rounded-xl flex flex-col gap-1.5 animate-in fade-in duration-200">
+                                  <div className="flex items-center justify-between pb-1.5 border-b border-[#222834] text-[10px] font-mono text-[#8b949e]">
+                                    <span className="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                                      <span>⏱️ Ziyaretçi Adım Geçmişi (İlk Girişten Güncele)</span>
+                                    </span>
+                                    <span>Saat / Süre</span>
+                                  </div>
+
+                                  <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto pr-1">
+                                    {chronologicalHistory.map((step: any, stepIdx: number) => {
+                                      const isFirst = stepIdx === 0;
+                                      const isLatest = stepIdx === chronologicalHistory.length - 1;
+                                      return (
+                                        <div
+                                          key={step._id || stepIdx}
+                                          className={`flex items-center justify-between gap-2 text-xs font-mono py-1.5 px-3 rounded-lg border transition-all ${
+                                            isLatest 
+                                              ? 'bg-emerald-500/10 border-emerald-500/40 text-white' 
+                                              : isFirst 
+                                              ? 'bg-amber-500/5 border-amber-500/20 text-[#c9d1d9]' 
+                                              : 'bg-[#12161f] border-[#222834] text-[#8b949e]'
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2 min-w-0">
+                                            <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-black shrink-0 ${
+                                              isLatest 
+                                                ? 'bg-emerald-500 text-slate-950' 
+                                                : isFirst 
+                                                ? 'bg-amber-500 text-slate-950' 
+                                                : 'bg-[#222834] text-[#8b949e]'
+                                            }`}>
+                                              {stepIdx + 1}
+                                            </span>
+                                            <span className="text-white truncate font-medium" title={step.path}>
+                                              {step.path || '/'}
+                                            </span>
+                                            {isFirst && (
+                                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold shrink-0">
+                                                İlk Giriş
+                                              </span>
+                                            )}
+                                            {isLatest && (
+                                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/25 text-emerald-300 font-bold shrink-0 flex items-center gap-1">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                                                Şu An Burada
+                                              </span>
+                                            )}
+                                          </div>
+
+                                          <div className="flex items-center gap-2 shrink-0 text-[11px] text-[#8b949e]">
+                                            {step.durationSeconds > 0 && (
+                                              <span className="text-emerald-400 font-bold">{step.durationSeconds}s</span>
+                                            )}
+                                            <span>
+                                              {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })
