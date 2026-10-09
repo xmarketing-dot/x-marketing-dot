@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import ExoClickBanner from '@/components/ads/ExoClickBanner';
+import VipRentalBanner from './VipRentalBanner';
 
 export interface BannerAdData {
   _id: string;
@@ -69,7 +69,7 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     );
   }
 
-  // 2. YAYINDA DOLU REKLAM VARSA (Müşteri Banner'ı)
+  // 2. YAYINDA DOLU REKLAM VARSA (Müşteri Satın Almış Banner)
   if (banner) {
     return (
       <div className="w-full sponsor-banner-container no-safe-blur my-1.5 sm:my-2">
@@ -104,6 +104,6 @@ export default function SponsorBannerArea({ konum = 'anasayfa', initialBanner }:
     );
   }
 
-  // 3. REKLAM YOKSA -> SADECE EXOCLICK BANNER (Reklam gelene kadar 0px yer kaplar)
-  return <ExoClickBanner zoneId="6050980" />;
+  // 3. AKTİF BANNER YOKSA -> ULTRA PRESTİJLİ "BU ALAN KİRALIKTIR / VIP SPONSOR ALANI" (WhatsApp İle Direkt Satış)
+  return <VipRentalBanner konum={konum} />;
 }

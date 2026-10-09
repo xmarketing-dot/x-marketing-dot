@@ -239,37 +239,4 @@ html[data-keyboard-open="true"] .fixed.bottom-0:not(.chat-input-bar):not(.keyboa
 .animate-badge-fire {
   animation: badgeFirePulse 1.8s ease-in-out infinite;
 }
-
-/* ExoClick Centered 300x100 Mobile Banner */
-.exoclick-responsive-box.has-ad {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  width: 100% !important;
-}
-
-.exoclick-responsive-box.has-ad ins.eas6a97888e10 {
-  display: block !important;
-  width: 300px !important;
-  max-width: 100% !important;
-  height: 100px !important;
-  max-height: 100px !important;
-  margin: 0 auto !important;
-  overflow: hidden !important;
-  text-align: center !important;
-}
-
-.exoclick-responsive-box.has-ad ins.eas6a97888e10 img,
-.exoclick-responsive-box.has-ad ins.eas6a97888e10 a,
-.exoclick-responsive-box.has-ad ins.eas6a97888e10 video,
-.exoclick-responsive-box.has-ad ins.eas6a97888e10 iframe {
-  display: block !important;
-  width: 300px !important;
-  max-width: 100% !important;
-  height: 100px !important;
-  max-height: 100px !important;
-  object-fit: cover !important;
-  border-radius: 0.75rem !important;
-  margin: 0 auto !important;
-}
+
