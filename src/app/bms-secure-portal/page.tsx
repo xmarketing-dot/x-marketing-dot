@@ -35,7 +35,7 @@ export default function BmsSecurePortalDashboard() {
   const [showOnlineUsersModal, setShowOnlineUsersModal] = useState(false);
   const [showActiveVisitorsModal, setShowActiveVisitorsModal] = useState(false);
   const [radarDomainFilter, setRadarDomainFilter] = useState<'all' | 'besteskort' | 'escturkiye'>('all');
-  const [radarTypeFilter, setRadarTypeFilter] = useState<'all' | 'listing' | 'city' | 'search'>('all');
+  const [radarTypeFilter, setRadarTypeFilter] = useState<'all' | 'listing' | 'city' | 'home' | 'search'>('all');
   const [radarExpandedKey, setRadarExpandedKey] = useState<string | null>(null);
 
   // Mobile Drawers
@@ -4572,13 +4572,14 @@ export default function BmsSecurePortalDashboard() {
                   <th className="py-2.5 px-3">GÜVENLİK / SPAM ANALİZİ</th>
                   <th className="py-2.5 px-3">GİRİLEN DOMAİN</th>
                   <th className="py-2.5 px-3">
-                    {visitorGroupingMode === 'grouped' ? 'SON SAYFA & GEZİNTİ ADIMLARI' : 'GEZİLEN SAYFA'}
+                    {visitorGroupingMode === 'grouped' ? 'SON GEZİLEN SAYFA' : 'GEZİLEN SAYFA'}
                   </th>
                   <th className="py-2.5 px-3">TRAFİK KAYNAĞI</th>
                   <th className="py-2.5 px-3">ARAMA KELİMESİ</th>
                   <th className="py-2.5 px-3">CİHAZ / TARAYICI</th>
                   <th className="py-2.5 px-3">SÜRE</th>
                   <th className="py-2.5 px-3">ZAMAN</th>
+                  <th className="py-2.5 px-3 text-right">YOLCULUK AKIŞI</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#21262d]">
@@ -4640,26 +4641,14 @@ export default function BmsSecurePortalDashboard() {
                               <span className="font-mono text-white text-[11px] truncate font-medium" title={gv.latestPath}>
                                 {gv.latestPath}
                               </span>
-                              <div className="flex items-center gap-2">
-                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black font-mono border flex items-center gap-1 w-fit ${
-                                  gv.totalViews > 1
-                                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                    : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
-                                }`}>
-                                  {gv.totalViews > 1 ? '🔥' : '📄'}
-                                  <span>{gv.totalViews} Sayfa Gezdi</span>
-                                </span>
-                                {gv.totalViews > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleExpandVisitorIp(gv.ip)}
-                                    className="text-[10px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-0.5 underline font-mono"
-                                  >
-                                    <span>{isExpanded ? 'Gizle' : 'Yolculuk'}</span>
-                                    {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                                  </button>
-                                )}
-                              </div>
+                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-black font-mono border flex items-center gap-1 w-fit ${
+                                gv.totalViews > 1
+                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                  : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
+                              }`}>
+                                {gv.totalViews > 1 ? '🔥' : '📄'}
+                                <span>{gv.totalViews} Sayfa Gezdi</span>
+                              </span>
                             </div>
                           </td>
 
@@ -4694,12 +4683,33 @@ export default function BmsSecurePortalDashboard() {
                           <td className="py-3 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
                             {new Date(gv.lastVisitedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                           </td>
+
+                          {/* EN SAĞDA: YOLCULUK / GENİŞLET BUTONU */}
+                          <td className="py-3 px-3 text-right">
+                            {gv.totalViews > 1 ? (
+                              <button
+                                type="button"
+                                onClick={() => toggleExpandVisitorIp(gv.ip)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all inline-flex items-center gap-1.5 border active:scale-95 whitespace-nowrap shadow-sm ${
+                                  isExpanded
+                                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
+                                    : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20 hover:text-white'
+                                }`}
+                              >
+                                <Route className="w-3.5 h-3.5" />
+                                <span>{isExpanded ? 'Gizle' : `Yolculuk (${gv.totalViews})`}</span>
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                              </button>
+                            ) : (
+                              <span className="text-[10px] text-[#484f58] font-mono">1 Adım</span>
+                            )}
+                          </td>
                         </tr>
 
                         {/* Akordeon Satırı: Gezinme Yolculuğu */}
                         {isExpanded && gv.history.length > 0 && (
                           <tr className="bg-[#070a0f] border-b border-[#30363d]">
-                            <td colSpan={9} className="py-3 px-5">
+                            <td colSpan={10} className="py-3 px-5">
                               <div className="p-3.5 rounded-2xl bg-[#161b22] border border-amber-500/30 flex flex-col gap-2.5">
                                 <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
                                   <div className="flex items-center gap-2">
@@ -4838,6 +4848,10 @@ export default function BmsSecurePortalDashboard() {
                           {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                         </td>
 
+                        {/* Yolculuk Sütunu (Raw Tek Satır) */}
+                        <td className="py-3 px-3 text-right text-[10px] text-[#484f58] font-mono">
+                          —
+                        </td>
                       </tr>
                     );
                   })
@@ -5434,28 +5448,35 @@ export default function BmsSecurePortalDashboard() {
           return { name: 'Direkt Giriş', icon: '🔗', badge: 'bg-slate-800/80 text-slate-300 border-slate-700' };
         };
 
-        // Metrik sayıları
-        const besteskortCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'besteskort').length;
-        const escturkiyeCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'escturkiye').length;
-        const listingViewingCount = rawActiveList.filter((v: any) => (v.path || '').startsWith('/ilan/')).length;
-        const searchCount = rawActiveList.filter((v: any) => v.searchKeyword || (v.path || '').startsWith('/ara')).length;
-        const cityViewingCount = rawActiveList.filter((v: any) => {
-          const p = v.path || '/';
-          return !p.startsWith('/ilan/') && !p.startsWith('/ara') && p !== '/' && !p.startsWith('/admin') && !p.startsWith('/bms');
-        }).length;
-        const mobileViewers = rawActiveList.filter((v: any) => v.device === 'mobile').length;
-
-        // Filtrelenmiş liste
-        const filteredList = rawActiveList.filter((v: any) => {
+        // 1. Domain bazlı filtreleme
+        const activeDomainList = rawActiveList.filter((v: any) => {
           const dom = getRadarDomain(v.hostname, v.referer);
           if (radarDomainFilter === 'besteskort' && dom.id !== 'besteskort') return false;
           if (radarDomainFilter === 'escturkiye' && dom.id !== 'escturkiye') return false;
+          return true;
+        });
 
+        // 2. Metrik sayıları (Domain ve kategori bazında tam dinamik)
+        const besteskortCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'besteskort').length;
+        const escturkiyeCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'escturkiye').length;
+
+        const activeDomainListingCount = activeDomainList.filter((v: any) => (v.path || '').startsWith('/ilan/')).length;
+        const activeDomainSearchCount = activeDomainList.filter((v: any) => v.searchKeyword || (v.path || '').startsWith('/ara')).length;
+        const activeDomainHomeCount = activeDomainList.filter((v: any) => (v.path || '/') === '/').length;
+        const activeDomainCityCount = activeDomainList.filter((v: any) => {
+          const p = v.path || '/';
+          return !p.startsWith('/ilan/') && !p.startsWith('/ara') && p !== '/' && !p.startsWith('/admin') && !p.startsWith('/bms');
+        }).length;
+        const mobileViewers = activeDomainList.filter((v: any) => v.device === 'mobile').length;
+
+        // 3. Nihai filtrelenmiş liste
+        const filteredList = activeDomainList.filter((v: any) => {
+          const dom = getRadarDomain(v.hostname, v.referer);
           const act = getRadarAction(v, dom);
           if (radarTypeFilter === 'listing' && act.type !== 'listing') return false;
           if (radarTypeFilter === 'city' && act.type !== 'city') return false;
+          if (radarTypeFilter === 'home' && act.type !== 'home') return false;
           if (radarTypeFilter === 'search' && act.type !== 'search') return false;
-
           return true;
         });
 
@@ -5484,14 +5505,51 @@ export default function BmsSecurePortalDashboard() {
                         <h3 className="font-bold text-base sm:text-xl text-white font-heading tracking-tight">
                           Canlı Ziyaretçi &amp; İlan İzleme Radarı
                         </h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-bold flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                          {rawActiveList.length} Aktif Kullanıcı
-                        </span>
+                        {/* DİNAMİK VE AÇIKLAYICI BAŞLIK ROZETİ */}
+                        {radarTypeFilter === 'listing' ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                            👑 {activeDomainListingCount} Canlı İlan İzleyen
+                          </span>
+                        ) : radarTypeFilter === 'city' ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
+                            📍 {activeDomainCityCount} Şehir/Kategori Gezen
+                          </span>
+                        ) : radarTypeFilter === 'home' ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                            🏠 {activeDomainHomeCount} Ana Sayfada
+                          </span>
+                        ) : radarTypeFilter === 'search' ? (
+                          <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                            🔍 {activeDomainSearchCount} Arama Yapan
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-bold flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                            {activeDomainList.length} Canlı Ziyaretçi {radarDomainFilter !== 'all' ? `(${radarDomainFilter === 'besteskort' ? 'besteskort' : 'escturkiye'})` : ''}
+                          </span>
+                        )}
                       </div>
-                      <span className="text-[11px] text-[#8b949e] hidden xs:inline mt-0.5">
-                        Gerçek zamanlı domain ayrımı ve kullanıcıların şu anda aktif olarak incelediği sayfalar.
-                      </span>
+                      <div className="flex items-center gap-2 text-[11px] text-[#8b949e] mt-1 flex-wrap font-mono">
+                        <span className="text-[#c9d1d9] font-bold">Canlı Sayfa Dağılımı:</span>
+                        <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 font-bold">
+                          👑 {activeDomainListingCount} İlan Başında
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 font-bold">
+                          📍 {activeDomainCityCount} Şehir Vitrini
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold">
+                          🏠 {activeDomainHomeCount} Ana Sayfa
+                        </span>
+                        {activeDomainSearchCount > 0 && (
+                          <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold">
+                            🔍 {activeDomainSearchCount} Arama
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -5555,7 +5613,7 @@ export default function BmsSecurePortalDashboard() {
                     </button>
                   </div>
 
-                  {/* Kategori Filtre Butonları */}
+                  {/* Kategori & Eylem Filtre Butonları */}
                   <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 sm:pb-0">
                     <button
                       type="button"
@@ -5566,40 +5624,53 @@ export default function BmsSecurePortalDashboard() {
                           : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-white'
                       }`}
                     >
-                      Tüm Sayfalar
+                      Tüm Ziyaretçiler ({activeDomainList.length})
                     </button>
                     <button
                       type="button"
                       onClick={() => setRadarTypeFilter('listing')}
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
                         radarTypeFilter === 'listing'
-                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/50'
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm'
+                          : activeDomainListingCount > 0
+                          ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
                           : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-amber-300'
                       }`}
                     >
-                      <span>👑 İlan Bakanlar ({listingViewingCount})</span>
+                      <span>👑 İlan Bakanlar ({activeDomainListingCount})</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setRadarTypeFilter('city')}
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
                         radarTypeFilter === 'city'
-                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/50'
+                          ? 'bg-purple-500 text-white border-purple-400 font-black shadow-sm'
                           : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-purple-300'
                       }`}
                     >
-                      <span>📍 Şehir Gezenler ({cityViewingCount})</span>
+                      <span>📍 Şehir Gezenler ({activeDomainCityCount})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRadarTypeFilter('home')}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
+                        radarTypeFilter === 'home'
+                          ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black shadow-sm'
+                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-emerald-300'
+                      }`}
+                    >
+                      <span>🏠 Ana Sayfa ({activeDomainHomeCount})</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setRadarTypeFilter('search')}
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
                         radarTypeFilter === 'search'
-                          ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/50'
+                          ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-sm'
                           : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-cyan-300'
                       }`}
                     >
-                      <span>🔍 Arama ({searchCount})</span>
+                      <span>🔍 Arama ({activeDomainSearchCount})</span>
                     </button>
                   </div>
                 </div>
@@ -5609,12 +5680,18 @@ export default function BmsSecurePortalDashboard() {
               <div className="overflow-y-auto flex-1 p-3 sm:p-5 flex flex-col gap-2.5 custom-scrollbar bg-[#090d14]">
                 {filteredList.length === 0 ? (
                   <div className="py-20 text-center text-xs text-[#8b949e] flex flex-col items-center justify-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                      <Activity className="w-7 h-7 text-emerald-400 animate-pulse" />
+                    <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                      <Eye className="w-7 h-7" />
                     </div>
-                    <span className="text-sm font-bold text-white">Seçilen Filtrede Aktif Ziyaretçi Bulunamadı</span>
-                    <span className="text-xs text-[#8b949e] max-w-sm">
-                      Farklı bir site filtresi seçebilir veya tüm ziyaretçileri görmek için sıfırlayabilirsiniz.
+                    <span className="text-base font-bold text-white">
+                      {radarTypeFilter === 'listing' 
+                        ? 'Şu Anda Canlı Olarak İlan Detayı İnceleyen Ziyaretçi Yok' 
+                        : 'Seçilen Filtrede Aktif Ziyaretçi Bulunamadı'}
+                    </span>
+                    <span className="text-xs text-[#8b949e] max-w-md leading-relaxed">
+                      {radarTypeFilter === 'listing'
+                        ? `Ziyaretçiler şu anda şehir/kategori vitrinlerini geziyor (${activeDomainCityCount} ziyaretçi). Bir ziyaretçi ilan kartına tıklayıp detay sayfasına geçtiği an canlı olarak burada belirecektir.`
+                        : 'Farklı bir site veya sayfa filtresi seçebilir veya tüm ziyaretçileri görmek için sıfırlayabilirsiniz.'}
                     </span>
                     <button
                       type="button"
@@ -5622,9 +5699,9 @@ export default function BmsSecurePortalDashboard() {
                         setRadarDomainFilter('all');
                         setRadarTypeFilter('all');
                       }}
-                      className="mt-1 px-4 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500 hover:text-slate-950 transition-all"
+                      className="mt-1 px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-black text-xs hover:bg-amber-400 transition-all shadow-md"
                     >
-                      Filtreleri Sıfırla
+                      Tüm Ziyaretçi Akışını Göster ({activeDomainList.length})
                     </button>
                   </div>
                 ) : (
