@@ -48,7 +48,7 @@ export async function GET(req: Request) {
       }
     }
 
-    const activeWindowAgo = new Date(now.getTime() - 15 * 60 * 1000);
+    const activeWindowAgo = new Date(now.getTime() - 3 * 60 * 1000); // Max 3 dakika anlık aktiflik
     const activeUsersQuery: any = {
       $or: [
         { createdAt: { $gte: activeWindowAgo } },

@@ -536,8 +536,9 @@ export default function BmsSecurePortalDashboard() {
   const totals = { fb, google, yandex, x, waClicks, shares };
 
   // ── RADAR VE AKTİF ZİYARETÇİ MOTORU (TEK VE TUTARLI KAYNAK) ──
-  // Banner ("Sitede X Ziyaretçi Aktif") ile Radar Modal ("X Canlı Ziyaretçi") her zaman birebir aynı 15 dakikalık aktiflik penceresini ve oturum gruplamasını kullanır.
-  const fifteenMinAgoMs = Date.now() - 15 * 60 * 1000;
+  // Banner ("Sitede X Ziyaretçi Aktif") ile Radar Modal ("X Canlı Ziyaretçi") her zaman birebir aynı max 3 dakikalık anlık aktiflik penceresini kullanır.
+  const activeWindowMs = 3 * 60 * 1000; // 3 dakika max anlık canlılık
+  const activeThresholdMs = Date.now() - activeWindowMs;
   const visitorSessionsMap = new Map<string, any>();
 
   (recentVisitors as any[] || []).forEach((v: any) => {
@@ -575,7 +576,7 @@ export default function BmsSecurePortalDashboard() {
   });
 
   const rawActiveList = Array.from(visitorSessionsMap.values())
-    .filter((v: any) => v.latestTime >= fifteenMinAgoMs)
+    .filter((v: any) => v.latestTime >= activeThresholdMs)
     .sort((a, b) => b.latestTime - a.latestTime);
 
   // Radar Domain Tespiti
