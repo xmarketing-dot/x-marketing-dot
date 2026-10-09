@@ -8,6 +8,24 @@ import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 import { trackEvent } from '@/components/common/AnalyticsTracker';
 
+// Global scroll takibi: Kullanıcı parmağıyla scroll yaparken kartların resim değiştirmesini dondurur (FPS düşüşünü sıfırlar)
+let isGlobalScrolling = false;
+let globalScrollTimeout: any = null;
+
+if (typeof window !== 'undefined') {
+  window.addEventListener(
+    'scroll',
+    () => {
+      isGlobalScrolling = true;
+      if (globalScrollTimeout) clearTimeout(globalScrollTimeout);
+      globalScrollTimeout = setTimeout(() => {
+        isGlobalScrolling = false;
+      }, 150);
+    },
+    { passive: true }
+  );
+}
+
 interface CompactListingCardProps {
   listing: {
     _id: string;
@@ -31,14 +49,17 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   const isGold = !isPassive && rozet === 'gold';
   const isSilver = !isPassive && (rozet === 'silver' || rozet === 'standart');
 
-  // Extract all unique images with robust string/object format support
+  // Extract all unique images with robust string/object format support (Duplicate temizliği)
   const allImages = React.useMemo(() => {
     const list: string[] = [];
     const pushImg = (val: any) => {
       if (!val) return;
       const url = typeof val === 'string' ? val : val?.url;
-      if (typeof url === 'string' && url.trim() && !list.push(url.trim())) {
-        list.push(url.trim());
+      if (typeof url === 'string') {
+        const cleanUrl = url.trim();
+        if (cleanUrl && !list.includes(cleanUrl)) {
+          list.push(cleanUrl);
+        }
       }
     };
 
@@ -65,7 +86,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
 
-  // IntersectionObserver: Yalnızca ekranda görünen kartlar timer çalıştırsın (CPU & Pil tasarrufu)
+  // IntersectionObserver: Yalnızca fiilen ekranda olan kartlar timer çalıştırsın (rootMargin: 0px)
   useEffect(() => {
     if (!cardRef.current || typeof IntersectionObserver === 'undefined') {
       setIsVisible(true);
@@ -77,7 +98,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
         const [entry] = entries;
         setIsVisible(entry.isIntersecting);
       },
-      { rootMargin: '100px', threshold: 0.15 }
+      { rootMargin: '0px', threshold: 0.25 }
     );
 
     observer.observe(cardRef.current);
@@ -97,15 +118,16 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     }
   }, [isVisible, listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
 
-  // Auto-slide images periodically ONLY IF VISIBLE on screen
+  // Auto-slide: Her kart kendi bağımsız rastgele ritminde döner; parmakla scroll sırasında kasma olmasın diye dondurulur
   useEffect(() => {
     if (!isVisible || !allImages || allImages.length <= 1) return;
 
-    // Staggered interval between 2.8s and 3.6s
+    // Staggered interval between 2.8s and 3.6s (Hız birebir korundu)
     const hash = (listing.slug || listing._id || 'a').charCodeAt(0);
     const intervalTime = 2800 + (hash % 800);
 
     const timer = setInterval(() => {
+      if (isGlobalScrolling) return; // Parmak scroll yaparken FPS düşmesini önler
       setCurrentIndex((prev) => (prev + 1) % allImages.length);
     }, intervalTime);
 
@@ -186,34 +208,27 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar) ──────────────── */}
-      <Link href={`/ilan/${listing.slug}`} className="absolute inset-0 block w-full h-full z-0">
-        {allImages.map((imgUrl, idx) => {
-          const isCurrent = idx === currentIndex;
-          // Sadece aktif ve sonraki fotoğrafı DOM'da tut (Bellek ve GPU rahatlatması)
-          const shouldRender = isCurrent || Math.abs(idx - currentIndex) <= 1 || (idx === 0 && currentIndex === allImages.length - 1);
-          if (!shouldRender) return null;
-
-          return (
-            <div
-              key={idx}
-              className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
-                isCurrent ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-              }`}
-            >
+      {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar - KAYARAK SLIDE GEÇİŞ) ── */}
+      <Link href={`/ilan/${listing.slug}`} className="absolute inset-0 block w-full h-full z-0 overflow-hidden">
+        <div
+          className="flex w-full h-full transition-transform duration-500 ease-out will-change-transform"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {allImages.map((imgUrl, idx) => (
+            <div key={idx} className="relative w-full h-full flex-shrink-0">
               <Image
                 src={imgUrl}
                 alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
                 fill
-                loading="lazy"
+                loading={idx <= 1 ? 'eager' : 'lazy'}
                 sizes="(max-width: 640px) 33vw, 240px"
                 className={`object-cover object-top ${
                   isPassive ? 'grayscale contrast-125 brightness-75' : ''
                 }`}
               />
             </div>
-          );
-        })}
+          ))}
+        </div>
       </Link>
 
       {/* Pasif İlan Çapraz Şerit (Ribbon) */}
