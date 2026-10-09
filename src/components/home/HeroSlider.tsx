@@ -378,6 +378,7 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
         // CANLI İLAN KARTI
         (() => {
           const current = currentSlot.data;
+          if (!current) return null;
           const formattedNumber = formatWhatsAppNumber(current?.whatsappNumara || '');
           const sliderUrl = `${origin}/ilan/${current.slug}`;
           const ilName = current.ilSlug ? current.ilSlug.charAt(0).toUpperCase() + current.ilSlug.slice(1) : '';
@@ -423,13 +424,21 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
                   </span>
                 </div>
 
-                {/* SAĞ: KONUM (LOCATION - SAĞ TARAFTA BELİRGİN & LÜKS) */}
-                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/85 backdrop-blur-md border-2 border-amber-400 text-amber-300 font-heading font-black text-xs sm:text-sm tracking-wider uppercase shadow-xl shrink-0">
-                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
-                  <span className="truncate max-w-[140px] sm:max-w-[220px]">
-                    {ilName ? `${ilName}${ilceName ? ` / ${ilceName}` : ''}` : 'TÜRKİYE'}
-                  </span>
-                </span>
+                {/* SAĞ: YENİ İL & İLÇE KART TASARIMI (LÜKS GPS PODU) */}
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/85 backdrop-blur-xl border border-amber-400/70 shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_15px_rgba(251,191,36,0.25)] shrink-0">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-amber-400/20 border border-amber-400/50 flex items-center justify-center shrink-0">
+                    <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 fill-amber-400/40" />
+                  </div>
+                  <div className="flex items-center gap-1 text-[11px] sm:text-xs md:text-sm font-heading font-black uppercase tracking-wider">
+                    <span className="text-white drop-shadow-sm">{ilName || 'TÜRKİYE'}</span>
+                    {ilceName && (
+                      <>
+                        <span className="text-amber-400/80 font-bold">/</span>
+                        <span className="text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]">{ilceName}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
 
               {/* 2. ORTA: MODEL İSMİ VE BAŞLIK (AYRI TAM SATIR - ULTRA PREMİUM & ASLA ÇAKIŞMAZ) */}
@@ -448,19 +457,21 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={handleWaClick}
-                  className="py-3.5 sm:py-4 px-3 rounded-2xl bg-[#22c55e] hover:bg-[#16a34a] text-white font-black text-xs sm:text-sm tracking-wide shadow-2xl shadow-emerald-500/30 active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2"
-                  title="WhatsApp ile Mesaj Gönder"
+                  className="py-3.5 sm:py-4 px-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-[0_4px_25px_rgba(16,185,129,0.45)] hover:shadow-[0_4px_30px_rgba(16,185,129,0.65)] active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 border border-emerald-400/30"
+                  title="WhatsApp ile Randevu Al"
                 >
-                  <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-white shrink-0" />
-                  <span>WhatsApp İle Yaz</span>
+                  <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-white shrink-0 drop-shadow" />
+                  <span className="truncate">RANDEVU AL</span>
                 </a>
 
                 <Link
                   href={`/ilan/${current.slug}`}
-                  className="py-3.5 sm:py-4 px-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-2xl shadow-amber-500/30 active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 border border-amber-200"
+                  className="relative overflow-hidden py-3.5 sm:py-4 px-3 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 hover:bg-slate-900 text-amber-300 hover:text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-[0_4px_25px_rgba(251,191,36,0.35)] hover:shadow-[0_4px_30px_rgba(251,191,36,0.55)] active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 border-2 border-amber-400 hover:border-amber-300 group/btn"
                 >
-                  <Crown className="w-4 h-4 sm:w-5 sm:h-5 fill-slate-950 shrink-0" />
-                  <span>Profili İncele</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent group-hover/btn:translate-x-full duration-700 transition-transform pointer-events-none" />
+                  <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 fill-amber-400/30 group-hover/btn:fill-amber-400 transition-all shrink-0" />
+                  <span className="truncate">PROFİLİ İNCELE</span>
+                  <ArrowUpRight className="w-4 h-4 stroke-[3] text-amber-400 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform shrink-0" />
                 </Link>
               </div>
 

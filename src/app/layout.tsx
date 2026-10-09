@@ -8,6 +8,7 @@ import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
 import GlobalKeyboardHandler from '@/components/common/GlobalKeyboardHandler';
 import AdminWhatsAppSync from '@/components/common/AdminWhatsAppSync';
 import { Analytics } from '@vercel/analytics/next';
+import Script from 'next/script';
 import React, { Suspense } from 'react';
 import { headers } from 'next/headers';
 
@@ -174,8 +175,9 @@ export default async function RootLayout({
         />
         
         {/* Yandex Metrika Counters (112120217 & 113056145) - Search Analytics & Heatmap Tracking */}
-        <script
-          type="text/javascript"
+        <Script
+          id="yandex-metrika"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               (function(m,e,t,r,i,k,a){
@@ -227,8 +229,9 @@ export default async function RootLayout({
         </noscript>
 
         {/* Google AdSense */}
-        <script
-          async
+        <Script
+          id="google-adsense"
+          strategy="afterInteractive"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2136071183930796"
           crossOrigin="anonymous"
         />

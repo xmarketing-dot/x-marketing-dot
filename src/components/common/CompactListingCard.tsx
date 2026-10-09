@@ -43,6 +43,7 @@ interface CompactListingCardProps {
 }
 
 export default function CompactListingCard({ listing }: CompactListingCardProps) {
+  if (!listing) return null;
   const isPassive = Boolean(listing.isPassive || listing.status === 'pasif' || listing.status === 'suresi_doldu');
   const rozet = listing.rozet || 'silver';
   const isVip = !isPassive && (rozet === 'vip' || rozet === 'ultravip');
