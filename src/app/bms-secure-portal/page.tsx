@@ -782,7 +782,7 @@ export default function BmsSecurePortalDashboard() {
   });
 
   // Ziyaretçileri IP'ye Göre Grupla (Kullanıcı Yolculuğu / Oturum Analizi)
-  const groupedVisitors = React.useMemo(() => {
+  const groupedVisitors = (() => {
     const map = new Map<string, any>();
 
     for (const v of filteredVisitors) {
@@ -862,7 +862,7 @@ export default function BmsSecurePortalDashboard() {
     }
 
     return Array.from(map.values());
-  }, [filteredVisitors]);
+  })();
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full text-left">
