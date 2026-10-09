@@ -48,7 +48,9 @@ const nextConfig: NextConfig = {
       {
         source: '/api/img/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, s-maxage=31536000, immutable' },
+          { key: 'CDN-Cache-Control', value: 'public, s-maxage=31536000, immutable' },
+          { key: 'Vercel-CDN-Cache-Control', value: 'public, s-maxage=31536000, immutable' },
         ],
       },
       // ── Upload edilen içerikler: cache'lenebilir ama immutable değil ──
