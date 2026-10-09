@@ -48,11 +48,17 @@ export async function GET(req: Request) {
       }
     }
 
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
-    const activeUsersQuery: any = { createdAt: { $gte: fiveMinutesAgo } };
+    const activeWindowAgo = new Date(now.getTime() - 15 * 60 * 1000);
+    const activeUsersQuery: any = {
+      $or: [
+        { createdAt: { $gte: activeWindowAgo } },
+        { updatedAt: { $gte: activeWindowAgo } },
+      ],
+    };
     if (domainFilter && domainFilter !== 'all') {
       if (dateQuery.$or) {
-        activeUsersQuery.$or = dateQuery.$or;
+        activeUsersQuery.$and = [{ $or: activeUsersQuery.$or }, { $or: dateQuery.$or }];
+        delete activeUsersQuery.$or;
       } else if (dateQuery.hostname) {
         activeUsersQuery.hostname = dateQuery.hostname;
       }

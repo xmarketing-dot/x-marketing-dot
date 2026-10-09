@@ -535,6 +535,97 @@ export default function BmsSecurePortalDashboard() {
   });
   const totals = { fb, google, yandex, x, waClicks, shares };
 
+  // ── RADAR VE AKTİF ZİYARETÇİ MOTORU (TEK VE TUTARLI KAYNAK) ──
+  // Banner ("Sitede X Ziyaretçi Aktif") ile Radar Modal ("X Canlı Ziyaretçi") her zaman birebir aynı 15 dakikalık aktiflik penceresini ve oturum gruplamasını kullanır.
+  const fifteenMinAgoMs = Date.now() - 15 * 60 * 1000;
+  const visitorSessionsMap = new Map<string, any>();
+
+  (recentVisitors as any[] || []).forEach((v: any) => {
+    const vTime = new Date(v.createdAt).getTime();
+    const key = v.visitorId || v.ip || v._id;
+    if (!key) return;
+
+    if (!visitorSessionsMap.has(key)) {
+      visitorSessionsMap.set(key, {
+        ...v,
+        sessionKey: key,
+        latestTime: vTime,
+        totalActions: 1,
+        pages: [v.path || '/'],
+        history: [v]
+      });
+    } else {
+      const session = visitorSessionsMap.get(key);
+      session.totalActions += 1;
+      session.history.push(v);
+      if (v.path && !session.pages.includes(v.path)) {
+        session.pages.push(v.path);
+      }
+      if (vTime > session.latestTime) {
+        session.latestTime = vTime;
+        session.path = v.path;
+        session.pageTitle = v.pageTitle;
+        session.searchKeyword = v.searchKeyword || session.searchKeyword;
+        session.createdAt = v.createdAt;
+        session.hostname = v.hostname || session.hostname;
+        session.referer = v.referer || session.referer;
+        session.refererSource = v.refererSource || session.refererSource;
+      }
+    }
+  });
+
+  const rawActiveList = Array.from(visitorSessionsMap.values())
+    .filter((v: any) => v.latestTime >= fifteenMinAgoMs)
+    .sort((a, b) => b.latestTime - a.latestTime);
+
+  // Radar Domain Tespiti
+  const getRadarDomain = (rawHost?: string, rawRef?: string) => {
+    const host = (rawHost || '').toLowerCase();
+    const ref = (rawRef || '').toLowerCase();
+    const isEscTurkiye = host.includes('escturkiye') || host.includes('turkiyeescort') || ref.includes('escturkiye');
+
+    if (isEscTurkiye) {
+      return {
+        id: 'escturkiye',
+        name: 'escturkiye.devs.surf',
+        title: 'ESC Türkiye',
+        icon: '💋',
+        accentColor: 'text-fuchsia-400',
+        badgeStyle: 'bg-fuchsia-500/15 border-fuchsia-500/40 text-fuchsia-300',
+        cardBorder: 'border-l-4 border-l-fuchsia-500',
+        hoverGlow: 'hover:border-fuchsia-500/50 hover:shadow-[0_10px_35px_rgba(217,70,239,0.12)]',
+        bannerBg: 'bg-gradient-to-r from-fuchsia-500/10 via-[#161b22] to-transparent',
+        siteUrl: 'https://escturkiye.devs.surf'
+      };
+    }
+
+    return {
+      id: 'besteskort',
+      name: 'besteskort.online',
+      title: 'Best Eskort',
+      icon: '👑',
+      accentColor: 'text-emerald-400',
+      badgeStyle: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300',
+      cardBorder: 'border-l-4 border-l-emerald-500',
+      hoverGlow: 'hover:border-emerald-500/50 hover:shadow-[0_10px_35px_rgba(16,185,129,0.12)]',
+      bannerBg: 'bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-transparent',
+      siteUrl: 'https://besteskort.online'
+    };
+  };
+
+  // Ana sayfadaki Aktif Ziyaretçi Banner sayısı (Dashboard domain filtresiyle tam senkronize)
+  const dashboardActiveUsers = (() => {
+    if (selectedDomain === 'all') {
+      return rawActiveList.length || activeUsers;
+    }
+    return rawActiveList.filter((v: any) => {
+      const dom = getRadarDomain(v.hostname, v.referer);
+      if (selectedDomain.includes('besteskort')) return dom.id === 'besteskort';
+      if (selectedDomain.includes('escturkiye') || selectedDomain.includes('turkiyeescort')) return dom.id === 'escturkiye';
+      return true;
+    }).length;
+  })();
+
   // ── ŞÜPHELİ TRAFİK, BOT VE SALDIRI TESPİT ANALİZİ ──
   // City/IP tek başına "bot" değildir; daha yüksek riskli sinyal kombinasyonları alarm üretir.
   const getSuspiciousAnalysis = (v: any) => {
@@ -1065,7 +1156,12 @@ export default function BmsSecurePortalDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Canlı Kullanıcı Bannerı */}
             <div 
-              onClick={() => setShowActiveVisitorsModal(true)}
+              onClick={() => {
+                if (selectedDomain.includes('besteskort')) setRadarDomainFilter('besteskort');
+                else if (selectedDomain.includes('escturkiye') || selectedDomain.includes('turkiyeescort')) setRadarDomainFilter('escturkiye');
+                else setRadarDomainFilter('all');
+                setShowActiveVisitorsModal(true);
+              }}
               className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#161b22] to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-xl cursor-pointer hover:border-emerald-400 transition-all group"
             >
               <div className="flex items-center gap-3">
@@ -1077,7 +1173,7 @@ export default function BmsSecurePortalDashboard() {
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="font-black text-emerald-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
-                    Sitede {activeUsers} Ziyaretçi Aktif
+                    Sitede {dashboardActiveUsers} Ziyaretçi Aktif
                   </span>
                   <span className="text-[11px] text-[#8b949e] truncate">Gezilen sayfaları &amp; ilanları gör →</span>
                 </div>
@@ -5284,91 +5380,6 @@ export default function BmsSecurePortalDashboard() {
 
       {/* SİTEDEKİ AKTİF ZİYARETÇİLER VE İNCELENEN İLANLAR CANLI MODAL — SENIOR LEVEL PRO UI */}
       {showActiveVisitorsModal && (() => {
-        const fifteenMinAgoMs = Date.now() - 15 * 60 * 1000;
-        
-        // 1. Ziyaretçileri IP / visitorId bazında session olarak grupla
-        const visitorSessionsMap = new Map<string, any>();
-        
-        (recentVisitors as any[] || []).forEach((v: any) => {
-          const vTime = new Date(v.createdAt).getTime();
-          const key = v.visitorId || v.ip || v._id;
-          if (!key) return;
-
-          if (!visitorSessionsMap.has(key)) {
-            visitorSessionsMap.set(key, {
-              ...v,
-              sessionKey: key,
-              latestTime: vTime,
-              totalActions: 1,
-              pages: [v.path || '/'],
-              history: [v]
-            });
-          } else {
-            const session = visitorSessionsMap.get(key);
-            session.totalActions += 1;
-            session.history.push(v);
-            if (v.path && !session.pages.includes(v.path)) {
-              session.pages.push(v.path);
-            }
-            // En güncel log bilgilerini güncelle
-            if (vTime > session.latestTime) {
-              session.latestTime = vTime;
-              session.path = v.path;
-              session.pageTitle = v.pageTitle;
-              session.searchKeyword = v.searchKeyword || session.searchKeyword;
-              session.createdAt = v.createdAt;
-              session.hostname = v.hostname || session.hostname;
-              session.referer = v.referer || session.referer;
-              session.refererSource = v.refererSource || session.refererSource;
-            }
-          }
-        });
-
-        // 15 dakika içinde aktif olanlar (yoksa en son 40 kayıt)
-        let rawActiveList = Array.from(visitorSessionsMap.values())
-          .filter((v: any) => v.latestTime >= fifteenMinAgoMs)
-          .sort((a, b) => b.latestTime - a.latestTime);
-
-        if (rawActiveList.length === 0) {
-          rawActiveList = Array.from(visitorSessionsMap.values())
-            .sort((a, b) => b.latestTime - a.latestTime)
-            .slice(0, 30);
-        }
-
-        // Domain tespit fonksiyonu
-        const getRadarDomain = (rawHost?: string, rawRef?: string) => {
-          const host = (rawHost || '').toLowerCase();
-          const ref = (rawRef || '').toLowerCase();
-          const isEscTurkiye = host.includes('escturkiye') || host.includes('turkiyeescort') || ref.includes('escturkiye');
-
-          if (isEscTurkiye) {
-            return {
-              id: 'escturkiye',
-              name: 'escturkiye.devs.surf',
-              title: 'ESC Türkiye',
-              icon: '🚀',
-              accentColor: 'text-fuchsia-400',
-              badgeStyle: 'bg-fuchsia-500/15 border-fuchsia-500/40 text-fuchsia-300',
-              cardBorder: 'border-l-4 border-l-fuchsia-500',
-              hoverGlow: 'hover:border-fuchsia-500/50 hover:shadow-[0_10px_35px_rgba(217,70,239,0.12)]',
-              bannerBg: 'bg-gradient-to-r from-fuchsia-500/10 via-[#161b22] to-transparent',
-              siteUrl: 'https://escturkiye.devs.surf'
-            };
-          }
-
-          return {
-            id: 'besteskort',
-            name: 'besteskort.online',
-            title: 'Best Eskort',
-            icon: '🌟',
-            accentColor: 'text-emerald-400',
-            badgeStyle: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300',
-            cardBorder: 'border-l-4 border-l-emerald-500',
-            hoverGlow: 'hover:border-emerald-500/50 hover:shadow-[0_10px_35px_rgba(16,185,129,0.12)]',
-            bannerBg: 'bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-transparent',
-            siteUrl: 'https://besteskort.online'
-          };
-        };
 
         // Ziyaretçi Sayfa / Aksiyon tespit fonksiyonu
         const getRadarAction = (v: any, domMeta: ReturnType<typeof getRadarDomain>) => {
