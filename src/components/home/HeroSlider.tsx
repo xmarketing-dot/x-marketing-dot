@@ -549,10 +549,12 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
                 <button
                   type="button"
                   onClick={handleVitrinNavigation}
-                  className="py-3 sm:py-3.5 px-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-2xl shadow-amber-500/30 active:scale-95 transition-all flex items-center justify-center gap-2 border border-amber-200 text-center"
+                  className="relative overflow-hidden py-3 sm:py-3.5 px-3 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 hover:bg-slate-900 text-amber-300 hover:text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-[0_4px_25px_rgba(251,191,36,0.35)] hover:shadow-[0_4px_30px_rgba(251,191,36,0.55)] active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 border-2 border-amber-400 hover:border-amber-300 text-center group/vbtn"
                 >
-                  <Crown className="w-4 h-4 sm:w-5 sm:h-5 fill-slate-950 shrink-0" />
-                  <span className="truncate">Vitrinde Yer Al</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent group-hover/vbtn:translate-x-full duration-700 transition-transform pointer-events-none" />
+                  <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 fill-amber-400/30 group-hover/vbtn:fill-amber-400 transition-all shrink-0" />
+                  <span className="truncate">VITRIN REKLAM VER</span>
+                  <ArrowUpRight className="w-4 h-4 stroke-[3] text-amber-400 group-hover/vbtn:translate-x-0.5 group-hover/vbtn:-translate-y-0.5 transition-transform shrink-0" />
                 </button>
               </div>
 

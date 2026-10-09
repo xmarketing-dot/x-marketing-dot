@@ -7,6 +7,7 @@ import { MapPin, ShieldCheck, Crown, Award, Medal } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 import { trackEvent } from '@/components/common/AnalyticsTracker';
+import { cardSlideCoordinator } from '@/lib/cardSlideCoordinator';
 
 // Global scroll takibi: Kullanıcı parmağıyla scroll yaparken kartların resim değiştirmesini dondurur (FPS düşüşünü sıfırlar)
 let isGlobalScrolling = false;
@@ -119,21 +120,19 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     }
   }, [isVisible, listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
 
-  // Auto-slide: Her kart kendi bağımsız rastgele ritminde döner; parmakla scroll sırasında kasma olmasın diye dondurulur
+  // Auto-slide: Global koordinatöre kaydolur. Ekranda kaç kart olursa olsun aynı anda sadece 1 kart döner (FPS düşüşü sıfırlanır)
   useEffect(() => {
-    if (!isVisible || !allImages || allImages.length <= 1) return;
+    if (!isVisible || !allImages || allImages.length <= 1 || !listing?._id) return;
 
-    // Staggered interval between 2.8s and 3.6s (Hız birebir korundu)
-    const hash = (listing.slug || listing._id || 'a').charCodeAt(0);
-    const intervalTime = 2800 + (hash % 800);
-
-    const timer = setInterval(() => {
-      if (isGlobalScrolling) return; // Parmak scroll yaparken FPS düşmesini önler
+    const trigger = () => {
       setCurrentIndex((prev) => (prev + 1) % allImages.length);
-    }, intervalTime);
+    };
 
-    return () => clearInterval(timer);
-  }, [isVisible, allImages.length, listing.slug, listing._id]);
+    cardSlideCoordinator.register(listing._id, trigger);
+    return () => {
+      cardSlideCoordinator.unregister(listing._id);
+    };
+  }, [isVisible, allImages.length, listing?._id]);
 
   // Touch Swipe Handlers for Mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -221,7 +220,8 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
                 src={imgUrl}
                 alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
                 fill
-                loading={idx <= 1 ? 'eager' : 'lazy'}
+                loading="lazy"
+                decoding="async"
                 sizes="(max-width: 640px) 33vw, 240px"
                 className={`object-cover object-top ${
                   isPassive ? 'grayscale contrast-125 brightness-75' : ''
