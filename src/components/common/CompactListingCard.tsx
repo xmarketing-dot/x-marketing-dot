@@ -123,9 +123,9 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
   useEffect(() => {
     if (!isVisible || !allImages || allImages.length <= 1) return;
 
-    // Her kart için benzersiz rastgele ritim (3.5s - 4.8s arası bağımsız doğal akış)
+    // Her kart için benzersiz rastgele ritim (5.5s - 8.5s arası sakin lüks akış, GPU yormaz)
     const hash = (listing.slug || listing._id || 'a').charCodeAt(0) + (listing.slug || '').length;
-    const intervalTime = 3500 + (hash % 1300);
+    const intervalTime = 5500 + (hash % 3000);
 
     const timer = setInterval(() => {
       if (isGlobalScrolling) return; // Parmakla scroll yaparken kasma olmasın diye dondurulur
@@ -212,23 +212,19 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
       {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar - KAYARAK SLIDE GEÇİŞ) ── */}
       <Link href={`/ilan/${listing.slug}`} className="absolute inset-0 block w-full h-full z-0 overflow-hidden">
         <div
-          className="flex w-full h-full transition-transform duration-500 ease-out will-change-transform"
+          className="flex w-full h-full transition-transform duration-500 ease-out"
           style={{
             transform: `translate3d(-${currentIndex * 100}%, 0, 0)`,
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
           }}
         >
           {allImages.map((imgUrl, idx) => (
             <div key={idx} className="relative w-full h-full flex-shrink-0">
-              <Image
+              <img
                 src={imgUrl}
                 alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
-                fill
                 loading="lazy"
                 decoding="async"
-                sizes="(max-width: 640px) 33vw, 240px"
-                className={`object-cover object-top ${
+                className={`w-full h-full object-cover object-top select-none pointer-events-none ${
                   isPassive ? 'grayscale contrast-125 brightness-75' : ''
                 }`}
               />
