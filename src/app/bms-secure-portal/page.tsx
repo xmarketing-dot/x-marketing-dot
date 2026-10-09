@@ -34,6 +34,9 @@ export default function BmsSecurePortalDashboard() {
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [showOnlineUsersModal, setShowOnlineUsersModal] = useState(false);
   const [showActiveVisitorsModal, setShowActiveVisitorsModal] = useState(false);
+  const [radarDomainFilter, setRadarDomainFilter] = useState<'all' | 'besteskort' | 'escturkiye'>('all');
+  const [radarTypeFilter, setRadarTypeFilter] = useState<'all' | 'listing' | 'city' | 'search'>('all');
+  const [radarExpandedKey, setRadarExpandedKey] = useState<string | null>(null);
 
   // Mobile Drawers
   const [showPagesDrawer, setShowPagesDrawer] = useState(false);
@@ -5239,39 +5242,210 @@ export default function BmsSecurePortalDashboard() {
 
       {/* SİTEDEKİ AKTİF ZİYARETÇİLER VE İNCELENEN İLANLAR CANLI MODAL — SENIOR LEVEL PRO UI */}
       {showActiveVisitorsModal && (() => {
-        const fiveMinAgoMs = Date.now() - 5 * 60 * 1000;
-        const activeMap = new Map<string, any>();
+        const fifteenMinAgoMs = Date.now() - 15 * 60 * 1000;
+        
+        // 1. Ziyaretçileri IP / visitorId bazında session olarak grupla
+        const visitorSessionsMap = new Map<string, any>();
         
         (recentVisitors as any[] || []).forEach((v: any) => {
           const vTime = new Date(v.createdAt).getTime();
-          if (vTime >= fiveMinAgoMs && !activeMap.has(v.visitorId)) {
-            activeMap.set(v.visitorId, v);
+          const key = v.visitorId || v.ip || v._id;
+          if (!key) return;
+
+          if (!visitorSessionsMap.has(key)) {
+            visitorSessionsMap.set(key, {
+              ...v,
+              sessionKey: key,
+              latestTime: vTime,
+              totalActions: 1,
+              pages: [v.path || '/'],
+              history: [v]
+            });
+          } else {
+            const session = visitorSessionsMap.get(key);
+            session.totalActions += 1;
+            session.history.push(v);
+            if (v.path && !session.pages.includes(v.path)) {
+              session.pages.push(v.path);
+            }
+            // En güncel log bilgilerini güncelle
+            if (vTime > session.latestTime) {
+              session.latestTime = vTime;
+              session.path = v.path;
+              session.pageTitle = v.pageTitle;
+              session.searchKeyword = v.searchKeyword || session.searchKeyword;
+              session.createdAt = v.createdAt;
+              session.hostname = v.hostname || session.hostname;
+              session.referer = v.referer || session.referer;
+              session.refererSource = v.refererSource || session.refererSource;
+            }
           }
         });
 
-        const activeList = activeMap.size > 0 
-          ? Array.from(activeMap.values())
-          : (recentVisitors as any[] || []).slice(0, 30);
+        // 15 dakika içinde aktif olanlar (yoksa en son 40 kayıt)
+        let rawActiveList = Array.from(visitorSessionsMap.values())
+          .filter((v: any) => v.latestTime >= fifteenMinAgoMs)
+          .sort((a, b) => b.latestTime - a.latestTime);
 
-        const listingViewingCount = activeList.filter((v: any) => v.path && v.path.startsWith('/ilan/')).length;
-        const searchCount = activeList.filter((v: any) => v.searchKeyword || (v.path && v.path.startsWith('/ara'))).length;
-        const mobileViewers = activeList.filter((v: any) => v.device === 'mobile').length;
+        if (rawActiveList.length === 0) {
+          rawActiveList = Array.from(visitorSessionsMap.values())
+            .sort((a, b) => b.latestTime - a.latestTime)
+            .slice(0, 30);
+        }
+
+        // Domain tespit fonksiyonu
+        const getRadarDomain = (rawHost?: string, rawRef?: string) => {
+          const host = (rawHost || '').toLowerCase();
+          const ref = (rawRef || '').toLowerCase();
+          const isEscTurkiye = host.includes('escturkiye') || host.includes('turkiyeescort') || ref.includes('escturkiye');
+
+          if (isEscTurkiye) {
+            return {
+              id: 'escturkiye',
+              name: 'escturkiye.devs.surf',
+              title: 'ESC Türkiye',
+              icon: '🚀',
+              accentColor: 'text-fuchsia-400',
+              badgeStyle: 'bg-fuchsia-500/15 border-fuchsia-500/40 text-fuchsia-300',
+              cardBorder: 'border-l-4 border-l-fuchsia-500',
+              hoverGlow: 'hover:border-fuchsia-500/50 hover:shadow-[0_10px_35px_rgba(217,70,239,0.12)]',
+              bannerBg: 'bg-gradient-to-r from-fuchsia-500/10 via-[#161b22] to-transparent',
+              siteUrl: 'https://escturkiye.devs.surf'
+            };
+          }
+
+          return {
+            id: 'besteskort',
+            name: 'besteskort.online',
+            title: 'Best Eskort',
+            icon: '🌟',
+            accentColor: 'text-emerald-400',
+            badgeStyle: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300',
+            cardBorder: 'border-l-4 border-l-emerald-500',
+            hoverGlow: 'hover:border-emerald-500/50 hover:shadow-[0_10px_35px_rgba(16,185,129,0.12)]',
+            bannerBg: 'bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-transparent',
+            siteUrl: 'https://besteskort.online'
+          };
+        };
+
+        // Ziyaretçi Sayfa / Aksiyon tespit fonksiyonu
+        const getRadarAction = (v: any, domMeta: ReturnType<typeof getRadarDomain>) => {
+          const path = v.path || '/';
+          const isListing = path.startsWith('/ilan/');
+          const isSearch = Boolean(v.searchKeyword) || path.startsWith('/ara');
+          const isCity = !isListing && !isSearch && path !== '/' && !path.startsWith('/admin') && !path.startsWith('/bms');
+          const isHome = path === '/';
+
+          let type: 'listing' | 'search' | 'city' | 'home' | 'other' = 'other';
+          let badgeLabel = 'SAYFA GEZİYOR';
+          let badgeStyle = 'bg-slate-800/90 text-slate-300 border-slate-700';
+          let actionIcon = '📄';
+          let displayTitle = v.pageTitle || '';
+
+          if (isListing) {
+            type = 'listing';
+            badgeLabel = 'İLAN İNCELİYOR';
+            badgeStyle = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+            actionIcon = '👑';
+            if (!displayTitle || displayTitle.toLowerCase().includes('vitrini') || displayTitle === 'Best Eskort Vitrini') {
+              const slug = path.replace('/ilan/', '').replace(/\/$/, '');
+              displayTitle = slug 
+                ? decodeURIComponent(slug).split('-').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+                : 'VIP İlan Detayı';
+            }
+          } else if (isSearch) {
+            type = 'search';
+            badgeLabel = 'SİTE İÇİ ARAMA';
+            badgeStyle = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40';
+            actionIcon = '🔍';
+            displayTitle = v.searchKeyword ? `"${v.searchKeyword}" araması yapıyor` : 'Filtreli Arama Yapıyor';
+          } else if (isCity) {
+            type = 'city';
+            badgeLabel = 'ŞEHİR / KATEGORİ';
+            badgeStyle = 'bg-purple-500/20 text-purple-300 border-purple-500/40';
+            actionIcon = '📍';
+            if (!displayTitle || displayTitle.toLowerCase().includes('vitrini') || displayTitle === 'Best Eskort Vitrini') {
+              const segs = path.split('/').filter(Boolean);
+              displayTitle = segs.length > 0 
+                ? `${segs.map((s: string) => decodeURIComponent(s).charAt(0).toUpperCase() + decodeURIComponent(s).slice(1)).join(' > ')} Vitrini`
+                : `${domMeta.title} Şehir Vitrini`;
+            }
+          } else if (isHome) {
+            type = 'home';
+            badgeLabel = 'ANA SAYFADA';
+            badgeStyle = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+            actionIcon = '🏠';
+            displayTitle = `${domMeta.title} Ana Sayfa Vitrini`;
+          } else {
+            displayTitle = displayTitle || `${domMeta.title} Sayfası`;
+          }
+
+          return { type, badgeLabel, badgeStyle, actionIcon, displayTitle };
+        };
+
+        // Trafik kaynağı rozeti fonksiyonu
+        const getRadarReferrer = (v: any) => {
+          const src = (v.refererSource || '').toLowerCase();
+          const ref = (v.referer || '').toLowerCase();
+
+          if (src === 'yandex' || ref.includes('yandex')) {
+            return { name: 'Yandex Arama', icon: '🇷🇺', badge: 'bg-red-500/20 text-red-300 border-red-500/40' };
+          }
+          if (src === 'google' || ref.includes('google')) {
+            return { name: 'Google Arama', icon: '🌐', badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40' };
+          }
+          if (src === 'whatsapp' || ref.includes('wa.me') || ref.includes('whatsapp')) {
+            return { name: 'WhatsApp', icon: '💬', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+          }
+          if (src === 'x' || ref.includes('t.co') || ref.includes('twitter')) {
+            return { name: 'X / Twitter', icon: '🐦', badge: 'bg-sky-500/20 text-sky-300 border-sky-500/40' };
+          }
+          if (src === 'telegram' || ref.includes('t.me')) {
+            return { name: 'Telegram', icon: '✈️', badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' };
+          }
+          return { name: 'Direkt Giriş', icon: '🔗', badge: 'bg-slate-800/80 text-slate-300 border-slate-700' };
+        };
+
+        // Metrik sayıları
+        const besteskortCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'besteskort').length;
+        const escturkiyeCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'escturkiye').length;
+        const listingViewingCount = rawActiveList.filter((v: any) => (v.path || '').startsWith('/ilan/')).length;
+        const searchCount = rawActiveList.filter((v: any) => v.searchKeyword || (v.path || '').startsWith('/ara')).length;
+        const cityViewingCount = rawActiveList.filter((v: any) => {
+          const p = v.path || '/';
+          return !p.startsWith('/ilan/') && !p.startsWith('/ara') && p !== '/' && !p.startsWith('/admin') && !p.startsWith('/bms');
+        }).length;
+        const mobileViewers = rawActiveList.filter((v: any) => v.device === 'mobile').length;
+
+        // Filtrelenmiş liste
+        const filteredList = rawActiveList.filter((v: any) => {
+          const dom = getRadarDomain(v.hostname, v.referer);
+          if (radarDomainFilter === 'besteskort' && dom.id !== 'besteskort') return false;
+          if (radarDomainFilter === 'escturkiye' && dom.id !== 'escturkiye') return false;
+
+          const act = getRadarAction(v, dom);
+          if (radarTypeFilter === 'listing' && act.type !== 'listing') return false;
+          if (radarTypeFilter === 'city' && act.type !== 'city') return false;
+          if (radarTypeFilter === 'search' && act.type !== 'search') return false;
+
+          return true;
+        });
 
         return (
           <div 
             onClick={() => setShowActiveVisitorsModal(false)}
-            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-2 sm:p-5 animate-in fade-in duration-200"
           >
             <div 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-5xl bg-gradient-to-b from-[#161b22] via-[#0d1117] to-[#0d1117] border border-[#30363d] rounded-[36px] shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col gap-0 text-left animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-hidden"
+              className="w-full max-w-5xl bg-[#0d1117] border border-[#30363d] rounded-[28px] sm:rounded-[36px] shadow-[0_25px_80px_rgba(0,0,0,0.95)] flex flex-col text-left animate-in zoom-in-95 duration-200 max-h-[94vh] sm:max-h-[90vh] overflow-hidden"
             >
-              {/* Modal Başlığı & Canlı Radar Başlığı */}
-              <div className="p-5 sm:p-7 border-b border-[#30363d] bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-transparent shrink-0 flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/30">
+              {/* Modal Başlığı & Radar Kontrol Merkezi */}
+              <div className="p-4 sm:p-6 border-b border-[#30363d] bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-fuchsia-500/10 shrink-0 flex flex-col gap-3.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="relative shrink-0">
+                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-400 via-teal-500 to-emerald-600 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/30">
                         <Activity className="w-6 h-6 animate-pulse" />
                       </div>
                       <span className="absolute -top-1 -right-1 flex h-4 w-4">
@@ -5280,202 +5454,320 @@ export default function BmsSecurePortalDashboard() {
                       </span>
                     </div>
 
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <h3 className="font-black text-lg sm:text-2xl text-white font-heading tracking-tight">
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-black text-base sm:text-2xl text-white font-heading tracking-tight truncate">
                           Canlı Ziyaretçi &amp; İlan İzleme Radarı
                         </h3>
-                        <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-black flex items-center gap-1.5 shadow-sm">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-black flex items-center gap-1.5 shadow-sm">
                           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                          {activeList.length} Canlı Ziyaretçi
+                          {rawActiveList.length} Aktif Kullanıcı
                         </span>
                       </div>
-                      <span className="text-xs sm:text-sm text-[#8b949e] mt-0.5">
-                        Ziyaretçilerin şu an sitede hangi ilanı, kategoriyi veya aramayı gerçek zamanlı incelediğini izleyin.
+                      <span className="text-[11px] sm:text-xs text-[#8b949e] mt-0.5 hidden xs:inline">
+                        Kullanıcıların hangi domainde gezdiklerini ve anlık inceledikleri sayfaları canlı takip edin.
                       </span>
                     </div>
                   </div>
 
                   <button 
                     onClick={() => setShowActiveVisitorsModal(false)} 
-                    className="p-2.5 rounded-2xl bg-[#21262d] text-[#8b949e] hover:text-white hover:bg-[#30363d] transition-all shrink-0 border border-[#30363d]"
+                    className="p-2 sm:p-2.5 rounded-2xl bg-[#21262d] text-[#8b949e] hover:text-white hover:bg-[#30363d] transition-all shrink-0 border border-[#30363d] active:scale-95"
+                    title="Kapat"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {/* Hızlı Canlı Metrik Hapları */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
-                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
-                      <Flame className="w-3.5 h-3.5 text-amber-400" /> İlan Bakan
-                    </span>
-                    <span className="text-sm font-black text-amber-400 font-mono">{listingViewingCount}</span>
+                {/* 🌟 1. KATMAN: KRİSTAL NETLİKTE DOMAIN SEÇİCİ (EN ÖNEMLİ KISIM) */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1 border-t border-[#21262d]">
+                  <div className="flex items-center gap-1.5 p-1 bg-[#090d13] border border-[#21262d] rounded-2xl w-full sm:w-auto overflow-x-auto scrollbar-none">
+                    <button
+                      type="button"
+                      onClick={() => setRadarDomainFilter('all')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                        radarDomainFilter === 'all'
+                          ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/30'
+                          : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                      }`}
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      <span>Tüm Siteler</span>
+                      <span className="px-1.5 py-0.2 rounded-md bg-black/20 text-[10px] font-mono">
+                        {rawActiveList.length}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRadarDomainFilter('besteskort')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                        radarDomainFilter === 'besteskort'
+                          ? 'bg-emerald-500 text-slate-950 font-black shadow-md shadow-emerald-500/30 ring-2 ring-emerald-400'
+                          : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30'
+                      }`}
+                    >
+                      <span>🌟 besteskort.online</span>
+                      <span className="px-1.5 py-0.2 rounded-md bg-black/25 text-[10px] font-mono font-black">
+                        {besteskortCount}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRadarDomainFilter('escturkiye')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                        radarDomainFilter === 'escturkiye'
+                          ? 'bg-fuchsia-500 text-white font-black shadow-md shadow-fuchsia-500/30 ring-2 ring-fuchsia-400'
+                          : 'text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-950/30'
+                      }`}
+                    >
+                      <span>🚀 escturkiye.devs.surf</span>
+                      <span className="px-1.5 py-0.2 rounded-md bg-black/25 text-[10px] font-mono font-black">
+                        {escturkiyeCount}
+                      </span>
+                    </button>
                   </div>
-                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
-                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
-                      <Search className="w-3.5 h-3.5 text-cyan-400" /> Arama Yapan
-                    </span>
-                    <span className="text-sm font-black text-cyan-400 font-mono">{searchCount}</span>
-                  </div>
-                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
-                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
-                      <Smartphone className="w-3.5 h-3.5 text-purple-400" /> Mobil Cihaz
-                    </span>
-                    <span className="text-sm font-black text-purple-300 font-mono">
-                      %{activeList.length > 0 ? Math.round((mobileViewers / activeList.length) * 100) : 100}
-                    </span>
-                  </div>
-                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
-                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
-                      <Activity className="w-3.5 h-3.5 text-emerald-400" /> Yenileme
-                    </span>
-                    <span className="text-xs font-bold text-emerald-400 font-mono">Otomatik (15s)</span>
+
+                  {/* 2. KATMAN: SAYFA TÜRÜ FİLTRELERİ */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-0.5 sm:pb-0">
+                    <button
+                      type="button"
+                      onClick={() => setRadarTypeFilter('all')}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border shrink-0 ${
+                        radarTypeFilter === 'all'
+                          ? 'bg-slate-700 text-white border-slate-600'
+                          : 'bg-[#161b22] text-[#8b949e] border-[#21262d] hover:text-white'
+                      }`}
+                    >
+                      Tüm Sayfalar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRadarTypeFilter('listing')}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
+                        radarTypeFilter === 'listing'
+                          ? 'bg-amber-500/25 text-amber-300 border-amber-500/50'
+                          : 'bg-[#161b22] text-[#8b949e] border-[#21262d] hover:text-amber-300'
+                      }`}
+                    >
+                      <span>👑 İlan Bakanlar</span>
+                      <span className="font-mono text-[10px] opacity-75">({listingViewingCount})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRadarTypeFilter('city')}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
+                        radarTypeFilter === 'city'
+                          ? 'bg-purple-500/25 text-purple-300 border-purple-500/50'
+                          : 'bg-[#161b22] text-[#8b949e] border-[#21262d] hover:text-purple-300'
+                      }`}
+                    >
+                      <span>📍 Şehir Gezenler</span>
+                      <span className="font-mono text-[10px] opacity-75">({cityViewingCount})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRadarTypeFilter('search')}
+                      className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
+                        radarTypeFilter === 'search'
+                          ? 'bg-cyan-500/25 text-cyan-300 border-cyan-500/50'
+                          : 'bg-[#161b22] text-[#8b949e] border-[#21262d] hover:text-cyan-300'
+                      }`}
+                    >
+                      <span>🔍 Arama</span>
+                      <span className="font-mono text-[10px] opacity-75">({searchCount})</span>
+                    </button>
                   </div>
                 </div>
               </div>
 
-              {/* Ziyaretçi Kartları Listesi */}
-              <div className="overflow-y-auto flex-1 p-5 sm:p-7 flex flex-col gap-3.5 custom-scrollbar bg-[#090d13]">
-                {activeList.length === 0 ? (
+              {/* ZİYARETÇİ KARTLARI LİSTESİ */}
+              <div className="overflow-y-auto flex-1 p-3 sm:p-6 flex flex-col gap-3 custom-scrollbar bg-[#090d13]">
+                {filteredList.length === 0 ? (
                   <div className="py-20 text-center text-xs text-[#8b949e] flex flex-col items-center justify-center gap-3">
                     <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                       <Activity className="w-8 h-8 text-emerald-400 animate-pulse" />
                     </div>
-                    <span className="text-sm font-bold text-white">Canlı Ziyaretçi Bekleniyor</span>
-                    <span className="text-xs text-[#8b949e] max-w-sm">Ziyaretçiler siteye girdiğinde anlık olarak burada listelenecektir.</span>
+                    <span className="text-base font-bold text-white">Seçilen Filtrede Aktif Ziyaretçi Bulunamadı</span>
+                    <span className="text-xs text-[#8b949e] max-w-sm">
+                      Farklı bir site filtresi seçebilir veya tüm ziyaretçileri görüntülemek için filtreyi sıfırlayabilirsiniz.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRadarDomainFilter('all');
+                        setRadarTypeFilter('all');
+                      }}
+                      className="mt-2 px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500 hover:text-slate-950 transition-all"
+                    >
+                      Filtreleri Sıfırla
+                    </button>
                   </div>
                 ) : (
-                  activeList.map((v: any, idx: number) => {
-                    const isListing = v.path && v.path.startsWith('/ilan/');
-                    const isSearch = v.searchKeyword || (v.path && v.path.startsWith('/ara'));
-                    const isCity = v.path && !isListing && v.path !== '/' && !v.path.startsWith('/admin') && !v.path.startsWith('/bms');
-                    const isHome = v.path === '/';
+                  filteredList.map((v: any, idx: number) => {
+                    const dom = getRadarDomain(v.hostname, v.referer);
+                    const act = getRadarAction(v, dom);
+                    const ref = getRadarReferrer(v);
 
-                    const refSrc = (v.refererSource || 'direct').toLowerCase();
-                    let refIcon = '🔗';
-                    let refName = 'Direkt Giriş';
-                    let refBadge = 'bg-slate-800/80 text-slate-300 border-white/10';
-
-                    if (refSrc === 'yandex' || (v.referer || '').includes('yandex')) {
-                      refIcon = '🇷🇺';
-                      refName = 'Yandex Arama';
-                      refBadge = 'bg-red-500/20 text-red-300 border-red-500/30';
-                    } else if (refSrc === 'google' || (v.referer || '').includes('google')) {
-                      refIcon = '🌐';
-                      refName = 'Google Arama';
-                      refBadge = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-                    } else if (refSrc === 'x' || (v.referer || '').includes('t.co')) {
-                      refIcon = '🐦';
-                      refName = 'X (Twitter)';
-                      refBadge = 'bg-sky-500/20 text-sky-300 border-sky-500/30';
-                    } else if (refSrc === 'whatsapp') {
-                      refIcon = '💬';
-                      refName = 'WhatsApp';
-                      refBadge = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-                    }
-
-                    const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(v.createdAt).getTime()) / 1000));
+                    const elapsedSec = Math.max(1, Math.round((Date.now() - v.latestTime) / 1000));
                     const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : `${Math.floor(elapsedSec / 60)} dk önce`;
+
+                    const isExpanded = radarExpandedKey === (v.sessionKey || idx.toString());
+                    const targetDirectUrl = `${dom.siteUrl}${v.path || '/'}`;
 
                     return (
                       <div 
-                        key={v._id || idx} 
-                        className={`p-4 sm:p-5 rounded-3xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg hover:shadow-2xl group ${
-                          isListing 
-                            ? 'border-amber-500/30 hover:border-amber-400/80 bg-gradient-to-r from-amber-500/5 via-[#161b22] to-transparent' 
-                            : 'border-[#30363d] hover:border-emerald-500/50 bg-[#161b22]'
-                        }`}
+                        key={v.sessionKey || idx} 
+                        className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-md ${dom.cardBorder} ${dom.hoverGlow} group`}
                       >
-                        {/* Üst Bar: Ziyaretçi Profili + Canlı Süre + Kaynak */}
-                        <div className="flex items-center justify-between gap-3 flex-wrap">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-[#21262d] border border-[#30363d] flex items-center justify-center shrink-0">
-                              {v.device === 'mobile' ? (
-                                <Smartphone className="w-4 h-4 text-purple-400" />
-                              ) : (
-                                <Monitor className="w-4 h-4 text-blue-400" />
-                              )}
-                            </div>
-                            
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-black text-sm text-white flex items-center gap-1.5 font-heading">
+                        {/* 1. SATIR: SİTE DOMAİNİ + ZAMAN + CİHAZ + ŞEHİR + KAYNAK */}
+                        <div className="flex items-center justify-between gap-2.5 flex-wrap">
+                          {/* Sol Kısım: Belirgin Site Rozeti */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl font-mono font-black text-xs border shadow-sm ${dom.badgeStyle}`}>
+                              <span className="w-2 h-2 rounded-full bg-current animate-ping"></span>
+                              <span>{dom.icon} {dom.name}</span>
+                            </span>
+
+                            {/* Cihaz ve Şehir */}
+                            <div className="flex items-center gap-1.5 text-xs text-[#8b949e]">
+                              <span className="inline-flex items-center gap-1 text-white font-bold">
                                 <span>📍 {v.city || 'İstanbul'}</span>
                               </span>
-                              <span className="text-[11px] text-[#8b949e] font-mono">
-                                • {v.browser || 'Tarayıcı'} / {v.os || (v.device === 'mobile' ? 'Mobile OS' : 'Desktop')}
+                              <span>•</span>
+                              <span className="inline-flex items-center gap-1">
+                                {v.device === 'mobile' ? (
+                                  <Smartphone className="w-3.5 h-3.5 text-purple-400" />
+                                ) : (
+                                  <Monitor className="w-3.5 h-3.5 text-blue-400" />
+                                )}
+                                <span>{v.device === 'mobile' ? 'Mobil' : 'Masaüstü'}</span>
                               </span>
                               {v.ip && (
-                                <span className="text-[10px] text-[#8b949e] font-mono px-2 py-0.5 rounded-lg bg-[#0d1117] border border-[#30363d]">
-                                  {v.ip}
-                                </span>
+                                <>
+                                  <span>•</span>
+                                  <span className="font-mono text-[11px] text-[#8b949e] px-1.5 py-0.5 rounded bg-[#0d1117] border border-[#21262d]">
+                                    {v.ip}
+                                  </span>
+                                </>
                               )}
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-black border border-emerald-500/20 flex items-center gap-1.5 shadow-sm">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                              {timeStr}
+                          {/* Sağ Kısım: Zaman & Trafik Kaynağı */}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/20 flex items-center gap-1.5 shadow-sm">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                              <span>{timeStr}</span>
                             </span>
-                            <span className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border ${refBadge}`}>
-                              {refIcon} {refName}
+                            <span className={`px-2.5 py-1 rounded-xl text-xs font-mono font-bold border flex items-center gap-1 ${ref.badge}`}>
+                              <span>{ref.icon}</span>
+                              <span className="hidden xs:inline">{ref.name}</span>
                             </span>
                           </div>
                         </div>
 
-                        {/* Alt Bar: Ziyaret Edilen Sayfa & Detaylar */}
-                        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between gap-3 group-hover:border-[#30363d] transition-colors">
+                        {/* 2. SATIR: NE YAPIYOR? (AKTİF SAYFA VE İLAN VİTRİNİ) */}
+                        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col sm:flex-row sm:items-center justify-between gap-3 group-hover:border-[#30363d] transition-colors">
                           <div className="flex flex-col min-w-0">
+                            {/* Aksiyon Türü ve Yol */}
                             <div className="flex items-center gap-2 flex-wrap mb-1">
-                              {isListing ? (
-                                <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
-                                  <Crown className="w-3 h-3" /> İLAN İNCELİYOR
-                                </span>
-                              ) : isSearch ? (
-                                <span className="px-2.5 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
-                                  <Search className="w-3 h-3" /> SİTE İÇİ ARAMA
-                                </span>
-                              ) : isCity ? (
-                                <span className="px-2.5 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
-                                  <MapPin className="w-3 h-3" /> ŞEHİR / İLÇE VİTRİNİ
-                                </span>
-                              ) : isHome ? (
-                                <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black font-heading tracking-wider">
-                                  🏠 ANA SAYFA VİTRİNİ
-                                </span>
-                              ) : (
-                                <span className="px-2.5 py-0.5 rounded-lg bg-slate-800 text-slate-300 text-[10px] font-bold">
-                                  📄 SAYFA
-                                </span>
-                              )}
+                              <span className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black font-heading tracking-wider flex items-center gap-1 border ${act.badgeStyle}`}>
+                                <span>{act.actionIcon}</span>
+                                <span>{act.badgeLabel}</span>
+                              </span>
 
-                              <span className="font-mono text-xs text-amber-400 font-bold truncate max-w-[280px] sm:max-w-md">
-                                {v.path}
+                              <span className="font-mono text-xs text-amber-400 font-bold truncate max-w-[220px] sm:max-w-md bg-[#161b22] px-2 py-0.5 rounded-md border border-[#21262d]">
+                                {v.path || '/'}
                               </span>
                             </div>
 
-                            <span className="text-xs sm:text-sm text-white font-bold truncate">
-                              {v.pageTitle || 'Best Eskort Vitrini'}
-                            </span>
+                            {/* Sayfa / İlan Başlığı */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm sm:text-base text-white font-extrabold truncate">
+                                {act.displayTitle}
+                              </span>
+                            </div>
 
+                            {/* Arama Kelimesi Varsa */}
                             {v.searchKeyword && (
-                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-cyan-300 font-mono bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-xl w-fit">
+                              <div className="flex items-center gap-1.5 mt-1 text-xs text-cyan-300 font-mono bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-0.5 rounded-lg w-fit">
                                 <Search className="w-3 h-3 text-cyan-400" />
-                                <span>Aranan Anahtar Kelime: <strong>&quot;{v.searchKeyword}&quot;</strong></span>
+                                <span>Aranan: <strong>&quot;{v.searchKeyword}&quot;</strong></span>
                               </div>
                             )}
                           </div>
 
-                          <Link 
-                            href={v.path || '#'} 
-                            target="_blank"
-                            className="px-4 py-2 rounded-2xl bg-amber-500/15 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/30 text-xs font-black font-heading shrink-0 flex items-center gap-1.5 transition-all shadow-md group-hover:scale-105"
-                          >
-                            <span>Sayfayı Aç</span>
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </Link>
+                          {/* Doğrudan İlgili Sitede Sayfayı Aç Butonu */}
+                          <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                            <a 
+                              href={targetDirectUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`px-3.5 py-2 rounded-xl sm:rounded-2xl text-xs font-black font-heading shrink-0 flex items-center gap-1.5 transition-all shadow-md active:scale-95 border ${
+                                dom.id === 'escturkiye'
+                                  ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40 hover:bg-fuchsia-500 hover:text-white'
+                                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
+                              }`}
+                              title={`${dom.name} sitesinde aç`}
+                            >
+                              <span>{dom.title}&apos;de Aç</span>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                          </div>
                         </div>
+
+                        {/* 3. SATIR: GEZİNME AKIŞI (EĞER BİRDEN FAZLA SAYFA GEZDİYSE) */}
+                        {v.totalActions > 1 && (
+                          <div className="flex flex-col gap-2 pt-1 border-t border-[#21262d]">
+                            <div className="flex items-center justify-between">
+                              <button
+                                type="button"
+                                onClick={() => setRadarExpandedKey(isExpanded ? null : (v.sessionKey || idx.toString()))}
+                                className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 py-1 px-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 active:scale-95 transition-all"
+                              >
+                                <Route className="w-3.5 h-3.5" />
+                                <span>🔥 Bu Ziyaretçi Toplam {v.totalActions} Sayfa Gezdi ({v.pages?.length || 1} Farklı Sayfa)</span>
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5 ml-1" /> : <ChevronDown className="w-3.5 h-3.5 ml-1" />}
+                              </button>
+
+                              <span className="text-[11px] text-[#8b949e] font-mono hidden sm:inline">
+                                Tarayıcı: {v.browser || 'Chrome'} • {v.os || 'Android'}
+                              </span>
+                            </div>
+
+                            {/* Akordeon: Ziyaretçinin Adım Adım Gezinme Geçmişi */}
+                            {isExpanded && v.history && v.history.length > 0 && (
+                              <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-[#090d13] border border-amber-500/20 animate-in fade-in duration-200">
+                                <div className="text-[10px] font-black text-amber-400/90 uppercase tracking-wider flex items-center justify-between pb-1 border-b border-[#21262d]">
+                                  <span>Ziyaret Akışı Kronolojisi</span>
+                                  <span className="font-mono text-[#8b949e]">Son Adımdan İlk Adıma</span>
+                                </div>
+                                <div className="flex flex-col gap-1 max-h-48 overflow-y-auto pr-1">
+                                  {v.history.map((step: any, sIdx: number) => (
+                                    <div 
+                                      key={step._id || sIdx}
+                                      className="flex items-center justify-between gap-2 text-xs font-mono py-1 px-2.5 rounded-lg bg-[#161b22] border border-[#21262d]"
+                                    >
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className="text-[10px] font-bold text-amber-400/70 shrink-0">
+                                          #{v.history.length - sIdx}
+                                        </span>
+                                        <span className="text-white truncate" title={step.path}>
+                                          {step.path || '/'}
+                                        </span>
+                                      </div>
+                                      <span className="text-[11px] text-[#8b949e] shrink-0">
+                                        {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -5483,17 +5775,19 @@ export default function BmsSecurePortalDashboard() {
               </div>
 
               {/* Modal Alt Footer Bar */}
-              <div className="p-4 sm:p-5 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between shrink-0">
+              <div className="p-3.5 sm:p-5 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between gap-2 shrink-0">
                 <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Sistem her 15 saniyede bir yeni ziyaretçi hareketlerini otomatik çeker.</span>
+                  <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                  <span className="hidden sm:inline">Radar canlı verileri otomatik olarak senkronize eder.</span>
+                  <span className="sm:hidden">Otomatik Canlı Senkronizasyon</span>
                 </span>
                 <button
+                  type="button"
                   onClick={() => {
                     setShowActiveVisitorsModal(false);
                     setActiveTab('live_visitors');
                   }}
-                  className="px-4 py-2 rounded-2xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/30 text-xs font-black font-heading flex items-center gap-1.5 transition-all"
+                  className="px-3.5 sm:px-4 py-2 rounded-xl sm:rounded-2xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/30 text-xs font-black font-heading flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
                 >
                   <span>Tüm Canlı Akış Loglarına Git</span>
                   <ArrowRight className="w-3.5 h-3.5" />
