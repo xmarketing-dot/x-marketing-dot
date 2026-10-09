@@ -314,12 +314,12 @@ export default async function HomePage() {
       </section>
 
       {/* 2. SPONSOR BANNER REKLAM ALANI */}
-      <div className="w-full px-2 sm:px-4">
+      <div className="w-full px-2 sm:px-2 mt--4 sm:mt-2">
         <SponsorBannerArea konum="anasayfa" initialBanner={activeBanner} />
       </div>
 
       {/* 2.5 TÜRKİYE 81 İL LİSTESİ - ULTRA MODERN VE ŞIK ETKİLEŞİMLİ KART */}
-      <div className="px-2 sm:px-4">
+      <div className="px-2 sm:px-4 mt-2 sm:mt-2">
         <Link
           href="/sehirler"
           className="relative w-full p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-[#1c160c] via-[#161b22] to-[#12161c] border border-amber-500/40 hover:border-amber-400/80 flex items-center justify-between shadow-lg shadow-black/40 group transition-all duration-300 hover:scale-[1.01] overflow-hidden"

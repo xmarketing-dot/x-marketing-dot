@@ -97,6 +97,15 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
     );
   }
 
+  // Reklam Ver sayfası: Header, ticker vb. olmadan temiz, odaklanmış tam ekran sunum
+  if (pathname === '/reklam-ver') {
+    return (
+      <div className="min-h-screen bg-[#090d16] text-[#f0f6fc] font-sans overflow-x-hidden">
+        {children}
+      </div>
+    );
+  }
+
   // Reklam Ver, İlan Ver ve Ücretsiz Tanıtım sayfaları masaüstünde kurumsal ajans yerine formu gösterir
   const isDedicatedFormPage =
     pathname === '/reklam-ver' ||

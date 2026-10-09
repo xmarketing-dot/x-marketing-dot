@@ -1,98 +1,204 @@
 'use client';
 
-import React from 'react';
-import { Crown, Sparkles, TrendingUp, Users, ArrowRight } from 'lucide-react';
-import { useAdminWhatsApp } from '@/lib/useAdminWhatsApp';
+import React, { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { Crown, Dices, Send, Flame, ArrowRight } from 'lucide-react';
 
 interface Props {
   konum?: string;
 }
 
-export default function VipRentalBanner({ konum = 'anasayfa' }: Props) {
-  const { openWhatsApp, details } = useAdminWhatsApp();
+const WORDS = [
+  {
+    text: 'BU',
+    colorClass: 'text-cyan-300 drop-shadow-[0_2px_12px_rgba(6,182,212,0.95)]',
+  },
+  {
+    text: 'ALAN',
+    colorClass: 'text-white drop-shadow-[0_2px_14px_rgba(255,255,255,0.95)]',
+  },
+  {
+    text: 'KİRALIKTIR',
+    colorClass: 'text-rose-400 drop-shadow-[0_2px_12px_rgba(244,63,94,0.95)]',
+  },
+];
 
-  const handleRentalClick = () => {
-    const defaultMsg = `Merhaba, besteskort.online sitesindeki VIP Banner alanını (${konum === 'ilan_detay' ? 'İlan Detay' : 'Ana Sayfa'} - Aylık Kiralık) kiralamak istiyorum. Fiyat ve detaylar hakkında bilgi alabilir miyim?`;
-    openWhatsApp(defaultMsg);
-  };
+export default function VipRentalBanner({ konum = 'anasayfa' }: Props) {
+  // İlk girişte beklemeden anında başlaması için varsayılan true
+  const [inView, setInView] = useState(true);
+  const [animKey, setAnimKey] = useState(0);
+  const bannerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const node = bannerRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          setAnimKey((prev) => prev + 1);
+        } else {
+          setInView(false);
+        }
+      },
+      {
+        threshold: 0.05,
+        rootMargin: '120px 0px 50px 0px',
+      }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  // Karakter sayacıyla her harfe hızlı film şeridi TAK TAK TAK gecikmesi (16ms)
+  let charCounter = 0;
 
   return (
-    <div
-      onClick={handleRentalClick}
-      className="w-full my-2 sm:my-3 group relative cursor-pointer select-none overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-r from-[#0d121d] via-[#151c2e] to-[#0d121d] p-3 sm:p-4 md:p-5 shadow-[0_0_25px_rgba(245,158,11,0.12)] transition-all duration-300 hover:border-amber-400 hover:shadow-[0_0_35px_rgba(245,158,11,0.25)] hover:scale-[1.003]"
+    <Link
+      href="/reklam-ver"
+      className="block w-full cursor-pointer select-none relative group"
     >
-      {/* Arka Plan Lüks Altın & Işıltı Efekti */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent pointer-events-none" />
-      <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-500/10 blur-3xl group-hover:bg-amber-400/20 transition-all duration-500 pointer-events-none" />
-      <div className="absolute -left-16 -bottom-16 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl group-hover:bg-emerald-400/20 transition-all duration-500 pointer-events-none" />
+      {/* ── DIŞ SİBER RGB NEON ÇERÇEVE (İnce 1px - Saat Yönünde Dönen Lazer Çerçeve) ── */}
+      <div
+        ref={bannerRef}
+        className="w-full relative p-[1px] rounded-xl sm:rounded-2xl overflow-hidden shadow-[0_0_20px_rgba(6,182,212,0.25),0_0_20px_rgba(239,68,68,0.2)] transition-all duration-300 group-hover:scale-[1.006]"
+      >
+        {/* Taban Koyu Katman */}
+        <div className="absolute inset-0 bg-[#090d1a] pointer-events-none" />
 
-      {/* Üst Satır Rozetler */}
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2 relative z-10">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/40 shadow-sm backdrop-blur-sm">
-            <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400/30" />
-            VIP SPONSORLUK ALANI
-          </span>
-          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800/80 text-slate-300 border border-slate-700/60">
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            Özel Prestij Konumu
-          </span>
-        </div>
+        {/* Saat Yönünde Dönen İki Başlı RGB Neon Lazer Akışı */}
+        <div
+          className="absolute -inset-[250%] animate-border-rotate pointer-events-none"
+          style={{
+            background:
+              'conic-gradient(from 0deg at 50% 50%, #ffffff 0deg, #06b6d4 30deg, #3b82f6 60deg, transparent 95deg, transparent 180deg, #ffffff 180deg, #f43f5e 210deg, #ef4444 240deg, transparent 275deg, transparent 360deg)',
+          }}
+        />
 
-        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-medium bg-emerald-950/70 text-emerald-300 border border-emerald-500/40">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
-          <span>Boşta • Hemen Kirala</span>
-        </div>
-      </div>
+        {/* ── İÇ GERÇEK BANNER GÖVDESİ (Kompakt Yükseklik: 95px - 110px, İnce 1px Kenarlık) ── */}
+        <div className="relative z-10 w-full rounded-[11px] sm:rounded-[15px] bg-[#050813] py-2 sm:py-2.5 px-3 sm:px-6 overflow-hidden flex flex-col items-center justify-center text-center">
 
-      {/* Ana İçerik ve Buton Düzeni */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
-        {/* Sol Alan: Başlık & Değer Önerisi */}
-        <div className="flex-1 min-w-0">
-          <h3 className="text-base sm:text-lg md:text-xl font-extrabold text-white tracking-tight flex items-center gap-2 group-hover:text-amber-200 transition-colors">
-            <span>👑 BU ALAN AYLIK KİRALIKTIR</span>
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-300 mt-0.5 line-clamp-2">
-            Ajans, Masaj Salonu veya VIP İlanınızı sitenin en üstünde doğrudan binlerce ziyaretçiye duyurun.
-          </p>
+          {/* LED / Cyber Nokta Dokusu */}
+          <div className="absolute inset-0 bg-[radial-gradient(#06b6d4_0.75px,transparent_0.75px)] [background-size:14px_14px] opacity-15 pointer-events-none" />
 
-          {/* İstatistik ve Avantaj Hapları */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
-            <div className="flex items-center gap-1 text-[11px] sm:text-xs text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded-md border border-slate-800">
-              <Users className="w-3 h-3 text-amber-400" />
-              <span>Günlük <strong>1.500+</strong> Canlı Ziyaretçi</span>
+          {/* Çift Yönlü Neon Arka Spotlar: Sol Mavi, Sağ Kırmızı */}
+          <div className="absolute -left-10 top-1/2 -translate-y-1/2 w-44 h-24 bg-cyan-500/20 blur-3xl pointer-events-none" />
+          <div className="absolute -right-10 top-1/2 -translate-y-1/2 w-44 h-24 bg-red-500/25 blur-3xl pointer-events-none" />
+
+          {/* Çapraz Hareketli Lazer Işık Tarama */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-cyan-300/15 via-rose-300/10 to-transparent animate-billboard-shimmer" />
+          </div>
+
+          {/* ── SONİK DARBE (Harfler Kilitlendiği An Patlayan Yumuşak Flaş - Çizgisiz) ── */}
+          {inView && (
+            <div
+              key={`shockwave-layer-${animKey}`}
+              className="absolute inset-0 pointer-events-none overflow-hidden z-20 flex items-center justify-center"
+            >
+              <div
+                className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(6,182,212,0.45)_0%,_rgba(244,63,94,0.3)_40%,_transparent_75%)] animate-sonic-flash pointer-events-none"
+                style={{ animationDelay: '240ms' }}
+              />
             </div>
-            <div className="flex items-center gap-1 text-[11px] sm:text-xs text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded-md border border-slate-800">
-              <TrendingUp className="w-3 h-3 text-emerald-400" />
-              <span>%100 Doğrudan Hedef Kitle</span>
+          )}
+
+          {/* ── TEPE SOL SPOT IŞIĞI (Elektrik Cyan/Mavi - Ortaya Yönelik) ── */}
+          <div className="absolute top-0 left-3 sm:left-10 z-20 pointer-events-none flex flex-col items-center">
+            {/* Lamba Armatürü */}
+            <div className="w-5 sm:w-6 h-2 sm:h-2.5 rounded-b-md bg-gradient-to-b from-slate-600 via-slate-800 to-black border-x border-b border-cyan-400/80 shadow-[0_0_10px_rgba(6,182,212,0.8)] flex items-center justify-center">
+              <div className="w-2.5 sm:w-3.5 h-1 rounded-full bg-cyan-200 shadow-[0_0_8px_#22d3ee,0_0_16px_#06b6d4]" />
             </div>
-            <div className="hidden lg:flex items-center gap-1 text-[11px] sm:text-xs text-amber-300/90 bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-800/40">
-              <span>💎 Sabit Aylık Ücret • Kesintisiz Gösterim</span>
+            {/* Işık Hüzmesi (Merkeze Çapraz Işık Demeti) */}
+            <div
+              className="w-28 sm:w-44 h-32 sm:h-40 -mt-0.5 animate-spotlight-left opacity-75 mix-blend-screen"
+              style={{
+                background: 'linear-gradient(180deg, rgba(34,211,238,0.75) 0%, rgba(6,182,212,0.25) 45%, rgba(6,182,212,0.02) 85%, transparent 100%)',
+                clipPath: 'polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%)',
+              }}
+            />
+          </div>
+
+          {/* ── TEPE SAĞ SPOT IŞIĞI (Neon Kırmızı/Rose - Ortaya Yönelik) ── */}
+          <div className="absolute top-0 right-3 sm:right-10 z-20 pointer-events-none flex flex-col items-center">
+            {/* Lamba Armatürü */}
+            <div className="w-5 sm:w-6 h-2 sm:h-2.5 rounded-b-md bg-gradient-to-b from-slate-600 via-slate-800 to-black border-x border-b border-rose-500/80 shadow-[0_0_10px_rgba(244,63,94,0.8)] flex items-center justify-center">
+              <div className="w-2.5 sm:w-3.5 h-1 rounded-full bg-rose-200 shadow-[0_0_8px_#fb7185,0_0_16px_#f43f5e]" />
+            </div>
+            {/* Işık Hüzmesi (Merkeze Çapraz Işık Demeti) */}
+            <div
+              className="w-28 sm:w-44 h-32 sm:h-40 -mt-0.5 animate-spotlight-right opacity-75 mix-blend-screen"
+              style={{
+                background: 'linear-gradient(180deg, rgba(244,63,94,0.75) 0%, rgba(239,68,68,0.25) 45%, rgba(239,68,68,0.02) 85%, transparent 100%)',
+                clipPath: 'polygon(44% 0%, 56% 0%, 100% 100%, 0% 100%)',
+              }}
+            />
+          </div>
+
+          {/* ── 2. SATIR: DEV 3D BAŞLIK (Film Şeridi Harf Harf Uzaktan Zoom & Snap) ── */}
+          <div className="relative z-10 my-0.5" style={{ perspective: '900px' }}>
+            <h2
+              key={animKey}
+              style={{ transformStyle: 'preserve-3d' }}
+              className="relative z-10 text-base sm:text-xl md:text-2xl font-black uppercase tracking-tight flex items-center justify-center select-none"
+            >
+              {WORDS.map((w, wIdx) => (
+                <span
+                  key={wIdx}
+                  className={`inline-block ${w.colorClass} mr-2 sm:mr-3 last:mr-0 tracking-wider`}
+                >
+                  {w.text.split('').map((char, cIdx) => {
+                    const currentDelay = charCounter * 16;
+                    charCounter++;
+                    return (
+                      <span
+                        key={cIdx}
+                        className={`inline-block ${
+                          inView ? 'animate-letter-slam' : 'opacity-0'
+                        }`}
+                        style={{
+                          animationDelay: `${currentDelay}ms`,
+                          willChange: 'transform, opacity, filter',
+                        }}
+                      >
+                        {char}
+                      </span>
+                    );
+                  })}
+                </span>
+              ))}
+            </h2>
+          </div>
+
+          {/* ── 3. SATIR: HEDEF SEKTÖRLER (Casino, Adult, Telegram - Canlı İkon Reaksiyonları) ── */}
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 my-0.5">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-extrabold bg-cyan-500/15 text-cyan-300 border border-cyan-500/40">
+              <Dices className="w-3 h-3 text-cyan-400 animate-dice-wiggle" />
+              CASINO & BAHİS
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-extrabold bg-red-500/15 text-red-300 border border-red-500/40">
+              <Flame className="w-3 h-3 text-red-400 animate-flame-flicker" />
+              ADULT & ESCORT
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] sm:text-xs font-extrabold bg-blue-500/15 text-blue-300 border border-blue-500/40">
+              <Send className="w-3 h-3 text-blue-400 animate-telegram-glide" />
+              TELEGRAM
+            </span>
+          </div>
+
+          {/* ── 4. SATIR: DİKKAT ÇEKEN NEON BUTON (Tıklayınca /reklam-ver) ── */}
+          <div className="relative z-10 mt-1 w-full max-w-xs flex justify-center">
+            <div className="w-full inline-flex items-center justify-center gap-2 px-5 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-red-500 text-white font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.6),0_0_15px_rgba(239,68,68,0.5)] group-hover:shadow-[0_0_35px_rgba(6,182,212,0.9),0_0_25px_rgba(239,68,68,0.8)] group-hover:scale-105 active:scale-95 transition-all duration-300">
+              <Crown className="w-4 h-4 fill-white" />
+              <span>REKLAM ALANI KİRALA</span>
+              <ArrowRight className="w-4 h-4 stroke-[3] group-hover:translate-x-1.5 transition-transform" />
             </div>
           </div>
-        </div>
 
-        {/* Sağ Alan: WhatsApp Butonu */}
-        <div className="flex-shrink-0 flex items-center justify-end sm:justify-start">
-          <button
-            type="button"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-bold text-xs sm:text-sm shadow-[0_4px_20px_rgba(16,185,129,0.35)] hover:shadow-[0_4px_25px_rgba(16,185,129,0.55)] transition-all duration-200 transform group-hover:translate-x-0.5 active:scale-95"
-          >
-            {/* WhatsApp SVG İkonu */}
-            <svg
-              className="w-4 h-4 sm:w-5 sm:h-5 fill-current"
-              viewBox="0 0 24 24"
-            >
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.888 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.456 5.711 1.458h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-            </svg>
-            <span className="whitespace-nowrap">WhatsApp İle Kirala</span>
-            <ArrowRight className="w-4 h-4 text-emerald-200 group-hover:translate-x-1 transition-transform" />
-          </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

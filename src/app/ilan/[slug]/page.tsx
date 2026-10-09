@@ -319,7 +319,7 @@ export default async function ListingDetailPage({ params }: Props) {
         )}
 
         {/* ── SPONSORLU VIP BANNER (Kenarlara Sıfır) ──────────────── */}
-        <div className="w-full px-0">
+        <div className="w-full px-0 mb-1.5 sm:mb-2">
           <SponsorBannerArea konum="ilan_detay" initialBanner={activeBanner} />
         </div>
 

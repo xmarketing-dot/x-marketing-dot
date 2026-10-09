@@ -407,7 +407,7 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
           };
 
           return (
-            <div className="relative z-30 px-3.5 sm:px-5 pb-4 pt-1 flex flex-col gap-2 w-full max-w-2xl mx-auto text-left drop-shadow-2xl">
+            <div className="relative z-30 px-3.5 sm:px-5 pb-0 pt-1 flex flex-col gap-2 w-full max-w-2xl mx-auto text-left drop-shadow-2xl">
               {/* 1. ÜST BİLGİ SATIRI: SOLDA SIRA & CANLI, SAĞDA KONUM (ASLA ÜST ÜSTE BİNMEZ) */}
               <div className="flex items-center justify-between gap-2 w-full">
                 {/* SOL: VİTRİN SIRASI & CANLI DURUM */}
@@ -465,7 +465,7 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
               </div>
 
               {/* 5 Slot İlerleme Çizgileri */}
-              <div className="flex items-center justify-center gap-1.5 pt-0.5">
+              <div className="flex items-center justify-center gap-1.5 pt-1 pb-0.5">
                 {fiveSlots.map((s, idx) => (
                   <button
                     key={idx}
@@ -492,7 +492,7 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
           );
 
           return (
-            <div className="relative z-30 px-3.5 pb-4 pt-2 flex flex-col gap-2 w-full max-w-2xl mx-auto text-left">
+            <div className="relative z-30 px-3.5 pb-0 pt-2 flex flex-col gap-2 w-full max-w-2xl mx-auto text-left">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] sm:text-[11px] font-mono font-black text-amber-300 uppercase tracking-wider bg-purple-900/60 border border-purple-400/40 px-2.5 py-0.5 rounded-full w-fit shadow-md flex items-center gap-1">
@@ -546,7 +546,7 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
               </div>
 
               {/* 5 Slot İlerleme Çizgileri */}
-              <div className="flex items-center justify-center gap-1.5 pt-1">
+              <div className="flex items-center justify-center gap-1.5 pt-1 pb-0.5">
                 {fiveSlots.map((s, idx) => (
                   <button
                     key={idx}
