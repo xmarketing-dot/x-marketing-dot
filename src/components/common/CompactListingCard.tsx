@@ -7,7 +7,6 @@ import { MapPin, ShieldCheck, Crown, Award, Medal } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 import { trackEvent } from '@/components/common/AnalyticsTracker';
-import { cardSlideCoordinator } from '@/lib/cardSlideCoordinator';
 
 // Global scroll takibi: Kullanıcı parmağıyla scroll yaparken kartların resim değiştirmesini dondurur (FPS düşüşünü sıfırlar)
 let isGlobalScrolling = false;
@@ -120,19 +119,21 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
     }
   }, [isVisible, listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
 
-  // Auto-slide: Global koordinatöre kaydolur. Ekranda kaç kart olursa olsun aynı anda sadece 1 kart döner (FPS düşüşü sıfırlanır)
+  // Auto-slide: Her kart kendi bağımsız rastgele ritminde bağımsız döner (asla sırayla/domino gibi değil)
   useEffect(() => {
-    if (!isVisible || !allImages || allImages.length <= 1 || !listing?._id) return;
+    if (!isVisible || !allImages || allImages.length <= 1) return;
 
-    const trigger = () => {
+    // Her kart için benzersiz rastgele ritim (3.5s - 4.8s arası bağımsız doğal akış)
+    const hash = (listing.slug || listing._id || 'a').charCodeAt(0) + (listing.slug || '').length;
+    const intervalTime = 3500 + (hash % 1300);
+
+    const timer = setInterval(() => {
+      if (isGlobalScrolling) return; // Parmakla scroll yaparken kasma olmasın diye dondurulur
       setCurrentIndex((prev) => (prev + 1) % allImages.length);
-    };
+    }, intervalTime);
 
-    cardSlideCoordinator.register(listing._id, trigger);
-    return () => {
-      cardSlideCoordinator.unregister(listing._id);
-    };
-  }, [isVisible, allImages.length, listing?._id]);
+    return () => clearInterval(timer);
+  }, [isVisible, allImages.length, listing.slug, listing._id]);
 
   // Touch Swipe Handlers for Mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -212,7 +213,11 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
       <Link href={`/ilan/${listing.slug}`} className="absolute inset-0 block w-full h-full z-0 overflow-hidden">
         <div
           className="flex w-full h-full transition-transform duration-500 ease-out will-change-transform"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          style={{
+            transform: `translate3d(-${currentIndex * 100}%, 0, 0)`,
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+          }}
         >
           {allImages.map((imgUrl, idx) => (
             <div key={idx} className="relative w-full h-full flex-shrink-0">

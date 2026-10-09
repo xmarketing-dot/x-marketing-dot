@@ -457,21 +457,21 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={handleWaClick}
-                  className="py-3.5 sm:py-4 px-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-[0_4px_25px_rgba(16,185,129,0.45)] hover:shadow-[0_4px_30px_rgba(16,185,129,0.65)] active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 border border-emerald-400/30"
+                  className="py-3.5 sm:py-4 px-3 sm:px-4 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_4px_25px_rgba(16,185,129,0.45)] hover:shadow-[0_4px_30px_rgba(16,185,129,0.65)] active:scale-95 transition-all flex items-center justify-center gap-2 border border-emerald-400/30 text-center"
                   title="WhatsApp ile Randevu Al"
                 >
-                  <OfficialWhatsAppIcon className="w-4 h-4 sm:w-5 sm:h-5 fill-white shrink-0 drop-shadow" />
+                  <OfficialWhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6 fill-white shrink-0 drop-shadow" />
                   <span className="truncate">RANDEVU AL</span>
                 </a>
 
                 <Link
                   href={`/ilan/${current.slug}`}
-                  className="relative overflow-hidden py-3.5 sm:py-4 px-3 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 hover:bg-slate-900 text-amber-300 hover:text-white font-black text-xs sm:text-sm tracking-wider uppercase shadow-[0_4px_25px_rgba(251,191,36,0.35)] hover:shadow-[0_4px_30px_rgba(251,191,36,0.55)] active:scale-95 transition-all flex items-center justify-center gap-1.5 sm:gap-2 border-2 border-amber-400 hover:border-amber-300 group/btn"
+                  className="relative overflow-hidden py-3.5 sm:py-4 px-3 sm:px-4 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 hover:bg-slate-900 text-amber-300 hover:text-white font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_4px_25px_rgba(251,191,36,0.35)] hover:shadow-[0_4px_30px_rgba(251,191,36,0.55)] active:scale-95 transition-all flex items-center justify-center gap-2 border-2 border-amber-400 hover:border-amber-300 group/btn text-center"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent group-hover/btn:translate-x-full duration-700 transition-transform pointer-events-none" />
-                  <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 fill-amber-400/30 group-hover/btn:fill-amber-400 transition-all shrink-0" />
+                  <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 fill-amber-400/30 group-hover/btn:fill-amber-400 transition-all shrink-0" />
                   <span className="truncate">PROFİLİ İNCELE</span>
-                  <ArrowUpRight className="w-4 h-4 stroke-[3] text-amber-400 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform shrink-0" />
+                  <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[3] text-amber-400 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform shrink-0" />
                 </Link>
               </div>
 
