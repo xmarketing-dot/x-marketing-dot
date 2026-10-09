@@ -9,7 +9,7 @@ import {
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
   Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
   Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3, X, Copy,
-  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key
+  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key, Route
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
@@ -58,6 +58,15 @@ export default function BmsSecurePortalDashboard() {
   const [testDomainInput, setTestDomainInput] = useState('');
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(100);
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
+  const [visitorGroupingMode, setVisitorGroupingMode] = useState<'grouped' | 'raw'>('grouped');
+  const [expandedVisitorIps, setExpandedVisitorIps] = useState<Record<string, boolean>>({});
+
+  const toggleExpandVisitorIp = (ip: string) => {
+    setExpandedVisitorIps(prev => ({
+      ...prev,
+      [ip]: !prev[ip],
+    }));
+  };
   const [boostingPing, setBoostingPing] = useState(false);
   const [boostPingResult, setBoostPingResult] = useState<any | null>(null);
   const [gscUrls, setGscUrls] = useState<string[]>([]);
@@ -768,6 +777,89 @@ export default function BmsSecurePortalDashboard() {
       (v.searchKeyword || '').toLowerCase().includes(term)
     );
   });
+
+  // Ziyaretçileri IP'ye Göre Grupla (Kullanıcı Yolculuğu / Oturum Analizi)
+  const groupedVisitors = React.useMemo(() => {
+    const map = new Map<string, any>();
+
+    for (const v of filteredVisitors) {
+      const ip = v.ip || 'Anonim';
+      const analysis = getSuspiciousAnalysis(v);
+
+      if (!map.has(ip)) {
+        map.set(ip, {
+          ip,
+          city: v.city || 'İstanbul',
+          hostname: v.hostname || '',
+          device: v.device || 'mobile',
+          browser: v.browser || '',
+          os: v.os || '',
+          userAgent: v.userAgent || '',
+          isBanned: !!v.isBanned,
+          totalViews: 1,
+          firstVisitedAt: v.createdAt,
+          lastVisitedAt: v.createdAt,
+          totalDurationSeconds: v.durationSeconds || 0,
+          latestPath: v.path || '/',
+          initialRefererSource: v.refererSource,
+          initialReferer: v.referer,
+          initialSearchKeyword: v.searchKeyword,
+          isSuspicious: analysis.isSuspicious,
+          isSearchEngine: analysis.isSearchEngine,
+          suspiciousReasons: [...analysis.reasons],
+          history: [
+            {
+              _id: v._id,
+              path: v.path,
+              createdAt: v.createdAt,
+              durationSeconds: v.durationSeconds || 0,
+              refererSource: v.refererSource,
+              referer: v.referer,
+              searchKeyword: v.searchKeyword,
+              hostname: v.hostname,
+            },
+          ],
+        });
+      } else {
+        const existing = map.get(ip)!;
+        existing.totalViews += 1;
+        existing.totalDurationSeconds += (v.durationSeconds || 0);
+        existing.firstVisitedAt = v.createdAt;
+        if (v.refererSource && !existing.initialRefererSource) {
+          existing.initialRefererSource = v.refererSource;
+        }
+        if (v.referer && !existing.initialReferer) {
+          existing.initialReferer = v.referer;
+        }
+        if (v.searchKeyword && !existing.initialSearchKeyword) {
+          existing.initialSearchKeyword = v.searchKeyword;
+        }
+        if (analysis.isSuspicious) {
+          existing.isSuspicious = true;
+          for (const r of analysis.reasons) {
+            if (!existing.suspiciousReasons.includes(r)) {
+              existing.suspiciousReasons.push(r);
+            }
+          }
+        }
+        if (analysis.isSearchEngine) {
+          existing.isSearchEngine = true;
+        }
+        existing.history.push({
+          _id: v._id,
+          path: v.path,
+          createdAt: v.createdAt,
+          durationSeconds: v.durationSeconds || 0,
+          refererSource: v.refererSource,
+          referer: v.referer,
+          searchKeyword: v.searchKeyword,
+          hostname: v.hostname,
+        });
+      }
+    }
+
+    return Array.from(map.values());
+  }, [filteredVisitors]);
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full text-left">
@@ -4096,11 +4188,49 @@ export default function BmsSecurePortalDashboard() {
                 </h2>
               </div>
               <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                {Math.min(filteredVisitors.length, visitorDisplayLimit)} / {filteredVisitors.length} İstek
+                {visitorGroupingMode === 'grouped'
+                  ? `${Math.min(groupedVisitors.length, visitorDisplayLimit)} / ${groupedVisitors.length} Tekil Ziyaretçi`
+                  : `${Math.min(filteredVisitors.length, visitorDisplayLimit)} / ${filteredVisitors.length} İstek`}
               </span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {/* Gruplu / Ham Akış Mod Seçici */}
+              <div className="flex items-center bg-[#0d1117] border border-[#30363d] rounded-xl p-0.5 text-xs font-heading font-bold">
+                <button
+                  type="button"
+                  onClick={() => setVisitorGroupingMode('grouped')}
+                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
+                    visitorGroupingMode === 'grouped'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                      : 'text-[#8b949e] hover:text-white'
+                  }`}
+                  title="Aynı IP'den gelen tüm istekleri tek kartta toplayıp kaç sayfa gezdiğini göster"
+                >
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Gruplu (Ziyaretçi)</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+                    {groupedVisitors.length}
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisitorGroupingMode('raw')}
+                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
+                    visitorGroupingMode === 'raw'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                      : 'text-[#8b949e] hover:text-white'
+                  }`}
+                  title="Tüm istekleri tek tek ham log halinde göster"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Ham Akış</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+                    {filteredVisitors.length}
+                  </span>
+                </button>
+              </div>
+
               {/* Gösterim Sınırı Seçici */}
               <div className="flex items-center bg-[#0d1117] border border-[#30363d] rounded-xl p-0.5 text-xs font-mono">
                 {[100, 500, 1000, 9999].map((limit) => (
@@ -4113,7 +4243,7 @@ export default function BmsSecurePortalDashboard() {
                         : 'text-[#8b949e] hover:text-white'
                     }`}
                   >
-                    {limit === 9999 ? '🔥 Hepsini Gör (Tümü)' : limit}
+                    {limit === 9999 ? '🔥 Tümü' : limit}
                   </button>
                 ))}
               </div>
@@ -4220,66 +4350,196 @@ export default function BmsSecurePortalDashboard() {
 
           {/* MOBİL GÖRÜNÜM: Canlı Ziyaretçi Akış Kartları */}
           <div className="flex flex-col gap-2.5 md:hidden">
-            {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
-              const isGoogle = v.refererSource === 'google';
-              const isWa = v.refererSource === 'whatsapp';
-              const isFb = v.refererSource === 'facebook';
-              const analysis = getSuspiciousAnalysis(v);
+            {visitorGroupingMode === 'grouped' ? (
+              groupedVisitors.slice(0, visitorDisplayLimit).map((gv: any) => {
+                const isExpanded = !!expandedVisitorIps[gv.ip];
 
-              return (
-                <div key={v._id} className={`p-3.5 rounded-2xl bg-[#0d1117] border flex flex-col gap-2 transition-all ${
-                  analysis.isSuspicious 
-                    ? 'border-red-500/60 bg-red-950/15 shadow-sm shadow-red-900/20' 
-                    : 'border-[#30363d]'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[11px] font-bold text-white">{v.ip || 'Anonim'}</span>
-                      <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
-                    </div>
-                    <span className="text-[10px] text-[#8b949e] font-mono">
-                      {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                    </span>
-                  </div>
-
-                  {/* Şüpheli / Arama Motoru Rozeti */}
-                  {analysis.isSuspicious && (
-                    <div className="flex flex-wrap items-center gap-1 mt-0.5">
-                      <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500/25 text-red-300 border border-red-500/50 animate-pulse">
-                        🚨 ŞÜPHELİ / BOT
-                      </span>
-                      {analysis.reasons.map((r: string, idx: number) => (
-                        <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-[#161b22] text-amber-300 border border-[#30363d] font-mono">
-                          {r}
+                return (
+                  <div
+                    key={gv.ip}
+                    className={`p-3.5 rounded-2xl bg-[#0d1117] border flex flex-col gap-2.5 transition-all ${
+                      gv.isSuspicious 
+                        ? 'border-red-500/60 bg-red-950/15 shadow-sm shadow-red-900/20' 
+                        : 'border-[#30363d]'
+                    }`}
+                  >
+                    {/* Üst Satır: IP & Şehir ve Gezilen Sayfa Rozeti & Son Saat */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="font-mono text-[11px] font-bold text-white truncate">{gv.ip}</span>
+                        <span className="text-[10px] text-amber-400 font-medium shrink-0">📍 {gv.city}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-black font-mono border flex items-center gap-1 ${
+                            gv.totalViews > 1
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
+                              : 'bg-slate-800 text-slate-300 border-[#30363d]'
+                          }`}
+                        >
+                          {gv.totalViews > 1 ? '🔥' : '📄'}
+                          <span>{gv.totalViews} Sayfa</span>
                         </span>
-                      ))}
+                        <span className="text-[10px] text-[#8b949e] font-mono">
+                          {new Date(gv.lastVisitedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  {analysis.isSearchEngine && (
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                        ✅ Arama Motoru (Google/Yandex)
+
+                    {/* Şüpheli / Arama Motoru Rozeti */}
+                    {gv.isSuspicious && (
+                      <div className="flex flex-wrap items-center gap-1">
+                        <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500/25 text-red-300 border border-red-500/50 animate-pulse">
+                          🚨 ŞÜPHELİ / BOT
+                        </span>
+                        {gv.suspiciousReasons.map((r: string, idx: number) => (
+                          <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-[#161b22] text-amber-300 border border-[#30363d] font-mono">
+                            {r}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {gv.isSearchEngine && (
+                      <div className="flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                          ✅ Arama Motoru (Google/Yandex)
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Son Gezilen Sayfa & Domain & Kaynak */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 truncate max-w-[180px]">
+                        <span className="text-[10px] text-[#8b949e] shrink-0 font-medium">Son:</span>
+                        <span className="font-mono text-[11px] text-white truncate font-medium">{gv.latestPath}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {renderDomainBadge(gv.hostname)}
+                        {renderTrafficSourceBadge({ refererSource: gv.initialRefererSource, referer: gv.initialReferer })}
+                      </div>
+                    </div>
+
+                    {/* Alt Bilgi Çubuğu: Cihaz / Süre / Akordeon Butonu */}
+                    <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-2 border-t border-[#21262d]">
+                      <div className="flex items-center gap-2">
+                        <span>{gv.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} ({gv.browser})</span>
+                        <span className="text-emerald-400 font-mono font-bold">
+                          ⏱️ {gv.totalDurationSeconds > 0 ? `${gv.totalDurationSeconds}s` : '<15s'}
+                        </span>
+                      </div>
+
+                      {gv.totalViews > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => toggleExpandVisitorIp(gv.ip)}
+                          className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 py-0.5 px-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 active:scale-95 transition-all"
+                        >
+                          <span>{isExpanded ? 'Gizle' : `Adımlar (${gv.totalViews})`}</span>
+                          {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Akordeon: Kullanıcı Gezinme Yolculuğu */}
+                    {isExpanded && gv.history.length > 0 && (
+                      <div className="pt-2 border-t border-[#21262d] flex flex-col gap-1.5 bg-[#070a0f] p-2.5 rounded-xl border border-amber-500/20 animate-fadeIn">
+                        <div className="flex items-center justify-between pb-1 border-b border-[#21262d]">
+                          <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                            <Route className="w-3 h-3" />
+                            <span>Gezinme Akışı ({gv.totalViews} Sayfa)</span>
+                          </span>
+                          <span className="text-[9px] text-[#8b949e] font-mono">En Yeniden İlke</span>
+                        </div>
+                        <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-1">
+                          {gv.history.map((step: any, idx: number) => (
+                            <div
+                              key={step._id || idx}
+                              className="flex items-center justify-between gap-1.5 text-[10px] font-mono py-1 px-2 rounded-lg bg-[#161b22] border border-[#21262d]"
+                            >
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <span className="text-[9px] font-bold text-amber-400/80 w-4 shrink-0">
+                                  #{gv.history.length - idx}
+                                </span>
+                                <span className="text-white truncate max-w-[170px] sm:max-w-[220px]" title={step.path}>
+                                  {step.path}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 shrink-0 text-[#8b949e]">
+                                <span className="text-emerald-400 font-bold">
+                                  {step.durationSeconds > 0 ? `${step.durationSeconds}s` : '0s'}
+                                </span>
+                                <span>
+                                  {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              // RAW / UNGROUPED (ESKİ MOD)
+              filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
+                const analysis = getSuspiciousAnalysis(v);
+
+                return (
+                  <div key={v._id} className={`p-3.5 rounded-2xl bg-[#0d1117] border flex flex-col gap-2 transition-all ${
+                    analysis.isSuspicious 
+                      ? 'border-red-500/60 bg-red-950/15 shadow-sm shadow-red-900/20' 
+                      : 'border-[#30363d]'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[11px] font-bold text-white">{v.ip || 'Anonim'}</span>
+                        <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
+                      </div>
+                      <span className="text-[10px] text-[#8b949e] font-mono">
+                        {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </span>
                     </div>
-                  )}
 
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 truncate max-w-[170px]">
-                      <span className="font-mono text-[11px] text-white truncate">{v.path}</span>
+                    {/* Şüpheli / Arama Motoru Rozeti */}
+                    {analysis.isSuspicious && (
+                      <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                        <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500/25 text-red-300 border border-red-500/50 animate-pulse">
+                          🚨 ŞÜPHELİ / BOT
+                        </span>
+                        {analysis.reasons.map((r: string, idx: number) => (
+                          <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-[#161b22] text-amber-300 border border-[#30363d] font-mono">
+                            {r}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {analysis.isSearchEngine && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                          ✅ Arama Motoru (Google/Yandex)
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 truncate max-w-[170px]">
+                        <span className="font-mono text-[11px] text-white truncate">{v.path}</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {renderDomainBadge(v.hostname)}
+                        {renderTrafficSourceBadge(v)}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {renderDomainBadge(v.hostname)}
-                      {renderTrafficSourceBadge(v)}
+
+                    <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-1.5 border-t border-[#21262d]">
+                      <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} ({v.browser})</span>
+                      <span className="text-emerald-400 font-mono font-bold">{v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}</span>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-1.5 border-t border-[#21262d]">
-                    <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} ({v.browser})</span>
-                    <span className="text-emerald-400 font-mono font-bold">{v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}</span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {/* MASAÜSTÜ GÖRÜNÜM: Tam Tablo */}
@@ -4290,7 +4550,9 @@ export default function BmsSecurePortalDashboard() {
                   <th className="py-2.5 px-3">IP / ŞEHİR</th>
                   <th className="py-2.5 px-3">GÜVENLİK / SPAM ANALİZİ</th>
                   <th className="py-2.5 px-3">GİRİLEN DOMAİN</th>
-                  <th className="py-2.5 px-3">GEZİLEN SAYFA</th>
+                  <th className="py-2.5 px-3">
+                    {visitorGroupingMode === 'grouped' ? 'SON SAYFA & GEZİNTİ ADIMLARI' : 'GEZİLEN SAYFA'}
+                  </th>
                   <th className="py-2.5 px-3">TRAFİK KAYNAĞI</th>
                   <th className="py-2.5 px-3">ARAMA KELİMESİ</th>
                   <th className="py-2.5 px-3">CİHAZ / TARAYICI</th>
@@ -4299,97 +4561,256 @@ export default function BmsSecurePortalDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#21262d]">
-                {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
-                  const analysis = getSuspiciousAnalysis(v);
+                {visitorGroupingMode === 'grouped' ? (
+                  groupedVisitors.slice(0, visitorDisplayLimit).map((gv: any) => {
+                    const isExpanded = !!expandedVisitorIps[gv.ip];
 
-                  return (
-                    <tr key={v._id} className={`transition-colors ${
-                      analysis.isSuspicious 
-                        ? 'bg-red-950/30 hover:bg-red-950/40 border-l-4 border-red-500' 
-                        : v.isBanned 
-                        ? 'bg-red-950/20 hover:bg-red-950/30' 
-                        : 'hover:bg-[#21262d]/50'
-                    }`}>
-                      
-                      {/* IP & Şehir */}
-                      <td className="py-3 px-3">
-                        <div className="flex flex-col">
-                          <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
-                          <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
-                        </div>
-                      </td>
-
-                      {/* GÜVENLİK / SPAM ANALİZİ */}
-                      <td className="py-3 px-3">
-                        {analysis.isSuspicious ? (
-                          <div className="flex flex-col gap-1 max-w-[200px]">
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
-                              🤖 OTOMASYON
-                            </span>
-                            <div className="flex flex-wrap gap-1">
-                              {analysis.reasons.map((r: string, idx: number) => (
-                                <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-amber-500/30 font-mono font-medium">
-                                  {r}
-                                </span>
-                              ))}
+                    return (
+                      <React.Fragment key={gv.ip}>
+                        <tr className={`transition-colors ${
+                          gv.isSuspicious 
+                            ? 'bg-red-950/30 hover:bg-red-950/40 border-l-4 border-red-500' 
+                            : gv.isBanned 
+                            ? 'bg-red-950/20 hover:bg-red-950/30' 
+                            : 'hover:bg-[#21262d]/50'
+                        }`}>
+                          {/* IP & Şehir */}
+                          <td className="py-3 px-3">
+                            <div className="flex flex-col">
+                              <span className="font-mono font-bold text-white text-[11px]">{gv.ip}</span>
+                              <span className="text-[10px] text-amber-400 font-medium">📍 {gv.city}</span>
                             </div>
+                          </td>
+
+                          {/* Güvenlik Analizi */}
+                          <td className="py-3 px-3">
+                            {gv.isSuspicious ? (
+                              <div className="flex flex-col gap-1 max-w-[200px]">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
+                                  🤖 OTOMASYON
+                                </span>
+                                <div className="flex flex-wrap gap-1">
+                                  {gv.suspiciousReasons.map((r: string, idx: number) => (
+                                    <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-amber-500/30 font-mono font-medium">
+                                      {r}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : gv.isSearchEngine ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                                ✅ Arama Motoru
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-[#8b949e] font-medium">
+                                👤 Normal Ziyaretçi
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Girilen Domain */}
+                          <td className="py-3 px-3 font-mono text-[11px]">
+                            {renderDomainBadge(gv.hostname)}
+                          </td>
+
+                          {/* Son Gezilen Sayfa & Sayfa Sayısı Rozeti */}
+                          <td className="py-3 px-3">
+                            <div className="flex flex-col gap-1 max-w-[240px]">
+                              <span className="font-mono text-white text-[11px] truncate font-medium" title={gv.latestPath}>
+                                {gv.latestPath}
+                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-black font-mono border flex items-center gap-1 w-fit ${
+                                  gv.totalViews > 1
+                                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                    : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
+                                }`}>
+                                  {gv.totalViews > 1 ? '🔥' : '📄'}
+                                  <span>{gv.totalViews} Sayfa Gezdi</span>
+                                </span>
+                                {gv.totalViews > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleExpandVisitorIp(gv.ip)}
+                                    className="text-[10px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-0.5 underline font-mono"
+                                  >
+                                    <span>{isExpanded ? 'Gizle' : 'Yolculuk'}</span>
+                                    {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* İlk Trafik Kaynağı */}
+                          <td className="py-3 px-3">
+                            {renderTrafficSourceBadge({ refererSource: gv.initialRefererSource, referer: gv.initialReferer })}
+                          </td>
+
+                          {/* Arama Kelimesi */}
+                          <td className="py-3 px-3 text-[11px]">
+                            {gv.initialSearchKeyword ? (
+                              <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30">
+                                "{gv.initialSearchKeyword}"
+                              </span>
+                            ) : (
+                              <span className="text-[#484f58]">—</span>
+                            )}
+                          </td>
+
+                          {/* Cihaz & Tarayıcı */}
+                          <td className="py-3 px-3 text-[11px] text-[#8b949e]">
+                            <span>{gv.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'}</span>
+                            <span className="text-[10px] block text-[#484f58] truncate max-w-[140px]">{gv.browser} / {gv.os}</span>
+                          </td>
+
+                          {/* Toplam Süre */}
+                          <td className="py-3 px-3 font-mono text-emerald-400 font-bold text-[11px]">
+                            {gv.totalDurationSeconds > 0 ? `${gv.totalDurationSeconds}s` : '<15s'}
+                          </td>
+
+                          {/* Son Hareket Zamanı */}
+                          <td className="py-3 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
+                            {new Date(gv.lastVisitedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </td>
+                        </tr>
+
+                        {/* Akordeon Satırı: Gezinme Yolculuğu */}
+                        {isExpanded && gv.history.length > 0 && (
+                          <tr className="bg-[#070a0f] border-b border-[#30363d]">
+                            <td colSpan={9} className="py-3 px-5">
+                              <div className="p-3.5 rounded-2xl bg-[#161b22] border border-amber-500/30 flex flex-col gap-2.5">
+                                <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
+                                  <div className="flex items-center gap-2">
+                                    <Route className="w-4 h-4 text-amber-400" />
+                                    <span className="text-xs font-black text-amber-400 font-heading">
+                                      {gv.ip} ({gv.city}) — Gezinme Yolculuğu ({gv.totalViews} Sayfa)
+                                    </span>
+                                  </div>
+                                  <span className="text-[11px] text-[#8b949e] font-mono">
+                                    İlk: {new Date(gv.firstVisitedAt).toLocaleTimeString('tr-TR')} ➔ Son: {new Date(gv.lastVisitedAt).toLocaleTimeString('tr-TR')}
+                                  </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                                  {gv.history.map((step: any, stepIdx: number) => (
+                                    <div key={step._id || stepIdx} className="p-2 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between gap-2 text-xs font-mono">
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="text-[10px] font-black text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded shrink-0">
+                                          #{gv.history.length - stepIdx}
+                                        </span>
+                                        <span className="text-white truncate max-w-[200px]" title={step.path}>
+                                          {step.path}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 shrink-0 text-[#8b949e] text-[10px]">
+                                        <span className="text-emerald-400 font-bold">{step.durationSeconds > 0 ? `${step.durationSeconds}s` : '0s'}</span>
+                                        <span>{new Date(step.createdAt).toLocaleTimeString('tr-TR')}</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })
+                ) : (
+                  // RAW UNGROUPED ROWS
+                  filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
+                    const analysis = getSuspiciousAnalysis(v);
+
+                    return (
+                      <tr key={v._id} className={`transition-colors ${
+                        analysis.isSuspicious 
+                          ? 'bg-red-950/30 hover:bg-red-950/40 border-l-4 border-red-500' 
+                          : v.isBanned 
+                          ? 'bg-red-950/20 hover:bg-red-950/30' 
+                          : 'hover:bg-[#21262d]/50'
+                      }`}>
+                        
+                        {/* IP & Şehir */}
+                        <td className="py-3 px-3">
+                          <div className="flex flex-col">
+                            <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
+                            <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
                           </div>
-                        ) : analysis.isSearchEngine ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                            ✅ Arama Motoru
-                          </span>
-                        ) : (
-                          <span className="text-[10px] text-[#8b949e] font-medium">
-                            👤 Normal Ziyaretçi
-                          </span>
-                        )}
-                      </td>
+                        </td>
 
-                      {/* Girilen Domain */}
-                      <td className="py-3 px-3 font-mono text-[11px]">
-                        {renderDomainBadge(v.hostname)}
-                      </td>
+                        {/* GÜVENLİK / SPAM ANALİZİ */}
+                        <td className="py-3 px-3">
+                          {analysis.isSuspicious ? (
+                            <div className="flex flex-col gap-1 max-w-[200px]">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
+                                🤖 OTOMASYON
+                              </span>
+                              <div className="flex flex-wrap gap-1">
+                                {analysis.reasons.map((r: string, idx: number) => (
+                                  <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-amber-500/30 font-mono font-medium">
+                                    {r}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          ) : analysis.isSearchEngine ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                              ✅ Arama Motoru
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-[#8b949e] font-medium">
+                              👤 Normal Ziyaretçi
+                            </span>
+                          )}
+                        </td>
 
-                      {/* Gezilen Sayfa */}
-                      <td className="py-3 px-3 font-mono text-white text-[11px] max-w-[160px] truncate">
-                        {v.path}
-                      </td>
+                        {/* Girilen Domain */}
+                        <td className="py-3 px-3 font-mono text-[11px]">
+                          {renderDomainBadge(v.hostname)}
+                        </td>
 
-                      {/* Trafik Kaynağı */}
-                      <td className="py-3 px-3">
-                        {renderTrafficSourceBadge(v)}
-                      </td>
+                        {/* Gezilen Sayfa */}
+                        <td className="py-3 px-3 font-mono text-white text-[11px] max-w-[160px] truncate">
+                          {v.path}
+                        </td>
 
-                      {/* Arama Kelimesi */}
-                      <td className="py-3 px-3 text-[11px]">
-                        {v.searchKeyword ? (
-                          <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30">
-                            "{v.searchKeyword}"
-                          </span>
-                        ) : (
-                          <span className="text-[#484f58]">—</span>
-                        )}
-                      </td>
+                        {/* Trafik Kaynağı */}
+                        <td className="py-3 px-3">
+                          {renderTrafficSourceBadge(v)}
+                        </td>
 
-                      {/* Cihaz & Tarayıcı */}
-                      <td className="py-3 px-3 text-[11px] text-[#8b949e]">
-                        <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'}</span>
-                        <span className="text-[10px] block text-[#484f58] truncate max-w-[140px]">{v.browser} / {v.os}</span>
-                      </td>
+                        {/* Arama Kelimesi */}
+                        <td className="py-3 px-3 text-[11px]">
+                          {v.searchKeyword ? (
+                            <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30">
+                              "{v.searchKeyword}"
+                            </span>
+                          ) : (
+                            <span className="text-[#484f58]">—</span>
+                          )}
+                        </td>
 
-                      {/* Sayfada Kalma Süresi */}
-                      <td className="py-3 px-3 font-mono text-emerald-400 font-bold text-[11px]">
-                        {v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}
-                      </td>
+                        {/* Cihaz & Tarayıcı */}
+                        <td className="py-3 px-3 text-[11px] text-[#8b949e]">
+                          <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'}</span>
+                          <span className="text-[10px] block text-[#484f58] truncate max-w-[140px]">{v.browser} / {v.os}</span>
+                        </td>
 
-                      {/* Zaman */}
-                      <td className="py-3 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
-                        {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                      </td>
+                        {/* Sayfada Kalma Süresi */}
+                        <td className="py-3 px-3 font-mono text-emerald-400 font-bold text-[11px]">
+                          {v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}
+                        </td>
 
-                    </tr>
-                  );
-                })}
+                        {/* Zaman */}
+                        <td className="py-3 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
+                          {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </td>
+
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
