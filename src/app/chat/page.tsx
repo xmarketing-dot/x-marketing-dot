@@ -206,14 +206,26 @@ export default function ChatPage() {
         .then((data) => {
           if (data.messages && Array.isArray(data.messages)) {
             setMessages(data.messages);
+            const hasUnreadAdmin = data.messages.some((m: Message) => m.gonderenTipi === 'admin' && !m.okundu);
+            if (hasUnreadAdmin) {
+              markAsRead();
+            }
           }
         })
         .catch(() => {});
     }, 3000);
 
+    const handleWindowActive = () => {
+      markAsRead();
+    };
+    window.addEventListener('focus', handleWindowActive);
+    window.addEventListener('click', handleWindowActive);
+
     return () => {
       eventSource.close();
       clearInterval(pollInterval);
+      window.removeEventListener('focus', handleWindowActive);
+      window.removeEventListener('click', handleWindowActive);
     };
   }, [threadId]);
 
@@ -299,6 +311,14 @@ export default function ChatPage() {
           }
           return list;
         });
+
+        if (data.autoReply) {
+          fetch('/api/chat/read', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ threadId: activeThreadId }),
+          }).catch(() => {});
+        }
       }
     } catch (e) {
     } finally {

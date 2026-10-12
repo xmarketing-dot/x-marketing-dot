@@ -39,7 +39,9 @@ export async function GET(req: NextRequest) {
 
       // 4. Listener for messages read event (Double Tick Real-Time Sync)
       const onMessagesRead = (readEvent: any) => {
-        if (targetThreadId && String(readEvent.threadId) === String(targetThreadId)) {
+        const matchesThread = targetThreadId && String(readEvent.threadId) === String(targetThreadId);
+        const isAdmin = role === 'admin';
+        if (matchesThread || isAdmin) {
           try {
             controller.enqueue(
               encoder.encode(`event: messages_read\ndata: ${JSON.stringify(readEvent)}\n\n`)

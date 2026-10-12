@@ -193,9 +193,12 @@ export default function AdminChatPage() {
       body: JSON.stringify({ threadId: selectedThread._id }),
     }).catch(() => {});
 
-    // Update unread count locally
+    // Update unread count locally and mark user messages as read locally
     setThreads((prev) =>
       prev.map((t) => (t._id === selectedThread._id ? { ...t, okunmadiAdminSayisi: 0 } : t))
+    );
+    setMessages((prev) =>
+      prev.map((m) => (m.gonderenTipi === 'user' ? { ...m, okundu: true } : m))
     );
 
     const loadMessages = async () => {
@@ -238,11 +241,18 @@ export default function AdminChatPage() {
       eventSource.addEventListener('messages_read', (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.reader === 'user') {
-            // Müşteri admin mesajlarını okudu -> Anında çift mavi tike güncelle
-            setMessages((prev) =>
-              prev.map((m) => (m.gonderenTipi === 'admin' ? { ...m, okundu: true } : m))
-            );
+          if (String(data.threadId) === String(selectedThread._id)) {
+            if (data.reader === 'user') {
+              // Müşteri admin mesajlarını okudu -> Anında çift mavi tike güncelle
+              setMessages((prev) =>
+                prev.map((m) => (m.gonderenTipi === 'admin' ? { ...m, okundu: true } : m))
+              );
+            } else if (data.reader === 'admin') {
+              // Admin müşteri mesajlarını okudu -> Anında çift mavi tike güncelle
+              setMessages((prev) =>
+                prev.map((m) => (m.gonderenTipi === 'user' ? { ...m, okundu: true } : m))
+              );
+            }
           }
         } catch (err) {}
       });
@@ -950,13 +960,23 @@ export default function AdminChatPage() {
                             <span>
                               {new Date(m.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
-                            {isAdmin && (
+                            {isAdmin ? (
                               m.okundu ? (
                                 <span className="flex items-center text-sky-400 font-bold" title="Müşteri okudu (Görüldü)">
                                   <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
                                 </span>
                               ) : (
                                 <span className="flex items-center text-[#7d8590]" title="İletildi (Müşteri henüz görmedi)">
+                                  <Check className="w-3.5 h-3.5 stroke-[2]" />
+                                </span>
+                              )
+                            ) : (
+                              m.okundu ? (
+                                <span className="flex items-center text-sky-400 font-bold" title="Okundu (Admin gördü)">
+                                  <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                                </span>
+                              ) : (
+                                <span className="flex items-center text-[#7d8590]" title="Okunmadı">
                                   <Check className="w-3.5 h-3.5 stroke-[2]" />
                                 </span>
                               )

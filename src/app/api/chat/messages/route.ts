@@ -164,22 +164,26 @@ export async function POST(req: NextRequest) {
         lower.includes('ucret') ||
         lower.includes('paket') ||
         lower.includes('detay') ||
-        lower.includes('reklam');
+        lower.includes('reklam') ||
+        lower.includes('vip') ||
+        lower.includes('gold') ||
+        lower.includes('silver') ||
+        lower.includes('tarif');
 
       if (isListingInquiry) {
-        // Cooldown: Son 2 dakika içinde zaten aynı otomatik mesaj atılmış mı kontrol et
+        // Cooldown: Son 15 saniye içinde aynı otomatik mesaj atılmış mı kontrol et (çift tıklama koruması)
         const recentBot = await ChatMessageModel.findOne({
           threadId,
           gonderenTipi: 'admin',
           mesaj: { $regex: /ÖNE ÇIKMA PAKETLERİ/i },
-          createdAt: { $gte: new Date(Date.now() - 2 * 60 * 1000) },
+          createdAt: { $gte: new Date(Date.now() - 15 * 1000) },
         }).lean();
 
         if (!recentBot) {
           // 1. Kullanıcının bu mesajını anında okundu yap (sistem gördü ve cevapladı)
           await ChatMessageModel.findByIdAndUpdate(newMsg._id, { okundu: true });
           serializedMsg.okundu = true;
-          chatEmitter.emit('messages_read', { threadId, reader: 'admin' });
+          chatEmitter.emit('messages_read', { threadId: String(threadId), reader: 'admin' });
 
           // 2. Dinamik WhatsApp numarasını ve site URL'sini al
           const cfg = await HomepageConfigModel.findOne().select('adminWhatsApp').lean();

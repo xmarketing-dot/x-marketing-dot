@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import connectToDatabase from '@/lib/mongodb';
 import ChatThreadModel from '@/models/ChatThread';
 import ChatMessageModel from '@/models/ChatMessage';
@@ -12,19 +13,30 @@ export async function POST(req: NextRequest) {
     }
     await connectToDatabase();
 
+    const targetThreadId = mongoose.Types.ObjectId.isValid(threadId)
+      ? new mongoose.Types.ObjectId(threadId)
+      : threadId;
+
     // 1. Thread üzerindeki okunmadı admin sayısını sıfırla
-    await ChatThreadModel.findByIdAndUpdate(threadId, {
+    await ChatThreadModel.findByIdAndUpdate(targetThreadId, {
       okunmadiAdminSayisi: 0,
     });
 
     // 2. Bu sohbetteki kullanıcının gönderdiği okunmamış mesajları okundu yap
     await ChatMessageModel.updateMany(
-      { threadId, gonderenTipi: 'user', okundu: false },
+      {
+        $or: [
+          { threadId: targetThreadId },
+          { threadId: String(threadId) },
+        ],
+        gonderenTipi: 'user',
+        okundu: false,
+      },
       { $set: { okundu: true } }
     );
 
     // 3. SSE ile anlık canlı bildirim gönder (kullanıcı ekranındaki tek tik çift mavi tike dönsün)
-    chatEmitter.emit('messages_read', { threadId, reader: 'admin' });
+    chatEmitter.emit('messages_read', { threadId: String(threadId), reader: 'admin' });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
