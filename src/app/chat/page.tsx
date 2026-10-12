@@ -69,7 +69,16 @@ export default function ChatPage() {
   const [showCrypto, setShowCrypto] = useState(false);
   const [bannedInfo, setBannedInfo] = useState<{ isBanned: boolean; banSebebi?: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isNearBottomRef = useRef(true);
+  const initialScrollDone = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 150;
+  };
 
   // Sync messages to local cache for instant 0ms restoration next time
   useEffect(() => {
@@ -85,9 +94,11 @@ export default function ChatPage() {
     if (typeof window === 'undefined') return;
 
     const handleResize = () => {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      if (isNearBottomRef.current) {
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
     };
 
     if (window.visualViewport) {
@@ -174,16 +185,27 @@ export default function ChatPage() {
       try {
         const incoming: Message[] = JSON.parse(event.data);
         setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => m._id));
-          const uniqueNew = incoming.filter((m) => !existingIds.has(m._id));
-          if (uniqueNew.length > 0) {
-            const hasAdminMsg = uniqueNew.some((m) => m.gonderenTipi === 'admin');
-            if (hasAdminMsg) {
-              markAsRead();
+          const existingIds = new Set(prev.map((m) => String(m._id)));
+          const uniqueNew = incoming.filter((m) => !existingIds.has(String(m._id)));
+          if (uniqueNew.length === 0) return prev;
+
+          let updated = [...prev];
+          uniqueNew.forEach((newMsg) => {
+            const tempIndex = updated.findIndex(
+              (m) => m._id.startsWith('temp-') && m.mesaj === newMsg.mesaj && m.gonderenTipi === newMsg.gonderenTipi
+            );
+            if (tempIndex !== -1) {
+              updated[tempIndex] = newMsg;
+            } else {
+              updated.push(newMsg);
             }
-            return [...prev, ...uniqueNew];
+          });
+
+          const hasAdminMsg = uniqueNew.some((m) => m.gonderenTipi === 'admin');
+          if (hasAdminMsg) {
+            markAsRead();
           }
-          return prev;
+          return updated;
         });
       } catch (err) {}
     });
@@ -205,7 +227,16 @@ export default function ChatPage() {
         .then((res) => res.json())
         .then((data) => {
           if (data.messages && Array.isArray(data.messages)) {
-            setMessages(data.messages);
+            setMessages((prev) => {
+              if (
+                prev.length === data.messages.length &&
+                prev[prev.length - 1]?._id === data.messages[data.messages.length - 1]?._id &&
+                prev[prev.length - 1]?.okundu === data.messages[data.messages.length - 1]?.okundu
+              ) {
+                return prev;
+              }
+              return data.messages;
+            });
             const hasUnreadAdmin = data.messages.some((m: Message) => m.gonderenTipi === 'admin' && !m.okundu);
             if (hasUnreadAdmin) {
               markAsRead();
@@ -213,7 +244,7 @@ export default function ChatPage() {
           }
         })
         .catch(() => {});
-    }, 3000);
+    }, 4000);
 
     const handleWindowActive = () => {
       markAsRead();
@@ -230,7 +261,18 @@ export default function ChatPage() {
   }, [threadId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!initialScrollDone.current) {
+      if (messages.length > 0) {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+        initialScrollDone.current = true;
+      }
+      return;
+    }
+
+    // Kullanıcı yukarı kaydırmış ve uzun yazıyı okuyorsa ZORLA AŞAĞI ÇEKME!
+    if (isNearBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const handleSend = async (text?: string) => {
@@ -305,8 +347,12 @@ export default function ChatPage() {
       const data = await res.json();
       if (data.message) {
         setMessages((prev) => {
-          const list = prev.map((m) => (m._id === tempId ? data.message : m));
-          if (data.autoReply && !list.some((m) => m._id === data.autoReply._id)) {
+          const alreadyHasReal = prev.some((m) => String(m._id) === String(data.message._id));
+          const list = alreadyHasReal
+            ? prev.filter((m) => m._id !== tempId)
+            : prev.map((m) => (m._id === tempId ? data.message : m));
+
+          if (data.autoReply && !list.some((m) => String(m._id) === String(data.autoReply._id))) {
             return [...list, data.autoReply];
           }
           return list;
@@ -323,6 +369,7 @@ export default function ChatPage() {
     } catch (e) {
     } finally {
       setSending(false);
+      isNearBottomRef.current = true;
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -417,7 +464,7 @@ export default function ChatPage() {
           </Link>
         </main>
       ) : (
-        <main className="flex-1 overflow-y-auto p-3 sm:p-4 flex flex-col gap-3 no-scrollbar">
+        <main ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-3 sm:p-4 flex flex-col gap-3 no-scrollbar">
         
           {/* ── SADE, MİNİMAL VE KULLANIŞLI HIZLI AKSİYON KARTI ──────────────── */}
           <div className="p-3.5 rounded-2xl bg-[#111620]/95 border border-[#21262d] shadow-sm flex flex-col gap-2.5">
@@ -504,15 +551,15 @@ export default function ChatPage() {
           )}
 
           {/* ── MESAJ BALONLARI (CHAT BUBBLES) ──────────────── */}
-          {messages.map((msg) => {
+          {messages.map((msg, idx) => {
             const isAdmin = msg.gonderenTipi === 'admin';
             return (
               <div
-                key={msg._id}
+                key={`${msg._id || idx}-${idx}`}
                 className={`flex flex-col max-w-[85%] sm:max-w-[80%] ${isAdmin ? 'self-start' : 'self-end items-end'}`}
               >
                 <div
-                  className={`p-3 rounded-2xl text-xs leading-relaxed shadow-sm whitespace-pre-wrap break-words ${
+                  className={`p-3 rounded-2xl text-xs leading-relaxed shadow-sm whitespace-pre-wrap break-words select-text cursor-text ${
                     isAdmin
                       ? 'bg-[#151b26] text-[#e6edf3] rounded-tl-xs border border-[#283141]'
                       : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-semibold rounded-tr-xs shadow-amber-500/10'

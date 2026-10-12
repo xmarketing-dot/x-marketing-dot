@@ -119,6 +119,7 @@ export default function AdminChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastKnownMessageId = useRef<string>('');
+  const initialTargetHandled = useRef(false);
 
   // 1. Fetch thread list
   const fetchThreads = async () => {
@@ -128,15 +129,17 @@ export default function AdminChatPage() {
       if (data.threads) {
         setThreads(data.threads);
 
-        if (targetThreadId) {
+        // targetThreadId parametresini sadece İLK SAYFA AÇILIŞINDA bir kez uygula
+        if (!initialTargetHandled.current && targetThreadId) {
           const matched = data.threads.find((t: Thread) => t._id === targetThreadId);
           if (matched) {
             setSelectedThread(matched);
+            initialTargetHandled.current = true;
             return;
           }
         }
 
-        // On desktop, auto-select first thread if nothing is selected
+        // Kullanıcının tıkladığı seçili sohbeti koru, listeyi güncellerken başkasına sıçrama!
         if (typeof window !== 'undefined' && window.innerWidth >= 768) {
           setSelectedThread((prev) => {
             if (prev) {
@@ -206,7 +209,16 @@ export default function AdminChatPage() {
         const res = await fetch(`/api/chat/messages?threadId=${selectedThread._id}`, { cache: 'no-store' });
         const data = await res.json();
         if (data.messages && Array.isArray(data.messages)) {
-          setMessages(data.messages);
+          setMessages((prev) => {
+            if (
+              prev.length === data.messages.length &&
+              prev[prev.length - 1]?._id === data.messages[data.messages.length - 1]?._id &&
+              prev[prev.length - 1]?.okundu === data.messages[data.messages.length - 1]?.okundu
+            ) {
+              return prev;
+            }
+            return data.messages;
+          });
           if (data.messages.length > 0) {
             lastKnownMessageId.current = data.messages[data.messages.length - 1]._id;
           }
@@ -270,10 +282,12 @@ export default function AdminChatPage() {
     };
   }, [selectedThread?._id, soundEnabled]);
 
-  // Scroll to bottom on message update
+  // Scroll to bottom on message update - sadece kullanıcı en alttaysa kaydır
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!showScrollBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, showScrollBottom]);
 
   // Scroll position listener for "Scroll to bottom" button
   const handleScroll = () => {
@@ -397,6 +411,8 @@ export default function AdminChatPage() {
     if (e) e.preventDefault();
     if (!replyText.trim() || !selectedThread || sending) return;
 
+    // Hedef thread ID'yi sabitle (arada arka planda liste güncellense bile asla başka chat'e gitmez!)
+    const currentTargetId = selectedThread._id;
     const content = replyText.trim();
     setReplyText('');
     setSending(true);
@@ -406,7 +422,7 @@ export default function AdminChatPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          threadId: selectedThread._id,
+          threadId: currentTargetId,
           gonderenTipi: 'admin',
           mesaj: content,
         }),
@@ -451,21 +467,21 @@ export default function AdminChatPage() {
         }
       }
 
-      // 2. Tab filter
-      if (activeFilter === 'unread') return (t.okunmadiAdminSayisi || 0) > 0;
+      // 2. Tab filter (Seçili sohbet okunsa bile aktifken listeden aniden kaybolup sırayı bozmaz)
+      if (activeFilter === 'unread') return (t.okunmadiAdminSayisi || 0) > 0 || (selectedThread ? t._id === selectedThread._id : false);
       if (activeFilter === 'vip') return Boolean(t.listingId || t.listingBaslik);
       if (activeFilter === 'banned') return Boolean(t.isBanned);
 
       return true;
     });
-  }, [threads, searchQuery, activeFilter]);
+  }, [threads, searchQuery, activeFilter, selectedThread?._id]);
 
   const totalUnreadCount = useMemo(() => {
     return threads.reduce((acc, t) => acc + (t.okunmadiAdminSayisi || 0), 0);
   }, [threads]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#090c12] overflow-hidden select-none">
+    <div className="w-full h-full flex flex-col bg-[#090c12] overflow-hidden">
       
       <div className="flex-1 min-h-0 flex w-full h-full relative overflow-hidden">
         
@@ -919,14 +935,14 @@ export default function AdminChatPage() {
 
                       return (
                         <div
-                          key={m._id || index}
+                          key={`${m._id || index}-${index}`}
                           className={`flex flex-col max-w-[85%] sm:max-w-[72%] ${
                             isAdmin ? 'self-end items-end' : 'self-start items-start'
                           } ${isNextSame ? 'mb-0.5' : 'mb-2'}`}
                         >
                           {/* Baloncuk Gövdesi */}
                           <div
-                            className={`p-3 sm:p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words text-left shadow-md ${
+                            className={`p-3 sm:p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words text-left shadow-md select-text cursor-text ${
                               isAdmin
                                 ? 'bg-gradient-to-br from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-semibold rounded-tr-sm border border-amber-300/40 shadow-amber-500/10'
                                 : 'bg-[#161c28] text-[#f0f6fc] rounded-tl-sm border border-[#263145] font-normal'

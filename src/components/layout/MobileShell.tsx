@@ -130,7 +130,6 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
               {children}
             </main>
             <SeoBacklinkFooter />
-            <GlobalChatNotification />
           </div>
         ) : (
           <CorporateWebHome />
@@ -203,11 +202,10 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
 
         {/* Mobile-Only Sponsored VIP Ad Popup */}
         <SpecialAdPopup />
-
-        {/* Global Real-Time Chat Notifications */}
-        <GlobalChatNotification />
       </div>
 
+      {/* Global Real-Time Chat Notifications (Mobile & Desktop) */}
+      <GlobalChatNotification />
     </div>
   );
 }

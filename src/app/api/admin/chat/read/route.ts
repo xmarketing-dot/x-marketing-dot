@@ -17,10 +17,12 @@ export async function POST(req: NextRequest) {
       ? new mongoose.Types.ObjectId(threadId)
       : threadId;
 
-    // 1. Thread üzerindeki okunmadı admin sayısını sıfırla
-    await ChatThreadModel.findByIdAndUpdate(targetThreadId, {
-      okunmadiAdminSayisi: 0,
-    });
+    // 1. Thread üzerindeki okunmadı admin sayısını sıfırla (updatedAt değiştirilmez, liste sırası bozulmaz)
+    await ChatThreadModel.findByIdAndUpdate(
+      targetThreadId,
+      { okunmadiAdminSayisi: 0 },
+      { timestamps: false }
+    );
 
     // 2. Bu sohbetteki kullanıcının gönderdiği okunmamış mesajları okundu yap
     await ChatMessageModel.updateMany(

@@ -6,6 +6,7 @@ class ChatEmitter extends EventEmitter {}
 const globalForChat = global as unknown as { chatEmitter: ChatEmitter };
 
 export const chatEmitter = globalForChat.chatEmitter || new ChatEmitter();
+chatEmitter.setMaxListeners(0); // Sınırsız dinleyiciye izin ver (çoklu SSE bağlantılarında uyarı vermez)
 
 if (process.env.NODE_ENV !== 'production') {
   globalForChat.chatEmitter = chatEmitter;
