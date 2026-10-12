@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: 'Best Eskort — Türkiye\'nin En Güvenilir Eskort İlan Platformu',
-    template: '%s | Best Eskort',
+    template: '%s',
   },
   description: 'Türkiye genelinde 81 il ve tüm ilçelerde doğrulanmış güncel eskort ilanları. İstanbul, Ankara, İzmir ve tüm şehirlerde bağımsız eskortlar, VIP bayanlar ve WhatsApp iletişim hatları.',
   keywords: [
