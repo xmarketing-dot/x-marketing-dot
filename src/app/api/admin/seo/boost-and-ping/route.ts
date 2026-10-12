@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     if (triggerPing) {
       const siteUrl = getSiteUrl();
       const [listings, locations] = await Promise.all([
-        ListingModel.find({ status: 'yayinda' }).select('slug').lean(),
+        ListingModel.find({ status: { $in: ['yayinda', 'suresi_doldu', 'pasif'] } }).select('slug').lean(),
         getAllLocations(),
       ]);
 

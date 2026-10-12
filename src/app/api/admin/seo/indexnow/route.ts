@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     } else if (allPages) {
       await connectToDatabase();
       const [listings, locations] = await Promise.all([
-        ListingModel.find({ status: 'yayinda' }).select('slug').lean(),
+        ListingModel.find({ status: { $in: ['yayinda', 'suresi_doldu', 'pasif'] } }).select('slug').lean(),
         getAllLocations(),
       ]);
 
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     } else {
       // Varsayılan: Son 50 ilan ve ana sayfalar
       await connectToDatabase();
-      const listings = await ListingModel.find({ status: 'yayinda' })
+      const listings = await ListingModel.find({ status: { $in: ['yayinda', 'suresi_doldu', 'pasif'] } })
         .sort({ updatedAt: -1 })
         .limit(50)
         .select('slug')
