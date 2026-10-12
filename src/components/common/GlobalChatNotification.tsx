@@ -386,39 +386,53 @@ export default function GlobalChatNotification() {
           {/* Unread Mesaj Olduğunda Yanıp Sönen Kırmızı Radar Dalgaları (Kaçırılması İmkansız!) */}
           {unreadCount > 0 && (
             <>
-              <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping pointer-events-none" />
-              <span className="absolute -inset-2 rounded-full bg-amber-400/30 animate-pulse pointer-events-none" />
+              <span className="absolute -inset-4 rounded-full bg-rose-600/50 animate-ping pointer-events-none" />
+              <span className="absolute -inset-2 rounded-full bg-amber-400/60 animate-pulse pointer-events-none" />
             </>
           )}
 
-          {/* Balonun Yanından Çıkan Şık Konuşma Bildirimi */}
+          {/* ── HEM MOBİLDE HEM MASAÜSTÜNDE BALONUN ÜSTÜNDEN FIRLAYAN DEV DİKKAT ÇEKİCİ KONUŞMA KUTUSU ── */}
           {unreadCount > 0 && latestMessage && (
             <div 
               onClick={() => router.push('/chat')}
-              className="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/95 border border-red-500 text-white text-xs font-bold shadow-2xl backdrop-blur-md whitespace-nowrap cursor-pointer hover:bg-slate-900 transition-colors pointer-events-auto"
+              className="absolute bottom-full mb-3 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 text-white font-black text-xs shadow-[0_10px_40px_rgba(225,29,72,0.85)] border-2 border-white whitespace-nowrap cursor-pointer active:scale-95 transition-all animate-bounce z-50 pointer-events-auto"
             >
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping shrink-0" />
-              <span className="truncate max-w-[140px] text-amber-300 font-heading font-black">Yeni Mesaj:</span>
-              <span className="truncate max-w-[150px] font-medium text-slate-200">"{latestMessage}"</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping shrink-0" />
+              <div className="flex flex-col text-left">
+                <span className="text-[10px] uppercase font-heading font-black tracking-wider text-amber-200">
+                  🔔 YENİ CEVAP GELDİ!
+                </span>
+                <span className="text-xs font-bold truncate max-w-[170px] sm:max-w-[220px]">
+                  "{latestMessage}"
+                </span>
+              </div>
+              <ArrowRight className="w-4 h-4 stroke-[3] text-amber-300 shrink-0 ml-1" />
+              
+              {/* Konuşma Balonunun Küçük Üçgen Oku */}
+              <div className="absolute -bottom-2 right-5 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[8px] border-t-rose-600" />
             </div>
           )}
 
-          {/* Ana Balon */}
-          <div className={`relative w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 flex items-center justify-center shadow-[0_8px_30px_rgba(245,158,11,0.55)] border-2 border-amber-200 active:scale-95 transition-all ${
-            unreadCount > 0 ? 'scale-110 ring-4 ring-red-500/60 shadow-[0_0_35px_rgba(239,68,68,0.7)] animate-bounce' : ''
+          {/* Ana Balon: Mesaj Gelince Rengi ALTINDAN NEON KIRMIZIYA/ALEYE DÖNÜŞÜR! */}
+          <div className={`relative w-14 h-14 rounded-full flex items-center justify-center border-2 active:scale-95 transition-all duration-300 ${
+            unreadCount > 0
+              ? 'bg-gradient-to-tr from-rose-600 via-red-500 to-rose-600 text-white border-white scale-110 shadow-[0_0_45px_rgba(244,63,94,0.95)] ring-4 ring-rose-500/80 animate-pulse'
+              : 'bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 border-amber-200 shadow-[0_8px_30px_rgba(245,158,11,0.55)]'
           }`}>
             
-            {/* Ortadaki Chat İkonu */}
-            <MessageSquare className="w-6 h-6 stroke-[2.5] fill-slate-950 pointer-events-none" />
+            {/* Ortadaki Chat İkonu (Mesaj varsa beyaz, yoksa siyah) */}
+            <MessageSquare className={`w-6 h-6 stroke-[2.5] pointer-events-none transition-colors ${
+              unreadCount > 0 ? 'fill-white text-white animate-bounce' : 'fill-slate-950 text-slate-950'
+            }`} />
 
-            {/* Yeşil Canlı Durum Noktası */}
+            {/* Normal Zaman: Yeşil Canlı Durum Noktası */}
             {unreadCount === 0 && (
               <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-[#0d1117] animate-pulse" />
             )}
 
             {/* BÜYÜK KIRMIZI BİLDİRİM SAYACI (+1 / +2 ROZETİ) */}
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 min-w-[24px] h-6 px-1 rounded-full bg-red-600 border-2 border-white text-white font-black text-xs shadow-2xl flex items-center justify-center animate-pulse">
+              <span className="absolute -top-2 -right-2 min-w-[26px] h-6.5 px-1.5 rounded-full bg-yellow-400 border-2 border-white text-slate-950 font-black text-xs shadow-2xl flex items-center justify-center animate-bounce">
                 {unreadCount > 9 ? '9+' : `+${unreadCount}`}
               </span>
             )}
