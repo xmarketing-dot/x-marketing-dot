@@ -32,11 +32,11 @@ if (!global.mongooseCache) {
 const connectionOptions = {
   bufferCommands: false,
   autoIndex: false,
-  maxPoolSize: 2,
+  maxPoolSize: 10,
   minPoolSize: 0,
-  maxIdleTimeMS: 5000,
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 20000,
+  maxIdleTimeMS: 10000,
+  serverSelectionTimeoutMS: 8000,
+  socketTimeoutMS: 45000,
 };
 
 export async function connectToDatabase(): Promise<typeof mongoose> {

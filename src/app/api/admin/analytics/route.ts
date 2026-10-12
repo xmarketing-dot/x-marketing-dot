@@ -6,6 +6,7 @@ import ListingModel from '@/models/Listing';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function GET(req: Request) {
   try {
@@ -172,8 +173,11 @@ export async function GET(req: Request) {
         },
         { $sort: { impressions: -1 } }
       ]),
-      // 10. Canlı Ziyaretçi Logu (Tüm kayıtlar - eksiksiz akış)
-      AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(5000).lean(),
+      // 10. Canlı Ziyaretçi Logu (Tüm kayıtlar - eksiksiz akış, tüm zamanlar seçildiğinde timeout'u önlemek için optimize limit)
+      AnalyticsVisitorModel.find(dateQuery)
+        .sort({ createdAt: -1 })
+        .limit(range === 'all' ? 1000 : 3000)
+        .lean(),
       // 11. İlan Ziyaretçi & Referrer Dağılımı (Limit 1000'e çıkarıldı, hiçbir ilan eksik kalmaz)
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, path: { $regex: '^/ilan/' } } },
