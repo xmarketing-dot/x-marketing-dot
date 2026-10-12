@@ -116,7 +116,7 @@ export default function GlobalChatNotification() {
         });
       } catch (e) {}
 
-      // C) Fallback Polling (6 saniye)
+      // C) Fallback Polling (Sadece sekme aktifken ve düşük frekansta - Vercel maliyet koruması)
       pollInterval = setInterval(async () => {
         if (typeof document !== 'undefined' && document.hidden) return;
         try {
@@ -130,7 +130,7 @@ export default function GlobalChatNotification() {
             setUnreadCount(unreadAdmin.length);
           }
         } catch (e) {}
-      }, 6000);
+      }, 45000);
     };
 
     const getSavedThreadId = () => {
@@ -141,25 +141,12 @@ export default function GlobalChatNotification() {
       return match ? decodeURIComponent(match[1]) : null;
     };
 
-    const init = async () => {
-      let tid = getSavedThreadId();
-      if (!tid) {
-        try {
-          const res = await fetch('/api/chat/start', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ createIfNotFound: true }),
-          });
-          const data = await res.json();
-          if (data.thread?._id) {
-            tid = data.thread._id;
-            localStorage.setItem('best_eskort_chat_thread_id', data.thread._id);
-            document.cookie = `best_eskort_chat_thread_id=${data.thread._id};path=/;max-age=31536000;SameSite=Lax`;
-          }
-        } catch (e) {}
-      }
+    const init = () => {
+      const tid = getSavedThreadId();
+      // Kullanıcının daha önce başlattığı aktif bir sohbeti yoksa sunucuyu ve SSE'yi boş yere yorma!
+      if (!tid) return;
 
-      if (tid && isMounted) {
+      if (isMounted) {
         setupChatListener(tid);
       }
     };
