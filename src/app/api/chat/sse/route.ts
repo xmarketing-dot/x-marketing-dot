@@ -37,8 +37,20 @@ export async function GET(req: NextRequest) {
         }
       };
 
+      // 4. Listener for messages read event (Double Tick Real-Time Sync)
+      const onMessagesRead = (readEvent: any) => {
+        if (targetThreadId && String(readEvent.threadId) === String(targetThreadId)) {
+          try {
+            controller.enqueue(
+              encoder.encode(`event: messages_read\ndata: ${JSON.stringify(readEvent)}\n\n`)
+            );
+          } catch (err) {}
+        }
+      };
+
       chatEmitter.on('new_message', onNewMessage);
       chatEmitter.on('thread_update', onThreadUpdate);
+      chatEmitter.on('messages_read', onMessagesRead);
 
       // Heartbeat every 15 seconds to prevent browser connection timeout
       const pingInterval = setInterval(() => {
@@ -53,6 +65,7 @@ export async function GET(req: NextRequest) {
       req.signal.addEventListener('abort', () => {
         chatEmitter.off('new_message', onNewMessage);
         chatEmitter.off('thread_update', onThreadUpdate);
+        chatEmitter.off('messages_read', onMessagesRead);
         clearInterval(pingInterval);
         try {
           controller.close();

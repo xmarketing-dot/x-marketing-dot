@@ -34,6 +34,7 @@ import {
   CheckCheck
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { useAdminWhatsApp } from '@/lib/siteConfig';
 
 interface Thread {
   _id: string;
@@ -93,6 +94,7 @@ function playAdminDing() {
 export default function AdminChatPage() {
   const searchParams = useSearchParams();
   const targetThreadId = searchParams.get('threadId');
+  const { display, formatted, waLink } = useAdminWhatsApp();
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
@@ -230,6 +232,18 @@ export default function AdminChatPage() {
             }
             return prev;
           });
+        } catch (err) {}
+      });
+
+      eventSource.addEventListener('messages_read', (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.reader === 'user') {
+            // Müşteri admin mesajlarını okudu -> Anında çift mavi tike güncelle
+            setMessages((prev) =>
+              prev.map((m) => (m.gonderenTipi === 'admin' ? { ...m, okundu: true } : m))
+            );
+          }
         } catch (err) {}
       });
     } catch (e) {}
@@ -937,7 +951,15 @@ export default function AdminChatPage() {
                               {new Date(m.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {isAdmin && (
-                              <CheckCheck className="w-3 h-3 text-amber-400 stroke-[2.5]" />
+                              m.okundu ? (
+                                <span className="flex items-center text-sky-400 font-bold" title="Müşteri okudu (Görüldü)">
+                                  <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                                </span>
+                              ) : (
+                                <span className="flex items-center text-[#7d8590]" title="İletildi (Müşteri henüz görmedi)">
+                                  <Check className="w-3.5 h-3.5 stroke-[2]" />
+                                </span>
+                              )
                             )}
                           </div>
                         </div>
@@ -1068,6 +1090,57 @@ export default function AdminChatPage() {
 
               {/* ── HIZLI ŞABLON BUTONLARI (TEK TIKLA CEVAP) ──────────────── */}
               <div className="px-3 sm:px-4 py-2 bg-[#121722] border-t border-[#232936] flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://www.besteskort.online';
+                    const phoneText = display || formatted || '+90 534 000 00 00';
+                    const whatsappUrl = waLink || 'https://wa.me/905340000000';
+                    const ilanVerUrl = `${origin}/ilan-ver`;
+
+                    setReplyText(`Merhaba, Best Eskort VIP Destek Merkezine hoş geldiniz! 👑
+
+İlanınızı 2 farklı şekilde oluşturabilirsiniz:
+1️⃣ Dilerseniz WhatsApp destek hattımızdan (${phoneText}) bilgilerinizi ve fotoğraflarınızı gönderin, ilanı doğrudan biz açalım:
+👉 WhatsApp Hızlı İletişim: ${whatsappUrl}
+
+2️⃣ İsterseniz web sitemiz üzerinden formu doldurarak kendiniz ilan oluşturabilir ve ödeme aşamasında bize ulaşabilirsiniz:
+👉 İlan Oluşturma Formu: ${ilanVerUrl}
+
+────────────────────────────
+🔥 BEST ESKORT – ÖNE ÇIKMA PAKETLERİ 🔥
+
+Profilinizin daha fazla kullanıcıya ulaşması ve listelerde daha görünür olması için farklı tanıtım seçenekleri:
+
+👑 VIP PAKET — 7.000 TL
+• En üst sıralarda görünürlük
+• VIP alanında özel konumlandırma
+• Maksimum görünürlük
++EN ÜST VİTRİN 1 GÜNLÜK(BÜYÜK ANASAYFA RESİM ALANİ) BEDAVA SONRASİ 1 GÜN 2000 TL
+
+💎 GOLD PAKET — 4.000 TL
+• Üst sıralarda görünürlük
+• Gold vitrin alanında gösterim
+• Yüksek görünürlük
+
+🥈 SILVER PAKET — 2.500 TL
+• Silver vitrin alanında gösterim
+• Standart profile göre daha yüksek görünürlük
+
+📌 Paketler sınırlı kontenjanla sunulmaktadır.
+
+📩 Detaylı bilgi ve paket seçimi için bizimle iletişime geçebilirsiniz.
+
+BEST ESKORT
+✨ Daha fazla görünürlük, daha fazla erişim.`);
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/25 to-amber-400/20 hover:from-amber-500/35 hover:to-amber-400/30 border border-amber-400/60 text-amber-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
+                  title="Dinamik WhatsApp ve Paket Fiyat Tarifesini Yanıta Yapıştır"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  <span>👑 İlan Verme &amp; Paket Tarifesi</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setReplyText('Ödeme Adresi (BNB SMART CHAIN BEP-20): 0xb7259aef66c9cd16e5a5d879baf0107bea03f527 - Ödemeden sonra lütfen TXID veya dekont iletiniz, 5 dakikada onaylanacaktır.')}

@@ -150,11 +150,20 @@ export default function ChatPage() {
   useEffect(() => {
     if (!threadId) return;
 
+    const markAsRead = () => {
+      fetch('/api/chat/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ threadId }),
+      }).catch(() => {});
+    };
+
     fetch(`/api/chat/messages?threadId=${threadId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.messages) {
           setMessages(data.messages);
+          markAsRead();
         }
       })
       .catch(() => {});
@@ -167,8 +176,27 @@ export default function ChatPage() {
         setMessages((prev) => {
           const existingIds = new Set(prev.map((m) => m._id));
           const uniqueNew = incoming.filter((m) => !existingIds.has(m._id));
-          return uniqueNew.length > 0 ? [...prev, ...uniqueNew] : prev;
+          if (uniqueNew.length > 0) {
+            const hasAdminMsg = uniqueNew.some((m) => m.gonderenTipi === 'admin');
+            if (hasAdminMsg) {
+              markAsRead();
+            }
+            return [...prev, ...uniqueNew];
+          }
+          return prev;
         });
+      } catch (err) {}
+    });
+
+    eventSource.addEventListener('messages_read', (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.reader === 'admin') {
+          // Admin mesajlarımızı okudu -> Anında çift mavi tike güncelle
+          setMessages((prev) =>
+            prev.map((m) => (m.gonderenTipi === 'user' ? { ...m, okundu: true } : m))
+          );
+        }
       } catch (err) {}
     });
 
@@ -177,16 +205,11 @@ export default function ChatPage() {
         .then((res) => res.json())
         .then((data) => {
           if (data.messages && Array.isArray(data.messages)) {
-            setMessages((prev) => {
-              if (data.messages.length !== prev.length) {
-                return data.messages;
-              }
-              return prev;
-            });
+            setMessages(data.messages);
           }
         })
         .catch(() => {});
-    }, 2500);
+    }, 3000);
 
     return () => {
       eventSource.close();
@@ -471,7 +494,7 @@ export default function ChatPage() {
                       : 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 font-semibold rounded-tr-xs shadow-amber-500/10'
                   }`}
                 >
-                  {msg.mesaj.split(/(https?:\/\/[^\s]+)/g).map((part, idx) => {
+                  {msg.mesaj.split(/(https?:\/\/[^\s]+|\/ilan-ver)/g).map((part, idx) => {
                     if (part.startsWith('http://') || part.startsWith('https://')) {
                       return (
                         <a
@@ -485,13 +508,34 @@ export default function ChatPage() {
                         </a>
                       );
                     }
+                    if (part === '/ilan-ver') {
+                      return (
+                        <Link
+                          key={idx}
+                          href="/ilan-ver"
+                          className="text-amber-400 underline font-bold hover:text-amber-300 inline-block my-1 p-1.5 px-2.5 rounded-lg bg-black/20 border border-amber-500/20"
+                        >
+                          👑 /ilan-ver (İlan Formu)
+                        </Link>
+                      );
+                    }
                     return part;
                   })}
                 </div>
 
                 <div className="flex items-center gap-1 mt-0.5 px-1 text-[9px] text-[#6e7681] font-medium">
                   <span>{new Date(msg.createdAt || Date.now()).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
-                  {!isAdmin && <CheckCheck className="w-3 h-3 text-amber-400" />}
+                  {!isAdmin && (
+                    msg.okundu ? (
+                      <span className="flex items-center text-sky-400" title="Okundu (Admin gördü)">
+                        <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                      </span>
+                    ) : (
+                      <span className="flex items-center text-[#8b949e]" title="İletildi (Henüz okunmadı)">
+                        <Check className="w-3.5 h-3.5 stroke-[2]" />
+                      </span>
+                    )
+                  )}
                 </div>
               </div>
             );
