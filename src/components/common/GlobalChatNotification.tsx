@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Headphones, MessageSquare, X, ArrowRight } from 'lucide-react';
+import { MessageSquare, X, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function GlobalChatNotification() {
   const pathname = usePathname();
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
   const [latestMessage, setLatestMessage] = useState<string | null>(null);
-  const [showToast, setShowToast] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
   // Floating Bubble Position (Draggable)
@@ -25,70 +25,69 @@ export default function GlobalChatNotification() {
     hasMoved: false,
   });
 
+  const previewTimerRef = useRef<any>(null);
+
   const isChatPage = pathname === '/chat';
   const isSecurePortal = pathname?.startsWith('/bms-secure-portal');
 
-  // Canlı Destek Bildirim Zili (İki tonlu net ve dikkat çekici ses)
-  const playNotificationSound = () => {
+  // Apple iMessage Tarzı Ultra Soft Su Damlası / Pop Sesi
+  const playSoftNotificationSound = () => {
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
       
-      const now = ctx.currentTime;
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
+      const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(587.33, now); // D5
-      osc1.frequency.exponentialRampToValueAtTime(880, now + 0.12); // A5
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.08);
 
-      osc2.type = 'triangle';
-      osc2.frequency.setValueAtTime(880, now + 0.12);
-      osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.28); // D6
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
 
-      gain.gain.setValueAtTime(0.35, now);
-      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-
-      osc1.connect(gain);
-      osc2.connect(gain);
+      osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc1.start(now);
-      osc1.stop(now + 0.15);
-      osc2.start(now + 0.12);
-      osc2.stop(now + 0.45);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.15);
     } catch (e) {}
   };
 
-  // Yeni admin mesajı geldiğinde tam bildirim fırlatıcı
+  // Yeni mesaj bildirim fırlatıcı (Zarif Intercom stili)
   const triggerNotification = (msgText: string, newTotalCount?: number) => {
     setLatestMessage(msgText);
     setUnreadCount((prev) => (typeof newTotalCount === 'number' ? newTotalCount : prev + 1));
-    setShowToast(true);
-    setIsDismissed(false); // Kullanıcı balonu kapatmışsa bile yeni mesajda zorla öne çıkar
-    playNotificationSound();
+    setShowPreview(true);
+    setIsDismissed(false);
+    playSoftNotificationSound();
 
-    // Sekme başlığı animasyonu (10 saniye boyunca dikkat çeker)
+    // 8 saniye sonra önizleme kartı kendi kendine zarifçe kapanır, ama rozet kalır
+    if (previewTimerRef.current) clearTimeout(previewTimerRef.current);
+    previewTimerRef.current = setTimeout(() => {
+      setShowPreview(false);
+    }, 8000);
+
+    // Sekme başlığı zarif senkronu
     let flash = false;
     const originalTitle = document.title;
     const interval = setInterval(() => {
-      document.title = flash ? '💬 (1) Yeni Mesajınız Var!' : originalTitle;
+      document.title = flash ? '💬 (1) Yeni Mesaj' : originalTitle;
       flash = !flash;
-    }, 900);
+    }, 1200);
 
     setTimeout(() => {
       clearInterval(interval);
       document.title = originalTitle;
-    }, 12000);
+    }, 8000);
   };
 
   // 1. Thread Takibi ve Anlık 0ms SSE + Polling Dinleme Motoru
   useEffect(() => {
     if (isChatPage || isSecurePortal) {
       setUnreadCount(0);
-      setShowToast(false);
+      setShowPreview(false);
       return;
     }
 
@@ -106,7 +105,7 @@ export default function GlobalChatNotification() {
     let eventSource: EventSource | null = null;
     let pollInterval: any = null;
 
-    // A) İlk Yükleme: Sayfa açılır açılmaz veritabanındaki okunmamış admin mesajlarını alıp balona yaz
+    // A) İlk Yükleme: Veritabanındaki okunmamış admin mesajlarını al
     const fetchInitialUnread = async () => {
       try {
         const res = await fetch(`/api/chat/messages?threadId=${savedThreadId}`);
@@ -120,7 +119,7 @@ export default function GlobalChatNotification() {
             setUnreadCount(unreadAdminMsgs.length);
             const lastMsg = unreadAdminMsgs[unreadAdminMsgs.length - 1];
             setLatestMessage(lastMsg.mesaj);
-            setShowToast(true);
+            setShowPreview(true);
           }
         }
       } catch (e) {}
@@ -128,7 +127,7 @@ export default function GlobalChatNotification() {
 
     fetchInitialUnread();
 
-    // B) Anlık 0ms SSE Bağlantısı: Admin panelden mesaj bastığı anda tetiklenir
+    // B) Anlık 0ms SSE Dinleyicisi
     try {
       eventSource = new EventSource(`/api/chat/sse?threadId=${savedThreadId}`);
 
@@ -150,17 +149,15 @@ export default function GlobalChatNotification() {
           const readEvent = JSON.parse(event.data);
           if (readEvent.reader === 'user') {
             setUnreadCount(0);
-            setShowToast(false);
+            setShowPreview(false);
           }
         } catch (err) {}
       });
 
-      eventSource.onerror = () => {
-        // SSE koparsa tarayıcı otomatik yeniden dener
-      };
+      eventSource.onerror = () => {};
     } catch (e) {}
 
-    // C) Fallback Polling (Her 8 saniyede bir kontrol)
+    // C) Fallback Polling (10 saniye)
     pollInterval = setInterval(async () => {
       if (typeof document !== 'undefined' && document.hidden) return;
       try {
@@ -177,7 +174,7 @@ export default function GlobalChatNotification() {
           }
         }
       } catch (e) {}
-    }, 8000);
+    }, 10000);
 
     return () => {
       if (eventSource) eventSource.close();
@@ -300,74 +297,23 @@ export default function GlobalChatNotification() {
 
   return (
     <>
-      {/* ── 1. EN TEPEDE AÇILAN MOBİL / MASAÜSTÜ PUSH BİLDİRİM BARI ──────────────── */}
-      {showToast && latestMessage && (
-        <div className="fixed top-2 left-3 right-3 sm:left-auto sm:right-5 sm:w-96 z-[99999] animate-in slide-in-from-top-4 duration-300 shadow-[0_20px_60px_rgba(0,0,0,0.95)]">
-          <div className="w-full bg-[#161b22]/98 border-2 border-amber-400 rounded-2xl p-3 flex items-center justify-between gap-3 backdrop-blur-2xl ring-4 ring-amber-500/20">
-            <div 
-              onClick={() => {
-                setShowToast(false);
-                router.push('/chat');
-              }}
-              className="flex items-center gap-3 cursor-pointer flex-1 min-w-0 active:opacity-80 transition-opacity"
-            >
-              <div className="relative shrink-0">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/40">
-                  <Headphones className="w-6 h-6 stroke-[2.5]" />
-                </div>
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 ring-2 ring-[#161b22] animate-ping" />
-                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 ring-2 ring-[#161b22]" />
-              </div>
-
-              <div className="flex flex-col flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-heading font-black text-xs text-white">
-                      Canlı Destek
-                    </span>
-                    <span className="px-1.5 py-0.5 rounded-md bg-red-500/20 border border-red-500/40 text-red-400 text-[9px] font-black uppercase">
-                      YENİ MESAJ
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-amber-400 font-extrabold flex items-center gap-0.5 font-heading shrink-0">
-                    <span>Aç ➔</span>
-                  </span>
-                </div>
-                
-                <p className="text-xs text-[#f0f6fc] font-semibold truncate mt-0.5">
-                  "{latestMessage}"
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowToast(false)}
-              className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0 active:scale-90 transition-transform"
-              title="Kapat"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── 2. AŞAĞIYA ÇEKİLDİĞİNDE AÇILAN "X KAPAT" HEDEF ALANI (Messenger Stili) ──────────────── */}
+      {/* ── 1. AŞAĞIYA ÇEKİLDİĞİNDE AÇILAN ZARİF KAPATMA ALANI ──────────────── */}
       {isDragging && (
         <div className="fixed bottom-6 left-0 right-0 mx-auto w-fit z-[99998] flex flex-col items-center gap-1.5 pointer-events-none animate-in fade-in zoom-in-95 duration-200">
-          <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all duration-200 shadow-2xl ${
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all duration-200 shadow-2xl ${
             isOverDropTarget 
-              ? 'bg-red-600 border-white scale-125 shadow-red-600/80 text-white' 
-              : 'bg-black/80 border-red-500/60 text-red-400 backdrop-blur-md'
+              ? 'bg-rose-600 border-white scale-110 text-white' 
+              : 'bg-slate-900/90 border-slate-700 text-slate-400 backdrop-blur-md'
           }`}>
-            <X className={`w-7 h-7 stroke-[3] transition-transform ${isOverDropTarget ? 'rotate-90 scale-110' : ''}`} />
+            <X className={`w-5 h-5 stroke-[2.5] transition-transform ${isOverDropTarget ? 'rotate-90' : ''}`} />
           </div>
-          <span className="text-[10px] font-black uppercase tracking-wider text-white bg-black/80 px-3 py-0.5 rounded-full border border-white/10 font-heading">
-            {isOverDropTarget ? 'Bırak ve Kapat' : 'Kapatmak için aşağı çekin'}
+          <span className="text-[10px] font-medium tracking-wide text-slate-300 bg-slate-900/90 px-3 py-0.5 rounded-full border border-white/10 font-heading">
+            {isOverDropTarget ? 'Bırak ve Kapat' : 'Kapatmak için sürükleyin'}
           </span>
         </div>
       )}
 
-      {/* ── 3. SÜRÜKLENEBİLİR VE FARK EDİLMESİ İMKANSIZ CHAT BALONU ──────────────── */}
+      {/* ── 2. SENIOR LEVEL PREMIUM CHAT BUBBLE & INTERCOM STYLE PREVIEW ──────────────── */}
       {!isDismissed && (
         <div
           style={{
@@ -383,80 +329,87 @@ export default function GlobalChatNotification() {
           onMouseDown={handleMouseDown}
           className="cursor-grab active:cursor-grabbing select-none group"
         >
-          {/* Unread Mesaj Olduğunda Yanıp Sönen Kırmızı Radar Dalgaları (Kaçırılması İmkansız!) */}
-          {unreadCount > 0 && (
-            <>
-              <span className="absolute -inset-4 rounded-full bg-rose-600/50 animate-ping pointer-events-none" />
-              <span className="absolute -inset-2 rounded-full bg-amber-400/60 animate-pulse pointer-events-none" />
-            </>
-          )}
-
-          {/* ── HEM MOBİLDE HEM MASAÜSTÜNDE BALONUN ÜSTÜNDEN FIRLAYAN DEV DİKKAT ÇEKİCİ KONUŞMA KUTUSU ── */}
-          {unreadCount > 0 && latestMessage && (
+          {/* ZARİF INTERCOM / APPLE STİLİ KOMPAKT MESAJ ÖNİZLEMESİ (Gürültü yok, şık cam kart) */}
+          {showPreview && latestMessage && (
             <div 
-              onClick={() => router.push('/chat')}
-              className="absolute bottom-full mb-3 right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-rose-600 via-red-600 to-rose-700 text-white font-black text-xs shadow-[0_10px_40px_rgba(225,29,72,0.85)] border-2 border-white whitespace-nowrap cursor-pointer active:scale-95 transition-all animate-bounce z-50 pointer-events-auto"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push('/chat');
+              }}
+              className="absolute right-full mr-3.5 top-1/2 -translate-y-1/2 w-64 sm:w-72 p-3 rounded-2xl bg-slate-950/95 backdrop-blur-2xl border border-amber-400/40 shadow-[0_12px_40px_rgba(0,0,0,0.85)] flex items-start gap-3 cursor-pointer hover:border-amber-400 active:scale-98 transition-all animate-in fade-in slide-in-from-right-3 duration-300 pointer-events-auto"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping shrink-0" />
-              <div className="flex flex-col text-left">
-                <span className="text-[10px] uppercase font-heading font-black tracking-wider text-amber-200">
-                  🔔 YENİ CEVAP GELDİ!
-                </span>
-                <span className="text-xs font-bold truncate max-w-[170px] sm:max-w-[220px]">
-                  "{latestMessage}"
-                </span>
+              {/* Canlı Destek Avatarı */}
+              <div className="relative shrink-0 mt-0.5">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-slate-950 font-black shadow-md">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-slate-950" />
               </div>
-              <ArrowRight className="w-4 h-4 stroke-[3] text-amber-300 shrink-0 ml-1" />
-              
-              {/* Konuşma Balonunun Küçük Üçgen Oku */}
-              <div className="absolute -bottom-2 right-5 sm:right-auto sm:left-1/2 sm:-translate-x-1/2 w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[8px] border-t-rose-600" />
+
+              {/* Mesaj İçeriği */}
+              <div className="flex-1 min-w-0 pr-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-heading font-black text-amber-400 tracking-wide uppercase">
+                    Canlı Destek
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">Şimdi</span>
+                </div>
+                <p className="text-xs text-slate-100 font-medium leading-snug line-clamp-2 mt-0.5">
+                  {latestMessage}
+                </p>
+              </div>
+
+              {/* Kapat Çarpısı */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPreview(false);
+                }}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
 
-          {/* Ana Balon: Mesaj Gelince Rengi ALTINDAN NEON KIRMIZIYA/ALEYE DÖNÜŞÜR! */}
-          <div className={`relative w-14 h-14 rounded-full flex items-center justify-center border-2 active:scale-95 transition-all duration-300 ${
+          {/* LÜKS OBSIDIAN CAM CHAT BALONU */}
+          <div className={`relative w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ${
             unreadCount > 0
-              ? 'bg-gradient-to-tr from-rose-600 via-red-500 to-rose-600 text-white border-white scale-110 shadow-[0_0_45px_rgba(244,63,94,0.95)] ring-4 ring-rose-500/80 animate-pulse'
-              : 'bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 border-amber-200 shadow-[0_8px_30px_rgba(245,158,11,0.55)]'
+              ? 'bg-gradient-to-tr from-slate-950 via-slate-900 to-slate-950 border-2 border-amber-400 shadow-[0_8px_30px_rgba(251,191,36,0.35)] ring-2 ring-amber-400/50'
+              : 'bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 border-2 border-amber-200 shadow-[0_8px_25px_rgba(245,158,11,0.45)]'
           }`}>
             
-            {/* Ortadaki Chat İkonu (Mesaj varsa beyaz, yoksa siyah) */}
-            <MessageSquare className={`w-6 h-6 stroke-[2.5] pointer-events-none transition-colors ${
-              unreadCount > 0 ? 'fill-white text-white animate-bounce' : 'fill-slate-950 text-slate-950'
+            {/* Chat İkonu */}
+            <MessageSquare className={`w-6 h-6 stroke-[2.2] pointer-events-none transition-colors ${
+              unreadCount > 0 ? 'text-amber-400 fill-amber-400/30' : 'text-slate-950 fill-slate-950'
             }`} />
 
-            {/* Normal Zaman: Yeşil Canlı Durum Noktası */}
-            {unreadCount === 0 && (
-              <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-[#0d1117] animate-pulse" />
-            )}
-
-            {/* BÜYÜK KIRMIZI BİLDİRİM SAYACI (+1 / +2 ROZETİ) */}
-            {unreadCount > 0 && (
-              <span className="absolute -top-2 -right-2 min-w-[26px] h-6.5 px-1.5 rounded-full bg-yellow-400 border-2 border-white text-slate-950 font-black text-xs shadow-2xl flex items-center justify-center animate-bounce">
-                {unreadCount > 9 ? '9+' : `+${unreadCount}`}
+            {/* Durum Göstergesi (Okunmamış yoksa yeşil, varsa minimal Apple kırmızı rozet) */}
+            {unreadCount === 0 ? (
+              <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-[#0d1117]" />
+            ) : (
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 rounded-full bg-rose-600 border-2 border-[#0d1117] text-white font-heading font-black text-[10px] shadow-lg flex items-center justify-center animate-in zoom-in duration-200">
+                {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
           </div>
         </div>
       )}
 
-      {/* ── 4. KAPATILDIĞINDA TEKRAR AÇMA DÜĞMESİ ──────────────── */}
+      {/* ── 3. BALON KAPATILMIŞSA KÖŞEDE MİNİMAL VE ZARİF DÜĞME ──────────────── */}
       {isDismissed && (
         <button
           type="button"
           onClick={() => setIsDismissed(false)}
-          className={`fixed bottom-5 right-4 z-40 px-3.5 py-2 rounded-2xl bg-[#161b22]/98 border text-white text-xs font-black font-heading shadow-2xl backdrop-blur-md flex items-center gap-2 active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-2 ${
-            unreadCount > 0 ? 'border-red-500 ring-4 ring-red-500/30' : 'border-amber-500/50'
-          }`}
+          className="fixed bottom-5 right-4 z-40 px-3.5 py-2 rounded-full bg-slate-950/90 hover:bg-slate-900 border border-amber-500/40 text-amber-300 text-xs font-heading font-bold shadow-2xl backdrop-blur-xl flex items-center gap-2 active:scale-95 transition-all"
         >
           <div className="relative">
-            <MessageSquare className="w-4 h-4 text-amber-400 fill-amber-400" />
-            {unreadCount > 0 ? (
-              <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 text-white text-[9px] font-black flex items-center justify-center border border-white">
-                +{unreadCount}
+            <MessageSquare className="w-4 h-4 fill-amber-400/30 text-amber-400" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-rose-600 border border-slate-950 text-[8px] font-black text-white flex items-center justify-center">
+                {unreadCount}
               </span>
-            ) : (
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
             )}
           </div>
           <span>Canlı Destek</span>
