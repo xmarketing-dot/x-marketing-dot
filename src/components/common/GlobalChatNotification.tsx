@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Headphones, MessageSquare, X, Trash2, ArrowRight } from 'lucide-react';
+import { Headphones, MessageSquare, X, ArrowRight } from 'lucide-react';
 
 export default function GlobalChatNotification() {
   const pathname = usePathname();
@@ -10,7 +10,6 @@ export default function GlobalChatNotification() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [latestMessage, setLatestMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [hasStartedChat, setHasStartedChat] = useState(true);
   const [isDismissed, setIsDismissed] = useState(false);
 
   // Floating Bubble Position (Draggable)
@@ -29,33 +28,65 @@ export default function GlobalChatNotification() {
   const isChatPage = pathname === '/chat';
   const isSecurePortal = pathname?.startsWith('/bms-secure-portal');
 
-  // Web Audio Soft Notification Ping
+  // Canlı Destek Bildirim Zili (İki tonlu net ve dikkat çekici ses)
   const playNotificationSound = () => {
     try {
-      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContext) return;
-      const ctx = new AudioContext();
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
       
-      const osc = ctx.createOscillator();
+      const now = ctx.currentTime;
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now); // D5
+      osc1.frequency.exponentialRampToValueAtTime(880, now + 0.12); // A5
 
-      gain.gain.setValueAtTime(0.25, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(880, now + 0.12);
+      osc2.frequency.exponentialRampToValueAtTime(1174.66, now + 0.28); // D6
 
-      osc.connect(gain);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start();
-      osc.stop(ctx.currentTime + 0.35);
+      osc1.start(now);
+      osc1.stop(now + 0.15);
+      osc2.start(now + 0.12);
+      osc2.stop(now + 0.45);
     } catch (e) {}
   };
 
+  // Yeni admin mesajı geldiğinde tam bildirim fırlatıcı
+  const triggerNotification = (msgText: string, newTotalCount?: number) => {
+    setLatestMessage(msgText);
+    setUnreadCount((prev) => (typeof newTotalCount === 'number' ? newTotalCount : prev + 1));
+    setShowToast(true);
+    setIsDismissed(false); // Kullanıcı balonu kapatmışsa bile yeni mesajda zorla öne çıkar
+    playNotificationSound();
+
+    // Sekme başlığı animasyonu (10 saniye boyunca dikkat çeker)
+    let flash = false;
+    const originalTitle = document.title;
+    const interval = setInterval(() => {
+      document.title = flash ? '💬 (1) Yeni Mesajınız Var!' : originalTitle;
+      flash = !flash;
+    }, 900);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      document.title = originalTitle;
+    }, 12000);
+  };
+
+  // 1. Thread Takibi ve Anlık 0ms SSE + Polling Dinleme Motoru
   useEffect(() => {
-    if (isChatPage) {
+    if (isChatPage || isSecurePortal) {
       setUnreadCount(0);
       setShowToast(false);
       return;
@@ -70,69 +101,96 @@ export default function GlobalChatNotification() {
     };
 
     const savedThreadId = getSavedThreadId();
-    
-    if (savedThreadId) {
-      setHasStartedChat(true);
+    if (!savedThreadId) return;
 
-      const triggerAdminMsg = (msgText: string) => {
-        setLatestMessage(msgText);
-        setUnreadCount((prev) => prev + 1);
-        setShowToast(true);
-        setIsDismissed(false);
-        playNotificationSound();
+    let eventSource: EventSource | null = null;
+    let pollInterval: any = null;
 
-        let flash = false;
-        const originalTitle = document.title;
-        const interval = setInterval(() => {
-          document.title = flash ? '💬 (1) Yeni Mesajınız Var!' : originalTitle;
-          flash = !flash;
-        }, 1000);
-
-        setTimeout(() => {
-          clearInterval(interval);
-          document.title = originalTitle;
-        }, 10000);
-      };
-
-      let lastSeenMessageId = '';
-
-      // Polling fallback every 25s when tab is active (lightweight serverless friendly)
-      const pollCustomerMessages = async () => {
-        if (typeof document !== 'undefined' && document.hidden) return;
-        try {
-          const res = await fetch(`/api/chat/messages?threadId=${savedThreadId}`);
-          if (!res.ok) return;
-          const data = await res.json();
-          if (data.messages && data.messages.length > 0) {
-            const adminMsgs = data.messages.filter((m: any) => m.gonderenTipi === 'admin');
-            if (adminMsgs.length > 0) {
-              const lastAdmin = adminMsgs[adminMsgs.length - 1];
-              if (lastAdmin._id !== lastSeenMessageId) {
-                if (lastSeenMessageId !== '') {
-                  triggerAdminMsg(lastAdmin.mesaj);
-                }
-                lastSeenMessageId = lastAdmin._id;
-              }
-            }
+    // A) İlk Yükleme: Sayfa açılır açılmaz veritabanındaki okunmamış admin mesajlarını alıp balona yaz
+    const fetchInitialUnread = async () => {
+      try {
+        const res = await fetch(`/api/chat/messages?threadId=${savedThreadId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.messages && Array.isArray(data.messages)) {
+          const unreadAdminMsgs = data.messages.filter(
+            (m: any) => m.gonderenTipi === 'admin' && !m.okundu
+          );
+          if (unreadAdminMsgs.length > 0) {
+            setUnreadCount(unreadAdminMsgs.length);
+            const lastMsg = unreadAdminMsgs[unreadAdminMsgs.length - 1];
+            setLatestMessage(lastMsg.mesaj);
+            setShowToast(true);
           }
-        } catch (e) {}
-      };
+        }
+      } catch (e) {}
+    };
 
-      const pollInterval = setInterval(pollCustomerMessages, 25000);
-      pollCustomerMessages();
+    fetchInitialUnread();
 
-      return () => {
-        clearInterval(pollInterval);
+    // B) Anlık 0ms SSE Bağlantısı: Admin panelden mesaj bastığı anda tetiklenir
+    try {
+      eventSource = new EventSource(`/api/chat/sse?threadId=${savedThreadId}`);
+
+      eventSource.addEventListener('new_message', (event) => {
+        try {
+          const newMsgs = JSON.parse(event.data);
+          if (Array.isArray(newMsgs)) {
+            newMsgs.forEach((msg: any) => {
+              if (msg.gonderenTipi === 'admin') {
+                triggerNotification(msg.mesaj);
+              }
+            });
+          }
+        } catch (err) {}
+      });
+
+      eventSource.addEventListener('messages_read', (event) => {
+        try {
+          const readEvent = JSON.parse(event.data);
+          if (readEvent.reader === 'user') {
+            setUnreadCount(0);
+            setShowToast(false);
+          }
+        } catch (err) {}
+      });
+
+      eventSource.onerror = () => {
+        // SSE koparsa tarayıcı otomatik yeniden dener
       };
-    }
-  }, [isChatPage, pathname]);
+    } catch (e) {}
+
+    // C) Fallback Polling (Her 8 saniyede bir kontrol)
+    pollInterval = setInterval(async () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      try {
+        const res = await fetch(`/api/chat/messages?threadId=${savedThreadId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.messages && Array.isArray(data.messages)) {
+          const unreadAdminMsgs = data.messages.filter(
+            (m: any) => m.gonderenTipi === 'admin' && !m.okundu
+          );
+          setUnreadCount(unreadAdminMsgs.length);
+          if (unreadAdminMsgs.length > 0 && !latestMessage) {
+            setLatestMessage(unreadAdminMsgs[unreadAdminMsgs.length - 1].mesaj);
+          }
+        }
+      } catch (e) {}
+    }, 8000);
+
+    return () => {
+      if (eventSource) eventSource.close();
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [isChatPage, isSecurePortal, pathname]);
 
   // Set default initial position on screen bottom-right
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setPosition({
-        x: window.innerWidth - 76,
-        y: window.innerHeight - 150,
+        x: Math.max(16, window.innerWidth - 76),
+        y: Math.max(80, window.innerHeight - 150),
       });
     }
   }, []);
@@ -174,7 +232,6 @@ export default function GlobalChatNotification() {
     const newX = Math.max(10, Math.min(maxX, dragRef.current.initialX + dx));
 
     setIsOverDropTarget(checkDropZone(newY));
-
     setPosition({ x: newX, y: newY });
   };
 
@@ -216,7 +273,6 @@ export default function GlobalChatNotification() {
       const newX = Math.max(10, Math.min(maxX, dragRef.current.initialX + dx));
 
       setIsOverDropTarget(checkDropZone(newY));
-
       setPosition({ x: newX, y: newY });
     };
 
@@ -244,10 +300,10 @@ export default function GlobalChatNotification() {
 
   return (
     <>
-      {/* ── 1. EN TEPEDE SIFIR MARGİNLİ MOBİL PUSH BİLDİRİM BARI ──────────────── */}
+      {/* ── 1. EN TEPEDE AÇILAN MOBİL / MASAÜSTÜ PUSH BİLDİRİM BARI ──────────────── */}
       {showToast && latestMessage && (
-        <div className="fixed top-0 left-0 right-0 w-full z-50 animate-in slide-in-from-top duration-200 shadow-[0_15px_50px_rgba(0,0,0,0.95)]">
-          <div className="w-full bg-[#161b22] border-b-2 border-amber-400 px-3.5 py-3 flex items-center justify-between gap-3 backdrop-blur-3xl">
+        <div className="fixed top-2 left-3 right-3 sm:left-auto sm:right-5 sm:w-96 z-[99999] animate-in slide-in-from-top-4 duration-300 shadow-[0_20px_60px_rgba(0,0,0,0.95)]">
+          <div className="w-full bg-[#161b22]/98 border-2 border-amber-400 rounded-2xl p-3 flex items-center justify-between gap-3 backdrop-blur-2xl ring-4 ring-amber-500/20">
             <div 
               onClick={() => {
                 setShowToast(false);
@@ -256,28 +312,29 @@ export default function GlobalChatNotification() {
               className="flex items-center gap-3 cursor-pointer flex-1 min-w-0 active:opacity-80 transition-opacity"
             >
               <div className="relative shrink-0">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/30">
-                  <Headphones className="w-5 h-5 stroke-[2.5]" />
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/40">
+                  <Headphones className="w-6 h-6 stroke-[2.5]" />
                 </div>
-                <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-[#161b22] animate-ping" />
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-500 ring-2 ring-[#161b22] animate-ping" />
+                <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-red-600 ring-2 ring-[#161b22]" />
               </div>
 
               <div className="flex flex-col flex-1 min-w-0">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-black text-xs text-white font-heading">
-                      Best Eskort Canlı Destek
+                    <span className="font-heading font-black text-xs text-white">
+                      Canlı Destek
                     </span>
-                    <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase">
-                      YENİ
+                    <span className="px-1.5 py-0.5 rounded-md bg-red-500/20 border border-red-500/40 text-red-400 text-[9px] font-black uppercase">
+                      YENİ MESAJ
                     </span>
                   </div>
-                  <span className="text-[10px] text-amber-400 font-extrabold flex items-center gap-0.5 font-heading">
-                    <span>Cevapla ➔</span>
+                  <span className="text-[10px] text-amber-400 font-extrabold flex items-center gap-0.5 font-heading shrink-0">
+                    <span>Aç ➔</span>
                   </span>
                 </div>
                 
-                <p className="text-xs text-[#f0f6fc] font-medium truncate mt-0.5">
+                <p className="text-xs text-[#f0f6fc] font-semibold truncate mt-0.5">
                   "{latestMessage}"
                 </p>
               </div>
@@ -285,7 +342,8 @@ export default function GlobalChatNotification() {
 
             <button
               onClick={() => setShowToast(false)}
-              className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0 active:scale-90 transition-transform"
+              className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0 active:scale-90 transition-transform"
+              title="Kapat"
             >
               <X className="w-4 h-4" />
             </button>
@@ -309,7 +367,7 @@ export default function GlobalChatNotification() {
         </div>
       )}
 
-      {/* ── 3. SÜRÜKLENEBİLİR VE TEK TIKLA X İLE KAPANABİLİR CHAT BALONU ──────────────── */}
+      {/* ── 3. SÜRÜKLENEBİLİR VE FARK EDİLMESİ İMKANSIZ CHAT BALONU ──────────────── */}
       {!isDismissed && (
         <div
           style={{
@@ -325,36 +383,69 @@ export default function GlobalChatNotification() {
           onMouseDown={handleMouseDown}
           className="cursor-grab active:cursor-grabbing select-none group"
         >
-          <div className="relative w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 flex items-center justify-center shadow-[0_8px_30px_rgba(245,158,11,0.55)] border-2 border-amber-200 active:scale-95 transition-transform">
+          {/* Unread Mesaj Olduğunda Yanıp Sönen Kırmızı Radar Dalgaları (Kaçırılması İmkansız!) */}
+          {unreadCount > 0 && (
+            <>
+              <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping pointer-events-none" />
+              <span className="absolute -inset-2 rounded-full bg-amber-400/30 animate-pulse pointer-events-none" />
+            </>
+          )}
+
+          {/* Balonun Yanından Çıkan Şık Konuşma Bildirimi */}
+          {unreadCount > 0 && latestMessage && (
+            <div 
+              onClick={() => router.push('/chat')}
+              className="absolute right-full mr-2.5 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/95 border border-red-500 text-white text-xs font-bold shadow-2xl backdrop-blur-md whitespace-nowrap cursor-pointer hover:bg-slate-900 transition-colors pointer-events-auto"
+            >
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping shrink-0" />
+              <span className="truncate max-w-[140px] text-amber-300 font-heading font-black">Yeni Mesaj:</span>
+              <span className="truncate max-w-[150px] font-medium text-slate-200">"{latestMessage}"</span>
+            </div>
+          )}
+
+          {/* Ana Balon */}
+          <div className={`relative w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-300 text-slate-950 flex items-center justify-center shadow-[0_8px_30px_rgba(245,158,11,0.55)] border-2 border-amber-200 active:scale-95 transition-all ${
+            unreadCount > 0 ? 'scale-110 ring-4 ring-red-500/60 shadow-[0_0_35px_rgba(239,68,68,0.7)] animate-bounce' : ''
+          }`}>
             
             {/* Ortadaki Chat İkonu */}
             <MessageSquare className="w-6 h-6 stroke-[2.5] fill-slate-950 pointer-events-none" />
 
-            {/* Yeşil Canlı Nokta */}
-            <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-[#0d1117] animate-pulse" />
+            {/* Yeşil Canlı Durum Noktası */}
+            {unreadCount === 0 && (
+              <span className="absolute top-0 right-0 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-[#0d1117] animate-pulse" />
+            )}
 
-            {/* Kırmızı Bildirim Sayacı */}
+            {/* BÜYÜK KIRMIZI BİLDİRİM SAYACI (+1 / +2 ROZETİ) */}
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-red-600 text-white font-black text-[10px] ring-2 ring-[#0d1117] flex items-center justify-center animate-bounce shadow-lg">
-                {unreadCount}
+              <span className="absolute -top-1.5 -right-1.5 min-w-[24px] h-6 px-1 rounded-full bg-red-600 border-2 border-white text-white font-black text-xs shadow-2xl flex items-center justify-center animate-pulse">
+                {unreadCount > 9 ? '9+' : `+${unreadCount}`}
               </span>
             )}
           </div>
         </div>
       )}
 
-      {/* ── 4. KAPATILDIĞINDA TEKRAR AÇMA DÜĞMESİ ("bi yerden açılsın tabii") ──────────────── */}
+      {/* ── 4. KAPATILDIĞINDA TEKRAR AÇMA DÜĞMESİ ──────────────── */}
       {isDismissed && (
         <button
           type="button"
           onClick={() => setIsDismissed(false)}
-          className="fixed bottom-5 right-4 z-40 px-3.5 py-2 rounded-2xl bg-[#161b22]/95 hover:bg-[#21262d] border border-amber-500/50 text-white text-xs font-black font-heading shadow-xl backdrop-blur-md flex items-center gap-2 active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-2"
+          className={`fixed bottom-5 right-4 z-40 px-3.5 py-2 rounded-2xl bg-[#161b22]/98 border text-white text-xs font-black font-heading shadow-2xl backdrop-blur-md flex items-center gap-2 active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-2 ${
+            unreadCount > 0 ? 'border-red-500 ring-4 ring-red-500/30' : 'border-amber-500/50'
+          }`}
         >
           <div className="relative">
             <MessageSquare className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            {unreadCount > 0 ? (
+              <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-red-600 text-white text-[9px] font-black flex items-center justify-center border border-white">
+                +{unreadCount}
+              </span>
+            ) : (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            )}
           </div>
-          <span>Canlı Chat</span>
+          <span>Canlı Destek</span>
         </button>
       )}
     </>
