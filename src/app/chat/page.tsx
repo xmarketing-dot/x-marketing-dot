@@ -292,9 +292,13 @@ export default function ChatPage() {
 
       const data = await res.json();
       if (data.message) {
-        setMessages((prev) => 
-          prev.map((m) => (m._id === tempId ? data.message : m))
-        );
+        setMessages((prev) => {
+          const list = prev.map((m) => (m._id === tempId ? data.message : m));
+          if (data.autoReply && !list.some((m) => m._id === data.autoReply._id)) {
+            return [...list, data.autoReply];
+          }
+          return list;
+        });
       }
     } catch (e) {
     } finally {

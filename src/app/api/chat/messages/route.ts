@@ -4,6 +4,9 @@ import connectToDatabase from '@/lib/mongodb';
 import ChatThreadModel from '@/models/ChatThread';
 import ChatMessageModel from '@/models/ChatMessage';
 import BanModel from '@/models/Ban';
+import HomepageConfigModel from '@/models/HomepageConfig';
+import { getSiteUrl } from '@/lib/siteUrl';
+import { getAdminWhatsAppDisplay, getAdminWhatsAppUrl } from '@/lib/siteConfig';
 import { chatEmitter } from '@/lib/chatEmitter';
 import { sendTelegramNotification } from '@/lib/telegramNotify';
 
@@ -150,7 +153,67 @@ export async function POST(req: NextRequest) {
       }).catch(() => { });
     }
 
-    return NextResponse.json({ success: true, message: serializedMsg });
+    // ── OTOMATİK BOT / CANLI DESTEK HAZIR YANITI (İLAN VE PAKET TALEPLERİ) ──
+    let serializedBotMsg: any = null;
+    if (sender === 'user') {
+      const lower = mesaj.toLowerCase().trim();
+      const isListingInquiry =
+        lower.includes('ilan') ||
+        lower.includes('fiyat') ||
+        lower.includes('ücret') ||
+        lower.includes('ucret') ||
+        lower.includes('paket') ||
+        lower.includes('detay') ||
+        lower.includes('reklam');
+
+      if (isListingInquiry) {
+        // Cooldown: Son 2 dakika içinde zaten aynı otomatik mesaj atılmış mı kontrol et
+        const recentBot = await ChatMessageModel.findOne({
+          threadId,
+          gonderenTipi: 'admin',
+          mesaj: { $regex: /ÖNE ÇIKMA PAKETLERİ/i },
+          createdAt: { $gte: new Date(Date.now() - 2 * 60 * 1000) },
+        }).lean();
+
+        if (!recentBot) {
+          // 1. Kullanıcının bu mesajını anında okundu yap (sistem gördü ve cevapladı)
+          await ChatMessageModel.findByIdAndUpdate(newMsg._id, { okundu: true });
+          serializedMsg.okundu = true;
+          chatEmitter.emit('messages_read', { threadId, reader: 'admin' });
+
+          // 2. Dinamik WhatsApp numarasını ve site URL'sini al
+          const cfg = await HomepageConfigModel.findOne().select('adminWhatsApp').lean();
+          const activePhone = cfg?.adminWhatsApp || '';
+          const phoneText = getAdminWhatsAppDisplay(activePhone);
+          const whatsappUrl = getAdminWhatsAppUrl(undefined, activePhone);
+          const siteUrl = getSiteUrl();
+
+          const autoReplyText = `Merhaba, Best Eskort VIP Canlı Destek Merkezine hoş geldiniz! 👑\n\nİlanınızı 2 farklı şekilde oluşturabilirsiniz:\n1️⃣ Dilerseniz WhatsApp destek hattımızdan (${phoneText}) bilgilerinizi ve fotoğraflarınızı gönderin, ilanı doğrudan biz açalım:\n👉 WhatsApp Hızlı İletişim: ${whatsappUrl}\n\n2️⃣ İsterseniz web sitemiz üzerinden formu doldurarak kendiniz ilan oluşturabilir ve ödeme aşamasında bize ulaşabilirsiniz:\n👉 İlan Oluşturma Formu: ${siteUrl}/ilan-ver\n\n────────────────────────────\n🔥 BEST ESKORT – ÖNE ÇIKMA PAKETLERİ 🔥\n\nProfilinizin daha fazla kullanıcıya ulaşması ve listelerde daha görünür olması için farklı tanıtım seçenekleri:\n\n👑 VIP PAKET — 7.000 TL\n• En üst sıralarda görünürlük\n• VIP alanında özel konumlandırma\n• Maksimum görünürlük\n+EN ÜST VİTRİN 1 GÜNLÜK(BÜYÜK ANASAYFA RESİM ALANİ) BEDAVA SONRASİ 1 GÜN 2000 TL\n\n💎 GOLD PAKET — 4.000 TL\n• Üst sıralarda görünürlük\n• Gold vitrin alanında gösterim\n• Yüksek görünürlük\n\n🥈 SILVER PAKET — 2.500 TL\n• Silver vitrin alanında gösterim\n• Standart profile göre daha yüksek görünürlük\n\n📌 Paketler sınırlı kontenjanla sunulmaktadır.\n\n📩 Detaylı bilgi ve paket seçimi için bizimle iletişime geçebilirsiniz.\n\nBEST ESKORT\n✨ Daha fazla görünürlük, daha fazla erişim.`;
+
+          const botMsg = await ChatMessageModel.create({
+            threadId,
+            gonderenTipi: 'admin',
+            mesaj: autoReplyText,
+            okundu: false,
+          });
+
+          await ChatThreadModel.findByIdAndUpdate(threadId, {
+            sonMesajOzeti: '👑 VIP İlan Verme & Paket Rehberi İletildi',
+            updatedAt: new Date(),
+            $inc: { okunmadiKullaniciSayisi: 1 },
+          });
+
+          serializedBotMsg = JSON.parse(JSON.stringify(botMsg));
+          chatEmitter.emit('new_message', serializedBotMsg);
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: serializedMsg,
+      autoReply: serializedBotMsg || undefined,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
