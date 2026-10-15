@@ -694,8 +694,10 @@ export default function PwaAndPushManagementPage() {
                       </div>
 
                       <div className="flex items-center gap-3 text-[11px] text-[#8b949e] mt-1 font-mono flex-wrap">
-                        <span>📍 {item.targetCity || 'Türkiye'}</span>
+                        <span className="text-white font-bold">📍 {item.targetCity && item.targetCity !== 'Türkiye' ? item.targetCity : (item.city || 'İstanbul')}</span>
                         {item.ip && <span>🌐 {item.ip}</span>}
+                        {item.searchKeyword && <span className="text-amber-400">🔍 {item.searchKeyword}</span>}
+                        {item.referer && item.referer !== 'Doğrudan' && item.referer !== 'Direct' && <span>🔗 {item.referer}</span>}
                         {item.trigger && <span>Tetikleyici: {item.trigger}</span>}
                         {item.visitorId && <span>ID: {item.visitorId}</span>}
                       </div>

@@ -6,7 +6,6 @@ import ListingModel from '@/models/Listing';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
 
 export async function GET(req: Request) {
   try {
@@ -37,32 +36,13 @@ export async function GET(req: Request) {
     }
 
     if (domainFilter && domainFilter !== 'all') {
-      if (domainFilter.includes('escturkiye') || domainFilter.includes('turkiyeescort')) {
-        dateQuery.hostname = { $regex: /(escturkiye|turkiyeescort)/i };
-      } else if (domainFilter.includes('besteskort')) {
-        dateQuery.$or = [
-          { hostname: { $regex: /besteskort/i } },
-          { hostname: { $in: ['', null] } }
-        ];
-      } else {
-        dateQuery.hostname = { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') };
-      }
+      dateQuery.hostname = { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') };
     }
 
-    const activeWindowAgo = new Date(now.getTime() - 3 * 60 * 1000); // Max 3 dakika anlık aktiflik
-    const activeUsersQuery: any = {
-      $or: [
-        { createdAt: { $gte: activeWindowAgo } },
-        { updatedAt: { $gte: activeWindowAgo } },
-      ],
-    };
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    const activeUsersQuery: any = { createdAt: { $gte: fiveMinutesAgo } };
     if (domainFilter && domainFilter !== 'all') {
-      if (dateQuery.$or) {
-        activeUsersQuery.$and = [{ $or: activeUsersQuery.$or }, { $or: dateQuery.$or }];
-        delete activeUsersQuery.$or;
-      } else if (dateQuery.hostname) {
-        activeUsersQuery.hostname = dateQuery.hostname;
-      }
+      activeUsersQuery.hostname = dateQuery.hostname;
     }
 
     // ── TEK BİR PROMISE.ALL İLE PARALEL ÇALIŞTIRMA (10X HIZ) ──
@@ -174,11 +154,8 @@ export async function GET(req: Request) {
         },
         { $sort: { impressions: -1 } }
       ]),
-      // 10. Canlı Ziyaretçi Logu (Tüm kayıtlar - eksiksiz akış, tüm zamanlar seçildiğinde timeout'u önlemek için optimize limit)
-      AnalyticsVisitorModel.find(dateQuery)
-        .sort({ createdAt: -1 })
-        .limit(range === 'all' ? 1000 : 3000)
-        .lean(),
+      // 10. Canlı Ziyaretçi Logu (Tüm kayıtlar - eksiksiz akış)
+      AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(5000).lean(),
       // 11. İlan Ziyaretçi & Referrer Dağılımı (Limit 1000'e çıkarıldı, hiçbir ilan eksik kalmaz)
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, path: { $regex: '^/ilan/' } } },
@@ -273,6 +250,7 @@ export async function GET(req: Request) {
         .sort({ createdAt: -1 })
         .limit(200)
         .lean(),
+      // 17. PWA / Uygulama Kurulum & Kaldırma İstihbaratı (Limitsiz)
       AnalyticsEventModel.find({
         ...dateQuery,
         eventType: { $in: ['pwa_install', 'pwa_uninstall'] }
@@ -553,8 +531,6 @@ export async function GET(req: Request) {
 
     // ── 14. Domain Bazlı İstatistik Haritası ──
     const defaultGatewayDomains = [
-      'besteskort.online',
-      'escturkiye.space',
       'escturkiye.space',
     ];
 
@@ -571,21 +547,8 @@ export async function GET(req: Request) {
       };
     });
 
-    const normalizeDomainName = (raw: string) => {
-      if (!raw || raw === 'Ana Domain' || raw.includes('localhost') || raw.includes('besteskort')) {
-        return 'besteskort.online';
-      }
-      if (raw.includes('escturkiye1') || raw.includes('escturkye1')) {
-        return 'escturkiye.space';
-      }
-      if (raw.includes('escturkiye') || raw.includes('turkiyeescort') || raw.includes('escturkye')) {
-        return 'escturkiye.space';
-      }
-      return raw.replace(/^www\./, '');
-    };
-
     domainVisitorsAgg.forEach((item: any) => {
-      const d = normalizeDomainName(item.domain);
+      const d = item.domain || 'Ana Domain';
       if (!domainStatsMap[d]) {
         domainStatsMap[d] = {
           domain: d,
@@ -596,24 +559,25 @@ export async function GET(req: Request) {
           conversionRate: '0.0%',
         };
       }
-      domainStatsMap[d].uniqueVisitors += (item.uniqueVisitors || 0);
-      domainStatsMap[d].totalPageviews += (item.totalPageviews || 0);
-      domainStatsMap[d].mobileCount += (item.mobileCount || 0);
+      domainStatsMap[d].uniqueVisitors = item.uniqueVisitors || 0;
+      domainStatsMap[d].totalPageviews = item.totalPageviews || 0;
+      domainStatsMap[d].mobileCount = item.mobileCount || 0;
     });
 
     domainEventsAgg.forEach((item: any) => {
-      const d = normalizeDomainName(item.domain);
+      const d = item.domain || 'Ana Domain';
       if (!domainStatsMap[d]) {
         domainStatsMap[d] = {
           domain: d,
           uniqueVisitors: 0,
           totalPageviews: 0,
           mobileCount: 0,
-          whatsappClicks: 0,
+          whatsappClicks: item.whatsappClicks || 0,
           conversionRate: '0.0%',
         };
+      } else {
+        domainStatsMap[d].whatsappClicks = item.whatsappClicks || 0;
       }
-      domainStatsMap[d].whatsappClicks += (item.whatsappClicks || 0);
     });
 
     const domainBreakdown = Object.values(domainStatsMap).map((d: any) => {
@@ -625,6 +589,36 @@ export async function GET(req: Request) {
         resolvedTarget: target ? `${target.ilSlug.toUpperCase()}${target.ilceSlug ? ' / ' + target.ilceSlug.toUpperCase() : ''}` : 'TÜRKİYE / ANA VİTRİN',
       };
     }).sort((a: any, b: any) => b.uniqueVisitors - a.uniqueVisitors);
+
+    const pwaVIds = (recentPwaInstalls || []).map((e: any) => e.visitorId).filter(Boolean);
+    const pwaIps = (recentPwaInstalls || []).map((e: any) => e.ip).filter(Boolean);
+    const pwaVisitors = await AnalyticsVisitorModel.find({
+      $or: [
+        { visitorId: { $in: pwaVIds } },
+        { ip: { $in: pwaIps } }
+      ]
+    }).sort({ createdAt: -1 }).lean();
+
+    const pwaVisitorMap = new Map<string, any>();
+    pwaVisitors.forEach((v: any) => {
+      if (v.visitorId && !pwaVisitorMap.has(v.visitorId)) pwaVisitorMap.set(v.visitorId, v);
+      if (v.ip && !pwaVisitorMap.has(v.ip)) pwaVisitorMap.set(v.ip, v);
+    });
+
+    const enrichedRecentPwaInstalls = (recentPwaInstalls || []).map((ev: any) => {
+      const matched = pwaVisitorMap.get(ev.visitorId) || pwaVisitorMap.get(ev.ip);
+      const realCity = (matched && matched.city && matched.city !== 'Türkiye')
+        ? matched.city
+        : (ev.targetCity && ev.targetCity !== 'Türkiye' ? ev.targetCity : 'İstanbul');
+      return {
+        ...ev,
+        targetCity: realCity,
+        city: realCity,
+        referer: matched?.referer || 'Doğrudan',
+        searchKeyword: matched?.searchKeyword || '',
+        page: matched?.path || ev.path || '/',
+      };
+    });
 
     return NextResponse.json({
       analytics: {
@@ -674,6 +668,8 @@ export async function GET(req: Request) {
           specialAdImpressions,
           specialAdClicks,
         },
+        pwaInstalls: eventCounts.pwa_install || 0,
+        pwaUninstalls: eventCounts.pwa_uninstall || 0,
         topContactedListings,
         detailedListingReports,
         totalListingViews,
@@ -681,6 +677,7 @@ export async function GET(req: Request) {
         totalShares,
         recentVisitors,
         recentWhatsappClicks,
+        recentPwaInstalls: enrichedRecentPwaInstalls,
       },
     });
   } catch (error: any) {

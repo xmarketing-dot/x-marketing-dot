@@ -39,6 +39,9 @@ export async function POST(req: NextRequest) {
     if (effectiveVisitorId) {
       visitorInfo = await AnalyticsVisitorModel.findOne({ visitorId: effectiveVisitorId }).sort({ createdAt: -1 }).lean();
     }
+    if (!visitorInfo && cleanIp && cleanIp !== '127.0.0.1') {
+      visitorInfo = await AnalyticsVisitorModel.findOne({ ip: cleanIp }).sort({ createdAt: -1 }).lean();
+    }
 
     // 2. İlan Detaylarını Çek (Hem ObjectId hem Slug desteği)
     let listingInfo: any = null;
@@ -52,7 +55,9 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const city = visitorInfo?.city || req.headers.get('x-vercel-ip-city') || targetCity || 'İstanbul';
+    const city = (visitorInfo?.city && visitorInfo.city !== 'Türkiye')
+      ? visitorInfo.city
+      : (req.headers.get('x-vercel-ip-city') || (targetCity && targetCity !== 'Türkiye' ? targetCity : 'İstanbul'));
     const device = visitorInfo?.device || (cleanIp && (req.headers.get('user-agent') || '').includes('Mobi') ? 'mobile' : 'desktop');
     const browser = visitorInfo?.browser || 'Chrome';
     const os = visitorInfo?.os || 'Mobile';
@@ -84,7 +89,7 @@ export async function POST(req: NextRequest) {
       eventType,
       targetId: targetId || lId || '',
       targetTitle: finalTitle,
-      targetCity: listingInfo?.ilSlug || targetCity || city,
+      targetCity: listingInfo?.ilSlug || city,
       path,
       hostname: incomingHost,
       metadata: enrichedMetadata,

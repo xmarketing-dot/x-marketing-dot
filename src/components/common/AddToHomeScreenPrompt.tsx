@@ -40,7 +40,6 @@ export default function AddToHomeScreenPrompt() {
           sessionId,
           eventType: 'pwa_install',
           targetTitle: 'PWA Kurulumu (' + platform.toUpperCase() + ')',
-          targetCity: 'Türkiye',
           path: window.location.pathname,
           metadata: {
             method,
@@ -100,7 +99,6 @@ export default function AddToHomeScreenPrompt() {
             sessionId: sessionStorage.getItem('analytics_session_id') || 's_anon',
             eventType: 'pwa_uninstall',
             targetTitle: 'PWA Kaldırıldı / Tarayıcıya Dönüldü',
-            targetCity: 'Türkiye',
             path: window.location.pathname,
             metadata: {
               reason: 'browser_fallback',

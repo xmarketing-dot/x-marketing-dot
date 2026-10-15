@@ -9,7 +9,7 @@ import {
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
   Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
   Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3, X, Copy,
-  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key, Route
+  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
@@ -34,9 +34,6 @@ export default function BmsSecurePortalDashboard() {
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [showOnlineUsersModal, setShowOnlineUsersModal] = useState(false);
   const [showActiveVisitorsModal, setShowActiveVisitorsModal] = useState(false);
-  const [radarDomainFilter, setRadarDomainFilter] = useState<'all' | 'besteskort' | 'escturkiye' | 'escturkiye1'>('all');
-  const [radarTypeFilter, setRadarTypeFilter] = useState<'all' | 'listing' | 'city' | 'home' | 'search'>('all');
-  const [radarExpandedKey, setRadarExpandedKey] = useState<string | null>(null);
 
   // Mobile Drawers
   const [showPagesDrawer, setShowPagesDrawer] = useState(false);
@@ -61,15 +58,6 @@ export default function BmsSecurePortalDashboard() {
   const [testDomainInput, setTestDomainInput] = useState('');
   const [visitorDisplayLimit, setVisitorDisplayLimit] = useState<number>(100);
   const [onlySuspiciousFilter, setOnlySuspiciousFilter] = useState<boolean>(false);
-  const [visitorGroupingMode, setVisitorGroupingMode] = useState<'grouped' | 'raw'>('grouped');
-  const [expandedVisitorIps, setExpandedVisitorIps] = useState<Record<string, boolean>>({});
-
-  const toggleExpandVisitorIp = (ip: string) => {
-    setExpandedVisitorIps(prev => ({
-      ...prev,
-      [ip]: !prev[ip],
-    }));
-  };
   const [boostingPing, setBoostingPing] = useState(false);
   const [boostPingResult, setBoostPingResult] = useState<any | null>(null);
   const [gscUrls, setGscUrls] = useState<string[]>([]);
@@ -176,7 +164,6 @@ export default function BmsSecurePortalDashboard() {
     
     // Poll online users every 30 seconds
     const interval = setInterval(fetchOnlineUsers, 30000);
-
     return () => {
       clearInterval(interval);
     };
@@ -484,115 +471,6 @@ export default function BmsSecurePortalDashboard() {
   });
   const totals = { fb, google, yandex, x, waClicks, shares };
 
-  // ── RADAR VE AKTİF ZİYARETÇİ MOTORU (TEK VE TUTARLI KAYNAK) ──
-  // Banner ("Sitede X Ziyaretçi Aktif") ile Radar Modal ("X Canlı Ziyaretçi") her zaman birebir aynı max 3 dakikalık anlık aktiflik penceresini kullanır.
-  const activeWindowMs = 3 * 60 * 1000; // 3 dakika max anlık canlılık
-  const activeThresholdMs = Date.now() - activeWindowMs;
-  const visitorSessionsMap = new Map<string, any>();
-
-  (recentVisitors as any[] || []).forEach((v: any) => {
-    const vTime = new Date(v.createdAt).getTime();
-    const key = v.visitorId || v.ip || v._id;
-    if (!key) return;
-
-    if (!visitorSessionsMap.has(key)) {
-      visitorSessionsMap.set(key, {
-        ...v,
-        sessionKey: key,
-        latestTime: vTime,
-        totalActions: 1,
-        pages: [v.path || '/'],
-        history: [v]
-      });
-    } else {
-      const session = visitorSessionsMap.get(key);
-      session.totalActions += 1;
-      session.history.push(v);
-      if (v.path && !session.pages.includes(v.path)) {
-        session.pages.push(v.path);
-      }
-      if (vTime > session.latestTime) {
-        session.latestTime = vTime;
-        session.path = v.path;
-        session.pageTitle = v.pageTitle;
-        session.searchKeyword = v.searchKeyword || session.searchKeyword;
-        session.createdAt = v.createdAt;
-        session.hostname = v.hostname || session.hostname;
-        session.referer = v.referer || session.referer;
-        session.refererSource = v.refererSource || session.refererSource;
-      }
-    }
-  });
-
-  const rawActiveList = Array.from(visitorSessionsMap.values())
-    .filter((v: any) => v.latestTime >= activeThresholdMs)
-    .sort((a, b) => b.latestTime - a.latestTime);
-
-  // Radar Domain Tespiti
-  const getRadarDomain = (rawHost?: string, rawRef?: string) => {
-    const host = (rawHost || '').toLowerCase();
-    const ref = (rawRef || '').toLowerCase();
-    const isEscTurkiye1 = host.includes('escturkiye1') || host.includes('escturkye1') || ref.includes('escturkiye1') || ref.includes('escturkye1');
-    const isEscTurkiye = host.includes('escturkiye') || host.includes('turkiyeescort') || ref.includes('escturkiye') || host.includes('escturkye') || ref.includes('escturkye');
-
-    if (isEscTurkiye1) {
-      return {
-        id: 'escturkiye1',
-        name: 'escturkiye.space',
-        title: 'ESC Türkiye #1',
-        icon: '⚡',
-        accentColor: 'text-pink-400',
-        badgeStyle: 'bg-pink-500/15 border-pink-500/40 text-pink-300',
-        cardBorder: 'border-l-4 border-l-pink-500',
-        hoverGlow: 'hover:border-pink-500/50 hover:shadow-[0_10px_35px_rgba(236,72,153,0.12)]',
-        bannerBg: 'bg-gradient-to-r from-pink-500/10 via-[#161b22] to-transparent',
-        siteUrl: 'https://escturkiye.space'
-      };
-    }
-
-    if (isEscTurkiye) {
-      return {
-        id: 'escturkiye',
-        name: 'escturkiye.space',
-        title: 'ESC Türkiye',
-        icon: '💋',
-        accentColor: 'text-fuchsia-400',
-        badgeStyle: 'bg-fuchsia-500/15 border-fuchsia-500/40 text-fuchsia-300',
-        cardBorder: 'border-l-4 border-l-fuchsia-500',
-        hoverGlow: 'hover:border-fuchsia-500/50 hover:shadow-[0_10px_35px_rgba(217,70,239,0.12)]',
-        bannerBg: 'bg-gradient-to-r from-fuchsia-500/10 via-[#161b22] to-transparent',
-        siteUrl: 'https://escturkiye.space'
-      };
-    }
-
-    return {
-      id: 'besteskort',
-      name: 'besteskort.online',
-      title: 'Best Eskort',
-      icon: '👑',
-      accentColor: 'text-emerald-400',
-      badgeStyle: 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300',
-      cardBorder: 'border-l-4 border-l-emerald-500',
-      hoverGlow: 'hover:border-emerald-500/50 hover:shadow-[0_10px_35px_rgba(16,185,129,0.12)]',
-      bannerBg: 'bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-transparent',
-      siteUrl: 'https://besteskort.online'
-    };
-  };
-
-  // Ana sayfadaki Aktif Ziyaretçi Banner sayısı (Dashboard domain filtresiyle tam senkronize)
-  const dashboardActiveUsers = (() => {
-    if (selectedDomain === 'all') {
-      return rawActiveList.length || activeUsers;
-    }
-    return rawActiveList.filter((v: any) => {
-      const dom = getRadarDomain(v.hostname, v.referer);
-      if (selectedDomain.includes('besteskort')) return dom.id === 'besteskort';
-      if (selectedDomain.includes('escturkiye1') || selectedDomain.includes('escturkye1')) return dom.id === 'escturkiye1';
-      if (selectedDomain.includes('escturkiye') || selectedDomain.includes('turkiyeescort') || selectedDomain.includes('escturkye')) return dom.id === 'escturkiye';
-      return true;
-    }).length;
-  })();
-
   // ── ŞÜPHELİ TRAFİK, BOT VE SALDIRI TESPİT ANALİZİ ──
   // City/IP tek başına "bot" değildir; daha yüksek riskli sinyal kombinasyonları alarm üretir.
   const getSuspiciousAnalysis = (v: any) => {
@@ -795,15 +673,7 @@ export default function BmsSecurePortalDashboard() {
 
   const renderDomainBadge = (rawHost?: string) => {
     const host = (rawHost || '').toLowerCase();
-    if (host.includes('escturkiye1') || host.includes('escturkye1')) {
-      return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-pink-500/15 border border-pink-500/40 text-pink-300 font-mono font-bold text-[10px] shadow-sm shadow-pink-500/10">
-          <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></span>
-          <span>⚡ escturkiye.space</span>
-        </span>
-      );
-    }
-    if (host.includes('escturkiye') || host.includes('turkiyeescort') || host.includes('escturkye')) {
+    if (host.includes('escturkiye') || host.includes('turkiyeescort')) {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-fuchsia-500/15 border border-fuchsia-500/40 text-fuchsia-300 font-mono font-bold text-[10px] shadow-sm shadow-fuchsia-500/10">
           <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
@@ -846,89 +716,6 @@ export default function BmsSecurePortalDashboard() {
       (v.searchKeyword || '').toLowerCase().includes(term)
     );
   });
-
-  // Ziyaretçileri IP'ye Göre Grupla (Kullanıcı Yolculuğu / Oturum Analizi)
-  const groupedVisitors = (() => {
-    const map = new Map<string, any>();
-
-    for (const v of filteredVisitors) {
-      const ip = v.ip || 'Anonim';
-      const analysis = getSuspiciousAnalysis(v);
-
-      if (!map.has(ip)) {
-        map.set(ip, {
-          ip,
-          city: v.city || 'İstanbul',
-          hostname: v.hostname || '',
-          device: v.device || 'mobile',
-          browser: v.browser || '',
-          os: v.os || '',
-          userAgent: v.userAgent || '',
-          isBanned: !!v.isBanned,
-          totalViews: 1,
-          firstVisitedAt: v.createdAt,
-          lastVisitedAt: v.createdAt,
-          totalDurationSeconds: v.durationSeconds || 0,
-          latestPath: v.path || '/',
-          initialRefererSource: v.refererSource,
-          initialReferer: v.referer,
-          initialSearchKeyword: v.searchKeyword,
-          isSuspicious: analysis.isSuspicious,
-          isSearchEngine: analysis.isSearchEngine,
-          suspiciousReasons: [...analysis.reasons],
-          history: [
-            {
-              _id: v._id,
-              path: v.path,
-              createdAt: v.createdAt,
-              durationSeconds: v.durationSeconds || 0,
-              refererSource: v.refererSource,
-              referer: v.referer,
-              searchKeyword: v.searchKeyword,
-              hostname: v.hostname,
-            },
-          ],
-        });
-      } else {
-        const existing = map.get(ip)!;
-        existing.totalViews += 1;
-        existing.totalDurationSeconds += (v.durationSeconds || 0);
-        existing.firstVisitedAt = v.createdAt;
-        if (v.refererSource && !existing.initialRefererSource) {
-          existing.initialRefererSource = v.refererSource;
-        }
-        if (v.referer && !existing.initialReferer) {
-          existing.initialReferer = v.referer;
-        }
-        if (v.searchKeyword && !existing.initialSearchKeyword) {
-          existing.initialSearchKeyword = v.searchKeyword;
-        }
-        if (analysis.isSuspicious) {
-          existing.isSuspicious = true;
-          for (const r of analysis.reasons) {
-            if (!existing.suspiciousReasons.includes(r)) {
-              existing.suspiciousReasons.push(r);
-            }
-          }
-        }
-        if (analysis.isSearchEngine) {
-          existing.isSearchEngine = true;
-        }
-        existing.history.push({
-          _id: v._id,
-          path: v.path,
-          createdAt: v.createdAt,
-          durationSeconds: v.durationSeconds || 0,
-          refererSource: v.refererSource,
-          referer: v.referer,
-          searchKeyword: v.searchKeyword,
-          hostname: v.hostname,
-        });
-      }
-    }
-
-    return Array.from(map.values());
-  })();
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-full text-left">
@@ -1040,7 +827,27 @@ export default function BmsSecurePortalDashboard() {
               })()}
             </button>
 
-            
+            <button
+              onClick={() => setSelectedDomain('escturkiye.space')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 border ${
+                selectedDomain === 'escturkiye.space'
+                  ? 'bg-fuchsia-500 text-slate-950 border-fuchsia-400 shadow-md font-black scale-[1.02]'
+                  : 'bg-[#0d1117] text-fuchsia-400 hover:text-fuchsia-300 border-fuchsia-500/30 hover:border-fuchsia-500/50'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-fuchsia-400 animate-pulse"></span>
+              <span>🚀 escturkiye.space (Türkiye Ağı)</span>
+              {(() => {
+                const tStats = domainBreakdown.find((d: any) => d.domain?.includes('escturkiye') || d.domain?.includes('turkiyeescort'));
+                return tStats ? (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    selectedDomain === 'escturkiye.space' ? 'bg-slate-950/30 text-slate-950' : 'bg-fuchsia-500/20 text-fuchsia-300'
+                  }`}>
+                    {tStats.uniqueVisitors}
+                  </span>
+                ) : null;
+              })()}
+            </button>
           </div>
         </div>
 
@@ -1112,13 +919,7 @@ export default function BmsSecurePortalDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Canlı Kullanıcı Bannerı */}
             <div 
-              onClick={() => {
-                if (selectedDomain.includes('besteskort')) setRadarDomainFilter('besteskort');
-                else if (selectedDomain.includes('escturkiye1') || selectedDomain.includes('escturkye1')) setRadarDomainFilter('escturkiye1');
-                else if (selectedDomain.includes('escturkiye') || selectedDomain.includes('turkiyeescort')) setRadarDomainFilter('escturkiye');
-                else setRadarDomainFilter('all');
-                setShowActiveVisitorsModal(true);
-              }}
+              onClick={() => setShowActiveVisitorsModal(true)}
               className="p-3.5 sm:p-5 rounded-3xl bg-gradient-to-r from-emerald-500/15 via-[#161b22] to-emerald-500/10 border border-emerald-500/30 flex items-center justify-between shadow-xl cursor-pointer hover:border-emerald-400 transition-all group"
             >
               <div className="flex items-center gap-3">
@@ -1130,7 +931,7 @@ export default function BmsSecurePortalDashboard() {
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="font-black text-emerald-400 text-sm sm:text-lg uppercase tracking-wider font-heading truncate">
-                    Sitede {dashboardActiveUsers} Ziyaretçi Aktif
+                    Sitede {activeUsers} Ziyaretçi Aktif
                   </span>
                   <span className="text-[11px] text-[#8b949e] truncate">Gezilen sayfaları &amp; ilanları gör →</span>
                 </div>
@@ -4264,49 +4065,11 @@ export default function BmsSecurePortalDashboard() {
                 </h2>
               </div>
               <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                {visitorGroupingMode === 'grouped'
-                  ? `${Math.min(groupedVisitors.length, visitorDisplayLimit)} / ${groupedVisitors.length} Tekil Ziyaretçi`
-                  : `${Math.min(filteredVisitors.length, visitorDisplayLimit)} / ${filteredVisitors.length} İstek`}
+                {Math.min(filteredVisitors.length, visitorDisplayLimit)} / {filteredVisitors.length} İstek
               </span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {/* Gruplu / Ham Akış Mod Seçici */}
-              <div className="flex items-center bg-[#0d1117] border border-[#30363d] rounded-xl p-0.5 text-xs font-heading font-bold">
-                <button
-                  type="button"
-                  onClick={() => setVisitorGroupingMode('grouped')}
-                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
-                    visitorGroupingMode === 'grouped'
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
-                      : 'text-[#8b949e] hover:text-white'
-                  }`}
-                  title="Aynı IP'den gelen tüm istekleri tek kartta toplayıp kaç sayfa gezdiğini göster"
-                >
-                  <Users className="w-3.5 h-3.5" />
-                  <span>Gruplu (Ziyaretçi)</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
-                    {groupedVisitors.length}
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVisitorGroupingMode('raw')}
-                  className={`px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 ${
-                    visitorGroupingMode === 'raw'
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
-                      : 'text-[#8b949e] hover:text-white'
-                  }`}
-                  title="Tüm istekleri tek tek ham log halinde göster"
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span>Ham Akış</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
-                    {filteredVisitors.length}
-                  </span>
-                </button>
-              </div>
-
               {/* Gösterim Sınırı Seçici */}
               <div className="flex items-center bg-[#0d1117] border border-[#30363d] rounded-xl p-0.5 text-xs font-mono">
                 {[100, 500, 1000, 9999].map((limit) => (
@@ -4319,7 +4082,7 @@ export default function BmsSecurePortalDashboard() {
                         : 'text-[#8b949e] hover:text-white'
                     }`}
                   >
-                    {limit === 9999 ? '🔥 Tümü' : limit}
+                    {limit === 9999 ? '🔥 Hepsini Gör (Tümü)' : limit}
                   </button>
                 ))}
               </div>
@@ -4406,7 +4169,6 @@ export default function BmsSecurePortalDashboard() {
                   <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400"></span>
                   <span>escturkiye.space</span>
                 </button>
-                
               </div>
             </div>
 
@@ -4427,214 +4189,66 @@ export default function BmsSecurePortalDashboard() {
 
           {/* MOBİL GÖRÜNÜM: Canlı Ziyaretçi Akış Kartları */}
           <div className="flex flex-col gap-2.5 md:hidden">
-            {visitorGroupingMode === 'grouped' ? (
-              groupedVisitors.slice(0, visitorDisplayLimit).map((gv: any) => {
-                const isExpanded = !!expandedVisitorIps[gv.ip];
+            {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
+              const isGoogle = v.refererSource === 'google';
+              const isWa = v.refererSource === 'whatsapp';
+              const isFb = v.refererSource === 'facebook';
+              const analysis = getSuspiciousAnalysis(v);
 
-                return (
-                  <div
-                    key={gv.ip}
-                    className={`p-3.5 rounded-2xl bg-[#0d1117] border flex flex-col gap-2.5 transition-all ${
-                      gv.isSuspicious 
-                        ? 'border-red-500/60 bg-red-950/15 shadow-sm shadow-red-900/20' 
-                        : 'border-[#30363d]'
-                    }`}
-                  >
-                    {/* Üst Satır: IP & Şehir ve Gezilen Sayfa Rozeti & Son Saat */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="font-mono text-[11px] font-bold text-white truncate">{gv.ip}</span>
-                        <span className="text-[10px] text-amber-400 font-medium shrink-0">📍 {gv.city}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-black font-mono border flex items-center gap-1 ${
-                            gv.totalViews > 1
-                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                              : 'bg-slate-800 text-slate-300 border-[#30363d]'
-                          }`}
-                        >
-                          {gv.totalViews > 1 ? '🔥' : '📄'}
-                          <span>{gv.totalViews} Sayfa</span>
-                        </span>
-                        <span className="text-[10px] text-[#8b949e] font-mono">
-                          {new Date(gv.lastVisitedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </span>
-                      </div>
+              return (
+                <div key={v._id} className={`p-3.5 rounded-2xl bg-[#0d1117] border flex flex-col gap-2 transition-all ${
+                  analysis.isSuspicious 
+                    ? 'border-red-500/60 bg-red-950/15 shadow-sm shadow-red-900/20' 
+                    : 'border-[#30363d]'
+                }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] font-bold text-white">{v.ip || 'Anonim'}</span>
+                      <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
                     </div>
-
-                    {/* Şüpheli / Arama Motoru Rozeti */}
-                    {gv.isSuspicious && (
-                      <div className="flex flex-wrap items-center gap-1">
-                        <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500/25 text-red-300 border border-red-500/50 animate-pulse">
-                          🚨 ŞÜPHELİ / BOT
-                        </span>
-                        {gv.suspiciousReasons.map((r: string, idx: number) => (
-                          <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-[#161b22] text-amber-300 border border-[#30363d] font-mono">
-                            {r}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {gv.isSearchEngine && (
-                      <div className="flex items-center gap-1">
-                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                          ✅ Arama Motoru (Google/Yandex)
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Son Gezilen Sayfa & Domain & Kaynak */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 truncate max-w-[180px]">
-                        <span className="text-[10px] text-[#8b949e] shrink-0 font-medium">Son:</span>
-                        <span className="font-mono text-[11px] text-white truncate font-medium">{gv.latestPath}</span>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {renderDomainBadge(gv.hostname)}
-                        {renderTrafficSourceBadge({ refererSource: gv.initialRefererSource, referer: gv.initialReferer })}
-                      </div>
-                    </div>
-
-                    {/* Alt Bilgi Çubuğu: Cihaz / Süre / Akordeon Butonu */}
-                    <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-2 border-t border-[#21262d]">
-                      <div className="flex items-center gap-2">
-                        <span>{gv.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} ({gv.browser})</span>
-                        <span className="text-emerald-400 font-mono font-bold">
-                          ⏱️ {gv.totalDurationSeconds > 0 ? `${gv.totalDurationSeconds}s` : '<15s'}
-                        </span>
-                      </div>
-
-                      {gv.totalViews > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => toggleExpandVisitorIp(gv.ip)}
-                          className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 py-0.5 px-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 active:scale-95 transition-all"
-                        >
-                          <span>{isExpanded ? 'Gizle' : `Adımlar (${gv.totalViews})`}</span>
-                          {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Akordeon: Kullanıcı Gezinme Yolculuğu */}
-                    {isExpanded && gv.history.length > 0 && (() => {
-                      const chronologicalHistory = [...gv.history].sort(
-                        (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-                      );
-
-                      return (
-                        <div className="pt-2 border-t border-[#21262d] flex flex-col gap-1.5 bg-[#070a0f] p-2.5 rounded-xl border border-amber-500/20 animate-fadeIn">
-                          <div className="flex items-center justify-between pb-1 border-b border-[#21262d]">
-                            <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                              <Route className="w-3 h-3" />
-                              <span>Gezinme Akışı ({gv.totalViews} Sayfa)</span>
-                            </span>
-                            <span className="text-[9px] text-[#8b949e] font-mono">İlk Girişten Son Adıma</span>
-                          </div>
-                          <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-1">
-                            {chronologicalHistory.map((step: any, idx: number) => {
-                              const isLatest = idx === chronologicalHistory.length - 1;
-                              return (
-                                <div
-                                  key={step._id || idx}
-                                  className={`flex items-center justify-between gap-1.5 text-[10px] font-mono py-1 px-2 rounded-lg border ${
-                                    isLatest 
-                                      ? 'bg-amber-500/10 border-amber-500/30' 
-                                      : 'bg-[#161b22] border-[#21262d]'
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-1.5 min-w-0">
-                                    <span className="text-[9px] font-bold text-amber-400 w-4 shrink-0">
-                                      #{idx + 1}
-                                    </span>
-                                    <span className="text-white truncate max-w-[170px] sm:max-w-[220px]" title={step.path}>
-                                      {step.path}
-                                    </span>
-                                    {isLatest && (
-                                      <span className="text-[8px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0">
-                                        Son Adım
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-1.5 shrink-0 text-[#8b949e]">
-                                    <span className="text-emerald-400 font-bold">
-                                      {step.durationSeconds > 0 ? `${step.durationSeconds}s` : '0s'}
-                                    </span>
-                                    <span>
-                                      {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                    </span>
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })()}
+                    <span className="text-[10px] text-[#8b949e] font-mono">
+                      {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </span>
                   </div>
-                );
-              })
-            ) : (
-              // RAW / UNGROUPED (ESKİ MOD)
-              filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
-                const analysis = getSuspiciousAnalysis(v);
 
-                return (
-                  <div key={v._id} className={`p-3.5 rounded-2xl bg-[#0d1117] border flex flex-col gap-2 transition-all ${
-                    analysis.isSuspicious 
-                      ? 'border-red-500/60 bg-red-950/15 shadow-sm shadow-red-900/20' 
-                      : 'border-[#30363d]'
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[11px] font-bold text-white">{v.ip || 'Anonim'}</span>
-                        <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
-                      </div>
-                      <span className="text-[10px] text-[#8b949e] font-mono">
-                        {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  {/* Şüpheli / Arama Motoru Rozeti */}
+                  {analysis.isSuspicious && (
+                    <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                      <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500/25 text-red-300 border border-red-500/50 animate-pulse">
+                        🚨 ŞÜPHELİ / BOT
+                      </span>
+                      {analysis.reasons.map((r: string, idx: number) => (
+                        <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-[#161b22] text-amber-300 border border-[#30363d] font-mono">
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {analysis.isSearchEngine && (
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                        ✅ Arama Motoru (Google/Yandex)
                       </span>
                     </div>
+                  )}
 
-                    {/* Şüpheli / Arama Motoru Rozeti */}
-                    {analysis.isSuspicious && (
-                      <div className="flex flex-wrap items-center gap-1 mt-0.5">
-                        <span className="px-2 py-0.5 rounded text-[9px] font-black bg-red-500/25 text-red-300 border border-red-500/50 animate-pulse">
-                          🚨 ŞÜPHELİ / BOT
-                        </span>
-                        {analysis.reasons.map((r: string, idx: number) => (
-                          <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-[#161b22] text-amber-300 border border-[#30363d] font-mono">
-                            {r}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {analysis.isSearchEngine && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                          ✅ Arama Motoru (Google/Yandex)
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1.5 truncate max-w-[170px]">
-                        <span className="font-mono text-[11px] text-white truncate">{v.path}</span>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {renderDomainBadge(v.hostname)}
-                        {renderTrafficSourceBadge(v)}
-                      </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 truncate max-w-[170px]">
+                      <span className="font-mono text-[11px] text-white truncate">{v.path}</span>
                     </div>
-
-                    <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-1.5 border-t border-[#21262d]">
-                      <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} ({v.browser})</span>
-                      <span className="text-emerald-400 font-mono font-bold">{v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}</span>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {renderDomainBadge(v.hostname)}
+                      {renderTrafficSourceBadge(v)}
                     </div>
                   </div>
-                );
-              })
-            )}
+
+                  <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-1.5 border-t border-[#21262d]">
+                    <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} ({v.browser})</span>
+                    <span className="text-emerald-400 font-mono font-bold">{v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}</span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {/* MASAÜSTÜ GÖRÜNÜM: Tam Tablo */}
@@ -4645,291 +4259,106 @@ export default function BmsSecurePortalDashboard() {
                   <th className="py-2.5 px-3">IP / ŞEHİR</th>
                   <th className="py-2.5 px-3">GÜVENLİK / SPAM ANALİZİ</th>
                   <th className="py-2.5 px-3">GİRİLEN DOMAİN</th>
-                  <th className="py-2.5 px-3">
-                    {visitorGroupingMode === 'grouped' ? 'SON GEZİLEN SAYFA' : 'GEZİLEN SAYFA'}
-                  </th>
+                  <th className="py-2.5 px-3">GEZİLEN SAYFA</th>
                   <th className="py-2.5 px-3">TRAFİK KAYNAĞI</th>
                   <th className="py-2.5 px-3">ARAMA KELİMESİ</th>
                   <th className="py-2.5 px-3">CİHAZ / TARAYICI</th>
                   <th className="py-2.5 px-3">SÜRE</th>
                   <th className="py-2.5 px-3">ZAMAN</th>
-                  <th className="py-2.5 px-3 text-right">YOLCULUK AKIŞI</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#21262d]">
-                {visitorGroupingMode === 'grouped' ? (
-                  groupedVisitors.slice(0, visitorDisplayLimit).map((gv: any) => {
-                    const isExpanded = !!expandedVisitorIps[gv.ip];
+                {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
+                  const analysis = getSuspiciousAnalysis(v);
 
-                    return (
-                      <React.Fragment key={gv.ip}>
-                        <tr className={`transition-colors ${
-                          gv.isSuspicious 
-                            ? 'bg-red-950/30 hover:bg-red-950/40 border-l-4 border-red-500' 
-                            : gv.isBanned 
-                            ? 'bg-red-950/20 hover:bg-red-950/30' 
-                            : 'hover:bg-[#21262d]/50'
-                        }`}>
-                          {/* IP & Şehir */}
-                          <td className="py-3 px-3">
-                            <div className="flex flex-col">
-                              <span className="font-mono font-bold text-white text-[11px]">{gv.ip}</span>
-                              <span className="text-[10px] text-amber-400 font-medium">📍 {gv.city}</span>
-                            </div>
-                          </td>
+                  return (
+                    <tr key={v._id} className={`transition-colors ${
+                      analysis.isSuspicious 
+                        ? 'bg-red-950/30 hover:bg-red-950/40 border-l-4 border-red-500' 
+                        : v.isBanned 
+                        ? 'bg-red-950/20 hover:bg-red-950/30' 
+                        : 'hover:bg-[#21262d]/50'
+                    }`}>
+                      
+                      {/* IP & Şehir */}
+                      <td className="py-3 px-3">
+                        <div className="flex flex-col">
+                          <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
+                          <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
+                        </div>
+                      </td>
 
-                          {/* Güvenlik Analizi */}
-                          <td className="py-3 px-3">
-                            {gv.isSuspicious ? (
-                              <div className="flex flex-col gap-1 max-w-[200px]">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
-                                  🤖 OTOMASYON
+                      {/* GÜVENLİK / SPAM ANALİZİ */}
+                      <td className="py-3 px-3">
+                        {analysis.isSuspicious ? (
+                          <div className="flex flex-col gap-1 max-w-[200px]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
+                              🤖 OTOMASYON
+                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {analysis.reasons.map((r: string, idx: number) => (
+                                <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-amber-500/30 font-mono font-medium">
+                                  {r}
                                 </span>
-                                <div className="flex flex-wrap gap-1">
-                                  {gv.suspiciousReasons.map((r: string, idx: number) => (
-                                    <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-amber-500/30 font-mono font-medium">
-                                      {r}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            ) : gv.isSearchEngine ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                                ✅ Arama Motoru
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-[#8b949e] font-medium">
-                                👤 Normal Ziyaretçi
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Girilen Domain */}
-                          <td className="py-3 px-3 font-mono text-[11px]">
-                            {renderDomainBadge(gv.hostname)}
-                          </td>
-
-                          {/* Son Gezilen Sayfa & Sayfa Sayısı Rozeti */}
-                          <td className="py-3 px-3">
-                            <div className="flex flex-col gap-1 max-w-[240px]">
-                              <span className="font-mono text-white text-[11px] truncate font-medium" title={gv.latestPath}>
-                                {gv.latestPath}
-                              </span>
-                              <span className={`px-2 py-0.5 rounded-full text-[9px] font-black font-mono border flex items-center gap-1 w-fit ${
-                                gv.totalViews > 1
-                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                  : 'bg-[#161b22] text-[#8b949e] border-[#30363d]'
-                              }`}>
-                                {gv.totalViews > 1 ? '🔥' : '📄'}
-                                <span>{gv.totalViews} Sayfa Gezdi</span>
-                              </span>
+                              ))}
                             </div>
-                          </td>
-
-                          {/* İlk Trafik Kaynağı */}
-                          <td className="py-3 px-3">
-                            {renderTrafficSourceBadge({ refererSource: gv.initialRefererSource, referer: gv.initialReferer })}
-                          </td>
-
-                          {/* Arama Kelimesi */}
-                          <td className="py-3 px-3 text-[11px]">
-                            {gv.initialSearchKeyword ? (
-                              <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30">
-                                "{gv.initialSearchKeyword}"
-                              </span>
-                            ) : (
-                              <span className="text-[#484f58]">—</span>
-                            )}
-                          </td>
-
-                          {/* Cihaz & Tarayıcı */}
-                          <td className="py-3 px-3 text-[11px] text-[#8b949e]">
-                            <span>{gv.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'}</span>
-                            <span className="text-[10px] block text-[#484f58] truncate max-w-[140px]">{gv.browser} / {gv.os}</span>
-                          </td>
-
-                          {/* Toplam Süre */}
-                          <td className="py-3 px-3 font-mono text-emerald-400 font-bold text-[11px]">
-                            {gv.totalDurationSeconds > 0 ? `${gv.totalDurationSeconds}s` : '<15s'}
-                          </td>
-
-                          {/* Son Hareket Zamanı */}
-                          <td className="py-3 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
-                            {new Date(gv.lastVisitedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                          </td>
-
-                          {/* EN SAĞDA: YOLCULUK / GENİŞLET BUTONU */}
-                          <td className="py-3 px-3 text-right">
-                            {gv.totalViews > 1 ? (
-                              <button
-                                type="button"
-                                onClick={() => toggleExpandVisitorIp(gv.ip)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-bold font-mono transition-all inline-flex items-center gap-1.5 border active:scale-95 whitespace-nowrap shadow-sm ${
-                                  isExpanded
-                                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
-                                    : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20 hover:text-white'
-                                }`}
-                              >
-                                <Route className="w-3.5 h-3.5" />
-                                <span>{isExpanded ? 'Gizle' : `Yolculuk (${gv.totalViews})`}</span>
-                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                              </button>
-                            ) : (
-                              <span className="text-[10px] text-[#484f58] font-mono">1 Adım</span>
-                            )}
-                          </td>
-                        </tr>
-
-                        {/* Akordeon Satırı: Gezinme Yolculuğu */}
-                        {isExpanded && gv.history.length > 0 && (
-                          <tr className="bg-[#070a0f] border-b border-[#30363d]">
-                            <td colSpan={10} className="py-3 px-5">
-                              <div className="p-3.5 rounded-2xl bg-[#161b22] border border-amber-500/30 flex flex-col gap-2.5">
-                                <div className="flex items-center justify-between border-b border-[#21262d] pb-2">
-                                  <div className="flex items-center gap-2">
-                                    <Route className="w-4 h-4 text-amber-400" />
-                                    <span className="text-xs font-black text-amber-400 font-heading">
-                                      {gv.ip} ({gv.city}) — Gezinme Yolculuğu ({gv.totalViews} Sayfa)
-                                    </span>
-                                  </div>
-                                  <span className="text-[11px] text-[#8b949e] font-mono">
-                                    İlk: {new Date(gv.firstVisitedAt).toLocaleTimeString('tr-TR')} ➔ Son: {new Date(gv.lastVisitedAt).toLocaleTimeString('tr-TR')}
-                                  </span>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                                  {[...gv.history].sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).map((step: any, stepIdx: number, arr: any[]) => {
-                                    const isLatest = stepIdx === arr.length - 1;
-                                    return (
-                                      <div key={step._id || stepIdx} className={`p-2 rounded-xl border flex items-center justify-between gap-2 text-xs font-mono ${
-                                        isLatest ? 'bg-amber-500/10 border-amber-500/40' : 'bg-[#0d1117] border-[#30363d]'
-                                      }`}>
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                          <span className="text-[10px] font-black text-amber-400 bg-amber-500/15 px-1.5 py-0.5 rounded shrink-0">
-                                            #{stepIdx + 1}
-                                          </span>
-                                          <span className="text-white truncate max-w-[200px]" title={step.path}>
-                                            {step.path}
-                                          </span>
-                                          {isLatest && (
-                                            <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-bold shrink-0">
-                                              Son
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="flex items-center gap-1.5 shrink-0 text-[#8b949e] text-[10px]">
-                                          <span className="text-emerald-400 font-bold">{step.durationSeconds > 0 ? `${step.durationSeconds}s` : '0s'}</span>
-                                          <span>{new Date(step.createdAt).toLocaleTimeString('tr-TR')}</span>
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })
-                ) : (
-                  // RAW UNGROUPED ROWS
-                  filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
-                    const analysis = getSuspiciousAnalysis(v);
-
-                    return (
-                      <tr key={v._id} className={`transition-colors ${
-                        analysis.isSuspicious 
-                          ? 'bg-red-950/30 hover:bg-red-950/40 border-l-4 border-red-500' 
-                          : v.isBanned 
-                          ? 'bg-red-950/20 hover:bg-red-950/30' 
-                          : 'hover:bg-[#21262d]/50'
-                      }`}>
-                        
-                        {/* IP & Şehir */}
-                        <td className="py-3 px-3">
-                          <div className="flex flex-col">
-                            <span className="font-mono font-bold text-white text-[11px]">{v.ip || 'Anonim'}</span>
-                            <span className="text-[10px] text-amber-400 font-medium">📍 {v.city || 'İstanbul'}</span>
                           </div>
-                        </td>
+                        ) : analysis.isSearchEngine ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                            ✅ Arama Motoru
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-[#8b949e] font-medium">
+                            👤 Normal Ziyaretçi
+                          </span>
+                        )}
+                      </td>
 
-                        {/* GÜVENLİK / SPAM ANALİZİ */}
-                        <td className="py-3 px-3">
-                          {analysis.isSuspicious ? (
-                            <div className="flex flex-col gap-1 max-w-[200px]">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
-                                🤖 OTOMASYON
-                              </span>
-                              <div className="flex flex-wrap gap-1">
-                                {analysis.reasons.map((r: string, idx: number) => (
-                                  <span key={idx} className="text-[8px] px-1 py-0.2 rounded bg-black/40 text-amber-300 border border-amber-500/30 font-mono font-medium">
-                                    {r}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          ) : analysis.isSearchEngine ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-                              ✅ Arama Motoru
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-[#8b949e] font-medium">
-                              👤 Normal Ziyaretçi
-                            </span>
-                          )}
-                        </td>
+                      {/* Girilen Domain */}
+                      <td className="py-3 px-3 font-mono text-[11px]">
+                        {renderDomainBadge(v.hostname)}
+                      </td>
 
-                        {/* Girilen Domain */}
-                        <td className="py-3 px-3 font-mono text-[11px]">
-                          {renderDomainBadge(v.hostname)}
-                        </td>
+                      {/* Gezilen Sayfa */}
+                      <td className="py-3 px-3 font-mono text-white text-[11px] max-w-[160px] truncate">
+                        {v.path}
+                      </td>
 
-                        {/* Gezilen Sayfa */}
-                        <td className="py-3 px-3 font-mono text-white text-[11px] max-w-[160px] truncate">
-                          {v.path}
-                        </td>
+                      {/* Trafik Kaynağı */}
+                      <td className="py-3 px-3">
+                        {renderTrafficSourceBadge(v)}
+                      </td>
 
-                        {/* Trafik Kaynağı */}
-                        <td className="py-3 px-3">
-                          {renderTrafficSourceBadge(v)}
-                        </td>
+                      {/* Arama Kelimesi */}
+                      <td className="py-3 px-3 text-[11px]">
+                        {v.searchKeyword ? (
+                          <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30">
+                            "{v.searchKeyword}"
+                          </span>
+                        ) : (
+                          <span className="text-[#484f58]">—</span>
+                        )}
+                      </td>
 
-                        {/* Arama Kelimesi */}
-                        <td className="py-3 px-3 text-[11px]">
-                          {v.searchKeyword ? (
-                            <span className="px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30">
-                              "{v.searchKeyword}"
-                            </span>
-                          ) : (
-                            <span className="text-[#484f58]">—</span>
-                          )}
-                        </td>
+                      {/* Cihaz & Tarayıcı */}
+                      <td className="py-3 px-3 text-[11px] text-[#8b949e]">
+                        <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'}</span>
+                        <span className="text-[10px] block text-[#484f58] truncate max-w-[140px]">{v.browser} / {v.os}</span>
+                      </td>
 
-                        {/* Cihaz & Tarayıcı */}
-                        <td className="py-3 px-3 text-[11px] text-[#8b949e]">
-                          <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'}</span>
-                          <span className="text-[10px] block text-[#484f58] truncate max-w-[140px]">{v.browser} / {v.os}</span>
-                        </td>
+                      {/* Sayfada Kalma Süresi */}
+                      <td className="py-3 px-3 font-mono text-emerald-400 font-bold text-[11px]">
+                        {v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}
+                      </td>
 
-                        {/* Sayfada Kalma Süresi */}
-                        <td className="py-3 px-3 font-mono text-emerald-400 font-bold text-[11px]">
-                          {v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}
-                        </td>
+                      {/* Zaman */}
+                      <td className="py-3 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
+                        {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                      </td>
 
-                        {/* Zaman */}
-                        <td className="py-3 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
-                          {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </td>
-
-                        {/* Yolculuk Sütunu (Raw Tek Satır) */}
-                        <td className="py-3 px-3 text-right text-[10px] text-[#484f58] font-mono">
-                          —
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -5273,8 +4702,10 @@ export default function BmsSecurePortalDashboard() {
                           </div>
 
                           <div className="flex items-center gap-3 text-[11px] text-[#8b949e] mt-1 font-mono flex-wrap">
-                            <span>📍 {ev.targetCity || 'Türkiye'}</span>
+                            <span className="text-white font-bold">📍 {ev.targetCity && ev.targetCity !== 'Türkiye' ? ev.targetCity : (ev.city || 'İstanbul')}</span>
                             {ev.ip && <span>🌐 {ev.ip}</span>}
+                            {ev.searchKeyword && <span className="text-amber-400">🔍 {ev.searchKeyword}</span>}
+                            {ev.referer && ev.referer !== 'Direct' && <span>🔗 {ev.referer}</span>}
                             <span>Tetik: {meta.method || meta.reason || 'Standalone'}</span>
                             <span>ID: {ev.visitorId || 'Bilinmiyor'}</span>
                           </div>
@@ -5504,534 +4935,263 @@ export default function BmsSecurePortalDashboard() {
 
       {/* SİTEDEKİ AKTİF ZİYARETÇİLER VE İNCELENEN İLANLAR CANLI MODAL — SENIOR LEVEL PRO UI */}
       {showActiveVisitorsModal && (() => {
-
-        // Ziyaretçi Sayfa / Aksiyon tespit fonksiyonu
-        const getRadarAction = (v: any, domMeta: ReturnType<typeof getRadarDomain>) => {
-          const path = v.path || '/';
-          const isListing = path.startsWith('/ilan/');
-          const isSearch = Boolean(v.searchKeyword) || path.startsWith('/ara');
-          const isCity = !isListing && !isSearch && path !== '/' && !path.startsWith('/admin') && !path.startsWith('/bms');
-          const isHome = path === '/';
-
-          let type: 'listing' | 'search' | 'city' | 'home' | 'other' = 'other';
-          let badgeLabel = 'SAYFA GEZİYOR';
-          let badgeStyle = 'bg-slate-800/90 text-slate-300 border-slate-700';
-          let actionIcon = '📄';
-          let displayTitle = v.pageTitle || '';
-
-          if (isListing) {
-            type = 'listing';
-            badgeLabel = 'İLAN İNCELİYOR';
-            badgeStyle = 'bg-amber-500/20 text-amber-300 border-amber-500/40';
-            actionIcon = '👑';
-            if (!displayTitle || displayTitle.toLowerCase().includes('vitrini') || displayTitle === 'Best Eskort Vitrini') {
-              const slug = path.replace('/ilan/', '').replace(/\/$/, '');
-              displayTitle = slug 
-                ? decodeURIComponent(slug).split('-').map((s: string) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
-                : 'VIP İlan Detayı';
-            }
-          } else if (isSearch) {
-            type = 'search';
-            badgeLabel = 'SİTE İÇİ ARAMA';
-            badgeStyle = 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40';
-            actionIcon = '🔍';
-            displayTitle = v.searchKeyword ? `"${v.searchKeyword}" araması yapıyor` : 'Filtreli Arama Yapıyor';
-          } else if (isCity) {
-            type = 'city';
-            badgeLabel = 'ŞEHİR / KATEGORİ';
-            badgeStyle = 'bg-purple-500/20 text-purple-300 border-purple-500/40';
-            actionIcon = '📍';
-            if (!displayTitle || displayTitle.toLowerCase().includes('vitrini') || displayTitle === 'Best Eskort Vitrini') {
-              const segs = path.split('/').filter(Boolean);
-              displayTitle = segs.length > 0 
-                ? `${segs.map((s: string) => decodeURIComponent(s).charAt(0).toUpperCase() + decodeURIComponent(s).slice(1)).join(' > ')} Vitrini`
-                : `${domMeta.title} Şehir Vitrini`;
-            }
-          } else if (isHome) {
-            type = 'home';
-            badgeLabel = 'ANA SAYFADA';
-            badgeStyle = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
-            actionIcon = '🏠';
-            displayTitle = `${domMeta.title} Ana Sayfa Vitrini`;
-          } else {
-            displayTitle = displayTitle || `${domMeta.title} Sayfası`;
+        const fiveMinAgoMs = Date.now() - 5 * 60 * 1000;
+        const activeMap = new Map<string, any>();
+        
+        (recentVisitors as any[] || []).forEach((v: any) => {
+          const vTime = new Date(v.createdAt).getTime();
+          if (vTime >= fiveMinAgoMs && !activeMap.has(v.visitorId)) {
+            activeMap.set(v.visitorId, v);
           }
-
-          return { type, badgeLabel, badgeStyle, actionIcon, displayTitle };
-        };
-
-        // Trafik kaynağı rozeti fonksiyonu
-        const getRadarReferrer = (v: any) => {
-          const src = (v.refererSource || '').toLowerCase();
-          const ref = (v.referer || '').toLowerCase();
-
-          if (src === 'yandex' || ref.includes('yandex')) {
-            return { name: 'Yandex Arama', icon: '🇷🇺', badge: 'bg-red-500/20 text-red-300 border-red-500/40' };
-          }
-          if (src === 'google' || ref.includes('google')) {
-            return { name: 'Google Arama', icon: '🌐', badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40' };
-          }
-          if (src === 'whatsapp' || ref.includes('wa.me') || ref.includes('whatsapp')) {
-            return { name: 'WhatsApp', icon: '💬', badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
-          }
-          if (src === 'x' || ref.includes('t.co') || ref.includes('twitter')) {
-            return { name: 'X / Twitter', icon: '🐦', badge: 'bg-sky-500/20 text-sky-300 border-sky-500/40' };
-          }
-          if (src === 'telegram' || ref.includes('t.me')) {
-            return { name: 'Telegram', icon: '✈️', badge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40' };
-          }
-          return { name: 'Direkt Giriş', icon: '🔗', badge: 'bg-slate-800/80 text-slate-300 border-slate-700' };
-        };
-
-        // 1. Domain bazlı filtreleme
-        const activeDomainList = rawActiveList.filter((v: any) => {
-          const dom = getRadarDomain(v.hostname, v.referer);
-          if (radarDomainFilter === 'besteskort' && dom.id !== 'besteskort') return false;
-          if (radarDomainFilter === 'escturkiye' && dom.id !== 'escturkiye') return false;
-          if (radarDomainFilter === 'escturkiye1' && dom.id !== 'escturkiye1') return false;
-          return true;
         });
 
-        // 2. Metrik sayıları (Domain ve kategori bazında tam dinamik)
-        const besteskortCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'besteskort').length;
-        const escturkiyeCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'escturkiye').length;
-        const escturkiye1Count = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'escturkiye1').length;
+        const activeList = activeMap.size > 0 
+          ? Array.from(activeMap.values())
+          : (recentVisitors as any[] || []).slice(0, 30);
 
-        const activeDomainListingCount = activeDomainList.filter((v: any) => (v.path || '').startsWith('/ilan/')).length;
-        const activeDomainSearchCount = activeDomainList.filter((v: any) => v.searchKeyword || (v.path || '').startsWith('/ara')).length;
-        const activeDomainHomeCount = activeDomainList.filter((v: any) => (v.path || '/') === '/').length;
-        const activeDomainCityCount = activeDomainList.filter((v: any) => {
-          const p = v.path || '/';
-          return !p.startsWith('/ilan/') && !p.startsWith('/ara') && p !== '/' && !p.startsWith('/admin') && !p.startsWith('/bms');
-        }).length;
-        const mobileViewers = activeDomainList.filter((v: any) => v.device === 'mobile').length;
-
-        // 3. Nihai filtrelenmiş liste
-        const filteredList = activeDomainList.filter((v: any) => {
-          const dom = getRadarDomain(v.hostname, v.referer);
-          const act = getRadarAction(v, dom);
-          if (radarTypeFilter === 'listing' && act.type !== 'listing') return false;
-          if (radarTypeFilter === 'city' && act.type !== 'city') return false;
-          if (radarTypeFilter === 'home' && act.type !== 'home') return false;
-          if (radarTypeFilter === 'search' && act.type !== 'search') return false;
-          return true;
-        });
+        const listingViewingCount = activeList.filter((v: any) => v.path && v.path.startsWith('/ilan/')).length;
+        const searchCount = activeList.filter((v: any) => v.searchKeyword || (v.path && v.path.startsWith('/ara'))).length;
+        const mobileViewers = activeList.filter((v: any) => v.device === 'mobile').length;
 
         return (
           <div 
             onClick={() => setShowActiveVisitorsModal(false)}
-            className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
           >
             <div 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-5xl bg-[#0d1117] border-t sm:border border-[#30363d] rounded-t-[32px] sm:rounded-[28px] shadow-[0_25px_80px_rgba(0,0,0,0.95)] flex flex-col text-left max-h-[92vh] sm:max-h-[88vh] overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:zoom-in-95 duration-250"
+              className="w-full max-w-5xl bg-gradient-to-b from-[#161b22] via-[#0d1117] to-[#0d1117] border border-[#30363d] rounded-[36px] shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col gap-0 text-left animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-hidden"
             >
-              {/* Mobil Drawer Tutamacı (Pull bar) */}
-              <div className="w-12 h-1.5 bg-[#30363d] rounded-full mx-auto mt-2.5 sm:hidden shrink-0" />
-
-              {/* Kurumsal Radar Başlık Barı */}
-              <div className="p-4 sm:p-6 border-b border-[#262c36] bg-[#161b22] shrink-0 flex flex-col gap-3.5">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
-                      <Activity className="w-5 h-5 animate-pulse" />
+              {/* Modal Başlığı & Canlı Radar Başlığı */}
+              <div className="p-5 sm:p-7 border-b border-[#30363d] bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-transparent shrink-0 flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/30">
+                        <Activity className="w-6 h-6 animate-pulse" />
+                      </div>
+                      <span className="absolute -top-1 -right-1 flex h-4 w-4">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[#161b22]"></span>
+                      </span>
                     </div>
 
-                    <div className="flex flex-col min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-base sm:text-xl text-white font-heading tracking-tight">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <h3 className="font-black text-lg sm:text-2xl text-white font-heading tracking-tight">
                           Canlı Ziyaretçi &amp; İlan İzleme Radarı
                         </h3>
-                        {/* DİNAMİK VE AÇIKLAYICI BAŞLIK ROZETİ */}
-                        {radarTypeFilter === 'listing' ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                            👑 {activeDomainListingCount} Canlı İlan İzleyen
-                          </span>
-                        ) : radarTypeFilter === 'city' ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping" />
-                            📍 {activeDomainCityCount} Şehir/Kategori Gezen
-                          </span>
-                        ) : radarTypeFilter === 'home' ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                            🏠 {activeDomainHomeCount} Ana Sayfada
-                          </span>
-                        ) : radarTypeFilter === 'search' ? (
-                          <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[11px] font-mono font-bold flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                            🔍 {activeDomainSearchCount} Arama Yapan
-                          </span>
-                        ) : (
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-bold flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                            {activeDomainList.length} Canlı Ziyaretçi {radarDomainFilter !== 'all' ? `(${radarDomainFilter === 'besteskort' ? 'besteskort' : radarDomainFilter === 'escturkiye1' ? 'escturkiye1' : 'escturkiye'})` : ''}
-                          </span>
-                        )}
+                        <span className="px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-black flex items-center gap-1.5 shadow-sm">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                          {activeList.length} Canlı Ziyaretçi
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2 text-[11px] text-[#8b949e] mt-1 flex-wrap font-mono">
-                        <span className="text-[#c9d1d9] font-bold">Canlı Sayfa Dağılımı:</span>
-                        <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20 font-bold">
-                          👑 {activeDomainListingCount} İlan Başında
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 border border-purple-500/20 font-bold">
-                          📍 {activeDomainCityCount} Şehir Vitrini
-                        </span>
-                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold">
-                          🏠 {activeDomainHomeCount} Ana Sayfa
-                        </span>
-                        {activeDomainSearchCount > 0 && (
-                          <span className="px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold">
-                            🔍 {activeDomainSearchCount} Arama
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-xs sm:text-sm text-[#8b949e] mt-0.5">
+                        Ziyaretçilerin şu an sitede hangi ilanı, kategoriyi veya aramayı gerçek zamanlı incelediğini izleyin.
+                      </span>
                     </div>
                   </div>
 
                   <button 
                     onClick={() => setShowActiveVisitorsModal(false)} 
-                    className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white hover:bg-[#30363d] transition-colors shrink-0 border border-[#30363d]"
-                    title="Kapat"
+                    className="p-2.5 rounded-2xl bg-[#21262d] text-[#8b949e] hover:text-white hover:bg-[#30363d] transition-all shrink-0 border border-[#30363d]"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
-                {/* Kurumsal Segmented Domain Seçici & Sayfa Filtreleri */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2 border-t border-[#21262d]">
-                  {/* Domain Tabları */}
-                  <div className="flex items-center gap-1.5 p-1 bg-[#090d14] border border-[#21262d] rounded-xl w-full sm:w-auto overflow-x-auto scrollbar-none">
-                    <button
-                      type="button"
-                      onClick={() => setRadarDomainFilter('all')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                        radarDomainFilter === 'all'
-                          ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
-                          : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
-                      }`}
-                    >
-                      <Globe className="w-3.5 h-3.5" />
-                      <span>Tüm Siteler</span>
-                      <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono">
-                        {rawActiveList.length}
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setRadarDomainFilter('besteskort')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                        radarDomainFilter === 'besteskort'
-                          ? 'bg-emerald-500 text-slate-950 font-black shadow-sm'
-                          : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30'
-                      }`}
-                    >
-                      <span>🌟 besteskort.online</span>
-                      <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
-                        {besteskortCount}
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setRadarDomainFilter('escturkiye')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                        radarDomainFilter === 'escturkiye'
-                          ? 'bg-fuchsia-500 text-white font-black shadow-sm'
-                          : 'text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-950/30'
-                      }`}
-                    >
-                      <span>🚀 escturkiye.space</span>
-                      <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
-                        {escturkiyeCount}
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setRadarDomainFilter('escturkiye1')}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
-                        radarDomainFilter === 'escturkiye1'
-                          ? 'bg-pink-500 text-white font-black shadow-sm'
-                          : 'text-pink-400 hover:text-pink-300 hover:bg-pink-950/30'
-                      }`}
-                    >
-                      <span>⚡ escturkiye.space</span>
-                      <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
-                        {escturkiye1Count}
-                      </span>
-                    </button>
+                {/* Hızlı Canlı Metrik Hapları */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
+                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-amber-400" /> İlan Bakan
+                    </span>
+                    <span className="text-sm font-black text-amber-400 font-mono">{listingViewingCount}</span>
                   </div>
-
-                  {/* Kategori & Eylem Filtre Butonları */}
-                  <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-0.5 sm:pb-0">
-                    <button
-                      type="button"
-                      onClick={() => setRadarTypeFilter('all')}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 ${
-                        radarTypeFilter === 'all'
-                          ? 'bg-slate-700 text-white border-slate-600'
-                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-white'
-                      }`}
-                    >
-                      Tüm Ziyaretçiler ({activeDomainList.length})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRadarTypeFilter('listing')}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
-                        radarTypeFilter === 'listing'
-                          ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm'
-                          : activeDomainListingCount > 0
-                          ? 'bg-amber-500/15 text-amber-300 border-amber-500/40 hover:bg-amber-500/25'
-                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-amber-300'
-                      }`}
-                    >
-                      <span>👑 İlan Bakanlar ({activeDomainListingCount})</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRadarTypeFilter('city')}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
-                        radarTypeFilter === 'city'
-                          ? 'bg-purple-500 text-white border-purple-400 font-black shadow-sm'
-                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-purple-300'
-                      }`}
-                    >
-                      <span>📍 Şehir Gezenler ({activeDomainCityCount})</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRadarTypeFilter('home')}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
-                        radarTypeFilter === 'home'
-                          ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black shadow-sm'
-                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-emerald-300'
-                      }`}
-                    >
-                      <span>🏠 Ana Sayfa ({activeDomainHomeCount})</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRadarTypeFilter('search')}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border shrink-0 flex items-center gap-1 ${
-                        radarTypeFilter === 'search'
-                          ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-sm'
-                          : 'bg-[#0d1117] text-[#8b949e] border-[#21262d] hover:text-cyan-300'
-                      }`}
-                    >
-                      <span>🔍 Arama ({activeDomainSearchCount})</span>
-                    </button>
+                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
+                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                      <Search className="w-3.5 h-3.5 text-cyan-400" /> Arama Yapan
+                    </span>
+                    <span className="text-sm font-black text-cyan-400 font-mono">{searchCount}</span>
+                  </div>
+                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
+                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 text-purple-400" /> Mobil Cihaz
+                    </span>
+                    <span className="text-sm font-black text-purple-300 font-mono">
+                      %{activeList.length > 0 ? Math.round((mobileViewers / activeList.length) * 100) : 100}
+                    </span>
+                  </div>
+                  <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between">
+                    <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
+                      <Activity className="w-3.5 h-3.5 text-emerald-400" /> Yenileme
+                    </span>
+                    <span className="text-xs font-bold text-emerald-400 font-mono">Otomatik (15s)</span>
                   </div>
                 </div>
               </div>
 
-              {/* ZİYARETÇİ AKIŞI (KURUMSAL TEK-KATMAN DÜZEN, KART İÇİNDE KART YOK) */}
-              <div className="overflow-y-auto flex-1 p-3 sm:p-5 flex flex-col gap-2.5 custom-scrollbar bg-[#090d14]">
-                {filteredList.length === 0 ? (
+              {/* Ziyaretçi Kartları Listesi */}
+              <div className="overflow-y-auto flex-1 p-5 sm:p-7 flex flex-col gap-3.5 custom-scrollbar bg-[#090d13]">
+                {activeList.length === 0 ? (
                   <div className="py-20 text-center text-xs text-[#8b949e] flex flex-col items-center justify-center gap-3">
-                    <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                      <Eye className="w-7 h-7" />
+                    <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                      <Activity className="w-8 h-8 text-emerald-400 animate-pulse" />
                     </div>
-                    <span className="text-base font-bold text-white">
-                      {radarTypeFilter === 'listing' 
-                        ? 'Şu Anda Canlı Olarak İlan Detayı İnceleyen Ziyaretçi Yok' 
-                        : 'Seçilen Filtrede Aktif Ziyaretçi Bulunamadı'}
-                    </span>
-                    <span className="text-xs text-[#8b949e] max-w-md leading-relaxed">
-                      {radarTypeFilter === 'listing'
-                        ? `Ziyaretçiler şu anda şehir/kategori vitrinlerini geziyor (${activeDomainCityCount} ziyaretçi). Bir ziyaretçi ilan kartına tıklayıp detay sayfasına geçtiği an canlı olarak burada belirecektir.`
-                        : 'Farklı bir site veya sayfa filtresi seçebilir veya tüm ziyaretçileri görmek için sıfırlayabilirsiniz.'}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setRadarDomainFilter('all');
-                        setRadarTypeFilter('all');
-                      }}
-                      className="mt-1 px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-black text-xs hover:bg-amber-400 transition-all shadow-md"
-                    >
-                      Tüm Ziyaretçi Akışını Göster ({activeDomainList.length})
-                    </button>
+                    <span className="text-sm font-bold text-white">Canlı Ziyaretçi Bekleniyor</span>
+                    <span className="text-xs text-[#8b949e] max-w-sm">Ziyaretçiler siteye girdiğinde anlık olarak burada listelenecektir.</span>
                   </div>
                 ) : (
-                  filteredList.map((v: any, idx: number) => {
-                    const dom = getRadarDomain(v.hostname, v.referer);
-                    const act = getRadarAction(v, dom);
-                    const ref = getRadarReferrer(v);
+                  activeList.map((v: any, idx: number) => {
+                    const isListing = v.path && v.path.startsWith('/ilan/');
+                    const isSearch = v.searchKeyword || (v.path && v.path.startsWith('/ara'));
+                    const isCity = v.path && !isListing && v.path !== '/' && !v.path.startsWith('/admin') && !v.path.startsWith('/bms');
+                    const isHome = v.path === '/';
 
-                    const elapsedSec = Math.max(1, Math.round((Date.now() - v.latestTime) / 1000));
+                    const refSrc = (v.refererSource || 'direct').toLowerCase();
+                    let refIcon = '🔗';
+                    let refName = 'Direkt Giriş';
+                    let refBadge = 'bg-slate-800/80 text-slate-300 border-white/10';
+
+                    if (refSrc === 'yandex' || (v.referer || '').includes('yandex')) {
+                      refIcon = '🇷🇺';
+                      refName = 'Yandex Arama';
+                      refBadge = 'bg-red-500/20 text-red-300 border-red-500/30';
+                    } else if (refSrc === 'google' || (v.referer || '').includes('google')) {
+                      refIcon = '🌐';
+                      refName = 'Google Arama';
+                      refBadge = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+                    } else if (refSrc === 'x' || (v.referer || '').includes('t.co')) {
+                      refIcon = '🐦';
+                      refName = 'X (Twitter)';
+                      refBadge = 'bg-sky-500/20 text-sky-300 border-sky-500/30';
+                    } else if (refSrc === 'whatsapp') {
+                      refIcon = '💬';
+                      refName = 'WhatsApp';
+                      refBadge = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                    }
+
+                    const elapsedSec = Math.max(1, Math.round((Date.now() - new Date(v.createdAt).getTime()) / 1000));
                     const timeStr = elapsedSec < 60 ? `${elapsedSec} sn önce` : `${Math.floor(elapsedSec / 60)} dk önce`;
-
-                    const isExpanded = radarExpandedKey === (v.sessionKey || idx.toString());
-                    const targetDirectUrl = `${dom.siteUrl}${v.path || '/'}`;
 
                     return (
                       <div 
-                        key={v.sessionKey || idx} 
-                        className="relative rounded-2xl bg-[#161b22] border border-[#262c36] hover:border-[#384252] transition-colors p-3.5 sm:p-4 flex flex-col gap-2.5"
+                        key={v._id || idx} 
+                        className={`p-4 sm:p-5 rounded-3xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg hover:shadow-2xl group ${
+                          isListing 
+                            ? 'border-amber-500/30 hover:border-amber-400/80 bg-gradient-to-r from-amber-500/5 via-[#161b22] to-transparent' 
+                            : 'border-[#30363d] hover:border-emerald-500/50 bg-[#161b22]'
+                        }`}
                       >
-                        {/* Sol tarafta ince domain renk çizgisi (3px) */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${
-                          dom.id === 'escturkiye1' ? 'bg-pink-500' : dom.id === 'escturkiye' ? 'bg-fuchsia-500' : 'bg-emerald-500'
-                        }`} />
-
-                        {/* 1. SATIR: SİTE DOMAİNİ + KONUM + CİHAZ + IP + KAYNAK + ZAMAN */}
-                        <div className="flex items-center justify-between gap-2.5 flex-wrap pl-1.5">
-                          {/* Sol Kısım: Domain Rozeti & Temel Bilgiler */}
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold border ${dom.badgeStyle}`}>
-                              <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                              <span>{dom.name}</span>
-                            </span>
-
-                            <span className="text-xs text-white font-bold flex items-center gap-1">
-                              <span>📍 {v.city || 'İstanbul'}</span>
-                            </span>
-                            <span className="text-xs text-[#8b949e]">
-                              • {v.device === 'mobile' ? 'Mobil' : 'Masaüstü'} {v.browser ? `(${v.browser})` : ''}
-                            </span>
-                            {v.ip && (
-                              <span className="text-[11px] font-mono text-[#8b949e]">
-                                • IP: {v.ip}
+                        {/* Üst Bar: Ziyaretçi Profili + Canlı Süre + Kaynak */}
+                        <div className="flex items-center justify-between gap-3 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-[#21262d] border border-[#30363d] flex items-center justify-center shrink-0">
+                              {v.device === 'mobile' ? (
+                                <Smartphone className="w-4 h-4 text-purple-400" />
+                              ) : (
+                                <Monitor className="w-4 h-4 text-blue-400" />
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-black text-sm text-white flex items-center gap-1.5 font-heading">
+                                <span>📍 {v.city || 'İstanbul'}</span>
                               </span>
+                              <span className="text-[11px] text-[#8b949e] font-mono">
+                                • {v.browser || 'Tarayıcı'} / {v.os || (v.device === 'mobile' ? 'Mobile OS' : 'Desktop')}
+                              </span>
+                              {v.ip && (
+                                <span className="text-[10px] text-[#8b949e] font-mono px-2 py-0.5 rounded-lg bg-[#0d1117] border border-[#30363d]">
+                                  {v.ip}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono text-[11px] font-black border border-emerald-500/20 flex items-center gap-1.5 shadow-sm">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                              {timeStr}
+                            </span>
+                            <span className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border ${refBadge}`}>
+                              {refIcon} {refName}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Alt Bar: Ziyaret Edilen Sayfa & Detaylar */}
+                        <div className="p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center justify-between gap-3 group-hover:border-[#30363d] transition-colors">
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              {isListing ? (
+                                <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
+                                  <Crown className="w-3 h-3" /> İLAN İNCELİYOR
+                                </span>
+                              ) : isSearch ? (
+                                <span className="px-2.5 py-0.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
+                                  <Search className="w-3 h-3" /> SİTE İÇİ ARAMA
+                                </span>
+                              ) : isCity ? (
+                                <span className="px-2.5 py-0.5 rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[10px] font-black font-heading tracking-wider flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" /> ŞEHİR / İLÇE VİTRİNİ
+                                </span>
+                              ) : isHome ? (
+                                <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black font-heading tracking-wider">
+                                  🏠 ANA SAYFA VİTRİNİ
+                                </span>
+                              ) : (
+                                <span className="px-2.5 py-0.5 rounded-lg bg-slate-800 text-slate-300 text-[10px] font-bold">
+                                  📄 SAYFA
+                                </span>
+                              )}
+
+                              <span className="font-mono text-xs text-amber-400 font-bold truncate max-w-[280px] sm:max-w-md">
+                                {v.path}
+                              </span>
+                            </div>
+
+                            <span className="text-xs sm:text-sm text-white font-bold truncate">
+                              {v.pageTitle || 'Best Eskort Vitrini'}
+                            </span>
+
+                            {v.searchKeyword && (
+                              <div className="flex items-center gap-1.5 mt-1 text-[11px] text-cyan-300 font-mono bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-xl w-fit">
+                                <Search className="w-3 h-3 text-cyan-400" />
+                                <span>Aranan Anahtar Kelime: <strong>&quot;{v.searchKeyword}&quot;</strong></span>
+                              </div>
                             )}
                           </div>
 
-                          {/* Sağ Kısım: Kaynak ve Zaman */}
-                          <div className="flex items-center gap-2 shrink-0">
-                            <span className={`text-[11px] font-mono font-bold px-2 py-0.5 rounded-md border flex items-center gap-1 ${ref.badge}`}>
-                              <span>{ref.icon}</span>
-                              <span className="hidden xs:inline">{ref.name}</span>
-                            </span>
-                            <span className="text-[11px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                              <span>{timeStr}</span>
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* 2. SATIR: NE İNCELİYOR? (KART İÇİNDE KART YOK, DOĞRUDAN VE NET) */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pl-1.5">
-                          <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${act.badgeStyle}`}>
-                                {act.badgeLabel}
-                              </span>
-                              <span className="text-sm sm:text-base font-bold text-white truncate">
-                                {act.displayTitle}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <span className="text-xs font-mono text-amber-400 font-medium">
-                                {v.path || '/'}
-                              </span>
-                              {v.searchKeyword && (
-                                <span className="text-xs text-cyan-300 font-mono">
-                                  (Aranan: &quot;{v.searchKeyword}&quot;)
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Sağdaki Sayfayı Aç Butonu */}
-                          <a
-                            href={targetDirectUrl}
+                          <Link 
+                            href={v.path || '#'} 
                             target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3.5 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white border border-[#30363d] text-xs font-bold shrink-0 flex items-center gap-1.5 transition-colors self-end sm:self-center"
+                            className="px-4 py-2 rounded-2xl bg-amber-500/15 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/30 text-xs font-black font-heading shrink-0 flex items-center gap-1.5 transition-all shadow-md group-hover:scale-105"
                           >
-                            <span>Siteyi Aç</span>
+                            <span>Sayfayı Aç</span>
                             <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
+                          </Link>
                         </div>
-
-                        {/* 3. SATIR: YOLCULUK AKIŞI (BUTON SAĞDA, 1- EN BAŞTA KRONOLOJİK) */}
-                        {v.totalActions > 1 && (() => {
-                          const chronologicalHistory = [...v.history].sort(
-                            (a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-                          );
-
-                          return (
-                            <div className="pt-2 border-t border-[#21262d] flex flex-col gap-1.5 pl-1.5">
-                              <div className="flex items-center justify-between gap-2 flex-wrap">
-                                <span className="text-xs text-[#8b949e]">
-                                  🔥 Toplam <strong className="text-white">{v.totalActions}</strong> sayfa gezdi • {v.pages?.length || 1} farklı URL
-                                </span>
-
-                                {/* SAĞDAKİ YOLCULUK BUTONU */}
-                                <button
-                                  type="button"
-                                  onClick={() => setRadarExpandedKey(isExpanded ? null : (v.sessionKey || idx.toString()))}
-                                  className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 py-1 px-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30 transition-all shrink-0 ml-auto active:scale-95"
-                                >
-                                  <span>Yolculuk Akışı ({v.totalActions})</span>
-                                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                                </button>
-                              </div>
-
-                              {/* 1- EN BAŞTA KRONOLOJİK ADIMLAR */}
-                              {isExpanded && (
-                                <div className="pt-2 flex flex-col gap-1 border-t border-[#21262d] mt-1">
-                                  {chronologicalHistory.map((step: any, stepIdx: number) => {
-                                    const isFirst = stepIdx === 0;
-                                    const isLatest = stepIdx === chronologicalHistory.length - 1;
-                                    return (
-                                      <div
-                                        key={step._id || stepIdx}
-                                        className="flex items-center justify-between gap-2 text-xs font-mono py-1 px-2 text-[#8b949e] hover:text-white rounded hover:bg-[#0d1117] transition-colors"
-                                      >
-                                        <div className="flex items-center gap-2 min-w-0">
-                                          <span className={`w-4 h-4 rounded text-[10px] font-bold flex items-center justify-center shrink-0 ${
-                                            isLatest 
-                                              ? 'bg-emerald-500 text-slate-950 font-black' 
-                                              : isFirst 
-                                              ? 'bg-amber-500 text-slate-950 font-black' 
-                                              : 'bg-[#21262d] text-[#8b949e]'
-                                          }`}>
-                                            {stepIdx + 1}
-                                          </span>
-                                          <span className="text-white truncate" title={step.path}>
-                                            {step.path || '/'}
-                                          </span>
-                                          {isFirst && <span className="text-[9px] text-amber-400 font-bold">(İlk Giriş)</span>}
-                                          {isLatest && <span className="text-[9px] text-emerald-400 font-bold">(Şu An Burada 🟢)</span>}
-                                        </div>
-                                        <span className="text-[11px] text-[#8b949e] shrink-0">
-                                          {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                                        </span>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })()}
                       </div>
                     );
                   })
                 )}
               </div>
 
-              {/* Kurumsal Alt Footer */}
-              <div className="p-3 sm:p-4 border-t border-[#262c36] bg-[#161b22] flex items-center justify-between gap-2 shrink-0">
+              {/* Modal Alt Footer Bar */}
+              <div className="p-4 sm:p-5 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between shrink-0">
                 <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                  <span className="hidden sm:inline">Radar verileri 15 saniyede bir otomatik senkronize edilir.</span>
-                  <span className="sm:hidden">Otomatik Canlı Senkronizasyon</span>
+                  <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Sistem her 15 saniyede bir yeni ziyaretçi hareketlerini otomatik çeker.</span>
                 </span>
                 <button
-                  type="button"
                   onClick={() => {
                     setShowActiveVisitorsModal(false);
                     setActiveTab('live_visitors');
                   }}
-                  className="px-3.5 py-1.5 rounded-xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 shrink-0"
+                  className="px-4 py-2 rounded-2xl bg-amber-500/15 text-amber-400 hover:bg-amber-500 hover:text-slate-950 border border-amber-500/30 text-xs font-black font-heading flex items-center gap-1.5 transition-all"
                 >
-                  <span>Tüm Canlı Akış Logları</span>
+                  <span>Tüm Canlı Akış Loglarına Git</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
