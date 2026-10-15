@@ -2,7 +2,7 @@
   "name": "Best Eskort — VIP Vitrin",
   "short_name": "Best Eskort",
   "description": "Türkiye Geneli VIP Eskort ve Bağımsız İlanlar Rehberi",
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa&mode=standalone",
   "id": "/",
   "display": "standalone",
   "background_color": "#0d1117",

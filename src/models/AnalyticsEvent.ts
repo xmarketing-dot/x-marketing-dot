@@ -15,7 +15,8 @@ export interface IAnalyticsEvent extends Document {
     | 'special_ad_impression'
     | 'special_ad_click'
     | 'special_ad_whatsapp_click'
-    | 'bos_banner_reklam_tiklama';
+    | 'bos_banner_reklam_tiklama'
+    | 'pwa_install';
   targetId?: string;
   targetTitle?: string;
   targetCity?: string;
@@ -44,7 +45,8 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
         'special_ad_impression',
         'special_ad_click',
         'special_ad_whatsapp_click',
-        'bos_banner_reklam_tiklama'
+        'bos_banner_reklam_tiklama',
+        'pwa_install'
       ],
       required: true,
       index: true,
