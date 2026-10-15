@@ -34,7 +34,7 @@ export default function BmsSecurePortalDashboard() {
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [showOnlineUsersModal, setShowOnlineUsersModal] = useState(false);
   const [showActiveVisitorsModal, setShowActiveVisitorsModal] = useState(false);
-  const [radarDomainFilter, setRadarDomainFilter] = useState<'all' | 'besteskort' | 'escturkiye'>('all');
+  const [radarDomainFilter, setRadarDomainFilter] = useState<'all' | 'besteskort' | 'escturkiye' | 'escturkiye1'>('all');
   const [radarTypeFilter, setRadarTypeFilter] = useState<'all' | 'listing' | 'city' | 'home' | 'search'>('all');
   const [radarExpandedKey, setRadarExpandedKey] = useState<string | null>(null);
 
@@ -530,7 +530,23 @@ export default function BmsSecurePortalDashboard() {
   const getRadarDomain = (rawHost?: string, rawRef?: string) => {
     const host = (rawHost || '').toLowerCase();
     const ref = (rawRef || '').toLowerCase();
-    const isEscTurkiye = host.includes('escturkiye') || host.includes('turkiyeescort') || ref.includes('escturkiye');
+    const isEscTurkiye1 = host.includes('escturkiye1') || host.includes('escturkye1') || ref.includes('escturkiye1') || ref.includes('escturkye1');
+    const isEscTurkiye = host.includes('escturkiye') || host.includes('turkiyeescort') || ref.includes('escturkiye') || host.includes('escturkye') || ref.includes('escturkye');
+
+    if (isEscTurkiye1) {
+      return {
+        id: 'escturkiye1',
+        name: 'escturkiye1.devs.surf',
+        title: 'ESC Türkiye #1',
+        icon: '⚡',
+        accentColor: 'text-pink-400',
+        badgeStyle: 'bg-pink-500/15 border-pink-500/40 text-pink-300',
+        cardBorder: 'border-l-4 border-l-pink-500',
+        hoverGlow: 'hover:border-pink-500/50 hover:shadow-[0_10px_35px_rgba(236,72,153,0.12)]',
+        bannerBg: 'bg-gradient-to-r from-pink-500/10 via-[#161b22] to-transparent',
+        siteUrl: 'https://escturkiye1.devs.surf'
+      };
+    }
 
     if (isEscTurkiye) {
       return {
@@ -569,7 +585,8 @@ export default function BmsSecurePortalDashboard() {
     return rawActiveList.filter((v: any) => {
       const dom = getRadarDomain(v.hostname, v.referer);
       if (selectedDomain.includes('besteskort')) return dom.id === 'besteskort';
-      if (selectedDomain.includes('escturkiye') || selectedDomain.includes('turkiyeescort')) return dom.id === 'escturkiye';
+      if (selectedDomain.includes('escturkiye1') || selectedDomain.includes('escturkye1')) return dom.id === 'escturkiye1';
+      if (selectedDomain.includes('escturkiye') || selectedDomain.includes('turkiyeescort') || selectedDomain.includes('escturkye')) return dom.id === 'escturkiye';
       return true;
     }).length;
   })();
@@ -776,7 +793,15 @@ export default function BmsSecurePortalDashboard() {
 
   const renderDomainBadge = (rawHost?: string) => {
     const host = (rawHost || '').toLowerCase();
-    if (host.includes('escturkiye') || host.includes('turkiyeescort')) {
+    if (host.includes('escturkiye1') || host.includes('escturkye1')) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-pink-500/15 border border-pink-500/40 text-pink-300 font-mono font-bold text-[10px] shadow-sm shadow-pink-500/10">
+          <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></span>
+          <span>⚡ escturkiye1.devs.surf</span>
+        </span>
+      );
+    }
+    if (host.includes('escturkiye') || host.includes('turkiyeescort') || host.includes('escturkye')) {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-fuchsia-500/15 border border-fuchsia-500/40 text-fuchsia-300 font-mono font-bold text-[10px] shadow-sm shadow-fuchsia-500/10">
           <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
@@ -1024,10 +1049,32 @@ export default function BmsSecurePortalDashboard() {
               <span className="w-2 h-2 rounded-full bg-fuchsia-400 animate-pulse"></span>
               <span>🚀 escturkiye.devs.surf (Türkiye Ağı)</span>
               {(() => {
-                const tStats = domainBreakdown.find((d: any) => d.domain?.includes('escturkiye') || d.domain?.includes('turkiyeescort'));
+                const tStats = domainBreakdown.find((d: any) => d.domain === 'escturkiye.devs.surf');
                 return tStats ? (
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
                     selectedDomain === 'escturkiye.devs.surf' ? 'bg-slate-950/30 text-slate-950' : 'bg-fuchsia-500/20 text-fuchsia-300'
+                  }`}>
+                    {tStats.uniqueVisitors}
+                  </span>
+                ) : null;
+              })()}
+            </button>
+
+            <button
+              onClick={() => setSelectedDomain('escturkiye1.devs.surf')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 border ${
+                selectedDomain === 'escturkiye1.devs.surf'
+                  ? 'bg-pink-500 text-slate-950 border-pink-400 shadow-md font-black scale-[1.02]'
+                  : 'bg-[#0d1117] text-pink-400 hover:text-pink-300 border-pink-500/30 hover:border-pink-500/50'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse"></span>
+              <span>⚡ escturkiye1.devs.surf (Yeni Aktif)</span>
+              {(() => {
+                const tStats = domainBreakdown.find((d: any) => d.domain === 'escturkiye1.devs.surf');
+                return tStats ? (
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                    selectedDomain === 'escturkiye1.devs.surf' ? 'bg-slate-950/30 text-slate-950' : 'bg-pink-500/20 text-pink-300'
                   }`}>
                     {tStats.uniqueVisitors}
                   </span>
@@ -1106,6 +1153,7 @@ export default function BmsSecurePortalDashboard() {
             <div 
               onClick={() => {
                 if (selectedDomain.includes('besteskort')) setRadarDomainFilter('besteskort');
+                else if (selectedDomain.includes('escturkiye1') || selectedDomain.includes('escturkye1')) setRadarDomainFilter('escturkiye1');
                 else if (selectedDomain.includes('escturkiye') || selectedDomain.includes('turkiyeescort')) setRadarDomainFilter('escturkiye');
                 else setRadarDomainFilter('all');
                 setShowActiveVisitorsModal(true);
@@ -4377,6 +4425,17 @@ export default function BmsSecurePortalDashboard() {
                   <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400"></span>
                   <span>escturkiye.devs.surf</span>
                 </button>
+                <button
+                  onClick={() => setSearchTermFilter('escturkiye1')}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 border ${
+                    searchTermFilter === 'escturkiye1'
+                      ? 'bg-pink-500/20 text-pink-300 border-pink-500/40'
+                      : 'bg-[#161b22] text-pink-400 border-[#30363d] hover:text-pink-300'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
+                  <span>escturkiye1.devs.surf</span>
+                </button>
               </div>
             </div>
 
@@ -5412,12 +5471,14 @@ export default function BmsSecurePortalDashboard() {
           const dom = getRadarDomain(v.hostname, v.referer);
           if (radarDomainFilter === 'besteskort' && dom.id !== 'besteskort') return false;
           if (radarDomainFilter === 'escturkiye' && dom.id !== 'escturkiye') return false;
+          if (radarDomainFilter === 'escturkiye1' && dom.id !== 'escturkiye1') return false;
           return true;
         });
 
         // 2. Metrik sayıları (Domain ve kategori bazında tam dinamik)
         const besteskortCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'besteskort').length;
         const escturkiyeCount = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'escturkiye').length;
+        const escturkiye1Count = rawActiveList.filter((v: any) => getRadarDomain(v.hostname, v.referer).id === 'escturkiye1').length;
 
         const activeDomainListingCount = activeDomainList.filter((v: any) => (v.path || '').startsWith('/ilan/')).length;
         const activeDomainSearchCount = activeDomainList.filter((v: any) => v.searchKeyword || (v.path || '').startsWith('/ara')).length;
@@ -5488,7 +5549,7 @@ export default function BmsSecurePortalDashboard() {
                         ) : (
                           <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-mono font-bold flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                            {activeDomainList.length} Canlı Ziyaretçi {radarDomainFilter !== 'all' ? `(${radarDomainFilter === 'besteskort' ? 'besteskort' : 'escturkiye'})` : ''}
+                            {activeDomainList.length} Canlı Ziyaretçi {radarDomainFilter !== 'all' ? `(${radarDomainFilter === 'besteskort' ? 'besteskort' : radarDomainFilter === 'escturkiye1' ? 'escturkiye1' : 'escturkiye'})` : ''}
                           </span>
                         )}
                       </div>
@@ -5568,6 +5629,21 @@ export default function BmsSecurePortalDashboard() {
                       <span>🚀 escturkiye.devs.surf</span>
                       <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
                         {escturkiyeCount}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRadarDomainFilter('escturkiye1')}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                        radarDomainFilter === 'escturkiye1'
+                          ? 'bg-pink-500 text-white font-black shadow-sm'
+                          : 'text-pink-400 hover:text-pink-300 hover:bg-pink-950/30'
+                      }`}
+                    >
+                      <span>⚡ escturkiye1.devs.surf</span>
+                      <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
+                        {escturkiye1Count}
                       </span>
                     </button>
                   </div>
@@ -5682,7 +5758,7 @@ export default function BmsSecurePortalDashboard() {
                       >
                         {/* Sol tarafta ince domain renk çizgisi (3px) */}
                         <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${
-                          dom.id === 'escturkiye' ? 'bg-fuchsia-500' : 'bg-emerald-500'
+                          dom.id === 'escturkiye1' ? 'bg-pink-500' : dom.id === 'escturkiye' ? 'bg-fuchsia-500' : 'bg-emerald-500'
                         }`} />
 
                         {/* 1. SATIR: SİTE DOMAİNİ + KONUM + CİHAZ + IP + KAYNAK + ZAMAN */}

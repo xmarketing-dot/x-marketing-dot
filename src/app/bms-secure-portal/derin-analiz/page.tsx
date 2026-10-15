@@ -225,6 +225,17 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                 <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
                 <span>🚀 escturkiye.devs.surf (Türkiye Ağı)</span>
               </button>
+              <button
+                onClick={() => handleDomainChange('escturkiye1.devs.surf')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                  selectedDomain === 'escturkiye1.devs.surf'
+                    ? 'bg-pink-500 text-slate-950 border-pink-400 font-black shadow-md'
+                    : 'bg-[#0d1117] text-pink-400 border-pink-500/30 hover:border-pink-500/60'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></span>
+                <span>⚡ escturkiye1.devs.surf (Yeni Aktif)</span>
+              </button>
             </div>
           </div>
 

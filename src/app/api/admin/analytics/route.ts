@@ -548,6 +548,7 @@ export async function GET(req: Request) {
     const defaultGatewayDomains = [
       'besteskort.online',
       'escturkiye.devs.surf',
+      'escturkiye1.devs.surf',
     ];
 
     const domainStatsMap: Record<string, any> = {};
@@ -567,7 +568,10 @@ export async function GET(req: Request) {
       if (!raw || raw === 'Ana Domain' || raw.includes('localhost') || raw.includes('besteskort')) {
         return 'besteskort.online';
       }
-      if (raw.includes('escturkiye') || raw.includes('turkiyeescort')) {
+      if (raw.includes('escturkiye1') || raw.includes('escturkye1')) {
+        return 'escturkiye1.devs.surf';
+      }
+      if (raw.includes('escturkiye') || raw.includes('turkiyeescort') || raw.includes('escturkye')) {
         return 'escturkiye.devs.surf';
       }
       return raw.replace(/^www\./, '');
