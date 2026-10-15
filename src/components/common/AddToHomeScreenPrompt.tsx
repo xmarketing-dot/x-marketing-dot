@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Download, X, Share, PlusSquare, Smartphone, MoreVertical } from 'lucide-react';
+import { Download, X, Share, PlusSquare, Smartphone, Check, MoreVertical } from 'lucide-react';
+import { subscribeToPushNotifications } from '@/lib/pushClient';
 
 export default function AddToHomeScreenPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -38,7 +39,7 @@ export default function AddToHomeScreenPrompt() {
           visitorId,
           sessionId,
           eventType: 'pwa_install',
-          targetTitle: 'Best Eskort PWA Kurulumu (' + platform.toUpperCase() + ')',
+          targetTitle: 'PWA Kurulumu (' + platform.toUpperCase() + ')',
           targetCity: 'Türkiye',
           path: window.location.pathname,
           metadata: {
@@ -49,7 +50,7 @@ export default function AddToHomeScreenPrompt() {
           },
         }),
       });
-      console.log('✅ Best Eskort PWA Kurulumu başarıyla kaydedildi:', method);
+      console.log('✅ PWA Kurulumu başarıyla veritabanına kaydedildi:', method);
     } catch (err) {
       console.debug('PWA install log error:', err);
     }
@@ -83,6 +84,7 @@ export default function AddToHomeScreenPrompt() {
     if (isApp) {
       setIsStandalone(true);
       recordInstallEvent('standalone_launch');
+      subscribeToPushNotifications();
       return;
     }
 
@@ -121,11 +123,13 @@ export default function AddToHomeScreenPrompt() {
       recordInstallEvent('appinstalled_event');
       setIsInstalledSuccess(true);
       setIsVisible(false);
+      subscribeToPushNotifications();
     };
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // 4. beforeinstallprompt Dinleme
+    // 4. beforeinstallprompt Dinleme (Erken yakalama desteğiyle)
     const handlePrompt = (e: any) => {
+      // Mobilde Chrome'un yerel panelini engellemiyoruz (preventDefault çağırmıyoruz)
       setDeferredPrompt(e);
       (window as any).__pwaPrompt = e;
     };
@@ -136,6 +140,7 @@ export default function AddToHomeScreenPrompt() {
 
     window.addEventListener('beforeinstallprompt', handlePrompt);
 
+    // 1.5 saniye sonra nazikçe bildirimi göster
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 1500);
@@ -149,11 +154,13 @@ export default function AddToHomeScreenPrompt() {
 
   // ── YÜKLE BUTONUNA BASILDIĞINDA (GARANTİLİ ÇALIŞMA MEKANİZMASI) ──
   const handleInstallClick = async () => {
+    // iOS için Safari yönlendirmesi
     if (isIOS) {
       setShowManualGuide(true);
       return;
     }
 
+    // Chrome / Edge / Android Prompt Kontrolü
     const activePrompt = deferredPrompt || (window as any).__pwaPrompt;
 
     if (activePrompt && typeof activePrompt.prompt === 'function') {
@@ -164,6 +171,9 @@ export default function AddToHomeScreenPrompt() {
           recordInstallEvent('prompt_accepted');
           setIsVisible(false);
           setIsInstalledSuccess(true);
+          setTimeout(() => {
+            subscribeToPushNotifications();
+          }, 1000);
         } else {
           setIsMinimized(true);
         }
@@ -175,23 +185,25 @@ export default function AddToHomeScreenPrompt() {
       }
     }
 
+    // Eğer tarayıcı prompt'u henüz ateşlemediyse veya izin vermiyorsa doğrudan adım adım çözümü aç:
     setShowManualGuide(true);
   };
 
+  // Uygulama yüklüyse gizle
   if (isStandalone || isInstalledSuccess) {
     return null;
   }
 
   return (
     <>
-      {/* ── 1. MANUEL KURULUM REHBERİ MODALI ── */}
+      {/* ── 1. MANUEL KURULUM REHBERİ (EĞER NATIVE PROMPT AÇILAMAZSA ASLA BOŞ KALMAZ) ── */}
       {showManualGuide && (
         <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 animate-in fade-in duration-200">
-          <div className="w-full max-w-sm rounded-3xl bg-[#161b22] border border-rose-500/40 p-5 shadow-2xl text-white flex flex-col gap-4">
+          <div className="w-full max-w-sm rounded-3xl bg-[#161b22] border border-blue-500/40 p-5 shadow-2xl text-white flex flex-col gap-4">
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5 text-rose-400" />
+                <Smartphone className="w-5 h-5 text-blue-400" />
                 <h3 className="font-heading font-black text-sm text-white">
                   {isIOS ? 'iPhone / iPad Kurulumu' : 'Telefona / Bilgisayara Yükle'}
                 </h3>
@@ -209,22 +221,22 @@ export default function AddToHomeScreenPrompt() {
               {isIOS ? (
                 <>
                   <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0d1117] border border-white/5">
-                    <Share className="w-4 h-4 text-rose-400 shrink-0" />
+                    <Share className="w-4 h-4 text-blue-400 shrink-0" />
                     <span>1. Safari alt çubuğundaki <strong>Paylaş</strong> simgesine dokunun.</span>
                   </div>
                   <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0d1117] border border-white/5">
-                    <PlusSquare className="w-4 h-4 text-rose-400 shrink-0" />
+                    <PlusSquare className="w-4 h-4 text-blue-400 shrink-0" />
                     <span>2. Aşağı kaydırıp <strong>&apos;Ana Ekrana Ekle&apos;</strong> seçeneğine basın.</span>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0d1117] border border-white/5">
-                    <MoreVertical className="w-4 h-4 text-rose-400 shrink-0" />
+                    <MoreVertical className="w-4 h-4 text-blue-400 shrink-0" />
                     <span>1. Chrome sağ üst köşesindeki <strong>üç nokta (⋮)</strong> menüsüne dokunun.</span>
                   </div>
                   <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0d1117] border border-white/5">
-                    <Download className="w-4 h-4 text-rose-400 shrink-0" />
+                    <Download className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span>2. Menüden <strong>&apos;Uygulamayı Yükle&apos;</strong> veya <strong>&apos;Ana Ekrana Ekle&apos;</strong> seçin.</span>
                   </div>
                 </>
@@ -234,7 +246,7 @@ export default function AddToHomeScreenPrompt() {
             <button
               type="button"
               onClick={() => setShowManualGuide(false)}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs text-center transition-all"
+              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs text-center transition-all"
             >
               Anladım
             </button>
@@ -242,7 +254,7 @@ export default function AddToHomeScreenPrompt() {
         </div>
       )}
 
-      {/* ── 2. KÜÇÜLTÜLMÜŞ YÜZEN BUTON ── */}
+      {/* ── 2. KÜÇÜLTÜLMÜŞ YÜZEN BUTON (PİLL) ── */}
       {isMinimized && (
         <aside
           aria-label="Uygulamayı Yükle"
@@ -251,12 +263,12 @@ export default function AddToHomeScreenPrompt() {
           <button
             type="button"
             onClick={handleInstallClick}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#0d1117]/95 hover:bg-[#161b22] text-white border border-rose-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl active:scale-95 transition-all cursor-pointer group"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#0d1117]/95 hover:bg-[#161b22] text-white border border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl active:scale-95 transition-all cursor-pointer group"
           >
-            <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-rose-600 text-white shadow-md">
+            <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white shadow-md">
               <Download className="w-3.5 h-3.5" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-400 animate-ping" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500" />
             </div>
             <span className="text-xs font-bold text-white pr-0.5">
               Uygulamayı Yükle
@@ -265,21 +277,21 @@ export default function AddToHomeScreenPrompt() {
         </aside>
       )}
 
-      {/* ── 3. TEK KATMANLI ŞIK BİLDİRİM BARI (SIFIR KARMAŞA) ── */}
+      {/* ── 3. TEK KATMANLI ŞIK BİLDİRİM BARI (KART İÇİNDE KART YOK - SIFIR KARMAŞA) ── */}
       {isVisible && !isMinimized && (
         <aside
           aria-label="Uygulama Yükleme Bildirimi"
           className="fixed top-3 inset-x-3 sm:top-5 sm:right-5 sm:left-auto sm:w-[380px] z-[999990] animate-in fade-in slide-in-from-top-4 duration-300 select-none"
         >
-          <div className="p-3 rounded-2xl bg-[#0d1117]/98 text-white border border-rose-950/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex items-center justify-between gap-3">
+          <div className="p-3 rounded-2xl bg-[#0d1117]/98 text-white border border-[#30363d] shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex items-center justify-between gap-3">
             
-            {/* YENİ LOGO */}
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#161b22] to-[#21262d] border border-rose-500/40 p-0.5 flex items-center justify-center shrink-0 shadow-md overflow-hidden">
+            {/* LOGO */}
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#161b22] to-[#21262d] border border-blue-500/30 p-1 flex items-center justify-center shrink-0 shadow-md">
               <Image
-                src="/icon-192.png"
-                alt="Best Eskort"
-                width={36}
-                height={36}
+                src="/favicon-120x120.png"
+                alt="Esc Türkiye"
+                width={32}
+                height={32}
                 className="rounded-lg object-contain"
               />
             </div>
@@ -288,23 +300,23 @@ export default function AddToHomeScreenPrompt() {
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <div className="flex items-center gap-1.5">
                 <span className="font-heading font-black text-xs text-white truncate">
-                  Best Eskort
+                  Esc Türkiye
                 </span>
-                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30">
-                  VIP
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/30">
+                  RESMİ
                 </span>
               </div>
               <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                BTK engelsiz kesintisiz VIP vitrin
+                BTK engelsiz hızlı ve güvenli VIP erişim
               </p>
             </div>
 
-            {/* AKSİYON BUTONLARI */}
+            {/* AKSİYON BUTONLARI: ÇALIŞAN YÜKLE BUTONU & KAPAT */}
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={handleInstallClick}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-heading font-black text-xs flex items-center gap-1.5 shadow-md shadow-rose-600/30 active:scale-95 transition-all cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-heading font-black text-xs flex items-center gap-1.5 shadow-md shadow-blue-600/30 active:scale-95 transition-all cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Yükle</span>

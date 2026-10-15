@@ -3,20 +3,20 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  Lock,
-  KeyRound,
-  ShieldCheck,
-  Mail,
-  Eye,
-  EyeOff,
-  ArrowRight,
-  LogOut,
-  Sliders,
-  List,
-  Users,
-  MessageSquare,
-  BarChart3,
+import { 
+  Lock, 
+  KeyRound, 
+  ShieldCheck, 
+  Mail, 
+  Eye, 
+  EyeOff, 
+  ArrowRight, 
+  LogOut, 
+  Sliders, 
+  List, 
+  Users, 
+  MessageSquare, 
+  BarChart3, 
   Globe,
   Loader2,
   AlertCircle,
@@ -29,8 +29,8 @@ import {
   Link2,
   Gift,
   Activity,
-  Flame,
-  Settings
+  Smartphone,
+  Bell
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 
@@ -178,7 +178,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     return (
       <div className="min-h-screen w-full bg-[#0d1117] flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950">
         <div className="w-full max-w-md bg-[#161b22] border-2 border-amber-500/60 rounded-[36px] p-6 sm:p-8 shadow-[0_0_80px_rgba(245,158,11,0.2)] flex flex-col gap-6 text-center">
-
+          
           {/* Logo & Gate Header */}
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
@@ -207,7 +207,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
           {/* Login Form */}
           <form onSubmit={handleLogin} className="flex flex-col gap-4 text-left font-heading">
-
+            
             {/* E-Posta Input */}
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
@@ -282,19 +282,16 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     );
   }
 
-  const getNavClass = (path: string) => `flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-colors ${pathname === path
-      ? 'bg-[#21262d] text-white border border-[#363b42]'
+  const getNavClass = (path: string) => `flex items-center gap-2.5 px-3.5 py-3 rounded-xl transition-colors ${
+    pathname === path 
+      ? 'bg-[#21262d] text-white border border-[#363b42]' 
       : 'hover:bg-[#21262d] text-[#8b949e] hover:text-white border border-transparent'
-    }`;
+  }`;
 
   // 3. AUTHENTICATED: Render Full Admin Portal Layout
-  const isChatRoute = pathname === '/bms-secure-portal/chat';
-
   return (
-    <div className={`bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative ${
-      isChatRoute ? 'h-[100dvh] max-h-[100dvh] overflow-hidden' : 'min-h-screen'
-    }`}>
-
+    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative">
+      
       {/* Mobile Top Header */}
       <div className="md:hidden flex items-center justify-between bg-[#161b22] border-b border-[#30363d] px-4 py-3 sticky top-0 z-30 shadow-md">
         <div className="flex items-center gap-2.5">
@@ -322,7 +319,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       {/* Desktop Admin Sidebar */}
       <aside className="hidden md:flex w-64 bg-[#161b22] border-r border-[#30363d] p-5 flex-col justify-between shrink-0 shadow-2xl overflow-y-auto">
         <div className="flex flex-col gap-6">
-
+          
           {/* Logo & Secret Gate Badge */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -338,204 +335,181 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex flex-col gap-3.5 text-xs font-extrabold uppercase tracking-wider font-heading">
-            
-            {/* GRUP 1: AKIŞ & ANALİZ */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-mono text-[#8b949e] px-2 font-bold tracking-normal uppercase">
-                Canlı Akış &amp; Analiz
-              </span>
-              <Link
-                href="/bms-secure-portal"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <BarChart3 className="w-4 h-4 text-amber-400" />
-                  <span>Trafik &amp; Analizler</span>
-                </div>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Canlı İzleme Aktif" />
-              </Link>
+          <nav className="flex flex-col gap-1 text-xs font-extrabold uppercase tracking-wider font-heading">
+            <Link
+              href="/bms-secure-portal"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <BarChart3 className="w-4 h-4 text-amber-400" />
+                <span>Trafik &amp; Analizler</span>
+              </div>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="Canlı İzleme Aktif" />
+            </Link>
 
-              <Link
-                href="/bms-secure-portal/derin-analiz"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/derin-analiz')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Activity className="w-4 h-4 text-amber-400" />
-                  <span>Derin Analiz</span>
-                </div>
-              </Link>
-            </div>
-
-            {/* GRUP 2: SİSTEM & SİTE YÖNETİMİ */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-mono text-[#8b949e] px-2 font-bold tracking-normal uppercase">
-                Sistem &amp; Site Yönetimi
+            <Link
+              href="/bms-secure-portal/derin-analiz"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/derin-analiz')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <BarChart3 className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-300">Derin Analitik &amp; Müdavim</span>
+              </div>
+              <span className="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+                MÜDAVİM
               </span>
-              <Link
-                href="/bms-secure-portal/site-yonetimi"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/site-yonetimi')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Settings className="w-4 h-4 text-amber-400" />
-                  <span>Site Yönetimi</span>
-                </div>
-                <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">
-                  GENEL
+            </Link>
+
+            <Link
+              href="/bms-secure-portal/uygulama"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/uygulama')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Smartphone className="w-4 h-4 text-emerald-400" />
+                <span className="text-emerald-300">PWA &amp; Push Bildirim</span>
+              </div>
+              <span className="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+                PUSH
+              </span>
+            </Link>
+
+            <Link
+              href="/bms-secure-portal/ilanlar"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/ilanlar')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <List className="w-4 h-4 text-amber-400" />
+                <span>İlan Moderasyonu</span>
+              </div>
+              <div className="flex items-center gap-1">
+                {badgeCounts.pendingListings > 0 && (
+                  <span className="px-1.5 py-0.5 text-[9px] font-black rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/40 animate-pulse border border-rose-400 shrink-0" title={`${badgeCounts.pendingListings} İlan Onay Bekliyor`}>
+                    +{badgeCounts.pendingListings}
+                  </span>
+                )}
+                {badgeCounts.expiredListings > 0 && (
+                  <span className="px-1.5 py-0.5 text-[9px] font-black rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 shrink-0" title={`${badgeCounts.expiredListings} İlanın Süresi Doldu`}>
+                    {badgeCounts.expiredListings} doldu
+                  </span>
+                )}
+              </div>
+            </Link>
+
+            <Link
+              href="/bms-secure-portal/kullanicilar"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/kullanicilar')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Users className="w-4 h-4 text-amber-400" />
+                <span>Kullanıcı Hesapları</span>
+              </div>
+              {badgeCounts.kullanicilarBadge > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 shrink-0">
+                  +{badgeCounts.kullanicilarBadge} yeni
                 </span>
-              </Link>
+              )}
+            </Link>
 
-              <Link
-                href="/bms-secure-portal/guvenlik"
-                prefetch={false}
-                className={`flex items-center justify-between px-3.5 py-3 rounded-xl transition-colors ${
-                  pathname === '/bms-secure-portal/guvenlik'
-                    ? 'bg-red-500/10 text-red-400 border border-red-500/30'
-                    : 'hover:bg-red-500/5 text-red-500/70 hover:text-red-300 border border-transparent hover:border-red-500/30'
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <ShieldAlert className="w-4 h-4 text-red-400" />
-                  <span>Güvenlik &amp; IP Ban</span>
-                </div>
-              </Link>
-            </div>
+            <Link
+              href="/bms-secure-portal/chat"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/chat')} justify-between group`}
+            >
+              <div className="flex items-center gap-2.5">
+                <MessageSquare className="w-4 h-4 text-amber-400" />
+                <span>Canlı Müşteri Chat</span>
+              </div>
+              {badgeCounts.chatBadge > 0 ? (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40 animate-pulse border border-emerald-300 shrink-0">
+                  +{badgeCounts.chatBadge}
+                </span>
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+              )}
+            </Link>
 
-            {/* GRUP 3: MODERASYON & MÜŞTERİ */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-mono text-[#8b949e] px-2 font-bold tracking-normal uppercase">
-                Moderasyon &amp; Müşteri
-              </span>
-              <Link
-                href="/bms-secure-portal/ilanlar"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/ilanlar')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <List className="w-4 h-4 text-amber-400" />
-                  <span>İlan Moderasyonu</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {badgeCounts.pendingListings > 0 && (
-                    <span className="px-1.5 py-0.5 text-[9px] font-black rounded-full bg-rose-500 text-white shadow-lg shadow-rose-500/40 animate-pulse border border-rose-400 shrink-0" title={`${badgeCounts.pendingListings} İlan Onay Bekliyor`}>
-                      +{badgeCounts.pendingListings}
-                    </span>
-                  )}
-                  {badgeCounts.expiredListings > 0 && (
-                    <span className="px-1.5 py-0.5 text-[9px] font-black rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 shrink-0" title={`${badgeCounts.expiredListings} İlanın Süresi Doldu`}>
-                      {badgeCounts.expiredListings} doldu
-                    </span>
-                  )}
-                </div>
-              </Link>
+            <Link
+              href="/bms-secure-portal/anasayfa-yonetimi"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/anasayfa-yonetimi')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Sliders className="w-4 h-4 text-amber-400" />
+                <span>Anasayfa &amp; Banner</span>
+              </div>
+              {badgeCounts.anasayfaBadge > 0 && (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-lg shadow-amber-500/40 animate-pulse border border-amber-300 shrink-0">
+                  +{badgeCounts.anasayfaBadge} Vitrin
+                </span>
+              )}
+            </Link>
 
-              <Link
-                href="/bms-secure-portal/kullanicilar"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/kullanicilar')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Users className="w-4 h-4 text-amber-400" />
-                  <span>Kullanıcı Hesapları</span>
-                </div>
-                {badgeCounts.kullanicilarBadge > 0 && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 shrink-0">
-                    +{badgeCounts.kullanicilarBadge} yeni
-                  </span>
-                )}
-              </Link>
+            <Link
+              href="/bms-secure-portal/ucretsizler"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/ucretsizler')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Gift className="w-4 h-4 text-[#FF6A3D]" />
+                <span>Ücretsiz Kampanyalar</span>
+              </div>
+              {badgeCounts.ucretsizlerBadge > 0 ? (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-[#FF6A3D] text-white shadow-lg shadow-[#FF6A3D]/40 animate-pulse border border-[#FF6A3D]/50 shrink-0">
+                  +{badgeCounts.ucretsizlerBadge}
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-[#21262d] text-[#8b949e]">
+                  24S
+                </span>
+              )}
+            </Link>
 
-              <Link
-                href="/bms-secure-portal/chat"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/chat')} justify-between group`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <MessageSquare className="w-4 h-4 text-amber-400" />
-                  <span>Canlı Müşteri Chat</span>
-                </div>
-                {badgeCounts.chatBadge > 0 ? (
-                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40 animate-pulse border border-emerald-300 shrink-0">
-                    +{badgeCounts.chatBadge}
-                  </span>
-                ) : (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                )}
-              </Link>
-            </div>
+            <Link
+              href="/bms-secure-portal/banners"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/banners')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Megaphone className="w-4 h-4 text-amber-400" />
+                <span>Banner &amp; Reklam Masası</span>
+              </div>
+              {badgeCounts.bannersBadge > 0 && (
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/40 animate-pulse border border-amber-300 shrink-0">
+                  +{badgeCounts.bannersBadge}
+                </span>
+              )}
+            </Link>
 
-            {/* GRUP 4: TİCARİ & REKLAM MASASI */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-mono text-[#8b949e] px-2 font-bold tracking-normal uppercase">
-                Ticari &amp; Reklam Masası
-              </span>
-              <Link
-                href="/bms-secure-portal/anasayfa-yonetimi"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/anasayfa-yonetimi')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Sliders className="w-4 h-4 text-amber-400" />
-                  <span>Vitrin &amp; Reklam Masası</span>
-                </div>
-                {badgeCounts.anasayfaBadge > 0 && (
-                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-lg shadow-amber-500/40 animate-pulse border border-amber-300 shrink-0">
-                    +{badgeCounts.anasayfaBadge} Vitrin
-                  </span>
-                )}
-              </Link>
+            <Link
+              href="/bms-secure-portal/backlinks"
+              prefetch={false}
+              className={`${getNavClass('/bms-secure-portal/backlinks')} justify-between`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Link2 className="w-4 h-4 text-blue-400" />
+                <span>SEO Backlink Ağı</span>
+              </div>
+            </Link>
 
-              <Link
-                href="/bms-secure-portal/ucretsizler"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/ucretsizler')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Gift className="w-4 h-4 text-[#FF6A3D]" />
-                  <span>Ücretsiz Kampanyalar</span>
-                </div>
-                {badgeCounts.ucretsizlerBadge > 0 ? (
-                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-[#FF6A3D] text-white shadow-lg shadow-[#FF6A3D]/40 animate-pulse border border-[#FF6A3D]/50 shrink-0">
-                    +{badgeCounts.ucretsizlerBadge}
-                  </span>
-                ) : (
-                  <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-[#21262d] text-[#8b949e]">
-                    24S
-                  </span>
-                )}
-              </Link>
-
-              <Link
-                href="/bms-secure-portal/banners"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/banners')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Megaphone className="w-4 h-4 text-amber-400" />
-                  <span>Banner Masası</span>
-                </div>
-                {badgeCounts.bannersBadge > 0 && (
-                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/40 animate-pulse border border-amber-300 shrink-0">
-                    +{badgeCounts.bannersBadge}
-                  </span>
-                )}
-              </Link>
-
-              <Link
-                href="/bms-secure-portal/backlinks"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/backlinks')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Link2 className="w-4 h-4 text-blue-400" />
-                  <span>SEO Backlink Ağı</span>
-                </div>
-              </Link>
-            </div>
-
+            <Link
+              href="/bms-secure-portal/guvenlik"
+              prefetch={false}
+              className={`flex items-center justify-between px-3.5 py-3 rounded-xl transition-colors ${
+                pathname === '/bms-secure-portal/guvenlik'
+                  ? 'bg-red-500/10 text-red-400 border border-red-500/30'
+                  : 'hover:bg-red-500/5 text-red-500/70 hover:text-red-300 border border-transparent hover:border-red-500/30'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <ShieldAlert className="w-4 h-4 text-red-400" />
+                <span>Güvenlik &amp; IP Ban</span>
+              </div>
+            </Link>
           </nav>
         </div>
 
@@ -561,10 +535,11 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       </aside>
 
       {/* Secret Admin Content Viewport */}
-      <main className={`flex-1 min-h-0 w-full max-w-full ${isChatRoute
-          ? 'p-0 pb-[60px] md:pb-0 h-full flex flex-col overflow-hidden'
-          : 'overflow-y-auto p-3 sm:p-6 md:p-8 pb-24 md:pb-8'
-        }`}>
+      <main className={`flex-1 overflow-y-auto w-full max-w-full ${
+        pathname === '/bms-secure-portal/chat' 
+          ? 'p-0 pb-16 md:p-6 md:pb-8' 
+          : 'p-3 sm:p-6 md:p-8 pb-24 md:pb-8'
+      }`}>
         {children}
       </main>
 
@@ -587,6 +562,25 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             )}
           </div>
           <span className="text-[10px] font-heading">İlanlar</span>
+        </Link>
+
+        <Link
+          href="/bms-secure-portal/kullanicilar"
+          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
+            pathname === '/bms-secure-portal/kullanicilar'
+              ? 'text-amber-400 font-black'
+              : 'text-[#8b949e] hover:text-white font-medium'
+          }`}
+        >
+          <div className="relative">
+            <Users className="w-5 h-5" />
+            {badgeCounts.kullanicilarBadge > 0 && (
+              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[9px] font-black flex items-center justify-center border border-[#161b22]">
+                {badgeCounts.kullanicilarBadge}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] font-heading">Kullanıcılar</span>
         </Link>
 
         <Link
@@ -622,18 +616,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
           <span className="text-[10px] font-heading">Canlı</span>
         </Link>
 
-        <Link
-          href="/bms-secure-portal/site-yonetimi"
-          className={`flex flex-col items-center gap-1 py-1 px-2 rounded-xl transition-all relative ${
-            pathname === '/bms-secure-portal/site-yonetimi'
-              ? 'text-amber-400 font-black'
-              : 'text-[#8b949e] hover:text-white font-medium'
-          }`}
-        >
-          <Settings className="w-5 h-5" />
-          <span className="text-[10px] font-heading">Site</span>
-        </Link>
-
         <button
           type="button"
           onClick={() => setIsMobileMenuOpen(true)}
@@ -643,30 +625,30 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         >
           <div className="relative">
             <Sliders className="w-5 h-5" />
-            {(badgeCounts.anasayfaBadge > 0 || badgeCounts.bannersBadge > 0 || badgeCounts.kullanicilarBadge > 0) && (
+            {(badgeCounts.anasayfaBadge > 0 || badgeCounts.bannersBadge > 0) && (
               <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black flex items-center justify-center animate-pulse border border-[#161b22]">
-                {badgeCounts.anasayfaBadge + badgeCounts.bannersBadge + badgeCounts.kullanicilarBadge}
+                {badgeCounts.anasayfaBadge + badgeCounts.bannersBadge}
               </span>
             )}
           </div>
-          <span className="text-[10px] font-heading">Menü</span>
+          <span className="text-[10px] font-heading">Tüm Menü</span>
         </button>
       </div>
 
       {/* ── MOBİL DİĞER MODÜLLER ÇEKMECESİ (BOTTOM SHEET) ──────────────── */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-          <div
+          <div 
             className="flex-1 w-full"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="w-full bg-[#161b22] border-t-2 border-amber-500/40 rounded-t-[32px] p-5 flex flex-col gap-4 shadow-2xl max-h-[88vh] overflow-y-auto animate-in slide-in-from-bottom duration-250 text-left">
+          <div className="w-full bg-[#161b22] border-t-2 border-amber-500/40 rounded-t-[32px] p-5 flex flex-col gap-4 shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-250 text-left">
             <div className="flex items-center justify-between pb-3 border-b border-[#30363d]">
               <div className="flex items-center gap-2">
                 <CorporateLogo className="w-7 h-7" />
-                <span className="font-black text-sm text-white font-heading">Tüm Yönetim Masaları</span>
+                <span className="font-black text-sm text-white font-heading">Tüm 8 Yönetici Masası</span>
               </div>
-              <button
+              <button 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
               >
@@ -674,195 +656,171 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               </button>
             </div>
 
-            <div className="flex flex-col gap-4 text-xs font-bold font-heading">
+            <div className="grid grid-cols-2 gap-2.5 text-xs font-bold font-heading">
+              <Link
+                href="/bms-secure-portal"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <BarChart3 className="w-5 h-5 text-amber-400" />
+                <span>1. Canlı Trafik</span>
+              </Link>
 
-              {/* GRUP 1: SİSTEM & AYARLAR */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-wider font-bold">
-                  Sistem &amp; Site Yönetimi
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href="/bms-secure-portal/site-yonetimi"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-emerald-500/30 relative"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Settings className="w-5 h-5 text-emerald-400" />
-                      <span className="px-1.5 py-0.5 text-[8px] font-bold rounded bg-emerald-500/20 text-emerald-300">
-                        GENEL
+              <Link
+                href="/bms-secure-portal/derin-analiz"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-gradient-to-br from-emerald-950/40 to-[#21262d] hover:bg-[#30363d] text-emerald-300 flex flex-col gap-1 border border-emerald-500/40 relative shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <BarChart3 className="w-5 h-5 text-emerald-400" />
+                  <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-[9px] font-black">
+                    MÜDAVİM
+                  </span>
+                </div>
+                <span>🔬 Derin Analiz</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/uygulama"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-gradient-to-br from-amber-950/40 to-[#21262d] hover:bg-[#30363d] text-amber-300 flex flex-col gap-1 border border-amber-500/40 relative shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <Smartphone className="w-5 h-5 text-amber-400" />
+                  <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[9px] font-black">
+                    PUSH
+                  </span>
+                </div>
+                <span>📲 PWA &amp; Push</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/ilanlar"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <div className="flex items-center justify-between">
+                  <List className="w-5 h-5 text-amber-400" />
+                  <div className="flex items-center gap-1">
+                    {badgeCounts.pendingListings > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black animate-pulse">
+                        +{badgeCounts.pendingListings}
                       </span>
-                    </div>
-                    <span>Site Yönetimi</span>
-                  </Link>
-
-                  <Link
-                    href="/bms-secure-portal/guvenlik"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-red-500/20 text-red-300 flex flex-col gap-1 border border-red-500/30 relative"
-                  >
-                    <ShieldAlert className="w-5 h-5 text-red-400" />
-                    <span>Güvenlik &amp; IP Ban</span>
-                  </Link>
+                    )}
+                    {badgeCounts.expiredListings > 0 && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-amber-500/30 text-amber-300 border border-amber-500/50 text-[9px] font-black">
+                        {badgeCounts.expiredListings} doldu
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
+                <span>2. İlan Moderasyonu</span>
+              </Link>
 
-              {/* GRUP 2: AKIŞ & ANALİZ */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-wider font-bold">
-                  Canlı Akış &amp; Analiz
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href="/bms-secure-portal"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <BarChart3 className="w-5 h-5 text-amber-400" />
-                    <span>Canlı Trafik</span>
-                  </Link>
-
-                  <Link
-                    href="/bms-secure-portal/derin-analiz"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <Activity className="w-5 h-5 text-amber-400" />
-                    <span>Derin Analiz</span>
-                  </Link>
+              <Link
+                href="/bms-secure-portal/ucretsizler"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-gradient-to-br from-[#1c1407] to-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#FF6A3D]/40 relative col-span-2 shadow-md"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-[#FF6A3D]" />
+                    <span className="font-black text-amber-300">🎁 Ücretsiz Kampanyalar (İlan & Banner)</span>
+                  </div>
+                  {badgeCounts.ucretsizlerBadge > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-[#FF6A3D] text-white text-[9px] font-black animate-pulse">
+                      +{badgeCounts.ucretsizlerBadge} YENİ
+                    </span>
+                  )}
                 </div>
-              </div>
+                <span className="text-[11px] text-[#9AA3B2] font-normal">24 saatlik hediye vitrin ve banner başvurularını yönetin &amp; onaylayın</span>
+              </Link>
 
-              {/* GRUP 3: MODERASYON & KULLANICILAR */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-wider font-bold">
-                  İçerik &amp; Müşteri
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href="/bms-secure-portal/ilanlar"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <div className="flex items-center justify-between">
-                      <List className="w-5 h-5 text-amber-400" />
-                      <div className="flex items-center gap-1">
-                        {badgeCounts.pendingListings > 0 && (
-                          <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black animate-pulse">
-                            +{badgeCounts.pendingListings}
-                          </span>
-                        )}
-                        {badgeCounts.expiredListings > 0 && (
-                          <span className="px-1.5 py-0.5 rounded-full bg-amber-500/30 text-amber-300 border border-amber-500/50 text-[9px] font-black">
-                            {badgeCounts.expiredListings}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <span>İlan Moderasyonu</span>
-                  </Link>
-
-                  <Link
-                    href="/bms-secure-portal/chat"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <div className="flex items-center justify-between">
-                      <MessageSquare className="w-5 h-5 text-emerald-400" />
-                      {badgeCounts.chatBadge > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[9px] font-black animate-pulse">
-                          +{badgeCounts.chatBadge}
-                        </span>
-                      )}
-                    </div>
-                    <span>Canlı Chat</span>
-                  </Link>
-
-                  <Link
-                    href="/bms-secure-portal/kullanicilar"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative col-span-2"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-5 h-5 text-amber-400" />
-                        <span>Kullanıcı Hesapları</span>
-                      </div>
-                      {badgeCounts.kullanicilarBadge > 0 && (
-                        <span className="px-2 py-0.5 rounded-full bg-blue-500 text-white text-[9px] font-black">
-                          +{badgeCounts.kullanicilarBadge} yeni
-                        </span>
-                      )}
-                    </div>
-                  </Link>
+              <Link
+                href="/bms-secure-portal/chat"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <div className="flex items-center justify-between">
+                  <MessageSquare className="w-5 h-5 text-emerald-400" />
+                  {badgeCounts.chatBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 text-[9px] font-black animate-pulse">
+                      +{badgeCounts.chatBadge}
+                    </span>
+                  )}
                 </div>
-              </div>
+                <span>3. Canlı Müşteri Chat</span>
+              </Link>
 
-              {/* GRUP 4: TİCARİ & REKLAM MASASI */}
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-mono text-[#8b949e] uppercase tracking-wider font-bold">
-                  Ticari &amp; Reklam Masası
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <Link
-                    href="/bms-secure-portal/anasayfa-yonetimi"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Sliders className="w-5 h-5 text-amber-400" />
-                      {badgeCounts.anasayfaBadge > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black animate-pulse">
-                          +{badgeCounts.anasayfaBadge}
-                        </span>
-                      )}
-                    </div>
-                    <span>Vitrin &amp; Reklam</span>
-                  </Link>
-
-                  <Link
-                    href="/bms-secure-portal/banners"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Megaphone className="w-5 h-5 text-amber-400" />
-                      {badgeCounts.bannersBadge > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black animate-pulse">
-                          +{badgeCounts.bannersBadge}
-                        </span>
-                      )}
-                    </div>
-                    <span>Banner Masası</span>
-                  </Link>
-
-                  <Link
-                    href="/bms-secure-portal/ucretsizler"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Gift className="w-5 h-5 text-[#FF6A3D]" />
-                      {badgeCounts.ucretsizlerBadge > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-[#FF6A3D] text-white text-[9px] font-black animate-pulse">
-                          +{badgeCounts.ucretsizlerBadge}
-                        </span>
-                      )}
-                    </div>
-                    <span>Ücretsizler</span>
-                  </Link>
-
-                  <Link
-                    href="/bms-secure-portal/backlinks"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <Link2 className="w-5 h-5 text-blue-400" />
-                    <span>SEO Backlink</span>
-                  </Link>
+              <Link
+                href="/bms-secure-portal/kullanicilar"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <div className="flex items-center justify-between">
+                  <Users className="w-5 h-5 text-amber-400" />
+                  {badgeCounts.kullanicilarBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-[9px] font-black">
+                      +{badgeCounts.kullanicilarBadge}
+                    </span>
+                  )}
                 </div>
-              </div>
+                <span>4. Kullanıcı Hesapları</span>
+              </Link>
 
+              <Link
+                href="/bms-secure-portal/anasayfa-yonetimi"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <div className="flex items-center justify-between">
+                  <Sliders className="w-5 h-5 text-amber-400" />
+                  {badgeCounts.anasayfaBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black animate-pulse">
+                      +{badgeCounts.anasayfaBadge}
+                    </span>
+                  )}
+                </div>
+                <span>5. Anasayfa Yönetimi</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/banners"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <div className="flex items-center justify-between">
+                  <Megaphone className="w-5 h-5 text-amber-400" />
+                  {badgeCounts.bannersBadge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black animate-pulse">
+                      +{badgeCounts.bannersBadge}
+                    </span>
+                  )}
+                </div>
+                <span>6. Banner Masası</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/backlinks"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+              >
+                <div className="flex items-center justify-between">
+                  <Link2 className="w-5 h-5 text-blue-400" />
+                </div>
+                <span>7. SEO Backlink Ağı</span>
+              </Link>
+
+              <Link
+                href="/bms-secure-portal/guvenlik"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-3 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-300 flex flex-col gap-1 border border-red-500/30 relative"
+              >
+                <div className="flex items-center justify-between">
+                  <ShieldAlert className="w-5 h-5 text-red-400" />
+                </div>
+                <span>8. Güvenlik &amp; IP Ban</span>
+              </Link>
             </div>
 
             <div className="pt-2 border-t border-[#30363d] flex flex-col gap-2">
