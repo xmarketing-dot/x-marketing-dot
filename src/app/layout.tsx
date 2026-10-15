@@ -166,6 +166,16 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              window.__pwaPrompt = null;
+              window.addEventListener('beforeinstallprompt', function(e) {
+                window.__pwaPrompt = e;
+              });
+            `,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
               try {
               } catch (e) {}
             `,

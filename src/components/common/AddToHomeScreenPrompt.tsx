@@ -2,26 +2,23 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { Download, X, ShieldCheck, Share, PlusSquare, ArrowRight, Laptop, Smartphone } from 'lucide-react';
+import { Download, X, Share, PlusSquare, Smartphone, MoreVertical } from 'lucide-react';
 
 export default function AddToHomeScreenPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [showIOSTip, setShowIOSTip] = useState(false);
+  const [showManualGuide, setShowManualGuide] = useState(false);
   const [isInstalledSuccess, setIsInstalledSuccess] = useState(false);
 
-  // ── KURULUMU ANALİTİK VERİTABANINA BİLDİRME (%100 GERÇEK SAYIM) ──
+  // ── KURULUMU ANALİTİK VERİTABANINA BİLDİRME ──
   const recordInstallEvent = useCallback(async (method: string) => {
     try {
       if (typeof window === 'undefined') return;
+      if (localStorage.getItem('pwa_install_recorded')) return;
       
-      if (localStorage.getItem('pwa_install_recorded')) {
-        return;
-      }
       localStorage.setItem('pwa_install_recorded', 'true');
       localStorage.setItem('pwa_installed_success', 'true');
       setIsInstalledSuccess(true);
@@ -52,7 +49,7 @@ export default function AddToHomeScreenPrompt() {
           },
         }),
       });
-      console.log('✅ Best Eskort PWA Kurulumu başarıyla veritabanına kaydedildi:', method, platform);
+      console.log('✅ Best Eskort PWA Kurulumu başarıyla kaydedildi:', method);
     } catch (err) {
       console.debug('PWA install log error:', err);
     }
@@ -76,7 +73,7 @@ export default function AddToHomeScreenPrompt() {
       }
     }
 
-    // 2. Standalone kontrolü
+    // 2. Standalone Kontrolü
     const isApp =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true ||
@@ -96,11 +93,9 @@ export default function AddToHomeScreenPrompt() {
 
     const ua = window.navigator.userAgent.toLowerCase();
     const isIosDevice = /iphone|ipad|ipod/.test(ua);
-    const isMobileDevice = /android|iphone|ipad|ipod|mobile/.test(ua) || window.innerWidth < 768;
     setIsIOS(isIosDevice);
-    setIsMobile(isMobileDevice);
 
-    // 3. W3C Standart `appinstalled` Olayı
+    // 3. W3C Standart Kurulum Başarılı Olayı
     const handleAppInstalled = () => {
       recordInstallEvent('appinstalled_event');
       setIsInstalledSuccess(true);
@@ -108,49 +103,42 @@ export default function AddToHomeScreenPrompt() {
     };
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // 4. Chrome / Edge `beforeinstallprompt` dinle
-    const handleBeforeInstallPrompt = (e: Event) => {
+    // 4. beforeinstallprompt Dinleme
+    const handlePrompt = (e: any) => {
       setDeferredPrompt(e);
-
-      // MOBİLDE CHROME'UN KENDİ YEREL POPUP'I ÇIKSIN! (preventDefault çağırma!)
-      if (isMobileDevice) {
-        setIsVisible(false);
-        return;
-      }
-
-      // MASAÜSTÜNDE
-      e.preventDefault();
-      setTimeout(() => setIsVisible(true), 1500);
+      (window as any).__pwaPrompt = e;
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    // Masaüstünde fallback
-    let fallbackTimer: any = null;
-    if (!isMobileDevice) {
-      fallbackTimer = setTimeout(() => {
-        setIsVisible(true);
-      }, 2500);
+    if ((window as any).__pwaPrompt) {
+      setDeferredPrompt((window as any).__pwaPrompt);
     }
 
+    window.addEventListener('beforeinstallprompt', handlePrompt);
+
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 1500);
+
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('beforeinstallprompt', handlePrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      if (fallbackTimer) clearTimeout(fallbackTimer);
+      clearTimeout(timer);
     };
   }, [recordInstallEvent]);
 
-  // Yükle butonuna basıldığında
+  // ── YÜKLE BUTONUNA BASILDIĞINDA (GARANTİLİ ÇALIŞMA MEKANİZMASI) ──
   const handleInstallClick = async () => {
     if (isIOS) {
-      setShowIOSTip(true);
+      setShowManualGuide(true);
       return;
     }
 
-    if (deferredPrompt) {
+    const activePrompt = deferredPrompt || (window as any).__pwaPrompt;
+
+    if (activePrompt && typeof activePrompt.prompt === 'function') {
       try {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
+        await activePrompt.prompt();
+        const { outcome } = await activePrompt.userChoice;
         if (outcome === 'accepted') {
           recordInstallEvent('prompt_accepted');
           setIsVisible(false);
@@ -159,17 +147,14 @@ export default function AddToHomeScreenPrompt() {
           setIsMinimized(true);
         }
         setDeferredPrompt(null);
-      } catch {
-        setIsMinimized(true);
+        (window as any).__pwaPrompt = null;
+        return;
+      } catch (e) {
+        console.warn('Native prompt call failed, showing manual guide:', e);
       }
-    } else {
-      setShowIOSTip(true);
     }
-  };
 
-  const handleDismissToPill = () => {
-    setIsMinimized(true);
-    setShowIOSTip(false);
+    setShowManualGuide(true);
   };
 
   if (isStandalone || isInstalledSuccess) {
@@ -178,158 +163,139 @@ export default function AddToHomeScreenPrompt() {
 
   return (
     <>
-      {/* ── 1. MOBİLDE VEYA MASAÜSTÜNDE KÜÇÜLTÜLMÜŞ DURUM: YÜZEN BUTON ── */}
-      {(isMinimized || (isMobile && !isVisible && !isStandalone && !isInstalledSuccess)) && (
+      {/* ── 1. MANUEL KURULUM REHBERİ MODALI ── */}
+      {showManualGuide && (
+        <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center p-3 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm rounded-3xl bg-[#161b22] border border-rose-500/40 p-5 shadow-2xl text-white flex flex-col gap-4">
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-5 h-5 text-rose-400" />
+                <h3 className="font-heading font-black text-sm text-white">
+                  {isIOS ? 'iPhone / iPad Kurulumu' : 'Telefona / Bilgisayara Yükle'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowManualGuide(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-2.5 text-xs text-slate-300">
+              {isIOS ? (
+                <>
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0d1117] border border-white/5">
+                    <Share className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>1. Safari alt çubuğundaki <strong>Paylaş</strong> simgesine dokunun.</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0d1117] border border-white/5">
+                    <PlusSquare className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>2. Aşağı kaydırıp <strong>&apos;Ana Ekrana Ekle&apos;</strong> seçeneğine basın.</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0d1117] border border-white/5">
+                    <MoreVertical className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>1. Chrome sağ üst köşesindeki <strong>üç nokta (⋮)</strong> menüsüne dokunun.</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#0d1117] border border-white/5">
+                    <Download className="w-4 h-4 text-rose-400 shrink-0" />
+                    <span>2. Menüden <strong>&apos;Uygulamayı Yükle&apos;</strong> veya <strong>&apos;Ana Ekrana Ekle&apos;</strong> seçin.</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowManualGuide(false)}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold text-xs text-center transition-all"
+            >
+              Anladım
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── 2. KÜÇÜLTÜLMÜŞ YÜZEN BUTON ── */}
+      {isMinimized && (
         <aside
-          aria-label="Uygulamayı Yükle Kısayolu"
+          aria-label="Uygulamayı Yükle"
           className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-[999980] animate-in fade-in zoom-in-95 duration-200 select-none"
         >
           <button
             type="button"
             onClick={handleInstallClick}
-            className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#0d1117]/95 hover:bg-[#161b22] text-white border border-rose-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl ring-1 ring-white/10 active:scale-95 transition-all cursor-pointer group"
-            title="Best Eskort'u Cihaza Yükle"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#0d1117]/95 hover:bg-[#161b22] text-white border border-rose-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl active:scale-95 transition-all cursor-pointer group"
           >
-            <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-rose-600/30 text-rose-400 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+            <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-rose-600 text-white shadow-md">
               <Download className="w-3.5 h-3.5" />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-400 animate-ping" />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-rose-500" />
             </div>
-            <span className="text-xs font-bold text-slate-200 group-hover:text-white pr-1">
-              {isMobile ? 'Uygulamayı Yükle' : 'Masaüstüne Ekle'}
+            <span className="text-xs font-bold text-white pr-0.5">
+              Uygulamayı Yükle
             </span>
           </button>
         </aside>
       )}
 
-      {/* ── 2. iOS SAFARI BİLGİLENDİRME MODALI ── */}
-      {showIOSTip && isIOS && (
-        <aside
-          aria-label="iOS Kurulum Rehberi"
-          className="fixed bottom-20 inset-x-3 sm:max-w-[380px] sm:left-auto sm:right-5 z-[999995] animate-in fade-in slide-in-from-bottom-4 duration-300 select-none"
-        >
-          <div className="p-4 rounded-2xl bg-[#0d1117]/98 text-white border border-rose-500/40 shadow-2xl backdrop-blur-2xl flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
-                <Smartphone className="w-4 h-4" />
-                iPhone / iPad Kurulumu
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowIOSTip(false)}
-                className="p-1 text-[#8b949e] hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/20 text-xs text-rose-200 flex flex-col gap-1.5">
-              <div className="flex items-center gap-2">
-                <Share className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>1. Safari alt çubuğundaki <strong>Paylaş</strong> butonuna dokunun.</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <PlusSquare className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>2. Menüden <strong>&apos;Ana Ekrana Ekle&apos;</strong> seçeneğine basın.</span>
-              </div>
-            </div>
-          </div>
-        </aside>
-      )}
-
-      {/* ── 3. MASAÜSTÜ İÇİN KURUMSAL ADRES ÇUBUĞU BİLDİRİM KARTI (SADECE MASAÜSTÜNDE ÇIKAR) ── */}
-      {isVisible && !isMobile && !isMinimized && (
+      {/* ── 3. TEK KATMANLI ŞIK BİLDİRİM BARI (SIFIR KARMAŞA) ── */}
+      {isVisible && !isMinimized && (
         <aside
           aria-label="Uygulama Yükleme Bildirimi"
-          className="fixed top-5 right-5 max-w-[400px] z-[999990] animate-in fade-in slide-in-from-top-4 duration-300 select-none hidden sm:block"
+          className="fixed top-3 inset-x-3 sm:top-5 sm:right-5 sm:left-auto sm:w-[380px] z-[999990] animate-in fade-in slide-in-from-top-4 duration-300 select-none"
         >
-          <div className="p-4 rounded-2xl bg-[#0d1117]/98 text-white border border-rose-950/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl ring-1 ring-white/10 flex flex-col gap-3">
+          <div className="p-3 rounded-2xl bg-[#0d1117]/98 text-white border border-rose-950/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl flex items-center justify-between gap-3">
             
-            {/* ÜST BAR */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-bold tracking-wide">
-                <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-                <span>Doğrulanmış Web Uygulaması</span>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleDismissToPill}
-                className="p-1 rounded-lg text-[#8b949e] hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                title="Küçült"
-                aria-label="Bildirimi Küçült"
-              >
-                <X className="w-4 h-4" />
-              </button>
+            {/* YENİ LOGO */}
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#161b22] to-[#21262d] border border-rose-500/40 p-0.5 flex items-center justify-center shrink-0 shadow-md overflow-hidden">
+              <Image
+                src="/icon-192.png"
+                alt="Best Eskort"
+                width={36}
+                height={36}
+                className="rounded-lg object-contain"
+              />
             </div>
 
-            {/* İÇERİK */}
-            <div className="flex items-start gap-3">
-              <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-[#161b22] to-[#21262d] border border-rose-500/40 p-1 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
-                <Image
-                  src="/icon-192.png"
-                  alt="Best Eskort Logo"
-                  width={44}
-                  height={44}
-                  className="rounded-lg object-contain"
-                />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <h2 className="font-heading font-black text-sm text-white leading-tight truncate">
-                    Best Eskort
-                  </h2>
-                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/15 border border-amber-500/30 text-amber-400 font-bold">
-                    VIP RESMİ
-                  </span>
-                </div>
-                <p className="text-[11px] text-[#8b949e] mt-1 leading-snug">
-                  BTK engellerinden etkilenmeden, bilgisayarınızdan kesintisiz doğrudan VIP vitrine erişin.
-                </p>
-              </div>
-            </div>
-
-            {/* CHROME ADRES ÇUBUĞU SİMÜLASYONU */}
-            <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d]/80 text-[11px] text-[#c9d1d9] flex flex-col gap-1.5">
-              <div className="flex items-center justify-between text-[10px] text-[#8b949e] font-mono">
-                <span>🌐 Google Chrome Adres Çubuğu</span>
-                <span className="text-rose-400 font-bold flex items-center gap-1">
-                  <Laptop className="w-3 h-3" />
-                  Masaüstü Kurulum
+            {/* BAŞLIK & METİN */}
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+              <div className="flex items-center gap-1.5">
+                <span className="font-heading font-black text-xs text-white truncate">
+                  Best Eskort
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30">
+                  VIP
                 </span>
               </div>
-
-              <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-[#0d1117] border border-[#21262d] text-[11px] font-mono">
-                <span className="text-slate-400 truncate">https://besteskort.online</span>
-                <span className="flex items-center gap-1 text-rose-400 font-bold bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 rounded text-[10px] shrink-0 animate-pulse">
-                  <Download className="w-3 h-3" />
-                  <span>Yükle (⊕)</span>
-                </span>
-              </div>
-
-              <p className="text-[10px] text-[#8b949e] leading-tight">
-                Chrome adres çubuğundaki <strong className="text-white">⊕ Yükle</strong> simgesine tıklayabilir veya aşağıdaki butonu kullanabilirsiniz.
+              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                BTK engelsiz kesintisiz VIP vitrin
               </p>
             </div>
 
-            {/* BUTONLAR */}
-            <div className="flex items-center gap-2 pt-1 border-t border-[#21262d]">
-              <button
-                type="button"
-                onClick={handleDismissToPill}
-                className="px-3 py-2 rounded-xl text-xs font-bold text-[#8b949e] hover:text-white transition-colors cursor-pointer"
-              >
-                Daha Sonra
-              </button>
-              
+            {/* AKSİYON BUTONLARI */}
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={handleInstallClick}
-                className="flex-1 py-2 px-3.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-600/30 active:scale-95 transition-all cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-heading font-black text-xs flex items-center gap-1.5 shadow-md shadow-rose-600/30 active:scale-95 transition-all cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Chrome ile Yükle</span>
-                <ArrowRight className="w-3 h-3 ml-0.5 opacity-80" />
+                <span>Yükle</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsMinimized(true)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                title="Kapat"
+              >
+                <X className="w-4 h-4" />
               </button>
             </div>
 
