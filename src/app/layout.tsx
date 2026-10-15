@@ -6,7 +6,7 @@ import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
 import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
 import GlobalKeyboardHandler from '@/components/common/GlobalKeyboardHandler';
-import AddToHomeScreenPrompt from '@/components/common/AddToHomeScreenPrompt';
+
 import AdminWhatsAppSync from '@/components/common/AdminWhatsAppSync';
 import { Analytics } from '@vercel/analytics/next';
 import Script from 'next/script';
@@ -252,8 +252,7 @@ export default async function RootLayout({
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
         <AdminWhatsAppSync />
         <GlobalKeyboardHandler />
-          <AddToHomeScreenPrompt />
-        <Suspense fallback={null}>
+          <Suspense fallback={null}>
           <AnalyticsTracker />
           <RouteTransitionLoader />
         </Suspense>
