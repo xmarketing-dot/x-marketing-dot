@@ -14,10 +14,10 @@ export async function GET() {
         isActive: false,
         campaignId: 'camp_v1',
         title: "Türkiyenin en büyük eskort sitesi açıldı !",
-        description: "escturkiye.devs.surf yayında! Tüm illerdeki doğrulanmış VIP ilanları hemen keşfedin.",
+        description: "escturkiye.space yayında! Tüm illerdeki doğrulanmış VIP ilanları hemen keşfedin.",
         badgeText: "🚀 YENİ AĞ",
         buttonText: "Hemen İncele →",
-        targetUrl: "https://escturkiye.devs.surf",
+        targetUrl: "https://escturkiye.space",
         openInNewTab: true,
         stylePreset: 'fire',
       });

@@ -554,8 +554,8 @@ export async function GET(req: Request) {
     // ── 14. Domain Bazlı İstatistik Haritası ──
     const defaultGatewayDomains = [
       'besteskort.online',
-      'escturkiye.devs.surf',
-      'escturkiye1.devs.surf',
+      'escturkiye.space',
+      'escturkiye.space',
     ];
 
     const domainStatsMap: Record<string, any> = {};
@@ -576,10 +576,10 @@ export async function GET(req: Request) {
         return 'besteskort.online';
       }
       if (raw.includes('escturkiye1') || raw.includes('escturkye1')) {
-        return 'escturkiye1.devs.surf';
+        return 'escturkiye.space';
       }
       if (raw.includes('escturkiye') || raw.includes('turkiyeescort') || raw.includes('escturkye')) {
-        return 'escturkiye.devs.surf';
+        return 'escturkiye.space';
       }
       return raw.replace(/^www\./, '');
     };

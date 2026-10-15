@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       const isLocal = !rawHost || rawHost.includes('localhost') || rawHost.includes('127.0.0.1');
       
       const defaultSiteUrl = getSiteUrl();
-      let defaultHost = 'escturkiye.devs.surf';
+      let defaultHost = 'escturkiye.space';
       try {
         defaultHost = new URL(defaultSiteUrl).hostname;
       } catch {}

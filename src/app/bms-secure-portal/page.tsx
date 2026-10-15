@@ -538,7 +538,7 @@ export default function BmsSecurePortalDashboard() {
     if (isEscTurkiye1) {
       return {
         id: 'escturkiye1',
-        name: 'escturkiye1.devs.surf',
+        name: 'escturkiye.space',
         title: 'ESC Türkiye #1',
         icon: '⚡',
         accentColor: 'text-pink-400',
@@ -546,14 +546,14 @@ export default function BmsSecurePortalDashboard() {
         cardBorder: 'border-l-4 border-l-pink-500',
         hoverGlow: 'hover:border-pink-500/50 hover:shadow-[0_10px_35px_rgba(236,72,153,0.12)]',
         bannerBg: 'bg-gradient-to-r from-pink-500/10 via-[#161b22] to-transparent',
-        siteUrl: 'https://escturkiye1.devs.surf'
+        siteUrl: 'https://escturkiye.space'
       };
     }
 
     if (isEscTurkiye) {
       return {
         id: 'escturkiye',
-        name: 'escturkiye.devs.surf',
+        name: 'escturkiye.space',
         title: 'ESC Türkiye',
         icon: '💋',
         accentColor: 'text-fuchsia-400',
@@ -561,7 +561,7 @@ export default function BmsSecurePortalDashboard() {
         cardBorder: 'border-l-4 border-l-fuchsia-500',
         hoverGlow: 'hover:border-fuchsia-500/50 hover:shadow-[0_10px_35px_rgba(217,70,239,0.12)]',
         bannerBg: 'bg-gradient-to-r from-fuchsia-500/10 via-[#161b22] to-transparent',
-        siteUrl: 'https://escturkiye.devs.surf'
+        siteUrl: 'https://escturkiye.space'
       };
     }
 
@@ -799,7 +799,7 @@ export default function BmsSecurePortalDashboard() {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-pink-500/15 border border-pink-500/40 text-pink-300 font-mono font-bold text-[10px] shadow-sm shadow-pink-500/10">
           <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></span>
-          <span>⚡ escturkiye1.devs.surf</span>
+          <span>⚡ escturkiye.space</span>
         </span>
       );
     }
@@ -807,7 +807,7 @@ export default function BmsSecurePortalDashboard() {
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-fuchsia-500/15 border border-fuchsia-500/40 text-fuchsia-300 font-mono font-bold text-[10px] shadow-sm shadow-fuchsia-500/10">
           <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
-          <span>🚀 escturkiye.devs.surf</span>
+          <span>🚀 escturkiye.space</span>
         </span>
       );
     }
@@ -1040,49 +1040,7 @@ export default function BmsSecurePortalDashboard() {
               })()}
             </button>
 
-            <button
-              onClick={() => setSelectedDomain('escturkiye.devs.surf')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 border ${
-                selectedDomain === 'escturkiye.devs.surf'
-                  ? 'bg-fuchsia-500 text-slate-950 border-fuchsia-400 shadow-md font-black scale-[1.02]'
-                  : 'bg-[#0d1117] text-fuchsia-400 hover:text-fuchsia-300 border-fuchsia-500/30 hover:border-fuchsia-500/50'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-fuchsia-400 animate-pulse"></span>
-              <span>🚀 escturkiye.devs.surf (Türkiye Ağı)</span>
-              {(() => {
-                const tStats = domainBreakdown.find((d: any) => d.domain === 'escturkiye.devs.surf');
-                return tStats ? (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDomain === 'escturkiye.devs.surf' ? 'bg-slate-950/30 text-slate-950' : 'bg-fuchsia-500/20 text-fuchsia-300'
-                  }`}>
-                    {tStats.uniqueVisitors}
-                  </span>
-                ) : null;
-              })()}
-            </button>
-
-            <button
-              onClick={() => setSelectedDomain('escturkiye1.devs.surf')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition-all flex items-center gap-1.5 border ${
-                selectedDomain === 'escturkiye1.devs.surf'
-                  ? 'bg-pink-500 text-slate-950 border-pink-400 shadow-md font-black scale-[1.02]'
-                  : 'bg-[#0d1117] text-pink-400 hover:text-pink-300 border-pink-500/30 hover:border-pink-500/50'
-              }`}
-            >
-              <span className="w-2 h-2 rounded-full bg-pink-400 animate-pulse"></span>
-              <span>⚡ escturkiye1.devs.surf (Yeni Aktif)</span>
-              {(() => {
-                const tStats = domainBreakdown.find((d: any) => d.domain === 'escturkiye1.devs.surf');
-                return tStats ? (
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    selectedDomain === 'escturkiye1.devs.surf' ? 'bg-slate-950/30 text-slate-950' : 'bg-pink-500/20 text-pink-300'
-                  }`}>
-                    {tStats.uniqueVisitors}
-                  </span>
-                ) : null;
-              })()}
-            </button>
+            
           </div>
         </div>
 
@@ -4446,19 +4404,9 @@ export default function BmsSecurePortalDashboard() {
                   }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400"></span>
-                  <span>escturkiye.devs.surf</span>
+                  <span>escturkiye.space</span>
                 </button>
-                <button
-                  onClick={() => setSearchTermFilter('escturkiye1')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 border ${
-                    searchTermFilter === 'escturkiye1'
-                      ? 'bg-pink-500/20 text-pink-300 border-pink-500/40'
-                      : 'bg-[#161b22] text-pink-400 border-[#30363d] hover:text-pink-300'
-                  }`}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-pink-400"></span>
-                  <span>escturkiye1.devs.surf</span>
-                </button>
+                
               </div>
             </div>
 
@@ -5795,7 +5743,7 @@ export default function BmsSecurePortalDashboard() {
                           : 'text-fuchsia-400 hover:text-fuchsia-300 hover:bg-fuchsia-950/30'
                       }`}
                     >
-                      <span>🚀 escturkiye.devs.surf</span>
+                      <span>🚀 escturkiye.space</span>
                       <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
                         {escturkiyeCount}
                       </span>
@@ -5810,7 +5758,7 @@ export default function BmsSecurePortalDashboard() {
                           : 'text-pink-400 hover:text-pink-300 hover:bg-pink-950/30'
                       }`}
                     >
-                      <span>⚡ escturkiye1.devs.surf</span>
+                      <span>⚡ escturkiye.space</span>
                       <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px] font-mono font-bold">
                         {escturkiye1Count}
                       </span>
