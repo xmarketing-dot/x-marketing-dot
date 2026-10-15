@@ -6,6 +6,7 @@ import MobileShell from '@/components/layout/MobileShell';
 import AnalyticsTracker from '@/components/common/AnalyticsTracker';
 import RouteTransitionLoader from '@/components/common/RouteTransitionLoader';
 import GlobalKeyboardHandler from '@/components/common/GlobalKeyboardHandler';
+import AddToHomeScreenPrompt from '@/components/common/AddToHomeScreenPrompt';
 import AdminWhatsAppSync from '@/components/common/AdminWhatsAppSync';
 import { Analytics } from '@vercel/analytics/next';
 import Script from 'next/script';
@@ -110,6 +111,7 @@ export const metadata: Metadata = {
     'ICBM': '39.9334, 32.8597',
     'yandex': 'all',
   },
+  manifest: '/manifest.json',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -171,6 +173,7 @@ export default async function RootLayout({
 
         <meta name="google-site-verification" content="yiFZ3NapdlD1N4QgA1MVC3nadUH17S2ki-o67-9Ptnk" />
         <meta name="6a97888e-site-verification" content="d56702bff7a1051249d301cd6c520d4f" />
+        <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="icon" type="image/png" sizes="120x120" href="/icon-192.png" />
@@ -249,6 +252,7 @@ export default async function RootLayout({
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
         <AdminWhatsAppSync />
         <GlobalKeyboardHandler />
+          <AddToHomeScreenPrompt />
         <Suspense fallback={null}>
           <AnalyticsTracker />
           <RouteTransitionLoader />
