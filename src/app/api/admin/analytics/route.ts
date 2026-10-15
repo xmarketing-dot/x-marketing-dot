@@ -83,7 +83,8 @@ export async function GET(req: Request) {
       rawListings,
       domainVisitorsAgg,
       domainEventsAgg,
-      recentWhatsappClicks
+      recentWhatsappClicks,
+      recentPwaInstalls
     ] = await Promise.all([
       // 1. Ziyaretçi ve Cihaz/Referrer Dağılımı (Tek gruplamada)
       AnalyticsVisitorModel.aggregate([
@@ -268,6 +269,13 @@ export async function GET(req: Request) {
       AnalyticsEventModel.find({
         ...dateQuery,
         eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] }
+      })
+        .sort({ createdAt: -1 })
+        .limit(200)
+        .lean(),
+      AnalyticsEventModel.find({
+        ...dateQuery,
+        eventType: 'pwa_install'
       })
         .sort({ createdAt: -1 })
         .limit(200)
@@ -662,6 +670,7 @@ export async function GET(req: Request) {
           categoryClicks: eventCounts.category_click || 0,
           cityFilters: eventCounts.city_filter || 0,
           searches: eventCounts.search || 0,
+          pwaInstalls: eventCounts.pwa_install || 0,
           specialAdImpressions,
           specialAdClicks,
         },
