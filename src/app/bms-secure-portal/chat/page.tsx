@@ -157,27 +157,16 @@ export default function AdminChatPage() {
     }
   };
 
-  // 2. Global Thread SSE Stream
+  // 2. Global Thread Polling (Hafif ve Vercel dostu 10s aralık)
   useEffect(() => {
     fetchThreads();
 
-    let eventSource: EventSource | null = null;
-    try {
-      eventSource = new EventSource('/api/chat/sse?role=admin');
-      eventSource.addEventListener('threads', () => {
-        fetchThreads();
-        if (soundEnabled) playAdminDing();
-      });
-    } catch (e) {}
-
-    // Polling fallback every 12s
     const pollTimer = setInterval(() => {
       if (typeof document !== 'undefined' && document.hidden) return;
       fetchThreads();
-    }, 12000);
+    }, 10000);
 
     return () => {
-      if (eventSource) eventSource.close();
       clearInterval(pollTimer);
     };
   }, [soundEnabled]);
@@ -228,56 +217,13 @@ export default function AdminChatPage() {
 
     loadMessages();
 
-    let eventSource: EventSource | null = null;
-    try {
-      eventSource = new EventSource(`/api/chat/sse?threadId=${selectedThread._id}`);
-      eventSource.addEventListener('new_message', (event) => {
-        try {
-          const incoming: Message[] = JSON.parse(event.data);
-          setMessages((prev) => {
-            const existingIds = new Set(prev.map((m) => m._id));
-            const uniqueNew = incoming.filter((m) => !existingIds.has(m._id));
-            if (uniqueNew.length > 0) {
-              const hasUserMsg = uniqueNew.some((m) => m.gonderenTipi === 'user');
-              if (hasUserMsg && soundEnabled) {
-                playAdminDing();
-              }
-              lastKnownMessageId.current = uniqueNew[uniqueNew.length - 1]._id;
-              return [...prev, ...uniqueNew];
-            }
-            return prev;
-          });
-        } catch (err) {}
-      });
-
-      eventSource.addEventListener('messages_read', (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (String(data.threadId) === String(selectedThread._id)) {
-            if (data.reader === 'user') {
-              // Müşteri admin mesajlarını okudu -> Anında çift mavi tike güncelle
-              setMessages((prev) =>
-                prev.map((m) => (m.gonderenTipi === 'admin' ? { ...m, okundu: true } : m))
-              );
-            } else if (data.reader === 'admin') {
-              // Admin müşteri mesajlarını okudu -> Anında çift mavi tike güncelle
-              setMessages((prev) =>
-                prev.map((m) => (m.gonderenTipi === 'user' ? { ...m, okundu: true } : m))
-              );
-            }
-          }
-        } catch (err) {}
-      });
-    } catch (e) {}
-
-    // Polling fallback every 4s for active thread
+    // Polling fallback every 3.5s for active thread (sekme aktifken)
     const activePoll = setInterval(() => {
       if (typeof document !== 'undefined' && document.hidden) return;
       loadMessages();
-    }, 4000);
+    }, 3500);
 
     return () => {
-      if (eventSource) eventSource.close();
       clearInterval(activePoll);
     };
   }, [selectedThread?._id, soundEnabled]);

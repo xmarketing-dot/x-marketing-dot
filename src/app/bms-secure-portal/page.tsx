@@ -177,61 +177,8 @@ export default function BmsSecurePortalDashboard() {
     // Poll online users every 30 seconds
     const interval = setInterval(fetchOnlineUsers, 30000);
 
-    let eventSource: EventSource | null = null;
-    try {
-      eventSource = new EventSource('/api/admin/chat/sse');
-      eventSource.addEventListener('admin_whatsapp_click', (e) => {
-        try {
-          const clickData = JSON.parse(e.data);
-          if (clickData) {
-            setData((prev: any) => {
-              if (!prev) return prev;
-              const prevLeads = prev.recentWhatsappClicks || [];
-              const exists = prevLeads.some((l: any) => (l._id && l._id === clickData._id) || (l.createdAt === clickData.createdAt && l.visitorId === clickData.visitorId));
-              if (exists) return prev;
-
-              const formattedLead = {
-                _id: clickData._id || `temp_${Date.now()}`,
-                eventType: 'whatsapp_click',
-                targetId: clickData.targetId,
-                targetTitle: clickData.targetTitle || clickData.baslik || 'WhatsApp Talebi',
-                targetCity: clickData.targetCity || clickData.ilSlug || 'İstanbul',
-                path: clickData.path || `/ilan/${clickData.slug || ''}`,
-                visitorId: clickData.visitorId,
-                ip: clickData.ip,
-                createdAt: clickData.timestamp || new Date().toISOString(),
-                isNewLive: true,
-                metadata: {
-                  listingPhone: clickData.whatsappNumara,
-                  listingLocation: clickData.ilSlug ? `${clickData.ilSlug}/${clickData.ilceSlug || ''}` : null,
-                  listingSlug: clickData.slug,
-                  city: clickData.city,
-                  device: clickData.device,
-                  browser: clickData.browser,
-                  os: clickData.os,
-                  referer: clickData.referer,
-                  refererSource: clickData.refererSource,
-                  searchKeyword: clickData.searchKeyword,
-                }
-              };
-
-              return {
-                ...prev,
-                recentWhatsappClicks: [formattedLead, ...prevLeads],
-                eventCounts: {
-                  ...prev.eventCounts,
-                  whatsappClicks: (prev.eventCounts?.whatsappClicks || 0) + 1,
-                }
-              };
-            });
-          }
-        } catch (err) {}
-      });
-    } catch (err) {}
-
     return () => {
       clearInterval(interval);
-      if (eventSource) eventSource.close();
     };
   }, []);
 

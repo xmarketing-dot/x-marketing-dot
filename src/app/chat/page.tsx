@@ -179,49 +179,6 @@ export default function ChatPage() {
       })
       .catch(() => {});
 
-    const eventSource = new EventSource(`/api/chat/sse?threadId=${threadId}`);
-
-    eventSource.addEventListener('new_message', (event) => {
-      try {
-        const incoming: Message[] = JSON.parse(event.data);
-        setMessages((prev) => {
-          const existingIds = new Set(prev.map((m) => String(m._id)));
-          const uniqueNew = incoming.filter((m) => !existingIds.has(String(m._id)));
-          if (uniqueNew.length === 0) return prev;
-
-          let updated = [...prev];
-          uniqueNew.forEach((newMsg) => {
-            const tempIndex = updated.findIndex(
-              (m) => m._id.startsWith('temp-') && m.mesaj === newMsg.mesaj && m.gonderenTipi === newMsg.gonderenTipi
-            );
-            if (tempIndex !== -1) {
-              updated[tempIndex] = newMsg;
-            } else {
-              updated.push(newMsg);
-            }
-          });
-
-          const hasAdminMsg = uniqueNew.some((m) => m.gonderenTipi === 'admin');
-          if (hasAdminMsg) {
-            markAsRead();
-          }
-          return updated;
-        });
-      } catch (err) {}
-    });
-
-    eventSource.addEventListener('messages_read', (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.reader === 'admin') {
-          // Admin mesajlarımızı okudu -> Anında çift mavi tike güncelle
-          setMessages((prev) =>
-            prev.map((m) => (m.gonderenTipi === 'user' ? { ...m, okundu: true } : m))
-          );
-        }
-      } catch (err) {}
-    });
-
     const pollInterval = setInterval(() => {
       fetch(`/api/chat/messages?threadId=${threadId}`)
         .then((res) => res.json())
@@ -244,7 +201,7 @@ export default function ChatPage() {
           }
         })
         .catch(() => {});
-    }, 4000);
+    }, 3500);
 
     const handleWindowActive = () => {
       markAsRead();
@@ -253,7 +210,6 @@ export default function ChatPage() {
     window.addEventListener('click', handleWindowActive);
 
     return () => {
-      eventSource.close();
       clearInterval(pollInterval);
       window.removeEventListener('focus', handleWindowActive);
       window.removeEventListener('click', handleWindowActive);

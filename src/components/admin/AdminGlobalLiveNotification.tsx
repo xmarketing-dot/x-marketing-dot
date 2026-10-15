@@ -122,39 +122,38 @@ export default function AdminGlobalLiveNotification() {
     }, 15000);
   };
 
-  // 2. Real-time Live SSE Connection (Zero polling overhead)
+  // 2. Hafif Arka Plan Kontrolü (SSE yerine 20s polling - Fluid memory maliyeti sıfırlandı)
   useEffect(() => {
     if (!isAdmin) return;
 
-    let eventSource: EventSource | null = null;
-    try {
-      eventSource = new EventSource('/api/admin/chat/sse');
-      
-      // Canlı Müşteri Mesajı
-      eventSource.addEventListener('admin_customer_message', (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg) {
-            lastProcessedTimeRef.current = Date.now();
-            triggerNotification({ type: 'chat', data: msg });
+    const pollTimer = setInterval(async () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      try {
+        const res = await fetch('/api/admin/chat/threads', { cache: 'no-store' });
+        const data = await res.json();
+        if (data.threads && Array.isArray(data.threads)) {
+          const unreadThread = data.threads.find((t: any) => (t.okunmadiAdminSayisi || 0) > 0);
+          if (unreadThread && unreadThread.updatedAt) {
+            const upTime = new Date(unreadThread.updatedAt).getTime();
+            if (upTime > lastProcessedTimeRef.current) {
+              lastProcessedTimeRef.current = upTime;
+              triggerNotification({
+                type: 'chat',
+                data: {
+                  mesaj: unreadThread.sonMesajOzeti || 'Yeni mesaj alındı',
+                  threadId: unreadThread._id,
+                  kullaniciAdi: unreadThread.kullaniciAdi,
+                  listingBaslik: unreadThread.listingBaslik,
+                },
+              });
+            }
           }
-        } catch (err) {}
-      });
-
-      // Canlı WhatsApp Tıklaması
-      eventSource.addEventListener('admin_whatsapp_click', (event) => {
-        try {
-          const clickData = JSON.parse(event.data);
-          if (clickData) {
-            lastProcessedTimeRef.current = Date.now();
-            triggerNotification({ type: 'whatsapp', data: clickData });
-          }
-        } catch (err) {}
-      });
-    } catch (e) {}
+        }
+      } catch (e) {}
+    }, 20000);
 
     return () => {
-      if (eventSource) eventSource.close();
+      clearInterval(pollTimer);
     };
   }, [isAdmin, pathname]);
 
