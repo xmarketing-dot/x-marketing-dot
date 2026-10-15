@@ -88,6 +88,27 @@ export default function AddToHomeScreenPrompt() {
 
     if (localStorage.getItem('pwa_installed_success') === 'true') {
       setIsInstalledSuccess(true);
+      if (!localStorage.getItem('pwa_uninstall_logged')) {
+        localStorage.setItem('pwa_uninstall_logged', 'true');
+        fetch('/api/analytics/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            visitorId: localStorage.getItem('analytics_visitor_id') || 'v_anon',
+            sessionId: sessionStorage.getItem('analytics_session_id') || 's_anon',
+            eventType: 'pwa_uninstall',
+            targetTitle: 'PWA Kaldırıldı / Tarayıcıya Dönüldü',
+            targetCity: 'Türkiye',
+            path: window.location.pathname,
+            metadata: {
+              reason: 'browser_fallback',
+              platform: /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase()) ? 'ios' : (/android|mobile/.test(navigator.userAgent.toLowerCase()) ? 'android' : 'desktop'),
+              browser: /chrome|crios/.test(navigator.userAgent.toLowerCase()) ? 'Chrome' : (/safari/.test(navigator.userAgent.toLowerCase()) ? 'Safari' : 'Other'),
+              uninstalledAt: new Date().toISOString()
+            }
+          })
+        }).catch(() => {});
+      }
       return;
     }
 

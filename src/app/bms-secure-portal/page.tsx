@@ -1319,6 +1319,26 @@ export default function BmsSecurePortalDashboard() {
                 {mobileCount.toLocaleString()} Mobil İstek
               </span>
             </div>
+            {/* 7. Uygulama Kurulumu (PWA) */}
+            <div 
+              onClick={() => setActiveTab('pwa_installs')}
+              className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-2 shadow-lg hover:border-emerald-500/50 cursor-pointer transition-all group"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-xs font-black text-[#8b949e] group-hover:text-emerald-400 uppercase tracking-wider font-heading truncate">Uygulama (PWA)</span>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                  <Smartphone className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="font-black text-xl sm:text-2xl text-emerald-400 font-heading">{(pwaInstalls || recentPwaInstalls?.length || 0).toLocaleString()}</span>
+                <span className="text-[10px] sm:text-xs text-emerald-300 font-bold">Cihaz</span>
+              </div>
+              <span className="text-[10px] text-[#8b949e] group-hover:text-emerald-300 border-t border-[#30363d] pt-1.5 truncate flex items-center justify-between">
+                <span>BTK Korumalı</span>
+                <span className="font-bold">Detaylar →</span>
+              </span>
+            </div>
           </div>
 
           {/* ── TRAFİK KAYNAKLARI & REFERRER DAĞILIMI (YANDEX, DİREKT, GOOGLE, X, SOSYAL MEDYA) ── */}
@@ -5183,12 +5203,14 @@ export default function BmsSecurePortalDashboard() {
       )}
 
       
+      {/* ═══════════
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── SEKME 7: PWA / UYGULAMA KURULUM İSTİHBARATI ─────────────────────── */}
+      {/* ── SEKME 7: PWA / UYGULAMA KURULUM & KALDIRMA İSTİHBARATI ──────────── */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'pwa_installs' && (
         <div className="flex flex-col gap-5 sm:gap-6 animate-fadeIn">
-          <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Üst Bilgi & 3'lü Özet Kartı */}
+          <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0 shadow-lg">
                 <Smartphone className="w-6 h-6" />
@@ -5196,72 +5218,95 @@ export default function BmsSecurePortalDashboard() {
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
                   <h2 className="font-heading font-black text-lg sm:text-xl text-white">
-                    Uygulamayı Cihazına Kuran Kullanıcılar (PWA)
+                    Uygulama Kurulum &amp; Kaldırma Canlı Takibi (PWA)
                   </h2>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold">
-                    CANLI LİSTE
+                    LİMİTSİZ TÜM LİSTE
                   </span>
                 </div>
                 <p className="text-xs text-[#8b949e] mt-0.5">
-                  Masaüstüne veya telefon ana ekranına kurulum yapan tekil cihazlar (BTK engellerinden etkilenmeyen VIP kitle).
+                  Kullanıcıların cihazlarına kurduğu veya kaldırdığı tüm gerçek cihaz kayıtları (BTK engelsiz kitle).
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="px-4 py-2 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center gap-2">
-                <span className="text-xs text-[#8b949e]">Toplam Kurulum:</span>
+            {/* 3'lü Metrik Çubuğu */}
+            <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+              <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col min-w-[100px]">
+                <span className="text-[10px] text-[#8b949e]">Toplam Kurulum:</span>
                 <span className="font-mono font-black text-base text-emerald-400">
-                  {(pwaInstalls || recentPwaInstalls?.length || 0).toLocaleString()}
+                  {(pwaInstalls || recentPwaInstalls?.filter((x: any) => x.eventType === 'pwa_install')?.length || 0).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-rose-500/30 flex flex-col min-w-[100px]">
+                <span className="text-[10px] text-[#8b949e]">Kaldıran / Dönen:</span>
+                <span className="font-mono font-black text-base text-rose-400">
+                  {((data?.pwaUninstalls || 0) || recentPwaInstalls?.filter((x: any) => x.eventType === 'pwa_uninstall')?.length || 0).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col min-w-[100px]">
+                <span className="text-[10px] text-[#8b949e]">Net Aktif Kurulu:</span>
+                <span className="font-mono font-black text-base text-blue-400">
+                  {Math.max(0, (pwaInstalls || 0) - ((data?.pwaUninstalls || 0) || 0)).toLocaleString()}
                 </span>
               </div>
             </div>
           </div>
 
+          {/* Limitsiz Kurulum & Kaldırma Akışı Listesi */}
           <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h3 className="font-heading font-black text-sm text-white flex items-center gap-2">
-                <span>📱 Son Kurulum Kayıtları</span>
-                <span className="text-xs text-[#8b949e] font-mono">({recentPwaInstalls?.length || 0} Cihaz)</span>
+                <span>📱 Tüm Cihaz Olayları (Limitsiz)</span>
+                <span className="text-xs text-[#8b949e] font-mono">({recentPwaInstalls?.length || 0} Olay Kaydedildi)</span>
               </h3>
             </div>
 
             {(!recentPwaInstalls || recentPwaInstalls.length === 0) ? (
               <div className="py-16 text-center text-xs text-[#8b949e] flex flex-col items-center justify-center gap-2 border border-dashed border-[#30363d] rounded-2xl">
                 <Smartphone className="w-8 h-8 text-slate-600 animate-pulse" />
-                <span>Seçili tarih aralığında henüz yeni bir kurulum kaydı bulunmuyor.</span>
-                <span className="text-[11px] text-slate-500">Kullanıcılar Chrome veya Safari üzerinden ana ekrana ekledikçe anında bu listeye düşer.</span>
+                <span>Seçili tarih aralığında henüz bir kurulum veya kaldırma olayı kaydedilmedi.</span>
+                <span className="text-[11px] text-slate-500">Kullanıcılar masaüstüne veya telefonlarına ekledikçe limitsiz olarak burada listelenir.</span>
               </div>
             ) : (
               <div className="flex flex-col gap-2.5">
                 {recentPwaInstalls.map((ev: any, idx: number) => {
                   const meta = ev.metadata || {};
+                  const isUninstall = ev.eventType === 'pwa_uninstall';
                   const isIos = meta.platform === 'ios';
                   const isMobileDev = meta.platform === 'android' || isIos;
                   
                   return (
                     <div 
                       key={ev._id || idx}
-                      className="p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] hover:border-emerald-500/40 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm"
+                      className={`p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${
+                        isUninstall ? 'border-rose-500/40 hover:border-rose-400' : 'border-[#30363d] hover:border-emerald-500/40'
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
-                          isIos 
+                          isUninstall
+                            ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                            : isIos 
                             ? 'bg-blue-500/10 border-blue-500/30 text-blue-400' 
                             : isMobileDev 
                             ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                             : 'bg-purple-500/10 border-purple-500/30 text-purple-400'
                         }`}>
-                          {isMobileDev ? <Smartphone className="w-5 h-5" /> : <Monitor className="w-5 h-5" />}
+                          {isUninstall ? <X className="w-5 h-5 text-rose-400" /> : (isMobileDev ? <Smartphone className="w-5 h-5" /> : <Monitor className="w-5 h-5" />)}
                         </div>
 
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-heading font-black text-xs sm:text-sm text-white">
-                              {ev.targetTitle || 'PWA Kurulumu'}
+                              {ev.targetTitle || (isUninstall ? 'PWA Kaldırıldı / Tarayıcıya Dönüldü' : 'PWA Kurulumu')}
                             </span>
                             <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${
-                              isIos 
+                              isUninstall
+                                ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                                : isIos 
                                 ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' 
                                 : isMobileDev 
                                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
@@ -5269,23 +5314,27 @@ export default function BmsSecurePortalDashboard() {
                             }`}>
                               {(meta.platform || 'Cihaz').toUpperCase()} ({meta.browser || 'Tarayıcı'})
                             </span>
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold flex items-center gap-1">
-                              <Check className="w-3 h-3" />
-                              <span>Kuruldu &amp; Aktif</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1 border ${
+                              isUninstall
+                                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            }`}>
+                              {isUninstall ? <X className="w-3 h-3 text-rose-400" /> : <Check className="w-3 h-3 text-emerald-400" />}
+                              <span>{isUninstall ? 'Kaldırıldı / Tarayıcıya Dönüldü' : 'Kuruldu & Aktif'}</span>
                             </span>
                           </div>
 
                           <div className="flex items-center gap-3 text-[11px] text-[#8b949e] mt-1 font-mono flex-wrap">
                             <span>📍 {ev.targetCity || 'Türkiye'}</span>
                             {ev.ip && <span>🌐 {ev.ip}</span>}
-                            <span>Yöntem: {meta.method || 'Standalone'}</span>
+                            <span>Tetik: {meta.method || meta.reason || 'Standalone'}</span>
                             <span>ID: {ev.visitorId || 'Bilinmiyor'}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="text-[11px] text-amber-400 font-mono font-bold block">
+                        <span className={`text-[11px] font-mono font-bold block ${isUninstall ? 'text-rose-400' : 'text-amber-400'}`}>
                           {ev.createdAt ? new Date(ev.createdAt).toLocaleString('tr-TR') : 'Bugün'}
                         </span>
                       </div>

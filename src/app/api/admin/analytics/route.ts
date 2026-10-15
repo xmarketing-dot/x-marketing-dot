@@ -275,10 +275,9 @@ export async function GET(req: Request) {
         .lean(),
       AnalyticsEventModel.find({
         ...dateQuery,
-        eventType: 'pwa_install'
+        eventType: { $in: ['pwa_install', 'pwa_uninstall'] }
       })
         .sort({ createdAt: -1 })
-        .limit(200)
         .lean()
     ]);
 
@@ -671,6 +670,7 @@ export async function GET(req: Request) {
           cityFilters: eventCounts.city_filter || 0,
           searches: eventCounts.search || 0,
           pwaInstalls: eventCounts.pwa_install || 0,
+          pwaUninstalls: eventCounts.pwa_uninstall || 0,
           specialAdImpressions,
           specialAdClicks,
         },
