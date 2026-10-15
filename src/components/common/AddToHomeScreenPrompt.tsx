@@ -19,7 +19,6 @@ export default function AddToHomeScreenPrompt() {
     try {
       if (typeof window === 'undefined') return;
       
-      // Aynı cihazda mükerrer sayımı engelle
       if (localStorage.getItem('pwa_install_recorded')) {
         return;
       }
@@ -77,7 +76,7 @@ export default function AddToHomeScreenPrompt() {
       }
     }
 
-    // 2. Standalone kontrolü (zaten kurulu ve ana ekrandan mı açılmış?)
+    // 2. Standalone kontrolü
     const isApp =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true ||
@@ -90,7 +89,6 @@ export default function AddToHomeScreenPrompt() {
       return;
     }
 
-    // Kullanıcı bu tarayıcıda daha önce kurduysa gösterme
     if (localStorage.getItem('pwa_installed_success') === 'true') {
       setIsInstalledSuccess(true);
       return;
@@ -98,7 +96,7 @@ export default function AddToHomeScreenPrompt() {
 
     const ua = window.navigator.userAgent.toLowerCase();
     const isIosDevice = /iphone|ipad|ipod/.test(ua);
-    const isMobileDevice = /android|iphone|ipad|ipod|mobile/.test(ua);
+    const isMobileDevice = /android|iphone|ipad|ipod|mobile/.test(ua) || window.innerWidth < 768;
     setIsIOS(isIosDevice);
     setIsMobile(isMobileDevice);
 
@@ -112,22 +110,33 @@ export default function AddToHomeScreenPrompt() {
 
     // 4. Chrome / Edge `beforeinstallprompt` dinle
     const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
       setDeferredPrompt(e);
+
+      // MOBİLDE CHROME'UN KENDİ YEREL POPUP'I ÇIKSIN! (preventDefault çağırma!)
+      if (isMobileDevice) {
+        setIsVisible(false);
+        return;
+      }
+
+      // MASAÜSTÜNDE
+      e.preventDefault();
       setTimeout(() => setIsVisible(true), 1500);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // 5. Fallback zamanlayıcı
-    const fallbackTimer = setTimeout(() => {
-      setIsVisible(true);
-    }, 2000);
+    // Masaüstünde fallback
+    let fallbackTimer: any = null;
+    if (!isMobileDevice) {
+      fallbackTimer = setTimeout(() => {
+        setIsVisible(true);
+      }, 2500);
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      clearTimeout(fallbackTimer);
+      if (fallbackTimer) clearTimeout(fallbackTimer);
     };
   }, [recordInstallEvent]);
 
@@ -158,33 +167,28 @@ export default function AddToHomeScreenPrompt() {
     }
   };
 
-  // Kapat / Daha Sonra butonuna basıldığında (Yok etmek yerine mini butona dönüştürür)
   const handleDismissToPill = () => {
     setIsMinimized(true);
     setShowIOSTip(false);
   };
 
-  // Uygulama zaten yüklüyse hiçbir şey gösterme
   if (isStandalone || isInstalledSuccess) {
     return null;
   }
 
   return (
     <>
-      {/* ── 1. KÜÇÜLTÜLMÜŞ DURUM: EKRANIN KÖŞESİNDE SABİT YÜKLEME BUTONU (HER ZAMAN GÖRÜNÜR) ── */}
-      {isMinimized && (
+      {/* ── 1. MOBİLDE VEYA MASAÜSTÜNDE KÜÇÜLTÜLMÜŞ DURUM: YÜZEN BUTON ── */}
+      {(isMinimized || (isMobile && !isVisible && !isStandalone && !isInstalledSuccess)) && (
         <aside
           aria-label="Uygulamayı Yükle Kısayolu"
           className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-[999980] animate-in fade-in zoom-in-95 duration-200 select-none"
         >
           <button
             type="button"
-            onClick={() => {
-              setIsMinimized(false);
-              setIsVisible(true);
-            }}
-            className="flex items-center gap-2 px-3 py-2 rounded-full bg-[#0d1117]/95 hover:bg-[#161b22] text-white border border-rose-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl ring-1 ring-white/10 active:scale-95 transition-all cursor-pointer group"
-            title="Best Eskort'u Ana Ekrana / Masaüstüne Yükle"
+            onClick={handleInstallClick}
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-[#0d1117]/95 hover:bg-[#161b22] text-white border border-rose-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl ring-1 ring-white/10 active:scale-95 transition-all cursor-pointer group"
+            title="Best Eskort'u Cihaza Yükle"
           >
             <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-rose-600/30 text-rose-400 group-hover:bg-rose-600 group-hover:text-white transition-colors">
               <Download className="w-3.5 h-3.5" />
@@ -198,15 +202,49 @@ export default function AddToHomeScreenPrompt() {
         </aside>
       )}
 
-      {/* ── 2. TAM BİLDİRİM / KURULUM KARTI ── */}
-      {isVisible && !isMinimized && (
+      {/* ── 2. iOS SAFARI BİLGİLENDİRME MODALI ── */}
+      {showIOSTip && isIOS && (
+        <aside
+          aria-label="iOS Kurulum Rehberi"
+          className="fixed bottom-20 inset-x-3 sm:max-w-[380px] sm:left-auto sm:right-5 z-[999995] animate-in fade-in slide-in-from-bottom-4 duration-300 select-none"
+        >
+          <div className="p-4 rounded-2xl bg-[#0d1117]/98 text-white border border-rose-500/40 shadow-2xl backdrop-blur-2xl flex flex-col gap-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                <Smartphone className="w-4 h-4" />
+                iPhone / iPad Kurulumu
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowIOSTip(false)}
+                className="p-1 text-[#8b949e] hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/20 text-xs text-rose-200 flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <Share className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>1. Safari alt çubuğundaki <strong>Paylaş</strong> butonuna dokunun.</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <PlusSquare className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>2. Menüden <strong>&apos;Ana Ekrana Ekle&apos;</strong> seçeneğine basın.</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      )}
+
+      {/* ── 3. MASAÜSTÜ İÇİN KURUMSAL ADRES ÇUBUĞU BİLDİRİM KARTI (SADECE MASAÜSTÜNDE ÇIKAR) ── */}
+      {isVisible && !isMobile && !isMinimized && (
         <aside
           aria-label="Uygulama Yükleme Bildirimi"
-          className="fixed top-3 inset-x-3 sm:top-5 sm:right-5 sm:left-auto sm:max-w-[400px] z-[999990] animate-in fade-in slide-in-from-top-4 duration-300 select-none"
+          className="fixed top-5 right-5 max-w-[400px] z-[999990] animate-in fade-in slide-in-from-top-4 duration-300 select-none hidden sm:block"
         >
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-[#0d1117]/98 text-white border border-rose-950/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl ring-1 ring-white/10 flex flex-col gap-3">
+          <div className="p-4 rounded-2xl bg-[#0d1117]/98 text-white border border-rose-950/60 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl ring-1 ring-white/10 flex flex-col gap-3">
             
-            {/* ÜST BAR: GÜVENLİK SİNYALİ & KÜÇÜLT */}
+            {/* ÜST BAR */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[10px] font-bold tracking-wide">
                 <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
@@ -224,7 +262,7 @@ export default function AddToHomeScreenPrompt() {
               </button>
             </div>
 
-            {/* İÇERİK: YENİ LOGO + RESMİ BAŞLIK + AÇIKLAMA */}
+            {/* İÇERİK */}
             <div className="flex items-start gap-3">
               <div className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-[#161b22] to-[#21262d] border border-rose-500/40 p-1 flex items-center justify-center shrink-0 shadow-inner overflow-hidden">
                 <Image
@@ -246,18 +284,18 @@ export default function AddToHomeScreenPrompt() {
                   </span>
                 </div>
                 <p className="text-[11px] text-[#8b949e] mt-1 leading-snug">
-                  BTK engellerinden etkilenmeden, telefonunuzdan veya bilgisayarınızdan kesintisiz doğrudan VIP vitrine bağlanın.
+                  BTK engellerinden etkilenmeden, bilgisayarınızdan kesintisiz doğrudan VIP vitrine erişin.
                 </p>
               </div>
             </div>
 
-            {/* CHROME ADRES ÇUBUĞU GÖSTERGESİ */}
+            {/* CHROME ADRES ÇUBUĞU SİMÜLASYONU */}
             <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d]/80 text-[11px] text-[#c9d1d9] flex flex-col gap-1.5">
               <div className="flex items-center justify-between text-[10px] text-[#8b949e] font-mono">
-                <span>🌐 {isMobile ? 'Tek Tıkla Kurulum' : 'Google Chrome Adres Çubuğu'}</span>
+                <span>🌐 Google Chrome Adres Çubuğu</span>
                 <span className="text-rose-400 font-bold flex items-center gap-1">
-                  {isMobile ? <Smartphone className="w-3 h-3" /> : <Laptop className="w-3 h-3" />}
-                  Hızlı Yükle
+                  <Laptop className="w-3 h-3" />
+                  Masaüstü Kurulum
                 </span>
               </div>
 
@@ -270,27 +308,9 @@ export default function AddToHomeScreenPrompt() {
               </div>
 
               <p className="text-[10px] text-[#8b949e] leading-tight">
-                {isMobile
-                  ? 'Aşağıdaki butona dokunarak Best Eskort uygulamasını telefonunuza hemen kurabilirsiniz.'
-                  : 'Chrome adres çubuğundaki ⊕ Yükle butonuna tıklayabilir veya aşağıdaki butonu kullanabilirsiniz.'}
+                Chrome adres çubuğundaki <strong className="text-white">⊕ Yükle</strong> simgesine tıklayabilir veya aşağıdaki butonu kullanabilirsiniz.
               </p>
             </div>
-
-            {/* iOS SAFARI İPUCU */}
-            {showIOSTip && isIOS && (
-              <div className="p-2.5 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs flex flex-col gap-1 animate-in fade-in">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <span>1.</span>
-                  <Share className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Safari altındaki <strong>Paylaş</strong> butonuna dokunun.</span>
-                </div>
-                <div className="flex items-center gap-1.5 font-bold">
-                  <span>2.</span>
-                  <PlusSquare className="w-3.5 h-3.5 text-rose-400" />
-                  <span>Aşağı kaydırıp <strong>&apos;Ana Ekrana Ekle&apos;</strong> seçeneğine basın.</span>
-                </div>
-              </div>
-            )}
 
             {/* BUTONLAR */}
             <div className="flex items-center gap-2 pt-1 border-t border-[#21262d]">
@@ -308,7 +328,7 @@ export default function AddToHomeScreenPrompt() {
                 className="flex-1 py-2 px-3.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-heading font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-600/30 active:scale-95 transition-all cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>{isIOS ? 'Nasıl Kurulur?' : (isMobile ? 'Telefona Yükle' : 'Chrome ile Yükle')}</span>
+                <span>Chrome ile Yükle</span>
                 <ArrowRight className="w-3 h-3 ml-0.5 opacity-80" />
               </button>
             </div>
