@@ -60,12 +60,10 @@ export default function GlobalChatNotification() {
       return;
     }
 
-    let eventSource: EventSource | null = null;
     let pollInterval: any = null;
     let isMounted = true;
 
     const setupChatListener = (tid: string) => {
-      if (eventSource) eventSource.close();
       if (pollInterval) clearInterval(pollInterval);
 
       // A) İlk Yükleme: Okunmamış mesajları al
@@ -88,35 +86,11 @@ export default function GlobalChatNotification() {
 
       fetchUnread();
 
-      // B) Anlık 0ms SSE Dinleyicisi
-      try {
-        eventSource = new EventSource(`/api/chat/sse?threadId=${tid}`);
+      // B) SSE KALDIRILDI: Her sayfada açık kalan EventSource, Vercel Fluid örneğini sürekli
+      // ayakta tutuyor (Provisioned Memory faturası). Bildirim için düşük frekanslı polling yeterli.
 
-        eventSource.addEventListener('new_message', (event) => {
-          try {
-            const newMsgs = JSON.parse(event.data);
-            if (Array.isArray(newMsgs)) {
-              newMsgs.forEach((msg: any) => {
-                if (msg.gonderenTipi === 'admin') {
-                  handleNewMessage(msg.mesaj);
-                }
-              });
-            }
-          } catch (err) {}
-        });
-
-        eventSource.addEventListener('messages_read', (event) => {
-          try {
-            const readEvent = JSON.parse(event.data);
-            if (readEvent.reader === 'user' && isMounted) {
-              setUnreadCount(0);
-              setShowPopup(false);
-            }
-          } catch (err) {}
-        });
-      } catch (e) {}
-
-      // C) Fallback Polling (Sadece sekme aktifken ve düşük frekansta - Vercel maliyet koruması)
+      // C) Düşük frekanslı akıllı kontrol (Sadece sekme aktifken ve 45s aralıkla - Vercel maliyet koruması)
+      let prevCount = 0;
       pollInterval = setInterval(async () => {
         if (typeof document !== 'undefined' && document.hidden) return;
         try {
@@ -127,6 +101,10 @@ export default function GlobalChatNotification() {
             const unreadAdmin = data.messages.filter(
               (m: any) => m.gonderenTipi === 'admin' && !m.okundu
             );
+            if (unreadAdmin.length > prevCount && unreadAdmin.length > 0) {
+              handleNewMessage(unreadAdmin[unreadAdmin.length - 1].mesaj);
+            }
+            prevCount = unreadAdmin.length;
             setUnreadCount(unreadAdmin.length);
           }
         } catch (e) {}
@@ -161,7 +139,6 @@ export default function GlobalChatNotification() {
 
     return () => {
       isMounted = false;
-      if (eventSource) eventSource.close();
       if (pollInterval) clearInterval(pollInterval);
       window.removeEventListener('storage', handleStorage);
     };
