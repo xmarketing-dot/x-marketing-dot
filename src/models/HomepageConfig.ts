@@ -119,23 +119,18 @@ const HomepageConfigSchema = new Schema<IHomepageConfig>(
       type: [TickerItemSchema],
       default: [
         {
-          badge: '🎁 24 SAAT ÜCRETSİZ İLAN',
-          text: '24 SAAT BOYUNCA %100 ÜCRETSİZ VIP İLAN VERİN, ANINDA MÜŞTERİ KAZANIN!',
-          link: '/ucretsiz-ilan',
+          badge: '👑 BEST ESKORT',
+          text: "81 İl ve İlçede Türkiye'nin En Büyük VIP Eskort Platformu",
+          link: '/ilan-ver',
         },
         {
-          badge: '🚀 24 SAAT ÜCRETSİZ REKLAM',
-          text: '24 SAAT %100 ÜCRETSİZ BANNER REKLAMIYLA ZİRVEDE YERİNİZİ ALIN!',
-          link: '/ucretsiz-reklam',
-        },
-        {
-          badge: '👑 LİDER REHBER',
-          text: "81 İl ve İlçede Türkiye'nin En Büyük İlan Platformu",
+          badge: '💎 VIP VİTRİN',
+          text: 'Google ve Yandex Aramalarında En Üst Sırada Yer Alın',
           link: '/ilan-ver',
         },
         {
           badge: '🔥 ANINDA MÜŞTERİ',
-          text: 'İlan Verin, WhatsApp ile Müşterilere Ulaşın!',
+          text: 'İlan Verin, WhatsApp ile Müşterilere Aracısız Ulaşın!',
           link: '/ilan-ver',
         },
         {

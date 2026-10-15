@@ -300,7 +300,7 @@ export default async function HomePage() {
 
       {/* ── SEMANTIC SEO H1 (Google & Yandex #1 Index Trigger) ── */}
       <h1 className="sr-only">
-        Best Eskort &amp; Escort Bayan Model Kataloğu — Türkiye 81 İl Doğrulanmış VIP ve Bağımsız İlanlar
+        {homepageConfig?.hero?.baslik || 'Best Eskort & Escort Bayan Model Kataloğu — Türkiye 81 İl Doğrulanmış VIP ve Bağımsız İlanlar'}
       </h1>
 
       {/* 1. HERO BANNER SLIDER (Dinamik Vitrin İlanları / Yoksa VIP Reklam Alanı) */}

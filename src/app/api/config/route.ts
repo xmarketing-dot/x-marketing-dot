@@ -85,6 +85,14 @@ export async function GET(req: Request) {
     const activePhone = config?.adminWhatsApp || '';
     const adminPhone = parsePhoneNumber(activePhone);
 
+    // Ücretsiz ilan / reklam duyuruları anasayfada Best Eskort VIP konsepti için filtrelenir
+    if (config && Array.isArray(config.duyurular)) {
+      config.duyurular = config.duyurular.filter((d: any) => {
+        const text = `${d?.badge || ''} ${d?.text || ''}`.toLowerCase();
+        return !text.includes('ücretsiz') && !text.includes('ucretsiz');
+      });
+    }
+
     return NextResponse.json(
       { 
         config: JSON.parse(JSON.stringify(config)),

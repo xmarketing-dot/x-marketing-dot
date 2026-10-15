@@ -13,36 +13,31 @@ interface TickerItem {
 
 const DEFAULT_ANNOUNCEMENTS: TickerItem[] = [
   {
-    badge: '🎁 24 SAAT ÜCRETSİZ İLAN',
-    text: '24 SAAT BOYUNCA %100 ÜCRETSİZ VIP İLAN VERİN, ANINDA MÜŞTERİ KAZANIN!',
-    link: '/ucretsiz-ilan',
-  },
-  {
-    badge: '🚀 24 SAAT ÜCRETSİZ REKLAM',
-    text: '24 SAAT %100 ÜCRETSİZ BANNER REKLAMIYLA ZİRVEDE YERİNİZİ ALIN!',
-    link: '/ucretsiz-reklam',
-  },
-  {
-    badge: '👑 LİDER REHBER',
-    text: "81 İl ve İlçede Türkiye'nin En Büyük İlan Platformu",
-    link: '/ilan-ver',
-  },
-  {
-    badge: '🔥 ANINDA MÜŞTERİ',
-    text: 'İlan Verin, WhatsApp ile Müşterilere Anında Ulaşın!',
+    badge: '👑 BEST ESKORT',
+    text: "81 İl ve İlçede Türkiye'nin En Büyük VIP Eskort Platformu",
     link: '/ilan-ver',
   },
   {
     badge: '💎 VIP VİTRİN',
-    text: 'Google Aramalarında En Üst Sırada Yer Alın',
+    text: 'Google ve Yandex Aramalarında En Üst Sırada Yer Alın',
+    link: '/ilan-ver',
+  },
+  {
+    badge: '🔥 ANINDA MÜŞTERİ',
+    text: 'İlan Verin, WhatsApp ile Müşterilere Aracısız Ulaşın!',
     link: '/ilan-ver',
   },
   {
     badge: '⚡ CANLI DESTEK',
-    text: '%100 Güvenli & 7/24 Canlı Müşteri Desteği',
+    text: '%100 Güvenli & 7/24 Canlı Müşteri Destek Masası',
     link: '/chat',
   },
 ];
+
+const isNotFreePromo = (badge?: string, text?: string) => {
+  const str = `${badge || ''} ${text || ''}`.toLowerCase();
+  return !str.includes('ücretsiz') && !str.includes('ucretsiz');
+};
 
 export default function HeaderTicker() {
   const [announcements, setAnnouncements] = useState<TickerItem[]>(DEFAULT_ANNOUNCEMENTS);
@@ -56,12 +51,12 @@ export default function HeaderTicker() {
           if (data.config.adminWhatsApp) {
             setClientAdminWhatsApp(data.config.adminWhatsApp);
           }
-          // 1. Admin panelinden gelen duyurular listesi varsa doğrudan tek kaynak olarak kullan
+          // 1. Admin panelinden gelen duyurular listesi varsa doğrudan tek kaynak olarak kullan (Ücretsiz ilan duyuruları filtrelenir)
           if (Array.isArray(data.config.duyurular) && data.config.duyurular.length > 0) {
             const list: TickerItem[] = data.config.duyurular
-              .filter((d: any) => d && d.text && String(d.text).trim())
+              .filter((d: any) => d && d.text && String(d.text).trim() && isNotFreePromo(d.badge, d.text))
               .map((d: any) => ({
-                badge: d.badge || '👑 DUYURU',
+                badge: d.badge || '👑 BEST ESKORT',
                 text: String(d.text).trim(),
                 link: d.link || '/ilan-ver',
               }));
@@ -73,7 +68,7 @@ export default function HeaderTicker() {
           }
 
           // 2. Eğer duyurular boşsa ve aktif banner varsa göster
-          if (data.config.aktifBanner?.aktif && data.config.aktifBanner?.metin) {
+          if (data.config.aktifBanner?.aktif && data.config.aktifBanner?.metin && isNotFreePromo(data.config.aktifBanner.rozet, data.config.aktifBanner.metin)) {
             setAnnouncements([
               {
                 badge: data.config.aktifBanner.rozet || '👑 VIP DUYURU',

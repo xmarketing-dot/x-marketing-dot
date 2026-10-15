@@ -144,12 +144,10 @@ export default function AdminHomepageConfigPage() {
 
   // Rotating Ticker Announcements
   const [duyurular, setDuyurular] = useState<TickerItem[]>([
-    { badge: '🎁 24 SAAT ÜCRETSİZ İLAN', text: '24 SAAT BOYUNCA %100 ÜCRETSİZ VIP İLAN VERİN, ANINDA MÜŞTERİ KAZANIN!', link: '/ucretsiz-ilan' },
-    { badge: '🚀 24 SAAT ÜCRETSİZ REKLAM', text: '24 SAAT %100 ÜCRETSİZ BANNER REKLAMIYLA ZİRVEDE YERİNİZİ ALIN!', link: '/ucretsiz-reklam' },
-    { badge: '👑 LİDER REHBER', text: '81 İL VE İLÇEDE TÜRKİYE\'NİN EN BÜYÜK İLAN PLATFORMU', link: '/ilan-ver' },
+    { badge: '👑 BEST ESKORT', text: '81 İL VE İLÇEDE TÜRKİYE\'NİN EN BÜYÜK VIP ESKORT PLATFORMU', link: '/ilan-ver' },
     { badge: '🔥 ANINDA MÜŞTERİ', text: 'İLAN VERİN, WHATSAPP İLE MÜŞTERİLERE ANINDA ULAŞIN!', link: '/ilan-ver' },
-    { badge: '💎 VIP VİTRİN', text: 'GOOGLE ARAMALARINDA EN ÜST SIRADA YER ALIN', link: '/ilan-ver' },
-    { badge: '⚡ CANLI DESTEK', text: '%100 GÜVENLİ & 7/24 CANLI MÜŞTERİ DESTEĞİ', link: '/chat' },
+    { badge: '💎 VIP VİTRİN', text: 'GOOGLE VE YANDEX ARAMALARINDA EN ÜST SIRADA YER ALIN', link: '/ilan-ver' },
+    { badge: '⚡ CANLI DESTEK', text: '%100 GÜVENLİ & 7/24 CANLI MÜŞTERİ DESTEK MASASI', link: '/chat' },
   ]);
 
   // Vitrin Boşken Dönecek GIF Havuzu
