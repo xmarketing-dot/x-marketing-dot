@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
-import { isGovernmentOrDatacenter } from '@/lib/governmentAsn';
 
 export function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const pathname = url.pathname;
+  const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+  const hostname = rawHost.split(':')[0].toLowerCase();
+
+  // ── BTK ENGELLİ DOMAİN ANINDA YÖNLENDİRME (0ms Edge 301 Redirect) ──
+  // escturkiye.devs.surf -> escturkiye1.devs.surf (Tüm yol ve arama parametreleri korunur)
+  if (hostname === 'escturkiye.devs.surf' || hostname === 'www.escturkiye.devs.surf') {
+    const targetUrl = new URL(pathname + url.search, 'https://escturkiye1.devs.surf');
+    return NextResponse.redirect(targetUrl, 301);
+  }
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-current-path', pathname);
@@ -71,10 +79,7 @@ export function middleware(req: NextRequest) {
     ua.includes('discordbot') ||
     ua.includes('slackbot') ||
     ua.includes('linkedinbot') ||
-    ua.includes('pinterest') ||
-    ua.includes('exoclick') ||
-    ua.includes('trafficstars') ||
-    ua.includes('adsterra');
+    ua.includes('pinterest');
 
   if (!isSearchEngineOrSocial) {
     const pathLower = pathname.toLowerCase();
@@ -126,26 +131,6 @@ export function middleware(req: NextRequest) {
     }
   }
 
-  // ── 1. BTK & KAMU DENETİM KALKANI (ASN & IP FİLTRESİ) ──
-  // Eğer ziyaretçi arama motoru DEĞİLSE ve BTK/Kamu/Datacenter ASN veya IP'sinden geliyorsa:
-  // Mobilde bile doğrudan X-Marketing Tech Kurumsal Ajansını göster (Beyaz Sayfa)
-  let isTargetForCorporateCamouflage = false;
-  if (!isSearchEngineOrSocial) {
-    const asn = req.headers.get('x-vercel-ip-as-number') || '';
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || '';
-    if (isGovernmentOrDatacenter(asn, ip)) {
-      isTargetForCorporateCamouflage = true;
-      requestHeaders.set('x-force-corporate', 'true');
-    }
-  }
-
-  const hostname = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
-
-  // Doğrudan *.vercel.app domaininden gelenleri ana domaine yönlendir (301 Kalıcı Yönlendirme)
-  if (hostname.includes('.vercel.app') && !pathname.startsWith('/api') && !pathname.startsWith('/bms-secure-portal')) {
-    return NextResponse.redirect(new URL(`https://www.besteskort.online${pathname}${url.search}`), 301);
-  }
-
   // ── ESKİ / FAZLADAN SEGMENT İÇEREN URL'LERİ (ÖRN: /sanliurfa/siverek/emlak) DÜZELT ──
   // Kullanıcı veya Google botu /il/ilce/ekstra bir yola gelirse 404 düşürme, doğrudan /il/ilce sayfasına 301 yönlendir!
   const pathParts = pathname.split('/').filter(Boolean);
@@ -173,9 +158,7 @@ export function middleware(req: NextRequest) {
     const rewriteRes = NextResponse.rewrite(new URL(rewriteUrl, req.url), {
       request: { headers: requestHeaders },
     });
-    if (isTargetForCorporateCamouflage) {
-      rewriteRes.cookies.set('bms_force_corporate', 'true', { path: '/', maxAge: 86400 });
-    }
+    
     return rewriteRes;
   }
 
@@ -183,9 +166,7 @@ export function middleware(req: NextRequest) {
     request: { headers: requestHeaders },
   });
 
-  if (isTargetForCorporateCamouflage) {
-    res.cookies.set('bms_force_corporate', 'true', { path: '/', maxAge: 86400 });
-  }
+  
 
   return res;
 }

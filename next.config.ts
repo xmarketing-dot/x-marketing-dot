@@ -48,9 +48,7 @@ const nextConfig: NextConfig = {
       {
         source: '/api/img/:path*',
         headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, s-maxage=31536000, immutable' },
-          { key: 'CDN-Cache-Control', value: 'public, s-maxage=31536000, immutable' },
-          { key: 'Vercel-CDN-Cache-Control', value: 'public, s-maxage=31536000, immutable' },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
       // ── Upload edilen içerikler: cache'lenebilir ama immutable değil ──
@@ -64,6 +62,29 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // ── BTK YÖNLENDİRMESİ: escturkiye.devs.surf -> escturkiye1.devs.surf (Server Edge 301) ──
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'escturkiye.devs.surf',
+          },
+        ],
+        destination: 'https://escturkiye1.devs.surf/:path*',
+        permanent: true,
+      },
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'www.escturkiye.devs.surf',
+          },
+        ],
+        destination: 'https://escturkiye1.devs.surf/:path*',
+        permanent: true,
+      },
       {
         source: '/ilan-duzenle',
         destination: '/panelim',

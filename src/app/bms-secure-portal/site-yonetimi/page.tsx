@@ -109,7 +109,13 @@ function SiteYonetimiContent() {
 
   const [pingingSeo, setPingingSeo] = useState(false);
   const [pingResult, setPingResult] = useState<any | null>(null);
-  const [showRawJson, setShowRawJson] = useState(false);
+  const [targetPingUrl, setTargetPingUrl] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setTargetPingUrl(window.location.origin);
+    }
+  }, []);
 
   // ─────────────────────────────────────────────────────────────
   // 2. DUYURU & ÇEKMECE BİLDİRİM MERKEZİ STATE
@@ -254,11 +260,16 @@ function SiteYonetimiContent() {
   };
 
   // ── SEO IndexNow Ping ────────────────────────────────────────
-  const handlePingSeo = async () => {
+  const handlePingSeo = async (overrideUrl?: string) => {
     setPingingSeo(true);
     setPingResult(null);
     try {
-      const res = await fetch('/api/admin/seo/boost-and-ping', { method: 'POST' });
+      const urlToSend = overrideUrl || targetPingUrl;
+      const res = await fetch('/api/admin/seo/boost-and-ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customSiteUrl: urlToSend }),
+      });
       const data = await res.json();
       setPingResult(data);
     } catch (e: any) {
@@ -739,128 +750,84 @@ function SiteYonetimiContent() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#21262d]">
-                  <span className="font-heading font-black text-xs sm:text-sm text-white">
-                    IndexNow &amp; Site Haritası Hızlı Ping
-                  </span>
+                <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0d1117] border border-[#21262d]">
+                  <div className="flex items-center justify-between">
+                    <span className="font-heading font-black text-xs sm:text-sm text-white">
+                      IndexNow &amp; Google / Yandex Ping
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-300">
+                      Canlı Hedef
+                    </span>
+                  </div>
                   <span className="text-[11px] sm:text-xs text-[#8b949e]">
-                    Yeni ilanları ve güncel sayfaları arama motorlarına anında taratmak için tek tıkla ping sinyali gönderin.
+                    Yeni ilanları ve güncel sayfaları arama motorlarına bildirmek için hedef domain URL&apos;sini seçip ping sinyali gönderin:
                   </span>
+                  
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={targetPingUrl}
+                        onChange={(e) => setTargetPingUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="w-full text-xs font-mono px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white focus:outline-none focus:border-blue-500 transition-colors"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {pingResult && (
-                  <div className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0d1624] via-[#0d1117] to-[#111927] border border-blue-500/40 text-white flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 shadow-2xl">
-                    {/* Üst Başlık & Kapat */}
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-                          <Sparkles className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="font-heading font-black text-xs sm:text-sm text-emerald-300">
-                          {pingResult.message || (pingResult.success ? 'SEO Ping & İndeksleme Başarıyla Tamamlandı' : 'Ping İşlemi')}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setPingResult(null)}
-                        className="text-[11px] text-[#8b949e] hover:text-white px-2 py-0.5 rounded-md hover:bg-[#30363d] transition-colors cursor-pointer"
-                      >
-                        ✕ Kapat
-                      </button>
+                  <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-blue-500/30 text-xs flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-heading font-black text-white text-xs">
+                        🚀 Ping Sonuç Raporu
+                      </span>
+                      <span className="text-[10px] font-mono text-[#8b949e]">
+                        {pingResult.timestamp ? new Date(pingResult.timestamp).toLocaleTimeString('tr-TR') : ''}
+                      </span>
                     </div>
 
-                    {/* Hata Durumu */}
-                    {pingResult.error ? (
-                      <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 shrink-0 text-red-400" />
-                        <span>{pingResult.error}</span>
-                      </div>
-                    ) : (
-                      <>
-                        {/* 5'li Kompakt & Şık Metrik Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-1 border-t border-[#30363d]/60">
-                          
-                          {/* 1. Google Indexing API */}
-                          <div className="p-2.5 rounded-xl bg-[#090d14] border border-[#21262d] flex flex-col justify-between">
-                            <span className="text-[10px] text-[#8b949e] font-mono flex items-center gap-1">
-                              <span>⚡</span> Google Indexing API
-                            </span>
-                            <span className="text-[11px] sm:text-xs font-bold text-blue-400 font-mono mt-1">
-                              {!pingResult.googleIndexingResult
-                                ? '⚠️ Anahtar Yok'
-                                : pingResult.googleIndexingResult.failCount > 0
-                                ? `${pingResult.googleIndexingResult.successCount > 0 ? `✅ ${pingResult.googleIndexingResult.successCount} / ` : ''}⚠️ ${pingResult.googleIndexingResult.failCount} (Kota)`
-                                : `✅ ${pingResult.googleIndexingResult.successCount || 0} URL İletildi`}
-                            </span>
-                          </div>
+                    {pingResult.message && (
+                      <p className="text-[11px] text-emerald-400 font-medium">
+                        {pingResult.message}
+                      </p>
+                    )}
 
-                          {/* 2. Yandex IndexNow */}
-                          <div className="p-2.5 rounded-xl bg-[#090d14] border border-[#21262d] flex flex-col justify-between">
-                            <span className="text-[10px] text-[#8b949e] font-mono flex items-center gap-1">
-                              <span>🟡</span> Yandex IndexNow
-                            </span>
-                            <span className="text-[11px] sm:text-xs font-bold text-emerald-400 font-mono mt-1">
-                              {pingResult.pingResult?.endpoints?.yandex ? '✅ HTTP 200 (İletildi)' : '⚠️ Kuyrukta'}
-                            </span>
-                          </div>
-
-                          {/* 3. Bing IndexNow */}
-                          <div className="p-2.5 rounded-xl bg-[#090d14] border border-[#21262d] flex flex-col justify-between">
-                            <span className="text-[10px] text-[#8b949e] font-mono flex items-center gap-1">
-                              <span>🔵</span> Bing IndexNow
-                            </span>
-                            <span className="text-[11px] sm:text-xs font-bold text-emerald-400 font-mono mt-1">
-                              {pingResult.pingResult?.endpoints?.bing || pingResult.pingResult?.endpoints?.indexnow
-                                ? '✅ HTTP 200 (İletildi)'
-                                : '⚠️ Kuyrukta'}
-                            </span>
-                          </div>
-
-                          {/* 4. Google Sitemap Ping */}
-                          <div className="p-2.5 rounded-xl bg-[#090d14] border border-[#21262d] flex flex-col justify-between">
-                            <span className="text-[10px] text-[#8b949e] font-mono flex items-center gap-1">
-                              <span>🔍</span> Google Sitemap
-                            </span>
-                            <span className="text-[11px] sm:text-xs font-bold text-blue-400 font-mono mt-1">
-                              {pingResult.pingResult?.endpoints?.googleSitemapPing ? '✅ Ping İletildi' : '⚠️ Kuyrukta'}
-                            </span>
-                          </div>
-
-                          {/* 5. Toplam Sayfa & Beğeniler */}
-                          <div className="p-2.5 rounded-xl bg-[#090d14] border border-[#21262d] flex flex-col justify-between col-span-2 sm:col-span-1">
-                            <span className="text-[10px] text-[#8b949e] font-mono flex items-center gap-1">
-                              <span>🚀</span> Taranan Sayfalar
-                            </span>
-                            <span className="text-[11px] sm:text-xs font-bold text-amber-400 font-mono mt-1">
-                              {pingResult.pingResult?.submittedCount || 0} Adet Sayfa
-                            </span>
-                          </div>
-
-                        </div>
-
-                        {/* Alt Bilgi & Ham JSON Aç/Kapa Düğmesi */}
-                        <div className="flex items-center justify-between pt-1 text-[10px] text-[#8b949e]">
-                          <span>
-                            {pingResult.updatedLikesCount
-                              ? `🔥 +${pingResult.updatedLikesCount} İlan beğenisi güçlendirildi`
-                              : '✅ Arama motorları anlık olarak uyarıldı'}
+                    {pingResult.pingResult?.endpoints && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                        <div className="p-2 rounded-lg bg-[#161b22] border border-[#21262d] text-center">
+                          <span className="text-[9px] text-[#8b949e] uppercase block font-bold">Yandex IndexNow</span>
+                          <span className="text-xs font-bold text-white">
+                            {pingResult.pingResult.endpoints.yandex ? '✅ İletildi' : '⚠️ Başarısız'}
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => setShowRawJson(!showRawJson)}
-                            className="text-blue-400 hover:text-blue-300 underline font-mono cursor-pointer flex items-center gap-1"
-                          >
-                            {showRawJson ? '▲ Ham JSON Gizle' : '▼ Ham JSON Detayı'}
-                          </button>
                         </div>
+                        <div className="p-2 rounded-lg bg-[#161b22] border border-[#21262d] text-center">
+                          <span className="text-[9px] text-[#8b949e] uppercase block font-bold">Bing IndexNow</span>
+                          <span className="text-xs font-bold text-white">
+                            {pingResult.pingResult.endpoints.bing ? '✅ İletildi' : '⚠️ Başarısız'}
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-[#161b22] border border-[#21262d] text-center">
+                          <span className="text-[9px] text-[#8b949e] uppercase block font-bold">Google Indexing API</span>
+                          <span className="text-xs font-bold text-white">
+                            {pingResult.googleIndexingResult?.successCount > 0
+                              ? `✅ ${pingResult.googleIndexingResult.successCount} URL`
+                              : (pingResult.googleIndexingResult ? '⚠️ Kota/Hata' : 'ℹ️ Sinyal Gönderildi')}
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-[#161b22] border border-[#21262d] text-center">
+                          <span className="text-[9px] text-[#8b949e] uppercase block font-bold">Sitemap Ping</span>
+                          <span className="text-xs font-bold text-white">
+                            {pingResult.pingResult.endpoints.googleSitemapPing ? '✅ İletildi' : '⚠️ Başarısız'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
 
-                        {/* İsteğe Bağlı Katlanabilir Ham JSON */}
-                        {showRawJson && (
-                          <div className="p-2.5 rounded-lg bg-[#05070a] border border-[#21262d] text-[10px] font-mono text-blue-300 max-h-36 overflow-y-auto mt-1">
-                            <pre className="whitespace-pre-wrap">{JSON.stringify(pingResult, null, 2)}</pre>
-                          </div>
-                        )}
-                      </>
+                    {pingResult.error && (
+                      <div className="text-[11px] font-mono text-rose-400">
+                        Hata: {pingResult.error}
+                      </div>
                     )}
                   </div>
                 )}
@@ -868,11 +835,11 @@ function SiteYonetimiContent() {
 
               <div className="flex items-center justify-between pt-2.5 sm:pt-3 border-t border-[#30363d]">
                 <span className="text-[10px] sm:text-[11px] text-[#8b949e]">
-                  IndexNow Protokolü
+                  IndexNow &amp; Google API
                 </span>
                 <button
                   type="button"
-                  onClick={handlePingSeo}
+                  onClick={() => handlePingSeo()}
                   disabled={pingingSeo}
                   className="py-2.5 px-4 sm:px-5 rounded-xl bg-blue-500 hover:bg-blue-400 text-white font-heading font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 cursor-pointer min-h-[40px]"
                 >
@@ -884,7 +851,7 @@ function SiteYonetimiContent() {
                   ) : (
                     <>
                       <Globe className="w-4 h-4 shrink-0" />
-                      <span>Şimdi Ping Gönder</span>
+                      <span>Seçili URL&apos;ye Ping Gönder</span>
                     </>
                   )}
                 </button>

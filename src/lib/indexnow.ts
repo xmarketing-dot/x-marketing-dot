@@ -41,7 +41,10 @@ export async function submitToIndexNow(
   for (const rawUrl of urlList) {
     if (!rawUrl) continue;
     let fullUrl = rawUrl;
-    let hostname = fallbackHost || '';
+    let hostname = fallbackHost || 'escturkiye1.devs.surf';
+    if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+      hostname = 'escturkiye1.devs.surf';
+    }
 
     try {
       if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {

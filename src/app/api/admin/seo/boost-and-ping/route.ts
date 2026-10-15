@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { boostLikes = true, triggerPing = true } = body;
+    const { boostLikes = true, triggerPing = true, customSiteUrl: reqSiteUrl, customDomain: reqDomain } = body;
 
     await connectToDatabase();
 
@@ -62,49 +62,80 @@ export async function POST(req: NextRequest) {
     // 2. TÜM DİNAMİK URL'LERİ TOPLA VE INDEXNOW / PING ATEŞLE
     let pingResult = null;
     if (triggerPing) {
-      const siteUrl = getSiteUrl();
+      const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
+      const proto = req.headers.get('x-forwarded-proto') || 'https';
+      const isLocal = !rawHost || rawHost.includes('localhost') || rawHost.includes('127.0.0.1');
+      
+      const defaultSiteUrl = getSiteUrl();
+      let defaultHost = 'escturkiye.devs.surf';
+      try {
+        defaultHost = new URL(defaultSiteUrl).hostname;
+      } catch {}
+
+      let currentSiteUrl = reqSiteUrl || (isLocal ? defaultSiteUrl : `${proto}://${rawHost}`.replace(/\/+$/, ''));
+      if (currentSiteUrl && !currentSiteUrl.startsWith('http://') && !currentSiteUrl.startsWith('https://')) {
+        currentSiteUrl = `https://${currentSiteUrl}`;
+      }
+      currentSiteUrl = currentSiteUrl.replace(/\/+$/, '');
+
+      let host = reqDomain;
+      if (!host) {
+        try {
+          host = new URL(currentSiteUrl).hostname;
+        } catch {
+          host = isLocal ? defaultHost : rawHost.split(':')[0];
+        }
+      }
+      const requestDomain = host.toLowerCase();
+
       const [listings, locations] = await Promise.all([
-        ListingModel.find({ status: { $in: ['yayinda', 'suresi_doldu', 'pasif'] } }).select('slug').lean(),
+        ListingModel.find({ status: 'yayinda' }).select('slug').lean(),
         getAllLocations(),
       ]);
 
-      const urlsToSubmit: string[] = [
-        siteUrl,
-        `${siteUrl}/kategori/vip`,
-        `${siteUrl}/kategori/gold`,
-        `${siteUrl}/kategori/silver`,
-        `${siteUrl}/kategori/turbanli`,
-        `${siteUrl}/kategori/amator`,
-        `${siteUrl}/kategori/tango`,
-        `${siteUrl}/sehirler`,
-        `${siteUrl}/istanbul/beylikduzu`,
-        `${siteUrl}/istanbul/kadikoy`,
-        `${siteUrl}/istanbul/avcilar`,
-        `${siteUrl}/istanbul/esenyurt`,
-        `${siteUrl}/istanbul/sisli`,
-        `${siteUrl}/istanbul/besiktas`,
-        `${siteUrl}/istanbul/buyukcekmece`,
-        `${siteUrl}/ankara/cankaya`,
-        `${siteUrl}/izmir/konak`,
-      ];
+      // Sadece panelin şu an açık olduğu aktif domaini hedefle (başka sitelerin URL'leri karışmasın)
+      const targetBaseUrls = [currentSiteUrl];
+      const urlsToSubmit: string[] = [];
 
-      locations.forEach((loc: any) => {
-        urlsToSubmit.push(`${siteUrl}/${loc.ilSlug}`);
-        if (Array.isArray(loc.ilceler)) {
-          loc.ilceler.forEach((ilce: any) => {
-            if (ilce.slug) urlsToSubmit.push(`${siteUrl}/${loc.ilSlug}/${ilce.slug}`);
-          });
-        }
-      });
+      for (const baseUrl of targetBaseUrls) {
+        urlsToSubmit.push(
+          baseUrl,
+          `${baseUrl}/kategori/vip`,
+          `${baseUrl}/kategori/gold`,
+          `${baseUrl}/kategori/silver`,
+          `${baseUrl}/kategori/turbanli`,
+          `${baseUrl}/kategori/amator`,
+          `${baseUrl}/kategori/tango`,
+          `${baseUrl}/sehirler`,
+          `${baseUrl}/istanbul/beylikduzu`,
+          `${baseUrl}/istanbul/kadikoy`,
+          `${baseUrl}/istanbul/avcilar`,
+          `${baseUrl}/istanbul/esenyurt`,
+          `${baseUrl}/istanbul/sisli`,
+          `${baseUrl}/istanbul/besiktas`,
+          `${baseUrl}/istanbul/buyukcekmece`,
+          `${baseUrl}/ankara/cankaya`,
+          `${baseUrl}/izmir/konak`
+        );
 
-      listings.forEach((l: any) => {
-        if (l.slug) urlsToSubmit.push(`${siteUrl}/ilan/${l.slug}`);
-      });
+        locations.forEach((loc: any) => {
+          urlsToSubmit.push(`${baseUrl}/${loc.ilSlug}`);
+          if (Array.isArray(loc.ilceler)) {
+            loc.ilceler.forEach((ilce: any) => {
+              if (ilce.slug) urlsToSubmit.push(`${baseUrl}/${loc.ilSlug}/${ilce.slug}`);
+            });
+          }
+        });
+
+        listings.forEach((l: any) => {
+          if (l.slug) urlsToSubmit.push(`${baseUrl}/ilan/${l.slug}`);
+        });
+      }
 
       const uniqueUrls = Array.from(new Set(urlsToSubmit));
 
       // A. IndexNow (Yandex, Bing) & Sitemap Ping
-      pingResult = await submitToIndexNow(uniqueUrls);
+      pingResult = await submitToIndexNow(uniqueUrls, requestDomain);
 
       // B. Google Official Indexing API (Anlık Googlebot Taraması)
       let googleIndexingResult = null;

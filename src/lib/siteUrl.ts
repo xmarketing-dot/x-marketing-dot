@@ -10,8 +10,7 @@ export function getSiteUrl(): string {
   if (process.env.SITE_URL) {
     return process.env.SITE_URL.replace(/\/+$/, '');
   }
-  // Asla gizli Vercel preview URL'lerini sitemap veya canonical meta etiketlerine sızdırma!
-  return 'https://www.besteskort.online';
+  return 'https://escturkiye1.devs.surf';
 }
 
 /**

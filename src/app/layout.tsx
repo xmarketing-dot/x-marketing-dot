@@ -160,6 +160,18 @@ export default async function RootLayout({
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (window.location.hostname === 'escturkiye.devs.surf' || window.location.hostname === 'www.escturkiye.devs.surf') {
+                  window.location.replace('https://escturkiye1.devs.surf' + window.location.pathname + window.location.search);
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+
         <meta name="google-site-verification" content="yiFZ3NapdlD1N4QgA1MVC3nadUH17S2ki-o67-9Ptnk" />
         <meta name="6a97888e-site-verification" content="d56702bff7a1051249d301cd6c520d4f" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
