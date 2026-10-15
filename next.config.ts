@@ -62,29 +62,6 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // ── BTK YÖNLENDİRMESİ: escturkiye.devs.surf -> escturkiye1.devs.surf (Server Edge 301) ──
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'escturkiye.devs.surf',
-          },
-        ],
-        destination: 'https://escturkiye1.devs.surf/:path*',
-        permanent: true,
-      },
-      {
-        source: '/:path*',
-        has: [
-          {
-            type: 'host',
-            value: 'www.escturkiye.devs.surf',
-          },
-        ],
-        destination: 'https://escturkiye1.devs.surf/:path*',
-        permanent: true,
-      },
       {
         source: '/ilan-duzenle',
         destination: '/panelim',

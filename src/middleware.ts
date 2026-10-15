@@ -7,13 +7,6 @@ export function middleware(req: NextRequest) {
   const rawHost = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
   const hostname = rawHost.split(':')[0].toLowerCase();
 
-  // ── BTK ENGELLİ DOMAİN ANINDA YÖNLENDİRME (0ms Edge 301 Redirect) ──
-  // escturkiye.devs.surf -> escturkiye1.devs.surf (Tüm yol ve arama parametreleri korunur)
-  if (hostname === 'escturkiye.devs.surf' || hostname === 'www.escturkiye.devs.surf') {
-    const targetUrl = new URL(pathname + url.search, 'https://escturkiye1.devs.surf');
-    return NextResponse.redirect(targetUrl, 301);
-  }
-
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set('x-current-path', pathname);
   if (pathname.startsWith('/bms-secure-portal')) {

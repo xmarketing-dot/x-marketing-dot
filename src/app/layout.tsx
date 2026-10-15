@@ -164,9 +164,6 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                if (window.location.hostname === 'escturkiye.devs.surf' || window.location.hostname === 'www.escturkiye.devs.surf') {
-                  window.location.replace('https://escturkiye1.devs.surf' + window.location.pathname + window.location.search);
-                }
               } catch (e) {}
             `,
           }}

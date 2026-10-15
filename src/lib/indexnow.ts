@@ -41,9 +41,9 @@ export async function submitToIndexNow(
   for (const rawUrl of urlList) {
     if (!rawUrl) continue;
     let fullUrl = rawUrl;
-    let hostname = fallbackHost || 'escturkiye1.devs.surf';
+    let hostname = fallbackHost || 'besteskort.online';
     if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-      hostname = 'escturkiye1.devs.surf';
+      hostname = 'besteskort.online';
     }
 
     try {
