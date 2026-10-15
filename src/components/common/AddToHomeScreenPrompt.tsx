@@ -16,11 +16,17 @@ export default function AddToHomeScreenPrompt() {
   useEffect(() => {
     // 1. Service Worker Kaydı (BTK Kalkanı ve Cihaz İçi Kurtarma)
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
+      const registerSW = () => {
         navigator.serviceWorker.register('/sw.js').catch((err) => {
           console.debug('SW register failed:', err);
         });
-      });
+      };
+
+      if (document.readyState === 'complete') {
+        registerSW();
+      } else {
+        window.addEventListener('load', registerSW);
+      }
     }
 
     // 2. Standalone (PWA olarak zaten açılmış mı?) kontrolü
