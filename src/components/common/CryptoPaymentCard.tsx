@@ -33,37 +33,37 @@ export default function CryptoPaymentCard({ onChatClick, className = '' }: Crypt
 
   return (
     <>
-      <div className={`rounded-[32px] bg-gradient-to-br from-[#1c180e] via-[#161b22] to-[#161b22] border-2 border-amber-500/70 p-5 sm:p-7 shadow-2xl flex flex-col gap-6 text-left ${className}`}>
+      <div className={`rounded-2xl sm:rounded-[32px] bg-gradient-to-br from-[#1c180e] via-[#161b22] to-[#161b22] border-2 border-amber-500/70 p-3.5 sm:p-7 shadow-2xl flex flex-col gap-4 sm:gap-6 text-left max-w-full overflow-hidden ${className}`}>
         
         {/* ── ÜST BAŞLIK & AĞ ROZETİ ──────────────── */}
-        <div className="flex items-center justify-between border-b border-white/15 pb-4 flex-wrap gap-2">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30 shrink-0">
-              <Wallet className="w-6 h-6 stroke-[2.5]" />
+        <div className="flex items-center justify-between border-b border-white/15 pb-3 sm:pb-4 flex-wrap gap-2">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/30 shrink-0">
+              <Wallet className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5]" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-black text-base sm:text-lg text-white font-heading tracking-tight">
+            <div className="flex flex-col min-w-0">
+              <span className="font-black text-sm sm:text-lg text-white font-heading tracking-tight truncate">
                 Kripto Ödeme &amp; Cüzdan
               </span>
-              <span className="text-xs text-amber-400 font-bold">
+              <span className="text-[11px] sm:text-xs text-amber-400 font-bold truncate">
                 BEP-20 Ağı ile Anında Otomatik Teyit
               </span>
             </div>
           </div>
 
-          <span className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 font-mono font-black text-xs sm:text-sm border border-amber-500/40 uppercase tracking-wider shadow-sm">
+          <span className="px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl bg-amber-500/20 text-amber-300 font-mono font-black text-[10px] sm:text-sm border border-amber-500/40 uppercase tracking-wider shadow-sm shrink-0">
             {CRYPTO_CONFIG.network}
           </span>
         </div>
 
         {/* ── QR KOD VE CÜZDAN ALANI ──────────────── */}
-        <div className="flex flex-col md:flex-row items-center gap-6 bg-[#0d1117] p-5 sm:p-6 rounded-3xl border border-[#30363d] shadow-inner">
+        <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6 bg-[#0d1117] p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-[#30363d] shadow-inner max-w-full overflow-hidden">
           
           {/* QR Kod Görseli (Tıklanınca Tam Ekran Açılır) */}
-          <div className="flex flex-col items-center justify-center gap-2.5 shrink-0">
+          <div className="flex flex-col items-center justify-center gap-2 shrink-0">
             <div 
               onClick={() => setShowQrModal(true)}
-              className="relative w-44 h-44 sm:w-48 sm:h-48 rounded-3xl overflow-hidden bg-white p-2.5 border-2 border-amber-400 shadow-2xl flex items-center justify-center cursor-pointer group hover:scale-105 transition-transform"
+              className="relative w-36 h-36 sm:w-48 sm:h-48 rounded-2xl sm:rounded-3xl overflow-hidden bg-white p-2 border-2 border-amber-400 shadow-2xl flex items-center justify-center cursor-pointer group hover:scale-105 transition-transform"
               title="Tam Ekran Açmak İçin Dokunun"
             >
               <Image
@@ -73,9 +73,9 @@ export default function CryptoPaymentCard({ onChatClick, className = '' }: Crypt
                 className="object-contain p-1"
                 unoptimized
               />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-3xl">
-                <span className="p-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg">
-                  <Maximize2 className="w-4 h-4 stroke-[3]" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-2xl sm:rounded-3xl">
+                <span className="p-2 sm:p-2.5 rounded-xl bg-amber-500 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-lg">
+                  <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
                   <span>Tam Ekran Aç</span>
                 </span>
               </div>
@@ -84,30 +84,30 @@ export default function CryptoPaymentCard({ onChatClick, className = '' }: Crypt
             <button
               type="button"
               onClick={() => setShowQrModal(true)}
-              className="text-xs text-amber-400 font-black font-heading flex items-center gap-1.5 hover:underline py-1"
+              className="text-xs text-amber-400 font-black font-heading flex items-center gap-1.5 hover:underline py-0.5"
             >
-              <Maximize2 className="w-4 h-4 stroke-[2.5]" />
+              <Maximize2 className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>🔍 Tam Ekran Aç &amp; Tara</span>
             </button>
           </div>
 
           {/* Cüzdan Adresi & Kopyalama Alanı */}
-          <div className="flex flex-col gap-3 flex-1 w-full">
-            <span className="text-xs text-[#8b949e] font-black uppercase tracking-wider font-heading">
+          <div className="flex flex-col gap-2.5 sm:gap-3 flex-1 w-full min-w-0">
+            <span className="text-[11px] sm:text-xs text-[#8b949e] font-black uppercase tracking-wider font-heading truncate">
               BEP-20 Cüzdan Adresi (Dokun &amp; Kopyala):
             </span>
 
             <div
               onClick={handleCopyAddress}
-              className="group relative p-4 sm:p-5 rounded-2xl bg-[#161b22] border-2 border-dashed border-amber-500/60 hover:border-amber-400 cursor-pointer active:scale-[0.98] transition-all flex flex-col gap-3 shadow-md"
+              className="group relative p-3 sm:p-5 rounded-2xl bg-[#161b22] border-2 border-dashed border-amber-500/60 hover:border-amber-400 cursor-pointer active:scale-[0.98] transition-all flex flex-col gap-2.5 sm:gap-3 shadow-md max-w-full overflow-hidden"
               title="Adresi Kopyalamak İçin Dokunun"
             >
-              <span className="font-mono text-sm sm:text-base md:text-lg text-amber-300 font-bold break-all select-all leading-relaxed">
+              <span className="font-mono text-xs sm:text-base md:text-lg text-amber-300 font-bold break-all select-all leading-relaxed">
                 {CRYPTO_CONFIG.address}
               </span>
 
-              <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                <span className="text-xs sm:text-sm text-[#8b949e] group-hover:text-amber-400 font-bold font-heading">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 border-t border-white/10">
+                <span className="text-[11px] sm:text-xs text-[#8b949e] group-hover:text-amber-400 font-bold font-heading">
                   {copied ? '✅ Panoya Kopyalandı!' : '👆 Kopyalamak için buraya dokunun'}
                 </span>
 
@@ -117,9 +117,9 @@ export default function CryptoPaymentCard({ onChatClick, className = '' }: Crypt
                     e.stopPropagation();
                     handleCopyAddress();
                   }}
-                  className={`px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm font-heading transition-all shrink-0 flex items-center gap-2 ${
+                  className={`w-full sm:w-auto px-3.5 py-2 rounded-xl font-black text-xs font-heading transition-all shrink-0 flex items-center justify-center gap-1.5 ${
                     copied
-                      ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30 scale-105'
+                      ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30'
                       : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md shadow-amber-500/25'
                   }`}
                 >

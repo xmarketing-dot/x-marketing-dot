@@ -481,23 +481,31 @@ export default function ChatPage() {
             </div>
           </div>
 
-          {/* ── ZARİF VE YATAY HIZLI MESAJ ÇİPLERİ (MESAJ YOKKEN GÖZÜKÜR) ──────────────── */}
+          {/* ── ZARİF VE RESPONSIVE BOŞ DURUM & SIK SORULAN SORULAR ──────────────── */}
           {messages.length === 0 && (
-            <div className="flex flex-col gap-2 my-1">
-              <span className="text-[11px] text-[#8b949e] font-heading font-bold px-1 flex items-center gap-1">
-                <MessageSquare className="w-3 h-3 text-amber-400" />
-                <span>Sık Sorulan Hızlı Sorular:</span>
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-4 sm:p-5 rounded-2xl bg-[#111620]/90 border border-[#21262d] gap-3 my-auto w-full max-w-full">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-amber-400/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-md">
+                <Sparkles className="w-6 h-6 stroke-[2.2]" />
+              </div>
+              <div className="flex flex-col gap-1 max-w-xs">
+                <span className="font-heading font-black text-sm text-white">VIP Canlı Desteğe Hoş Geldiniz</span>
+                <p className="text-xs text-[#8b949e] leading-relaxed">
+                  Yetkili temsilcilerimiz aktiftir. İlan vermek veya bilgi almak için aşağıdaki hızlı sorulardan seçebilir veya doğrudan yazabilirsiniz.
+                </p>
+              </div>
+
+              {/* Hızlı Sorular Grid - Tam Responsive */}
+              <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-1">
                 {quickPrompts.map((p, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={() => handleSend(p.msg)}
-                    className="text-left px-3 py-2.5 rounded-xl bg-[#111620] hover:bg-[#181f2c] border border-[#21262d] hover:border-amber-400/50 text-xs text-[#c9d1d9] hover:text-white font-medium transition-all active:scale-[0.98] flex items-center justify-between group shadow-2xs"
+                    className="text-left px-3 py-2 rounded-xl bg-[#161c28] hover:bg-[#1f2838] border border-[#263145] hover:border-amber-400/50 text-xs text-[#c9d1d9] hover:text-white font-medium transition-all active:scale-[0.98] flex items-center justify-between group shadow-xs min-w-0"
                   >
-                    <span className="truncate flex items-center gap-1.5">
-                      <span>{p.icon}</span>
-                      <span className="truncate">{p.label}</span>
+                    <span className="truncate flex items-center gap-1.5 min-w-0 flex-1">
+                      <span className="shrink-0">{p.icon}</span>
+                      <span className="truncate font-heading text-[11px] font-bold">{p.label}</span>
                     </span>
                     <SendHorizontal className="w-3.5 h-3.5 text-amber-400 opacity-40 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
                   </button>
@@ -573,14 +581,14 @@ export default function ChatPage() {
 
       {/* ── 3. FIXED BOTTOM INPUT BAR (KLAVYE VE MOBİLE TAM UYUMLU) ─────────────── */}
       {!bannedInfo?.isBanned && (
-        <footer className="shrink-0 p-2 sm:p-2.5 px-3 sm:px-4 bg-[#111620]/95 backdrop-blur-xl border-t border-[#21262d] z-30 pb-[max(env(safe-area-inset-bottom),8px)] flex flex-col gap-1.5">
+        <footer className="shrink-0 p-2 sm:p-2.5 px-3 sm:px-4 bg-[#111620]/95 backdrop-blur-xl border-t border-[#21262d] z-30 pb-[max(env(safe-area-inset-bottom),8px)] flex flex-col gap-1.5 w-full max-w-full overflow-hidden">
           
           {/* Hızlı Çipler (Yatay Scroll) */}
-          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 w-full max-w-full min-w-0">
             <button
               type="button"
               onClick={() => handleSend('👑 Merhaba, ilan vermek istiyorum. Fiyat ve detay alabilir miyim?')}
-              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-amber-400 font-bold text-[11px] border border-amber-500/20 shrink-0 active:scale-95 transition-all flex items-center gap-1"
+              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-amber-400 font-bold text-[11px] border border-amber-500/20 shrink-0 active:scale-95 transition-all flex items-center gap-1 whitespace-nowrap"
             >
               <span>👑 İlan Ver</span>
             </button>
@@ -588,7 +596,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => handleSend('✅ İlanımı oluşturdum, onay ve kontrol rica ediyorum.')}
-              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-emerald-400 font-bold text-[11px] border border-emerald-500/20 shrink-0 active:scale-95 transition-all flex items-center gap-1"
+              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-emerald-400 font-bold text-[11px] border border-emerald-500/20 shrink-0 active:scale-95 transition-all flex items-center gap-1 whitespace-nowrap"
             >
               <span>✅ İlan Onayı</span>
             </button>
@@ -596,7 +604,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => handleSend('🔑 İlan yönetim paneli şifremi alabilir miyim?')}
-              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-[#c9d1d9] font-medium text-[11px] border border-[#283141] shrink-0 active:scale-95 transition-all"
+              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-[#c9d1d9] font-medium text-[11px] border border-[#283141] shrink-0 active:scale-95 transition-all whitespace-nowrap"
             >
               🔑 Panel Şifresi
             </button>
@@ -604,7 +612,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => handleSend('💳 Ödeme bilgilerini alabilir miyim?')}
-              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-[#c9d1d9] font-medium text-[11px] border border-[#283141] shrink-0 active:scale-95 transition-all"
+              className="px-2.5 py-1 rounded-lg bg-[#181f2c] hover:bg-[#20293a] text-[#c9d1d9] font-medium text-[11px] border border-[#283141] shrink-0 active:scale-95 transition-all whitespace-nowrap"
             >
               💳 Ödeme
             </button>
@@ -616,7 +624,7 @@ export default function ChatPage() {
               e.preventDefault(); 
               handleSend(); 
             }} 
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full min-w-0 max-w-full"
           >
             <input
               ref={inputRef}
@@ -625,16 +633,18 @@ export default function ChatPage() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onFocus={() => {
-                setTimeout(() => {
-                  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                }, 250);
+                if (messages.length > 0) {
+                  setTimeout(() => {
+                    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                  }, 250);
+                }
               }}
-              className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#181f2c] border border-[#283141] text-white text-xs placeholder-[#6e7681] focus:outline-none focus:border-amber-400 transition-colors font-medium shadow-inner"
+              className="flex-1 min-w-0 w-full px-3.5 py-2.5 rounded-xl bg-[#181f2c] border border-[#283141] text-white text-xs sm:text-sm placeholder-[#6e7681] focus:outline-none focus:border-amber-400 transition-colors font-medium shadow-inner"
             />
             <button
               type="submit"
               disabled={sending || !inputText.trim()}
-              className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black shadow-md shadow-amber-500/20 transition-all disabled:opacity-40 active:scale-95 flex items-center justify-center shrink-0"
+              className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black shadow-md shadow-amber-500/20 transition-all disabled:opacity-40 active:scale-95 flex items-center justify-center shrink-0 cursor-pointer"
               title="Gönder"
             >
               {sending ? (

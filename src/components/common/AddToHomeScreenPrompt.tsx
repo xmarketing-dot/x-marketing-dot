@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Download, X, Share, PlusSquare, Smartphone, Check, MoreVertical } from 'lucide-react';
 import { subscribeToPushNotifications } from '@/lib/pushClient';
 
 export default function AddToHomeScreenPrompt() {
+  const pathname = usePathname();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -200,8 +202,8 @@ export default function AddToHomeScreenPrompt() {
     setShowManualGuide(true);
   };
 
-  // Uygulama yüklüyse gizle
-  if (isStandalone || isInstalledSuccess) {
+  // Uygulama yüklüyse veya chat/bms sayfalarındaysa gizle
+  if (isStandalone || isInstalledSuccess || pathname === '/chat' || pathname?.startsWith('/bms-secure-portal')) {
     return null;
   }
 

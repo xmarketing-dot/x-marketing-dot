@@ -427,7 +427,7 @@ export default function AdminChatPage() {
   }, [threads]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#090c12] overflow-hidden">
+    <div className="w-full h-[calc(100dvh-54px-4rem)] md:h-full flex flex-col bg-[#090c12] overflow-hidden max-w-full">
       
       <div className="flex-1 min-h-0 flex w-full h-full relative overflow-hidden">
         
@@ -865,13 +865,13 @@ export default function AdminChatPage() {
                   )}
 
                   {messages.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-xs text-[#7d8590] gap-2.5 my-auto">
-                      <div className="w-12 h-12 rounded-2xl bg-[#141924] border border-[#232936] flex items-center justify-center text-amber-400">
-                        <MessageSquare className="w-6 h-6 opacity-40" />
+                    <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-6 text-center text-xs text-[#7d8590] gap-2.5 my-auto max-w-sm mx-auto">
+                      <div className="w-12 h-12 rounded-2xl bg-[#141924] border border-[#232936] flex items-center justify-center text-amber-400 shadow-md">
+                        <MessageSquare className="w-6 h-6 opacity-60" />
                       </div>
-                      <span className="font-heading font-bold text-white text-sm">Mesajlaşma Başlamadı</span>
-                      <p className="max-w-xs text-[11px] text-[#7d8590]">
-                        Müşteriye şablon yanıtı göndermek veya doğrudan mesaj yazmak için aşağıdaki formu kullanabilirsiniz.
+                      <span className="font-heading font-black text-white text-sm">Mesajlaşma Henüz Başlamadı</span>
+                      <p className="text-[11px] text-[#7d8590] leading-relaxed">
+                        Müşteriyle henüz mesajlaşma yok. Aşağıdaki şablon butonlarına basarak hızlı paket fiyatı, onay veya hesap bilgisi gönderebilirsiniz.
                       </p>
                     </div>
                   ) : (
@@ -1071,7 +1071,7 @@ export default function AdminChatPage() {
               </div>
 
               {/* ── HIZLI ŞABLON BUTONLARI (TEK TIKLA CEVAP) ──────────────── */}
-              <div className="px-3 sm:px-4 py-2 bg-[#121722] border-t border-[#232936] flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0">
+              <div className="px-3 sm:px-4 py-2 bg-[#121722] border-t border-[#232936] flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 w-full max-w-full min-w-0">
                 <button
                   type="button"
                   onClick={() => {
@@ -1080,53 +1080,19 @@ export default function AdminChatPage() {
                     const whatsappUrl = waLink || 'https://wa.me/905340000000';
                     const ilanVerUrl = `${origin}/ilan-ver`;
 
-                    setReplyText(`Merhaba, Best Eskort VIP Destek Merkezine hoş geldiniz! 👑
-
-İlanınızı 2 farklı şekilde oluşturabilirsiniz:
-1️⃣ Dilerseniz WhatsApp destek hattımızdan (${phoneText}) bilgilerinizi ve fotoğraflarınızı gönderin, ilanı doğrudan biz açalım:
-👉 WhatsApp Hızlı İletişim: ${whatsappUrl}
-
-2️⃣ İsterseniz web sitemiz üzerinden formu doldurarak kendiniz ilan oluşturabilir ve ödeme aşamasında bize ulaşabilirsiniz:
-👉 İlan Oluşturma Formu: ${ilanVerUrl}
-
-────────────────────────────
-🔥 BEST ESKORT – ÖNE ÇIKMA PAKETLERİ 🔥
-
-Profilinizin daha fazla kullanıcıya ulaşması ve listelerde daha görünür olması için farklı tanıtım seçenekleri:
-
-👑 VIP PAKET — 7.000 TL
-• En üst sıralarda görünürlük
-• VIP alanında özel konumlandırma
-• Maksimum görünürlük
-+EN ÜST VİTRİN 1 GÜNLÜK(BÜYÜK ANASAYFA RESİM ALANİ) BEDAVA SONRASİ 1 GÜN 2000 TL
-
-💎 GOLD PAKET — 4.000 TL
-• Üst sıralarda görünürlük
-• Gold vitrin alanında gösterim
-• Yüksek görünürlük
-
-🥈 SILVER PAKET — 2.500 TL
-• Silver vitrin alanında gösterim
-• Standart profile göre daha yüksek görünürlük
-
-📌 Paketler sınırlı kontenjanla sunulmaktadır.
-
-📩 Detaylı bilgi ve paket seçimi için bizimle iletişime geçebilirsiniz.
-
-BEST ESKORT
-✨ Daha fazla görünürlük, daha fazla erişim.`);
+                    setReplyText(`Merhaba, Best Eskort VIP Destek Merkezine hoş geldiniz! 👑\n\nİlanınızı 2 farklı şekilde oluşturabilirsiniz:\n1️⃣ WhatsApp destek hattımızdan (${phoneText}) bilgilerinizi iletebilirsiniz:\n👉 WhatsApp: ${whatsappUrl}\n\n2️⃣ Web sitemiz üzerinden ilan formu doldurabilirsiniz:\n👉 İlan Formu: ${ilanVerUrl}\n\n🔥 PAKETLER:\n👑 VIP: 7.000 TL (1 gün ücretsiz vitrin)\n💎 GOLD: 4.000 TL\n🥈 SILVER: 2.500 TL\n\nDetaylı bilgi için bize yazabilirsiniz.`);
                   }}
-                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/25 to-amber-400/20 hover:from-amber-500/35 hover:to-amber-400/30 border border-amber-400/60 text-amber-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95"
-                  title="Dinamik WhatsApp ve Paket Fiyat Tarifesini Yanıta Yapıştır"
+                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/25 to-amber-400/20 hover:from-amber-500/35 hover:to-amber-400/30 border border-amber-400/60 text-amber-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
+                  title="Paket Fiyat Tarifesini Yanıta Yapıştır"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                  <span>👑 İlan Verme &amp; Paket Tarifesi</span>
+                  <span>👑 Paket Tarifesi</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setReplyText('Ödeme Adresi (BNB SMART CHAIN BEP-20): 0xb7259aef66c9cd16e5a5d879baf0107bea03f527 - Ödemeden sonra lütfen TXID veya dekont iletiniz, 5 dakikada onaylanacaktır.')}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer whitespace-nowrap"
                 >
                   <span>💎 Kripto Cüzdan</span>
                 </button>
@@ -1135,45 +1101,45 @@ BEST ESKORT
                   type="button"
                   onClick={() => {
                     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-                    setReplyText(`🎉 Tebrikler! İlanınız onaylandı ve yayına alındı.\n\n🔑 Müşteri Panel Bilgileriniz:\nPanel Giriş: ${origin}/panelim\nKullanıcı Adı: ${selectedThread.username || '...'}\nŞifre: ${selectedThread.password || '...'}\n\nPanelinize giriş yaparak ilanınızı dilediğiniz an güncelleyebilirsiniz.`);
+                    setReplyText(`🎉 Tebrikler! İlanınız onaylandı ve yayına alındı.\n\n🔑 Müşteri Panel Bilgileriniz:\nPanel Giriş: ${origin}/panelim\nKullanıcı Adı: ${selectedThread.username || '...'}\nŞifre: ${selectedThread.password || '...'}\n\nPanelinize giriş yaparak ilanınızı güncelleyebilirsiniz.`);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer whitespace-nowrap"
                 >
-                  <span>✅ Onay &amp; Şifre Bilgisi</span>
+                  <span>✅ Onay &amp; Şifre</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setReplyText('Merhaba, ilanınızdaki fotoğrafların doğrulanabilmesi için yüzünüzün veya kimliğinizin görünmediği teyit fotoğrafı iletmeniz gerekmektedir.')}
-                  className="px-3 py-1.5 rounded-xl bg-[#1c2333] hover:bg-[#252f45] border border-[#2b3547] text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-[#1c2333] hover:bg-[#252f45] border border-[#2b3547] text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer whitespace-nowrap"
                 >
-                  <span>📸 Fotoğraf Teyidi İste</span>
+                  <span>📸 Fotoğraf Teyidi</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setReplyText('İlanınızdaki iletişim bilgileri güncellenmiştir. Başka bir işlem için bize yazabilirsiniz.')}
-                  className="px-3 py-1.5 rounded-xl bg-[#1c2333] hover:bg-[#252f45] border border-[#2b3547] text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-[#1c2333] hover:bg-[#252f45] border border-[#2b3547] text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer whitespace-nowrap"
                 >
-                  <span>✏️ Bilgiler Güncellendi</span>
+                  <span>✏️ Güncellendi</span>
                 </button>
               </div>
 
               {/* ── TABANA SABİTLENMİŞ CEVAP YAZMA FORMU ──────────────── */}
-              <form onSubmit={handleSendReply} className="p-3 sm:p-4 bg-[#121722] border-t border-[#232936] flex items-center gap-2 shrink-0">
+              <form onSubmit={handleSendReply} className="p-2.5 sm:p-3.5 bg-[#121722] border-t border-[#232936] flex items-end gap-2 shrink-0 w-full max-w-full min-w-0">
                 <textarea
                   rows={1}
-                  placeholder="Müşteriye yanıt yazın... (Enter: Gönder, Shift+Enter: Alt Satır)"
+                  placeholder="Müşteriye yanıt yazın..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-[#090c12] border border-[#263145] text-white text-base sm:text-sm placeholder-[#545d6e] focus:outline-none focus:border-amber-400 resize-none max-h-28 transition-colors font-normal leading-relaxed"
+                  className="flex-1 min-w-0 w-full px-3.5 py-2.5 rounded-xl bg-[#090c12] border border-[#263145] text-white text-xs sm:text-sm placeholder-[#545d6e] focus:outline-none focus:border-amber-400 resize-none max-h-28 transition-colors font-normal leading-relaxed break-words overflow-y-auto"
                 />
 
                 <button
                   type="submit"
                   disabled={sending || !replyText.trim()}
-                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs sm:text-sm shadow-xl transition-all disabled:opacity-40 uppercase tracking-wider shrink-0 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs sm:text-sm shadow-xl transition-all disabled:opacity-40 uppercase tracking-wider shrink-0 cursor-pointer h-10"
                 >
                   {sending ? (
                     <Loader2 className="w-4 h-4 animate-spin stroke-[2.5]" />
@@ -1185,13 +1151,13 @@ BEST ESKORT
               </form>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-10 text-center gap-3.5 my-auto">
-              <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-inner">
-                <MessageSquare className="w-8 h-8" />
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-3.5 my-auto max-w-sm mx-auto">
+              <div className="w-14 h-14 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-inner">
+                <MessageSquare className="w-7 h-7" />
               </div>
-              <h3 className="font-heading font-black text-white text-base sm:text-lg">Sohbet Seçilmedi</h3>
-              <p className="text-xs text-[#7d8590] max-w-sm leading-relaxed">
-                Müşteriyle canlı mesajlaşmak veya panel bilgilerini iletmek için sol taraftaki listeden bir sohbete tıklayın.
+              <h3 className="font-heading font-black text-white text-base">Sohbet Seçilmedi</h3>
+              <p className="text-xs text-[#7d8590] leading-relaxed">
+                Müşteriyle canlı mesajlaşmak veya panel bilgilerini iletmek için sol taraftaki listeden bir sohbete dokunun.
               </p>
             </div>
           )}
