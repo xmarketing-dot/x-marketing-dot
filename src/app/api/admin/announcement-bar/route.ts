@@ -129,6 +129,22 @@ export async function POST(req: NextRequest) {
       { upsert: true, new: true }
     ).lean();
 
+    // ── BİLDİRİMLER LİSTESİNE DE OTOMATİK DÜŞÜR ──
+    try {
+      const { createNotification } = await import('@/lib/notificationService');
+      if (updated.title) {
+        await createNotification({
+          title: updated.title,
+          message: updated.description || 'Yeni VIP duyurumuz yayında. Detayları keşfedin.',
+          url: updated.targetUrl || '/',
+          imageUrl: updated.mediaUrl || '',
+          type: 'announcement_bar',
+          badge: updated.badgeText || 'DUYURU',
+          sourceId: `announcement_${updated.campaignId || 'v1'}`,
+        });
+      }
+    } catch (_) {}
+
     const uniqueViewsCount = (updated.uniqueViewers || []).length;
     const uniqueClicksCount = (updated.uniqueClickers || []).length;
     const ctr = uniqueViewsCount > 0 ? ((uniqueClicksCount / uniqueViewsCount) * 100).toFixed(1) : '0.0';

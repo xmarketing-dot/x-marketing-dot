@@ -199,6 +199,23 @@ export async function POST(req: NextRequest) {
 
     const listingObj: any = newListing;
 
+    // ── SİTE İÇİ BİLDİRİM OLUŞTUR (Yeni İlan Bildirimi) ──
+    try {
+      const { createNotification } = await import('@/lib/notificationService');
+      const coverPhoto = imageUrl || (photoList && photoList[0]) || '';
+      await createNotification({
+        title: `🌟 Yeni VIP İlan: ${baslik}`,
+        message: `${(ilSlug || 'İSTANBUL').toUpperCase()} bölgesinde yeni ilan yayınlandı! İncelemek için dokunun.`,
+        url: `/ilan/${slug}`,
+        imageUrl: coverPhoto,
+        type: 'new_listing',
+        badge: (rozet || 'VIP').toUpperCase(),
+        sourceId: `listing_${newListing._id}`,
+      });
+    } catch (notifErr) {
+      console.debug('Notification create error on listing creation:', notifErr);
+    }
+
     // ── CANLI CHAT VE İLK MESAJI OTOMATİK OLUŞTUR ──
     let finalThreadId = chatThreadId;
     try {

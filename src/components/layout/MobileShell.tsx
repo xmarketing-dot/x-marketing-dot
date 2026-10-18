@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, Bell } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 import HeaderTicker from '@/components/common/HeaderTicker';
 import SeoBacklinkFooter from '@/components/common/SeoBacklinkFooter';
@@ -28,6 +28,35 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAgeModalOpen, setIsAgeModalOpen] = useState(false);
   const [isSearchBot, setIsSearchBot] = useState(false);
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const fetchUnread = async () => {
+      try {
+        let vId = localStorage.getItem('analytics_visitor_id');
+        if (!vId) {
+          vId = 'v_' + Math.random().toString(36).substring(2, 10);
+          localStorage.setItem('analytics_visitor_id', vId);
+        }
+        const res = await fetch('/api/notifications/unread-count?visitorId=' + encodeURIComponent(vId));
+        if (res.ok) {
+          const d = await res.json();
+          if (d.success) {
+            setUnreadNotifCount(d.unreadCount || 0);
+          }
+        }
+      } catch (_) {}
+    };
+
+    if (pathname === '/bildirimler') {
+      setUnreadNotifCount(0);
+    } else {
+      fetchUnread();
+    }
+  }, [pathname]);
+
   const [isCorporateEnforced, setIsCorporateEnforced] = useState(forceCorporate);
 
   useEffect(() => {
@@ -154,41 +183,44 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
           <header className="px-3.5 py-3 border-b border-[#30363d]/60 flex items-center justify-between w-full shadow-md">
             <Link href="/" className="flex items-center gap-2 group">
               <CorporateLogo className="w-9 h-9 shrink-0 group-hover:scale-105 transition-transform" />
-              <div className="flex flex-col leading-none text-left">
-                <span className="font-black text-[14px] text-white font-heading tracking-tight group-hover:text-amber-400 transition-colors">
-                  Best Eskort
-                </span>
-                <span className="text-[9px] text-amber-400/80 font-bold tracking-wider">
-                  #1 İlan Platformu 👑
-                </span>
-              </div>
+              <span className="font-black text-lg text-white font-heading tracking-tight group-hover:text-amber-400 transition-colors">
+                Best Eskort
+              </span>
             </Link>
 
             {/* Quick Actions */}
             <div className="flex items-center gap-2">
               <Link
-                href="/sehirler"
-                className="px-3 py-1.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-white font-extrabold text-xs transition-all font-heading"
+                href="/ilan-ver"
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all"
               >
-                Şehirler
+                İlan Ver
               </Link>
 
-              {isLoggedIn ? (
-                <Link
-                  href="/panelim"
-                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs font-heading uppercase tracking-wider shadow-md shadow-amber-500/25 active:scale-95 transition-all flex items-center gap-1"
-                >
-                  <LayoutDashboard className="w-3.5 h-3.5 stroke-[2.5]" />
-                  <span>Panelim</span>
-                </Link>
-              ) : (
-                <Link
-                  href="/ilan-ver"
-                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs font-heading uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all"
-                >
-                  İlan Ver
-                </Link>
-              )}
+              {/* Bildirim İkonu (+1, +2 Rozetli) */}
+              <Link
+                href="/bildirimler"
+                aria-label="Bildirimler"
+                title="Bildirimler"
+                className="relative w-9 h-9 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-slate-300 hover:text-amber-400 transition-all active:scale-95 flex items-center justify-center shrink-0 cursor-pointer"
+              >
+                <Bell className="w-4 h-4" />
+                {unreadNotifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white font-mono font-black text-[10px] flex items-center justify-center shadow-md shadow-rose-500/50 animate-pulse border border-[#0d1117]">
+                    {unreadNotifCount > 9 ? '+9' : '+' + unreadNotifCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Panelim İkonu */}
+              <Link
+                href="/panelim"
+                aria-label="Müşteri Panelim"
+                title="Müşteri Panelim"
+                className="w-9 h-9 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-amber-400 hover:text-amber-300 transition-all active:scale-95 flex items-center justify-center shrink-0 cursor-pointer"
+              >
+                <LayoutDashboard className="w-4 h-4 stroke-[2.2]" />
+              </Link>
             </div>
           </header>
         </div>

@@ -7,6 +7,7 @@ import {
   Smartphone,
   Monitor,
   Bell,
+  BellRing,
   Send,
   CheckCircle2,
   AlertCircle,
@@ -44,6 +45,30 @@ export default function PwaAndPushManagementPage() {
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [pwaEvents, setPwaEvents] = useState<any[]>([]);
+  const [siteNotifications, setSiteNotifications] = useState<any[]>([]);
+
+  const fetchSiteNotifications = async () => {
+    try {
+      const res = await fetch('/api/admin/notifications', { cache: 'no-store' });
+      if (res.ok) {
+        const d = await res.json();
+        if (d.success) {
+          setSiteNotifications(d.notifications || []);
+        }
+      }
+    } catch (_) {}
+  };
+
+  const handleDeleteNotification = async (id: string) => {
+    if (!confirm('Bu bildirimi silmek istediğinize emin misiniz?')) return;
+    try {
+      const res = await fetch('/api/admin/notifications?id=' + id, { method: 'DELETE' });
+      if (res.ok) {
+        setSiteNotifications((prev) => prev.filter((n) => n._id !== id));
+      }
+    } catch (_) {}
+  };
+
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,6 +85,7 @@ export default function PwaAndPushManagementPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      fetchSiteNotifications();
       const res = await fetch('/api/admin/push/subscribers', { cache: 'no-store' });
       if (res.ok) {
         const d = await res.json();
@@ -111,6 +137,7 @@ export default function PwaAndPushManagementPage() {
           message: data.message || `${data.successCount} cihaza başarıyla iletildi.`,
         });
         fetchData();
+        fetchSiteNotifications();
       } else {
         setPushResult({
           success: false,
@@ -476,6 +503,98 @@ export default function PwaAndPushManagementPage() {
           </p>
         </div>
 
+      </div>
+
+            {/* ── 4. CANLI BİLDİRİM & REKLAM YÖNETİM MERKEZİ (OKUYAN VS OKUMAYAN SKORLARI) ── */}
+      <div className="bg-[#161b22] border border-[#30363d] p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-4">
+          <div className="flex items-center gap-2">
+            <BellRing className="w-5 h-5 text-amber-400" />
+            <div>
+              <h2 className="font-heading font-black text-base text-white">
+                Bildirim &amp; Duyuru Yönetim Merkezi ({siteNotifications.length})
+              </h2>
+              <p className="text-xs text-[#8b949e]">
+                Gönderilen bildirimler, üst layout duyuru reklamları ve yeni ilan akışı (Okuyan vs Okumayan skor takibi)
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={fetchSiteNotifications}
+            className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto transition-colors cursor-pointer"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+            <span>Skorları Yenile</span>
+          </button>
+        </div>
+
+        {siteNotifications.length === 0 ? (
+          <div className="py-8 text-center text-xs text-[#8b949e]">
+            Kayıtlı bildirim veya duyuru bulunamadı.
+          </div>
+        ) : (
+          <div className="overflow-x-auto no-scrollbar">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#0d1117] text-[#8b949e] uppercase text-[10px] tracking-wider font-heading">
+                <tr>
+                  <th className="py-3 px-3">Tür / Rozet</th>
+                  <th className="py-3 px-3">Başlık &amp; Mesaj</th>
+                  <th className="py-3 px-3">Hedef URL</th>
+                  <th className="py-3 px-3 text-center">Okuyan (Skor)</th>
+                  <th className="py-3 px-3 text-center">Okumayan (Skor)</th>
+                  <th className="py-3 px-3 text-center">Okunma Oranı</th>
+                  <th className="py-3 px-3 text-right">Tarih</th>
+                  <th className="py-3 px-3 text-right">İşlem</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#21262d] font-mono">
+                {siteNotifications.map((notif) => (
+                  <tr key={notif._id} className="hover:bg-[#0d1117]/50 transition-colors">
+                    <td className="py-3 px-3 whitespace-nowrap">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded font-black bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                        {notif.badge}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 min-w-[220px]">
+                      <div className="font-heading font-black text-white text-xs">{notif.title}</div>
+                      <div className="text-[11px] text-[#8b949e] line-clamp-1 font-sans">{notif.message}</div>
+                    </td>
+                    <td className="py-3 px-3 text-amber-400 font-mono text-[11px] max-w-[140px] truncate">
+                      {notif.url}
+                    </td>
+                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                        {notif.readCount} Kişi Okudu
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-bold">
+                        {notif.unreadScore} Okumadı
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <span className="text-[11px] font-bold text-white">
+                        %{notif.readRate}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3 text-right text-[#8b949e] whitespace-nowrap text-[11px]">
+                      {new Date(notif.createdAt).toLocaleDateString('tr-TR')}
+                    </td>
+                    <td className="py-3 px-3 text-right whitespace-nowrap">
+                      <button
+                        onClick={() => handleDeleteNotification(notif._id)}
+                        className="p-1 rounded-lg hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
+                        title="Bildirimi Sil"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* ── 4. GEÇMİŞ GÖNDERİLEN BİLDİRİM KAMPANYALARI ─────────────────── */}

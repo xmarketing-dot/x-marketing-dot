@@ -85,6 +85,19 @@ export async function POST(req: NextRequest) {
       failCount,
     });
 
+    // ── TÜM KULLANICILAR İÇİN SİTE İÇİ BİLDİRİM LİSTESİNE DE EKLE ──
+    try {
+      const { createNotification } = await import('@/lib/notificationService');
+      await createNotification({
+        title,
+        message: messageBody,
+        url: url || '/',
+        imageUrl: image || icon || '',
+        type: 'admin_broadcast',
+        badge: 'YÖNETİCİ',
+      });
+    } catch (_) {}
+
     return NextResponse.json({
       success: true,
       message: `${successCount} cihaza bildirim başarıyla ulaştırıldı.`,
