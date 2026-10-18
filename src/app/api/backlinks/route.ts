@@ -9,17 +9,41 @@ export const dynamic = 'force-dynamic';
  * GET /api/backlinks
  * Sitede gösterilecek aktif backlinkleri döner (footer/header)
  */
+let cachedBacklinks: any = null;
+let lastBacklinksTime = 0;
+const BACKLINKS_TTL = 120000; // 2 dakika in-memory cache
+
 export async function GET() {
   try {
+    const now = Date.now();
+    if (cachedBacklinks && (now - lastBacklinksTime < BACKLINKS_TTL)) {
+      return NextResponse.json(
+        { success: true, backlinks: cachedBacklinks },
+        {
+          headers: {
+            'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
+          },
+        }
+      );
+    }
+
     await connectToDatabase();
     const backlinks = await BacklinkModel.find({ aktif: true })
       .sort({ siraNo: 1, createdAt: -1 })
       .lean();
 
-    return NextResponse.json({
-      success: true,
-      backlinks: JSON.parse(JSON.stringify(backlinks)),
-    });
+    const clean = JSON.parse(JSON.stringify(backlinks));
+    cachedBacklinks = clean;
+    lastBacklinksTime = now;
+
+    return NextResponse.json(
+      { success: true, backlinks: clean },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=600',
+        },
+      }
+    );
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

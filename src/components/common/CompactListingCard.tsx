@@ -210,26 +210,34 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
       onTouchEnd={handleTouchEnd}
     >
       {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar - KAYARAK SLIDE GEÇİŞ) ── */}
-      <Link href={`/ilan/${listing.slug}`} className="absolute inset-0 block w-full h-full z-0 overflow-hidden">
+      <Link href={`/ilan/${listing.slug}`} prefetch={false} className="absolute inset-0 block w-full h-full z-0 overflow-hidden">
         <div
           className="flex w-full h-full transition-transform duration-500 ease-out"
           style={{
             transform: `translate3d(-${currentIndex * 100}%, 0, 0)`,
           }}
         >
-          {allImages.map((imgUrl, idx) => (
-            <div key={idx} className="relative w-full h-full flex-shrink-0">
-              <img
-                src={imgUrl}
-                alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
-                loading="lazy"
-                decoding="async"
-                className={`w-full h-full object-cover object-top select-none pointer-events-none ${
-                  isPassive ? 'grayscale contrast-125 brightness-75' : ''
-                }`}
-              />
-            </div>
-          ))}
+          {allImages.map((imgUrl, idx) => {
+            // İlk açılışta ve uzaktaki kartlarda sadece ilk resim yüklenir; gereksiz resim indirmeleri sıfırlanır
+            const shouldRender = idx === currentIndex || (isVisible && Math.abs(idx - currentIndex) <= 1);
+            return (
+              <div key={idx} className="relative w-full h-full flex-shrink-0">
+                {shouldRender ? (
+                  <img
+                    src={imgUrl}
+                    alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
+                    className={`w-full h-full object-cover object-top select-none pointer-events-none ${
+                      isPassive ? 'grayscale contrast-125 brightness-75' : ''
+                    }`}
+                  />
+                ) : (
+                  <div className="w-full h-full bg-[#0d1117]" />
+                )}
+              </div>
+            );
+          })}
         </div>
       </Link>
 

@@ -26,6 +26,12 @@ function slugifyCity(cityName: string): string {
     .trim();
 }
 
+let cachedConfigData: any = null;
+let lastConfigFetchTime = 0;
+let lastExpirationCheckTime = 0;
+const CONFIG_CACHE_TTL = 15000; // 15 saniye in-memory cache
+const EXPIRATION_CHECK_INTERVAL = 300000; // 5 dakikada bir kontrol
+
 export async function GET(req: Request) {
   try {
     const rawCity = 
@@ -36,13 +42,34 @@ export async function GET(req: Request) {
       '';
     const detectedCity = slugifyCity(rawCity);
 
-    await connectToDatabase();
+    const now = Date.now();
 
-    // Süresi dolan vitrin ve popup reklamlarını kontrol et
-    await Promise.all([
-      checkAndExpireShowcases().catch(() => {}),
-      checkAndExpirePopups().catch(() => {}),
-    ]);
+    // Süresi dolan vitrin ve popup reklamlarını arka planda non-blocking kontrol et (en fazla 5 dakikada bir)
+    if (now - lastExpirationCheckTime > EXPIRATION_CHECK_INTERVAL) {
+      lastExpirationCheckTime = now;
+      Promise.all([
+        checkAndExpireShowcases().catch(() => {}),
+        checkAndExpirePopups().catch(() => {}),
+      ]).catch(() => {});
+    }
+
+    // In-memory cache geçerliyse doğrudan oradan dön (0ms DB sorgusu)
+    if (cachedConfigData && (now - lastConfigFetchTime < CONFIG_CACHE_TTL)) {
+      return NextResponse.json(
+        { 
+          config: cachedConfigData.config,
+          detectedCity: detectedCity || null,
+          adminPhone: cachedConfigData.adminPhone,
+        },
+        {
+          headers: {
+            'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
+          },
+        }
+      );
+    }
+
+    await connectToDatabase();
 
     let config: any = await HomepageConfigModel.findOne({ key: 'singleton' }).lean();
     if (!config) {
@@ -93,15 +120,22 @@ export async function GET(req: Request) {
       });
     }
 
+    const cleanConfig = JSON.parse(JSON.stringify(config));
+    cachedConfigData = {
+      config: cleanConfig,
+      adminPhone,
+    };
+    lastConfigFetchTime = Date.now();
+
     return NextResponse.json(
       { 
-        config: JSON.parse(JSON.stringify(config)),
+        config: cleanConfig,
         detectedCity: detectedCity || null,
         adminPhone,
       },
       {
         headers: {
-          'Cache-Control': 'public, s-maxage=5, stale-while-revalidate=29',
+          'Cache-Control': 'public, s-maxage=15, stale-while-revalidate=60',
         },
       }
     );

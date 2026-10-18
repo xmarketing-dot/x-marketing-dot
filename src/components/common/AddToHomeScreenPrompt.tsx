@@ -54,6 +54,15 @@ export default function AddToHomeScreenPrompt() {
       console.debug('PWA install log error:', err);
     }
   }, []);
+  // ── PROMPT VE BUTONU TAMAMEN KAPATMA ──
+  const handleDismiss = useCallback(() => {
+    setIsVisible(false);
+    setIsMinimized(false);
+    try {
+      sessionStorage.setItem('pwa_prompt_dismissed', 'true');
+    } catch (_) {}
+  }, []);
+
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -138,6 +147,10 @@ export default function AddToHomeScreenPrompt() {
 
     window.addEventListener('beforeinstallprompt', handlePrompt);
 
+    // Dismiss edildiyse gösterme
+    const isDismissed = typeof window !== 'undefined' && sessionStorage.getItem('pwa_prompt_dismissed') === 'true';
+    if (isDismissed) return;
+
     // 1.5 saniye sonra nazikçe bildirimi göster
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -173,7 +186,7 @@ export default function AddToHomeScreenPrompt() {
             subscribeToPushNotifications();
           }, 1000);
         } else {
-          setIsMinimized(true);
+          handleDismiss();
         }
         setDeferredPrompt(null);
         (window as any).__pwaPrompt = null;
@@ -252,26 +265,36 @@ export default function AddToHomeScreenPrompt() {
         </div>
       )}
 
-      {/* ── 2. KÜÇÜLTÜLMÜŞ YÜZEN BUTON (PİLL) ── */}
+      {/* ── 2. KÜÇÜLTÜLMÜŞ YÜZEN BUTON (PİLL) (Sol tarafa alındı, chat ile çakışmaz) ── */}
       {isMinimized && (
         <aside
           aria-label="Uygulamayı Yükle"
-          className="fixed bottom-20 right-3 sm:bottom-6 sm:right-6 z-[999980] animate-in fade-in zoom-in-95 duration-200 select-none"
+          className="fixed bottom-20 left-3 sm:bottom-6 sm:left-6 z-[999980] animate-in fade-in zoom-in-95 duration-200 select-none flex items-center gap-1.5"
         >
-          <button
-            type="button"
-            onClick={handleInstallClick}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#0d1117]/95 hover:bg-[#161b22] text-white border border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl active:scale-95 transition-all cursor-pointer group"
-          >
-            <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white shadow-md">
-              <Download className="w-3.5 h-3.5" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500" />
-            </div>
-            <span className="text-xs font-bold text-white pr-0.5">
-              Uygulamayı Yükle
-            </span>
-          </button>
+          <div className="flex items-center gap-1.5 pl-3 pr-2 py-1.5 rounded-full bg-[#0d1117]/95 text-white border border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl">
+            <button
+              type="button"
+              onClick={handleInstallClick}
+              className="flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+            >
+              <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white shadow-md">
+                <Download className="w-3.5 h-3.5" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500" />
+              </div>
+              <span className="text-xs font-bold text-white pr-1">
+                Uygulamayı Yükle
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              title="Kapat"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </aside>
       )}
 
@@ -322,7 +345,7 @@ export default function AddToHomeScreenPrompt() {
 
               <button
                 type="button"
-                onClick={() => setIsMinimized(true)}
+                onClick={handleDismiss}
                 className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
                 title="Kapat"
               >

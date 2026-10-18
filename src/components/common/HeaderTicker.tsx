@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { setClientAdminWhatsApp } from '@/lib/siteConfig';
+import { fetchClientConfig } from '@/lib/clientConfig';
 
 interface TickerItem {
   badge: string;
@@ -44,9 +45,9 @@ export default function HeaderTicker() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    fetch('/api/config')
-      .then((res) => res.json())
+    fetchClientConfig()
       .then((data) => {
+        if (!data) return;
         if (data.config) {
           if (data.config.adminWhatsApp) {
             setClientAdminWhatsApp(data.config.adminWhatsApp);

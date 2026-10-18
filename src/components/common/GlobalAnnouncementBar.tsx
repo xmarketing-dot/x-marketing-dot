@@ -55,15 +55,15 @@ export default function GlobalAnnouncementBar() {
     window.addEventListener('resize', handleResize);
 
     async function loadAnnouncement() {
+      // Masaüstünde (Web / Desktop) asla gösterme ve istek atma - Sadece Mobilde göster
+      if (!isMobileDevice()) {
+        return;
+      }
+
       try {
-        const res = await fetch('/api/announcement-bar', { cache: 'no-store' });
+        const res = await fetch('/api/announcement-bar');
         const json = await res.json();
         if (!json.success || !json.data || !json.data.isActive) return;
-
-        // Masaüstünde (Web / Desktop) asla gösterme - Sadece Mobilde göster
-        if (!isMobileDevice()) {
-          return;
-        }
 
         const config: AnnouncementData = json.data;
         const storageKey = `announcement_seen_${config.campaignId}`;

@@ -278,8 +278,15 @@ export default async function HomePage() {
     ],
   };
 
+  const firstHeroImageUrl = formattedShowcaseListings[0]?.anaFotograf?.url || homepageConfig?.bosVitrinSliderlar?.[0]?.gifUrl;
+
   return (
     <div className="flex flex-col gap-3 pb-8 w-full max-w-full text-left">
+      {/* ── LCP Image Preload for 0ms Discovery ── */}
+      {firstHeroImageUrl && (
+        <link rel="preload" as="image" href={firstHeroImageUrl} fetchPriority="high" />
+      )}
+
       {/* ── JSON-LD SCHEMAS ── */}
       <script
         type="application/ld+json"

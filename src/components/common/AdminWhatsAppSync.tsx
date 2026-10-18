@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { setClientAdminWhatsApp } from '@/lib/siteConfig';
+import { fetchClientConfig } from '@/lib/clientConfig';
 
 /**
  * Global Admin WhatsApp Synchronizer
@@ -10,26 +10,11 @@ import { setClientAdminWhatsApp } from '@/lib/siteConfig';
  */
 export default function AdminWhatsAppSync() {
   useEffect(() => {
-    let isMounted = true;
-
-    const syncPhone = async () => {
-      try {
-        const res = await fetch(`/api/config?t=${Date.now()}`, {
-          cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' },
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        const serverPhone = data?.config?.adminWhatsApp || data?.adminPhone?.raw;
-        if (isMounted && serverPhone && typeof serverPhone === 'string' && serverPhone.trim()) {
-          setClientAdminWhatsApp(serverPhone.trim());
-        }
-      } catch (e) {
-        // Silent network retry failure
-      }
+    const syncPhone = () => {
+      fetchClientConfig().catch(() => {});
     };
 
-    // 1. Initial fast sync immediately on mount
+    // 1. Initial fast sync immediately on mount using deduplicated fetcher
     syncPhone();
 
     // 2. Re-verify when tab becomes active / visible
@@ -43,7 +28,6 @@ export default function AdminWhatsAppSync() {
     window.addEventListener('focus', syncPhone);
 
     return () => {
-      isMounted = false;
       window.removeEventListener('visibilitychange', onVisibilityChange);
       window.removeEventListener('focus', syncPhone);
     };

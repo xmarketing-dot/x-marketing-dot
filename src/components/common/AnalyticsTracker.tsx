@@ -188,12 +188,12 @@ export default function AnalyticsTracker() {
       trackedListingsInPageRef.current.add(item.listingId);
       pendingImpressionsRef.current.push(item);
 
-      if (pendingImpressionsRef.current.length >= 3) {
+      if (pendingImpressionsRef.current.length >= 15) {
         if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
         flushImpressions();
       } else {
         if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
-        impressionBatchTimerRef.current = setTimeout(flushImpressions, 150);
+        impressionBatchTimerRef.current = setTimeout(flushImpressions, 1500);
       }
     };
 
@@ -212,12 +212,12 @@ export default function AnalyticsTracker() {
       }
 
       if (added) {
-        if (pendingImpressionsRef.current.length >= 3) {
+        if (pendingImpressionsRef.current.length >= 15) {
           if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
           flushImpressions();
         } else {
           if (impressionBatchTimerRef.current) clearTimeout(impressionBatchTimerRef.current);
-          impressionBatchTimerRef.current = setTimeout(flushImpressions, 150);
+          impressionBatchTimerRef.current = setTimeout(flushImpressions, 1500);
         }
       }
     };

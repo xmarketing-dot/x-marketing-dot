@@ -207,16 +207,18 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const nextIdx = (activeIdx + 1) % (fiveSlots.length || 1);
-    const targets = [fiveSlots[activeIdx], fiveSlots[nextIdx]].filter(Boolean);
+    // İlk açılışta LCP ve ilk slayt yüklenmeden hemen diğer slaytları (örn: 6MB gif) indirmeye başlama
+    const preloadTimer = setTimeout(() => {
+      const nextIdx = (activeIdx + 1) % (fiveSlots.length || 1);
+      const nextSlot = fiveSlots[nextIdx];
+      const url = nextSlot?.type === 'listing' ? nextSlot?.data?.anaFotograf?.url : nextSlot?.promoData?.gifUrl;
+      if (url) {
+        const img = new window.Image();
+        img.src = url;
+      }
+    }, 2500);
 
-    targets.forEach((slot) => {
-      const url = slot.type === 'listing' ? slot.data.anaFotograf?.url : slot.promoData?.gifUrl;
-      if (!url) return;
-
-      const img = new window.Image();
-      img.src = url;
-    });
+    return () => clearTimeout(preloadTimer);
   }, [activeIdx, fiveSlots]);
 
   // ── AKILLI SLIDE ZAMANLAYICI (İlk slaytta 7.5s rahat okuma/tıklama süresi) ──────────
@@ -285,8 +287,9 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
                 src={slot.data.anaFotograf?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=1200'}
                 alt={slot.data.baslik}
                 fill
-                priority={isCurrent}
-                loading={isCurrent ? 'eager' : 'lazy'}
+                priority={idx === 0}
+                fetchPriority={idx === 0 ? 'high' : 'auto'}
+                loading={idx === 0 ? 'eager' : 'lazy'}
                 sizes="(max-width: 640px) 100vw, 1200px"
                 className="object-cover object-top sm:object-center brightness-105 contrast-105"
               />
@@ -319,8 +322,9 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
               alt={slot.promoData.title}
               fill
               unoptimized
-              priority={isCurrent}
-              loading={isCurrent ? 'eager' : 'lazy'}
+              priority={idx === 0}
+              fetchPriority={idx === 0 ? 'high' : 'auto'}
+              loading={idx === 0 ? 'eager' : 'lazy'}
               sizes="(max-width: 640px) 100vw, 1200px"
               className="object-cover object-center brightness-100 contrast-105"
             />

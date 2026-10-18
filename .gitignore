@@ -47,5 +47,6 @@ next-env.d.ts
 /scripts/
 *.log
 *.tmp
-*.bak
 env
+Trace-*.json
+

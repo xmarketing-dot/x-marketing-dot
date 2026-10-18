@@ -8,6 +8,7 @@ import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { trackEvent } from '@/components/common/AnalyticsTracker';
 import { isSearchEngineBot } from '@/lib/botDetection';
 import { formatWhatsAppNumber } from '@/lib/format';
+import { fetchClientConfig } from '@/lib/clientConfig';
 
 interface SpecialAdItem {
   _id?: string;
@@ -79,10 +80,10 @@ export default function SpecialAdPopup() {
       }
     }
 
-    // Fetch config
-    fetch('/api/config')
-      .then((res) => res.json())
+    // Fetch config via shared cache
+    fetchClientConfig()
       .then((data) => {
+        if (!data) return;
         const adsList: SpecialAdItem[] = [];
 
         // Check multi-ad array

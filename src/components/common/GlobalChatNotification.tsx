@@ -10,6 +10,7 @@ export default function GlobalChatNotification() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [latestMessage, setLatestMessage] = useState<string | null>(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [hasChatStarted, setHasChatStarted] = useState(false);
 
   const isChatPage = pathname === '/chat';
   const isSecurePortal = pathname?.startsWith('/bms-secure-portal');
@@ -66,7 +67,6 @@ export default function GlobalChatNotification() {
     const setupChatListener = (tid: string) => {
       if (pollInterval) clearInterval(pollInterval);
 
-      // A) İlk Yükleme: Okunmamış mesajları al
       const fetchUnread = async () => {
         try {
           const res = await fetch(`/api/chat/messages?threadId=${tid}`);
@@ -84,7 +84,10 @@ export default function GlobalChatNotification() {
         } catch (e) {}
       };
 
-      fetchUnread();
+      // A) İlk Yükleme: Sayfanın ilk açılışında LCP ve ana kaynakları engellememesi için 3.5 sn rölantide çalıştır
+      const initialTimer = setTimeout(() => {
+        if (isMounted) fetchUnread();
+      }, 3500);
 
       // B) SSE KALDIRILDI: Her sayfada açık kalan EventSource, Vercel Fluid örneğini sürekli
       // ayakta tutuyor (Provisioned Memory faturası). Bildirim için düşük frekanslı polling yeterli.
@@ -121,9 +124,13 @@ export default function GlobalChatNotification() {
 
     const init = () => {
       const tid = getSavedThreadId();
-      // Kullanıcının daha önce başlattığı aktif bir sohbeti yoksa sunucuyu ve SSE'yi boş yere yorma!
-      if (!tid) return;
+      // Kullanıcının daha önce başlattığı aktif bir sohbeti yoksa bubble çıkmaz ve polling çalışmaz
+      if (!tid) {
+        setHasChatStarted(false);
+        return;
+      }
 
+      setHasChatStarted(true);
       if (isMounted) {
         setupChatListener(tid);
       }
@@ -133,7 +140,12 @@ export default function GlobalChatNotification() {
 
     const handleStorage = () => {
       const updatedTid = getSavedThreadId();
-      if (updatedTid) setupChatListener(updatedTid);
+      if (updatedTid) {
+        setHasChatStarted(true);
+        setupChatListener(updatedTid);
+      } else {
+        setHasChatStarted(false);
+      }
     };
     window.addEventListener('storage', handleStorage);
 
@@ -144,7 +156,12 @@ export default function GlobalChatNotification() {
     };
   }, [isChatPage, isSecurePortal, pathname]);
 
+  // Sohbet sayfası veya admin panelinde gizle
   if (isChatPage || isSecurePortal) return null;
+
+  // Kullanıcı sohbet başlatmamışsa veya okunmamış mesaj yoksa bubble GÖZÜKMEZ
+  const shouldShow = hasChatStarted && (unreadCount > 0 || showPopup);
+  if (!shouldShow) return null;
 
   return (
     <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end pointer-events-none select-none">

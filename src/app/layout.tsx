@@ -251,14 +251,6 @@ export default async function RootLayout({
           </div>
         </noscript>
 
-        {/* Google AdSense */}
-        <Script
-          id="google-adsense"
-          strategy="afterInteractive"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2136071183930796"
-          crossOrigin="anonymous"
-        />
-
 
       </head>
       <body className="bg-[#0d1117] text-[#f0f6fc] min-h-full">
