@@ -51,7 +51,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, message, url, imageUrl, badge, sendWebPush } = body;
+    const { title, message, url, imageUrl, badge, sendSiteNotification = true, sendWebPush = false, platform = 'all' } = body;
 
     if (!title || !message) {
       return NextResponse.json({ error: 'Başlık ve mesaj içeriği zorunludur.' }, { status: 400 });
@@ -59,22 +59,33 @@ export async function POST(req: NextRequest) {
 
     await connectToDatabase();
 
-    // 1. Site İçi Bildirim Oluştur
-    const newNotif = await SiteNotificationModel.create({
-      title,
-      message,
-      url: url || '/',
-      imageUrl: imageUrl || '',
-      type: 'admin_broadcast',
-      badge: badge || 'YÖNETİCİ',
-      isActive: true,
-    });
+    // 1. Site İçi Bildirim Oluştur (İsteğe bağlı)
+    let newNotif = null;
+    if (sendSiteNotification !== false) {
+      newNotif = await SiteNotificationModel.create({
+        title,
+        message,
+        url: url || '/',
+        imageUrl: imageUrl || '',
+        type: 'admin_broadcast',
+        badge: badge || 'YÖNETİCİ',
+        isActive: true,
+      });
+    }
 
     // 2. İsteğe bağlı Web Push Bildirimi Gönder
     let pushSentCount = 0;
+    let totalTargetSubscribers = 0;
     if (sendWebPush) {
       try {
-        const subscribers = await PushSubscriptionModel.find({ active: true });
+        const query: any = { active: true };
+        if (platform && platform !== 'all') {
+          query.platform = platform;
+        }
+
+        const subscribers = await PushSubscriptionModel.find(query);
+        totalTargetSubscribers = subscribers.length;
+
         if (subscribers.length > 0) {
           const payload = JSON.stringify({
             title,
@@ -82,6 +93,8 @@ export async function POST(req: NextRequest) {
             url: url || '/',
             icon: '/icon-192.png',
             image: imageUrl || undefined,
+            badge: '/favicon-32x32.png',
+            tag: `bms-broadcast-${Date.now()}`,
           });
 
           await Promise.allSettled(
@@ -118,8 +131,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      siteNotificationCreated: !!newNotif,
       notification: newNotif,
       pushSentCount,
+      totalTargetSubscribers,
     });
   } catch (err: any) {
     console.error('Admin POST Notification Error:', err);

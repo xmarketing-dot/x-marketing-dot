@@ -31,7 +31,8 @@ import {
   Gift,
   Activity,
   Smartphone,
-  Bell
+  Bell,
+  BellRing
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 
@@ -283,11 +284,14 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     );
   }
 
-  const getNavClass = (path: string) => `flex items-center gap-2.5 px-3 py-2 xl:py-2.5 rounded-xl transition-all text-xs font-bold font-heading ${
-    pathname === path 
-      ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40 shadow-sm' 
-      : 'hover:bg-[#21262d] text-[#8b949e] hover:text-white border border-transparent'
-  }`;
+  const getNavClass = (path: string) => {
+    const isActive = pathname === path || (path === '/bms-secure-portal/bildirimler' && pathname === '/bms-secure-portal/uygulama');
+    return `flex items-center gap-2.5 px-3 py-2 xl:py-2.5 rounded-xl transition-all text-xs font-bold font-heading ${
+      isActive 
+        ? 'bg-amber-500/15 text-amber-300 border border-amber-500/40 shadow-sm' 
+        : 'hover:bg-[#21262d] text-[#8b949e] hover:text-white border border-transparent'
+    }`;
+  };
 
   // 3. AUTHENTICATED: Render Full Admin Portal Layout
   return (
@@ -373,16 +377,16 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               </Link>
 
               <Link
-                href="/bms-secure-portal/uygulama"
+                href="/bms-secure-portal/bildirimler"
                 prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/uygulama')} justify-between`}
+                className={`${getNavClass('/bms-secure-portal/bildirimler')} justify-between`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <Smartphone className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span className="text-emerald-300 truncate">PWA &amp; Push</span>
+                  <BellRing className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="text-amber-300 truncate">Bildirim &amp; Push Masası</span>
                 </div>
-                <span className="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0 whitespace-nowrap">
-                  PUSH
+                <span className="px-1.5 py-0.5 text-[9px] font-black rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0 whitespace-nowrap">
+                  PUSH + SİTE
                 </span>
               </Link>
             </div>
@@ -538,19 +542,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 </div>
                 <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0 whitespace-nowrap">
                   GENEL
-                </span>
-              </Link>
-              <Link
-                href="/bms-secure-portal/bildirimler"
-                prefetch={false}
-                className={`${getNavClass('/bms-secure-portal/bildirimler')} justify-between`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Bell className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="truncate">Bildirim Merkezi</span>
-                </div>
-                <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 whitespace-nowrap">
-                  CANLI
                 </span>
               </Link>
 
@@ -744,12 +735,12 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                   </Link>
 
                   <Link
-                    href="/bms-secure-portal/uygulama"
+                    href="/bms-secure-portal/bildirimler"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="p-2.5 rounded-2xl bg-gradient-to-br from-amber-950/40 to-[#21262d] hover:bg-[#30363d] text-amber-300 flex flex-col items-center text-center gap-1.5 border border-amber-500/40 relative shadow-md"
                   >
-                    <Smartphone className="w-5 h-5 text-amber-400" />
-                    <span className="text-[11px] truncate w-full">PWA &amp; Push</span>
+                    <BellRing className="w-5 h-5 text-amber-400" />
+                    <span className="text-[11px] truncate w-full">Bildirim &amp; Push</span>
                   </Link>
                 </div>
               </div>
@@ -904,19 +895,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                       </span>
                     </div>
                     <span>Site Yönetimi</span>
-                  </Link>
-                  <Link
-                    href="/bms-secure-portal/bildirimler"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Bell className="w-5 h-5 text-amber-400" />
-                      <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-400 text-[9px] font-black">
-                        CANLI
-                      </span>
-                    </div>
-                    <span>Bildirimler</span>
                   </Link>
 
 
