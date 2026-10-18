@@ -49,10 +49,9 @@ import { turkeyProvinces } from '@/data/turkeyLocations';
 export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu' | 'pasif'>('all');
-  const [sortBy, setSortBy] = useState<'sira_asc' | 'expiry_asc' | 'created_desc' | 'city_asc' | 'views_desc' | 'whatsapp_desc' | 'title_asc'>('sira_asc');
+  const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
+  const [sortBy, setSortBy] = useState<'expiry_asc' | 'created_desc' | 'city_asc' | 'views_desc' | 'whatsapp_desc' | 'title_asc'>('created_desc');
   const [searchTerm, setSearchTerm] = useState('');
-  const [rankingId, setRankingId] = useState<string | null>(null);
 
   // Detaylı İnceleme Modalı (Full Inspection Modal)
   const [inspectItem, setInspectItem] = useState<any | null>(null);
@@ -75,16 +74,14 @@ export default function AdminListingsPage() {
     tamAd: '',
     isVerifiedProfile: false,
     likeSayisi: 55,
-    siraNo: 0,
-    yas: 23,
-    boy: 173,
-    kilo: 54,
-    gogusOlcusu: '85C (Doğal)',
-    sacRengi: 'Kumral',
-    gozRengi: 'Ela',
-    diller: 'Türkçe, İngilizce, Rusça',
-    hizmetMekanlari: 'Kendi Evi, Lüks Otel, Rezidans, Seyahat',
-    paketBitisTarihi: '',
+    yas: 0,
+    boy: 0,
+    kilo: 0,
+    gogusOlcusu: '',
+    sacRengi: '',
+    gozRengi: '',
+    diller: 'Türkçe',
+    hizmetMekanlari: '',
   });
 
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
@@ -105,18 +102,17 @@ export default function AdminListingsPage() {
     yayinSuresi: 'haftalik',
     panelSifresi: '123456',
     kullaniciId: '',
-    tamAd: 'Merve Özdemir',
+    tamAd: '',
     isVerifiedProfile: true,
     likeSayisi: 55,
-    siraNo: 0,
-    yas: 23,
-    boy: 173,
-    kilo: 54,
-    gogusOlcusu: '85C (Doğal)',
-    sacRengi: 'Kumral',
-    gozRengi: 'Ela',
-    diller: 'Türkçe, İngilizce, Rusça',
-    hizmetMekanlari: 'Kendi Evi, Lüks Otel, Rezidans, Seyahat',
+    yas: 0,
+    boy: 0,
+    kilo: 0,
+    gogusOlcusu: '',
+    sacRengi: '',
+    gozRengi: '',
+    diller: 'Türkçe',
+    hizmetMekanlari: '',
   });
   const [createPhotoUrls, setCreatePhotoUrls] = useState<string[]>([]);
   const [createCoverIdx, setCreateCoverIdx] = useState(0);
@@ -134,6 +130,149 @@ export default function AdminListingsPage() {
   const [assignLoading, setAssignLoading] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState<{ username: string; pass: string } | null>(null);
   const [copiedCreds, setCopiedCreds] = useState(false);
+
+  // ── KULLANICI BAZLI TOPLU WHATSAPP NUMARASI GÜNCELLEME (TEKİL / HAVUZ RASTGELE) ──
+  const [showBulkPhoneModal, setShowBulkPhoneModal] = useState(false);
+  const [bulkPhoneUser, setBulkPhoneUser] = useState('');
+  const [bulkPhoneInputMode, setBulkPhoneInputMode] = useState<'single' | 'pool'>('single');
+  const [bulkSingleNumber, setBulkSingleNumber] = useState('');
+  const [bulkPoolNumbersText, setBulkPoolNumbersText] = useState('');
+  const [bulkDistributionMode, setBulkDistributionMode] = useState<'round_robin' | 'random'>('round_robin');
+  const [bulkPreviewLoading, setBulkPreviewLoading] = useState(false);
+  const [bulkPreviewData, setBulkPreviewData] = useState<{
+    user: any;
+    totalListings: number;
+    currentNumbers: string[];
+  } | null>(null);
+  const [bulkExecuting, setBulkExecuting] = useState(false);
+  const [bulkResult, setBulkResult] = useState<any | null>(null);
+
+  const parsedPoolNumbers = useMemo(() => {
+    return bulkPoolNumbersText
+      .split(/[\n,;]+/)
+      .map((n) => n.trim())
+      .filter((n) => n.length >= 7);
+  }, [bulkPoolNumbersText]);
+
+  const userListingStats = useMemo(() => {
+    const map = new Map<string, { count: number; userId?: string; phone?: string }>();
+    systemUsers.forEach((u: any) => {
+      if (u.kullaniciAdi) {
+        map.set(u.kullaniciAdi.toLowerCase(), {
+          count: u.stats?.totalListings || 0,
+          userId: u._id,
+          phone: u.telefon
+        });
+      }
+    });
+
+    listings.forEach((l: any) => {
+      const uname = l.kullaniciAdi || (l.kullaniciObj?.kullaniciAdi);
+      if (uname) {
+        const key = uname.toLowerCase();
+        const existing = map.get(key);
+        const actualCount = listings.filter((x: any) => (x.kullaniciAdi || x.kullaniciObj?.kullaniciAdi)?.toLowerCase() === key).length;
+        if (existing) {
+          existing.count = Math.max(existing.count, actualCount);
+        } else {
+          map.set(key, {
+            count: actualCount,
+            phone: l.whatsappNumara
+          });
+        }
+      }
+    });
+
+    return Array.from(map.entries())
+      .map(([uname, data]) => ({
+        username: uname,
+        count: data.count,
+        userId: data.userId,
+        phone: data.phone
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [systemUsers, listings]);
+
+  const fetchBulkUserPreview = async (uname: string) => {
+    if (!uname || !uname.trim()) {
+      setBulkPreviewData(null);
+      return;
+    }
+    setBulkPreviewLoading(true);
+    setBulkResult(null);
+    try {
+      const clean = uname.replace(/^@/, '').trim();
+      const res = await fetch(`/api/admin/listings/bulk-phone?username=${encodeURIComponent(clean)}`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setBulkPreviewData(data);
+      } else {
+        setBulkPreviewData(null);
+      }
+    } catch {
+      setBulkPreviewData(null);
+    } finally {
+      setBulkPreviewLoading(false);
+    }
+  };
+
+  const handleSelectBulkUser = (uname: string) => {
+    setBulkPhoneUser(uname);
+    fetchBulkUserPreview(uname);
+  };
+
+  const handleExecuteBulkPhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkPhoneUser.trim()) {
+      alert('Lütfen bir kullanıcı seçin veya kullanıcı adı girin.');
+      return;
+    }
+
+    const numbers = bulkPhoneInputMode === 'single'
+      ? [bulkSingleNumber.trim()]
+      : parsedPoolNumbers;
+
+    if (numbers.length === 0 || (bulkPhoneInputMode === 'single' && !bulkSingleNumber.trim())) {
+      alert('Lütfen en az bir geçerli WhatsApp numarası giriniz.');
+      return;
+    }
+
+    const cleanUname = bulkPhoneUser.replace(/^@/, '').trim();
+    const count = bulkPreviewData?.totalListings || 'tüm';
+    const confirmText = bulkPhoneInputMode === 'single'
+      ? `@${cleanUname} kullanıcısına ait ${count} ilanın WhatsApp numarası "${numbers[0]}" olarak güncellenecektir. Onaylıyor musunuz?`
+      : `@${cleanUname} kullanıcısına ait ${count} ilana girilen ${numbers.length} adet numara ${bulkDistributionMode === 'round_robin' ? 'dengeli/eşit' : 'rastgele'} olarak paylaştırılacaktır. Onaylıyor musunuz?`;
+
+    if (!confirm(confirmText)) return;
+
+    setBulkExecuting(true);
+    setBulkResult(null);
+
+    try {
+      const res = await fetch('/api/admin/listings/bulk-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: cleanUname,
+          rawNumbers: numbers,
+          mode: bulkPhoneInputMode === 'single' ? 'single' : bulkDistributionMode,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setBulkResult(data);
+        fetchListings(false);
+        fetchBulkUserPreview(cleanUname);
+      } else {
+        alert(data.error || 'Numaralar güncellenemedi.');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Bağlantı hatası.');
+    } finally {
+      setBulkExecuting(false);
+    }
+  };
 
   useEffect(() => {
     fetchListings(true);
@@ -245,85 +384,6 @@ export default function AdminListingsPage() {
     }
   };
 
-  // 1-Click Fast 1. Sıraya Sabitle / Başa Taşı
-  const handleMakeFirst = async (id: string, baslik = 'İlan') => {
-    setRankingId(id);
-    try {
-      const res = await fetch('/api/admin/listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, action: 'make_first' }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        // Local state'te bu ilanı 1 yap, diğer >=1 olanları +1 kaydır
-        setListings((prev) =>
-          prev.map((l) => {
-            if (l._id === id) {
-              return { ...l, siraNo: 1 };
-            }
-            if (l.siraNo && l.siraNo >= 1) {
-              return { ...l, siraNo: l.siraNo + 1 };
-            }
-            return l;
-          })
-        );
-      } else {
-        alert(data.error || 'Sıralama güncellenemedi.');
-      }
-    } catch (err) {
-      alert('Sıralama güncellenirken bağlantı hatası oluştu.');
-    } finally {
-      setRankingId(null);
-    }
-  };
-
-  const handleResetOrder = async (id: string) => {
-    setRankingId(id);
-    try {
-      const res = await fetch('/api/admin/listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, action: 'reset_order' }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setListings((prev) =>
-          prev.map((l) => (l._id === id ? { ...l, siraNo: 0 } : l))
-        );
-      } else {
-        alert(data.error || 'Sıfırlama başarısız.');
-      }
-    } catch (err) {
-      alert('Sıralama sıfırlanırken hata oluştu.');
-    } finally {
-      setRankingId(null);
-    }
-  };
-
-  const handleSetCustomOrder = async (id: string, customSira: number) => {
-    setRankingId(id);
-    try {
-      const res = await fetch('/api/admin/listings', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, siraNo: customSira }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setListings((prev) =>
-          prev.map((l) => (l._id === id ? { ...l, siraNo: customSira } : l))
-        );
-      } else {
-        alert(data.error || 'Sıralama güncellenemedi.');
-      }
-    } catch (err) {
-      alert('Sıralama güncellenirken bağlantı hatası oluştu.');
-    } finally {
-      setRankingId(null);
-    }
-  };
-
   const handleOpenEdit = (item: any) => {
     setEditingItem(item);
     setEditForm({
@@ -340,16 +400,14 @@ export default function AdminListingsPage() {
       tamAd: item.tamAd || '',
       isVerifiedProfile: Boolean(item.isVerifiedProfile),
       likeSayisi: item.likeSayisi || 55,
-      siraNo: item.siraNo || 0,
-      yas: item.yas || 23,
-      boy: item.boy || 173,
-      kilo: item.kilo || 54,
-      gogusOlcusu: item.gogusOlcusu || '85C (Doğal)',
-      sacRengi: item.sacRengi || 'Kumral',
-      gozRengi: item.gozRengi || 'Ela',
-      diller: Array.isArray(item.diller) ? item.diller.join(', ') : (item.diller || 'Türkçe, İngilizce'),
-      hizmetMekanlari: Array.isArray(item.hizmetMekanlari) ? item.hizmetMekanlari.join(', ') : (item.hizmetMekanlari || 'Kendi Evi, Lüks Otel, Rezidans'),
-      paketBitisTarihi: item.paketBitisTarihi ? new Date(item.paketBitisTarihi).toISOString().slice(0, 16) : '',
+      yas: item.yas || 0,
+      boy: item.boy || 0,
+      kilo: item.kilo || 0,
+      gogusOlcusu: item.gogusOlcusu || '',
+      sacRengi: item.sacRengi || '',
+      gozRengi: item.gozRengi || '',
+      diller: Array.isArray(item.diller) ? item.diller.join(', ') : (item.diller || 'Türkçe'),
+      hizmetMekanlari: Array.isArray(item.hizmetMekanlari) ? item.hizmetMekanlari.join(', ') : (item.hizmetMekanlari || ''),
     });
 
     const photos = item.fotograflar && item.fotograflar.length > 0
@@ -722,15 +780,11 @@ export default function AdminListingsPage() {
 
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
     if (diffDays > 0) {
       return { text: `⏳ ${diffDays} Gün ${diffHours} Saat Kaldı`, isExpired: false, isPending: false };
     }
-    if (diffHours > 0) {
-      return { text: `⏳ ${diffHours} Saat ${diffMinutes > 0 ? `${diffMinutes} Dk ` : ''}Kaldı`, isExpired: false, isPending: false };
-    }
-    return { text: `⏳ ${Math.max(1, diffMinutes)} Dakika Kaldı`, isExpired: false, isPending: false };
+    return { text: `⏳ ${diffHours} Saat Kaldı`, isExpired: false, isPending: false };
   };
 
   const selectedProvince = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
@@ -741,52 +795,6 @@ export default function AdminListingsPage() {
     if (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now()) return true;
     return false;
   }).length;
-  const passiveCount = listings.filter((l) => l.status === 'pasif').length;
-
-  const renderStatusBadge = (status: string, paketBitisTarihi?: string) => {
-    const isExpired = paketBitisTarihi && new Date(paketBitisTarihi).getTime() < Date.now();
-    
-    if (status === 'yayinda') {
-      if (isExpired) {
-        return (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-amber-500/20 text-amber-400 border border-amber-500/40">
-            ⏰ Süresi Doldu
-          </span>
-        );
-      }
-      return (
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-          🟢 Yayında
-        </span>
-      );
-    }
-    if (status === 'onay_bekliyor') {
-      return (
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse">
-          ⏳ Onay Bekliyor
-        </span>
-      );
-    }
-    if (status === 'suresi_doldu') {
-      return (
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-red-500/20 text-red-400 border border-red-500/40">
-          ❌ Süresi Doldu
-        </span>
-      );
-    }
-    if (status === 'pasif') {
-      return (
-        <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-slate-800 text-slate-300 border border-slate-700">
-          🚫 Pasif
-        </span>
-      );
-    }
-    return (
-      <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading bg-[#21262d] text-[#8b949e]">
-        {status}
-      </span>
-    );
-  };
 
   const filteredListings = useMemo(() => {
     let list = listings.filter((l) => {
@@ -798,8 +806,6 @@ export default function AdminListingsPage() {
       } else if (filter === 'suresi_doldu') {
         const isExpired = l.status === 'suresi_doldu' || (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now());
         if (!isExpired) return false;
-      } else if (filter === 'pasif') {
-        if (l.status !== 'pasif') return false;
       }
 
       // 2. Search Query
@@ -826,15 +832,6 @@ export default function AdminListingsPage() {
 
     // 3. Sorting
     list = [...list].sort((a, b) => {
-      if (sortBy === 'sira_asc') {
-        // 1. Sıraya sabitlenmiş ilanlar en başta (1, 2, 3...) ardından tarihe göre
-        const sA = (a.siraNo && a.siraNo > 0) ? a.siraNo : 999999;
-        const sB = (b.siraNo && b.siraNo > 0) ? b.siraNo : 999999;
-        if (sA !== sB) return sA - sB;
-        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeB - timeA;
-      }
       if (sortBy === 'expiry_asc') {
         // En az süresi kalan (veya süresi geçmiş olanlar) en üstte
         const timeA = a.paketBitisTarihi ? new Date(a.paketBitisTarihi).getTime() : 9999999999999;
@@ -842,11 +839,6 @@ export default function AdminListingsPage() {
         return timeA - timeB;
       }
       if (sortBy === 'created_desc') {
-        // Sabit sırası olanlar önce, sonra en yeni eklenenler
-        const sA = (a.siraNo && a.siraNo > 0) ? a.siraNo : 999999;
-        const sB = (b.siraNo && b.siraNo > 0) ? b.siraNo : 999999;
-        if (sA !== sB) return sA - sB;
-
         const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return timeB - timeA;
@@ -899,11 +891,6 @@ export default function AdminListingsPage() {
               {expiredCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-black shrink-0">
                   {expiredCount} Süresi Doldu
-                </span>
-              )}
-              {passiveCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-300 border border-slate-600 text-[10px] font-black shrink-0">
-                  {passiveCount} Pasif
                 </span>
               )}
             </h1>
@@ -981,17 +968,6 @@ export default function AdminListingsPage() {
               </span>
             )}
           </button>
-
-          <button
-            onClick={() => setFilter('pasif')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'pasif' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
-              }`}
-          >
-            <span>🚫 Pasif İlanlar</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'pasif' ? 'bg-slate-950/30 text-slate-950' : 'bg-slate-800 text-slate-300 border border-slate-700'}`}>
-              {passiveCount}
-            </span>
-          </button>
         </div>
 
         {/* Search Bar & Sorting Toolbar */}
@@ -1025,19 +1001,6 @@ export default function AdminListingsPage() {
 
             {/* Desktop / Tablet Quick Sort Pills */}
             <div className="hidden sm:flex items-center gap-1 bg-[#0d1117] p-1 rounded-xl border border-[#30363d]/60">
-              <button
-                onClick={() => setSortBy('sira_asc')}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
-                  sortBy === 'sira_asc'
-                    ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black shadow-sm shadow-amber-500/20'
-                    : 'text-amber-400 hover:text-white hover:bg-[#21262d]'
-                }`}
-                title="1. Sıraya sabitlenmiş ilanlar en başta"
-              >
-                <Crown className="w-3 h-3" />
-                <span>👑 1. Sıra / Öncelik</span>
-              </button>
-
               <button
                 onClick={() => setSortBy('expiry_asc')}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
@@ -1107,7 +1070,6 @@ export default function AdminListingsPage() {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="w-full py-2 px-3 text-xs bg-[#0d1117] border border-[#30363d] rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
               >
-                <option value="sira_asc">👑 1. Sıra / Öncelik Sıralaması</option>
                 <option value="expiry_asc">⏳ Az Zamanı Kalan (Önce Bitenler)</option>
                 <option value="created_desc">🆕 En Yeni Eklenen</option>
                 <option value="city_asc">🏙️ Şehir &amp; İlçe (A-Z)</option>
@@ -1147,7 +1109,6 @@ export default function AdminListingsPage() {
                       <th className="py-3.5 px-4">İlan / Model</th>
                       <th className="py-3.5 px-3">Konum &amp; Bölge</th>
                       <th className="py-3.5 px-3">Rozet &amp; Durum</th>
-                      <th className="py-3.5 px-3">👑 Sıra (1. Yap)</th>
                       <th className="py-3.5 px-3">Yayın Süresi</th>
                       <th className="py-3.5 px-3">İletişim &amp; Şifre</th>
                       <th className="py-3.5 px-3 text-center">📊 İstatistik &amp; Yorumlar</th>
@@ -1221,73 +1182,24 @@ export default function AdminListingsPage() {
                           <td className="py-3 px-3">
                             <div className="flex items-center gap-1 text-amber-300 font-bold capitalize text-xs">
                               <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                              <span className="truncate">{item.ilSlug} / {item.ilceSlug === 'genel' ? '🌟 TÜM İL (GENEL)' : item.ilceSlug}</span>
+                              <span className="truncate">{item.ilSlug} / {item.ilceSlug}</span>
                             </div>
                           </td>
 
                           {/* Rozet & Durum */}
                           <td className="py-3 px-3">
                             <div className="flex flex-col gap-1 items-start">
-                              {renderStatusBadge(item.status, item.paketBitisTarihi)}
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase font-heading ${isLive
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                  : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
+                                }`}>
+                                {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
+                              </span>
                               <div className="flex items-center gap-1 flex-wrap">
                                 <span className="px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[9px] font-black uppercase">
                                   👑 {item.rozet || 'vip'}
                                 </span>
                               </div>
-                            </div>
-                          </td>
-
-                          {/* 👑 Sıralama Önceliği & 1. Yap */}
-                          <td className="py-3 px-3">
-                            <div className="flex flex-col gap-1 items-start">
-                              {item.siraNo === 1 ? (
-                                <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/50 shadow-sm shadow-amber-500/10">
-                                  <Crown className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-bounce" />
-                                  <span className="font-heading font-black text-amber-300 text-[11px] whitespace-nowrap">👑 1. Sırada</span>
-                                  <button
-                                    onClick={() => handleResetOrder(item._id)}
-                                    disabled={rankingId === item._id}
-                                    className="text-[#8b949e] hover:text-rose-400 text-[10px] ml-1 p-0.5 transition-colors"
-                                    title="Sabit Sırayı Kaldır (Otomatiğe Al)"
-                                  >
-                                    <X className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              ) : item.siraNo && item.siraNo > 1 ? (
-                                <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-cyan-500/15 border border-cyan-500/30">
-                                  <span className="font-heading font-black text-cyan-300 text-[10px] whitespace-nowrap">📌 #{item.siraNo}. Sıra</span>
-                                  <button
-                                    onClick={() => handleMakeFirst(item._id, item.baslik)}
-                                    disabled={rankingId === item._id}
-                                    className="text-amber-400 hover:text-amber-300 text-[9px] font-bold underline ml-1"
-                                    title="1. Sıraya Taşı"
-                                  >
-                                    1. Yap
-                                  </button>
-                                  <button
-                                    onClick={() => handleResetOrder(item._id)}
-                                    disabled={rankingId === item._id}
-                                    className="text-[#8b949e] hover:text-rose-400 text-[10px] p-0.5 transition-colors"
-                                    title="Sabit Sırayı Kaldır"
-                                  >
-                                    <X className="w-2.5 h-2.5" />
-                                  </button>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => handleMakeFirst(item._id, item.baslik)}
-                                  disabled={rankingId === item._id}
-                                  className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-gradient-to-r hover:from-amber-500 hover:to-yellow-400 text-[#8b949e] hover:text-slate-950 font-heading font-bold text-[11px] border border-[#30363d] hover:border-amber-400 transition-all flex items-center gap-1 active:scale-95 shadow-sm"
-                                  title="Bu ilanı sitede ve listede 1. sıraya sabitle"
-                                >
-                                  {rankingId === item._id ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
-                                  ) : (
-                                    <Crown className="w-3.5 h-3.5 text-amber-400 group-hover:text-slate-950" />
-                                  )}
-                                  <span>1. Yap</span>
-                                </button>
-                              )}
                             </div>
                           </td>
 
@@ -1376,35 +1288,20 @@ export default function AdminListingsPage() {
                           {/* Yönetim & Aksiyonlar */}
                           <td className="py-3 px-4 text-right">
                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                              {/* 1. Sıraya Sabitle */}
-                              <button
-                                onClick={() => item.siraNo === 1 ? handleResetOrder(item._id) : handleMakeFirst(item._id, item.baslik)}
-                                disabled={rankingId === item._id}
-                                className={`p-2 rounded-xl border transition-all ${
-                                  item.siraNo === 1
-                                    ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
-                                    : 'bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-amber-400 border-[#30363d]'
-                                }`}
-                                title={item.siraNo === 1 ? '1. Sırada Sabit (Kaldırmak için tıkla)' : 'Bu İlanı 1. Sıraya Sabitle'}
-                              >
-                                <Crown className="w-4 h-4" />
-                              </button>
-
                               {/* Onayla / Durdur */}
-                              {/* Onayla / Yayına Al / Pasife Al */}
-                              {isPending || item.status === 'pasif' || item.status === 'suresi_doldu' ? (
+                              {isPending ? (
                                 <button
                                   onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
                                   className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95"
-                                  title="Hemen Yayına Al (Aktif Et)"
+                                  title="Hemen Onayla & Yayına Al"
                                 >
                                   <Check className="w-4 h-4 stroke-[3]" />
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => handleQuickStatusChange(item._id, 'pasif')}
-                                  className="p-2 rounded-xl bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 border border-[#30363d] text-xs transition-all"
-                                  title="İlanı Pasife Al (Gizle)"
+                                  onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
+                                  className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 border border-[#30363d] text-xs transition-all"
+                                  title="İlanı Durdur / Beklemeye Al"
                                 >
                                   <Clock className="w-4 h-4" />
                                 </button>
@@ -1520,29 +1417,23 @@ export default function AdminListingsPage() {
                             {item.baslik}
                           </h3>
 
-                          {renderStatusBadge(item.status, item.paketBitisTarihi)}
+                          <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase font-heading ${isLive
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              : 'bg-amber-500/20 text-amber-400 border border-amber-500/40 animate-pulse'
+                            }`}>
+                            {isLive ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
+                          </span>
 
                           <span className="px-1.5 py-0.5 rounded-lg text-[9px] font-black uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             {item.rozet || 'vip'}
                           </span>
-
-                          {item.siraNo === 1 ? (
-                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-gradient-to-r from-amber-500/25 to-yellow-500/25 text-amber-300 border border-amber-500/50 text-[9px] font-black font-heading animate-pulse">
-                              <Crown className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
-                              <span>👑 1. Sırada</span>
-                            </span>
-                          ) : item.siraNo && item.siraNo > 1 ? (
-                            <span className="px-1.5 py-0.5 rounded-lg bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 text-[9px] font-black font-heading">
-                              📌 #{item.siraNo}. Sıra
-                            </span>
-                          ) : null}
                         </div>
 
                         {/* Konum & Süre */}
                         <div className="flex items-center gap-2 text-[11px] text-amber-400 font-bold capitalize flex-wrap">
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3 shrink-0" />
-                            <span>{item.ilSlug} / {item.ilceSlug === 'genel' ? '🌟 TÜM İL (GENEL)' : item.ilceSlug}</span>
+                            <span>{item.ilSlug} / {item.ilceSlug}</span>
                           </span>
                           <span className="text-[#8b949e]">•</span>
                           <span className="text-emerald-400 font-mono flex items-center gap-1">
@@ -1629,41 +1520,22 @@ export default function AdminListingsPage() {
                     <div className="flex flex-col gap-1.5 border-t border-[#30363d]/60 pt-2.5">
                       {/* Satır 1: Ana Operasyon Butonları */}
                       <div className="flex items-center gap-1.5">
-                        {/* 1. Sıraya Sabitle */}
-                        <button
-                          onClick={() => item.siraNo === 1 ? handleResetOrder(item._id) : handleMakeFirst(item._id, item.baslik)}
-                          disabled={rankingId === item._id}
-                          className={`py-2 px-2.5 rounded-xl font-heading font-black text-xs flex items-center justify-center gap-1 border transition-all active:scale-95 shrink-0 ${
-                            item.siraNo === 1
-                              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
-                              : 'bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border-amber-500/30'
-                          }`}
-                          title={item.siraNo === 1 ? '1. Sırayı Kaldır' : '1. Sıraya Sabitle'}
-                        >
-                          {rankingId === item._id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Crown className="w-3.5 h-3.5" />
-                          )}
-                          <span>{item.siraNo === 1 ? '👑 1. Sırada' : '1. Yap'}</span>
-                        </button>
-
-                        {/* Onayla / Yayına Al / Pasife Al */}
-                        {isPending || item.status === 'pasif' || item.status === 'suresi_doldu' ? (
+                        {/* Onayla / Beklemeye Al */}
+                        {isPending ? (
                           <button
                             onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
                             className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
                           >
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            <span>Yayına Al</span>
+                            <span>Hemen Onayla</span>
                           </button>
                         ) : (
                           <button
-                            onClick={() => handleQuickStatusChange(item._id, 'pasif')}
-                            className="py-2 px-2.5 rounded-xl bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 font-bold text-xs border border-[#30363d] transition-colors"
-                            title="İlanı pasife al"
+                            onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
+                            className="py-2 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 font-bold text-xs border border-[#30363d] transition-colors"
+                            title="İlanı beklemeye al"
                           >
-                            <span>Pasife Al</span>
+                            <span>Durdur</span>
                           </button>
                         )}
 
@@ -1866,8 +1738,8 @@ export default function AdminListingsPage() {
                 </label>
               </div>
 
-              {/* Tier & Status & Bitiş Tarihi */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {/* Tier & Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
                   Vitrin Kademe Rozeti *
                   <select
@@ -1891,112 +1763,8 @@ export default function AdminListingsPage() {
                     <option value="yayinda">✅ Yayında</option>
                     <option value="onay_bekliyor">⏳ Onay Bekliyor</option>
                     <option value="suresi_doldu">❌ Süresi Doldu</option>
-                    <option value="pasif">🚫 Pasife Alındı (Gizli)</option>
                   </select>
                 </label>
-
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
-                  <span>Yayın Bitiş Tarihi (Süre)</span>
-                  <input
-                    type="datetime-local"
-                    value={editForm.paketBitisTarihi || ''}
-                    onChange={(e) => setEditForm({ ...editForm, paketBitisTarihi: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-amber-500/40 text-amber-300 font-mono text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
-              </div>
-
-              {/* Sıralama Önceliği (Sıra No: 1 = 1. Sıra Sabit, 0 = Normal Tarih) */}
-              <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-amber-500/40 flex flex-col gap-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-amber-300 font-heading uppercase flex items-center gap-1.5">
-                    <Crown className="w-4 h-4 text-amber-400" />
-                    <span>Sitedeki Sıralama Önceliği (Sıra No)</span>
-                  </span>
-
-                  {editForm.siraNo === 1 && (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black text-[10px] animate-pulse">
-                      👑 1. Sırada Sabit
-                    </span>
-                  )}
-                  {editForm.siraNo > 1 && (
-                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-black text-[10px]">
-                      📌 #{editForm.siraNo}. Sıra Sabit
-                    </span>
-                  )}
-                  {editForm.siraNo === 0 && (
-                    <span className="px-2 py-0.5 rounded-full bg-[#21262d] text-[#8b949e] font-mono text-[10px]">
-                      ⚡ Otomatik Tarih Sırası
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-[11px] text-[#8b949e] leading-relaxed">
-                  İlanı anasayfa ve şehir listesinde <strong>en başta (1. sırada)</strong> sabitlemek için <strong>1. Sıra</strong> seçin. Normal eklenme tarihine göre sıralanması için <strong>Otomatik (0)</strong> bırakın.
-                </p>
-
-                <div className="flex items-center gap-2 flex-wrap pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setEditForm({ ...editForm, siraNo: 1 })}
-                    className={`px-3 py-1.5 rounded-xl font-heading font-black text-xs transition-all flex items-center gap-1.5 ${
-                      editForm.siraNo === 1
-                        ? 'bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-md shadow-amber-500/20 scale-105'
-                        : 'bg-[#21262d] text-amber-300 hover:bg-[#30363d] border border-[#30363d]'
-                    }`}
-                  >
-                    <Crown className="w-3.5 h-3.5" />
-                    <span>👑 1. Sıra Yap (En Üst)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEditForm({ ...editForm, siraNo: 2 })}
-                    className={`px-2.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all ${
-                      editForm.siraNo === 2
-                        ? 'bg-cyan-500 text-slate-950 font-black'
-                        : 'bg-[#21262d] text-[#8b949e] hover:text-white border border-[#30363d]'
-                    }`}
-                  >
-                    2. Sıra
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEditForm({ ...editForm, siraNo: 3 })}
-                    className={`px-2.5 py-1.5 rounded-xl font-heading font-bold text-xs transition-all ${
-                      editForm.siraNo === 3
-                        ? 'bg-cyan-500 text-slate-950 font-black'
-                        : 'bg-[#21262d] text-[#8b949e] hover:text-white border border-[#30363d]'
-                    }`}
-                  >
-                    3. Sıra
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEditForm({ ...editForm, siraNo: 0 })}
-                    className={`px-2.5 py-1.5 rounded-xl font-mono text-xs transition-all ${
-                      editForm.siraNo === 0
-                        ? 'bg-slate-700 text-white font-bold'
-                        : 'bg-[#21262d] text-[#8b949e] hover:text-white border border-[#30363d]'
-                    }`}
-                  >
-                    🔄 Otomatik (0)
-                  </button>
-
-                  <div className="flex items-center gap-1.5 ml-auto">
-                    <span className="text-xs text-[#8b949e] font-bold">Özel No:</span>
-                    <input
-                      type="number"
-                      min={0}
-                      max={999}
-                      value={editForm.siraNo}
-                      onChange={(e) => setEditForm({ ...editForm, siraNo: Math.max(0, parseInt(e.target.value, 10) || 0) })}
-                      className="w-16 px-2.5 py-1 text-center font-mono font-bold text-xs bg-[#21262d] border border-amber-500/40 rounded-lg text-amber-300 focus:outline-none focus:border-amber-400"
-                    />
-                  </div>
-                </div>
               </div>
 
               {/* Panel Şifresi & Kullanıcı Hesabı Eşleştirme */}
@@ -2107,9 +1875,8 @@ export default function AdminListingsPage() {
                   <select
                     value={editForm.ilceSlug}
                     onChange={(e) => setEditForm({ ...editForm, ilceSlug: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   >
-                    <option value="genel" className="font-bold text-amber-400 bg-[#161b22]">🌟 TÜM İL (GENEL - Tüm İlçeler)</option>
                     {selectedProvince.ilceler.map((d) => (
                       <option key={d.slug} value={d.slug}>{d.ad}</option>
                     ))}
@@ -2182,10 +1949,13 @@ export default function AdminListingsPage() {
                     <h2 className="font-heading font-black text-sm sm:text-lg text-white truncate max-w-[180px] sm:max-w-md">
                       {inspectItem.baslik}
                     </h2>
-                    {renderStatusBadge(inspectItem.status, inspectItem.paketBitisTarihi)}
+                    <span className={`px-2 py-0.5 rounded-lg text-[9px] font-black uppercase ${inspectItem.status === 'yayinda' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
+                      }`}>
+                      {inspectItem.status === 'yayinda' ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
+                    </span>
                   </div>
                   <span className="text-[10px] text-[#8b949e] truncate">
-                    📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug === 'genel' ? '🌟 TÜM İL (GENEL)' : inspectItem.ilceSlug} • {new Date(inspectItem.createdAt).toLocaleDateString('tr-TR')}
+                    📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug} • {new Date(inspectItem.createdAt).toLocaleDateString('tr-TR')}
                   </span>
                 </div>
               </div>
@@ -2892,9 +2662,8 @@ export default function AdminListingsPage() {
                   <select
                     value={createForm.ilceSlug}
                     onChange={(e) => setCreateForm({ ...createForm, ilceSlug: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
+                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
                   >
-                    <option value="genel" className="font-bold text-amber-400 bg-[#161b22]">🌟 TÜM İL (GENEL - Tüm İlçeler)</option>
                     {(turkeyProvinces.find((p) => p.ilSlug === createForm.ilSlug) || turkeyProvinces[0]).ilceler.map((d) => (
                       <option key={d.slug} value={d.slug}>{d.ad}</option>
                     ))}
