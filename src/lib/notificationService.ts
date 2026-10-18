@@ -22,6 +22,7 @@ export async function createNotification(params: {
         existing.url = params.url || existing.url;
         existing.imageUrl = params.imageUrl || existing.imageUrl;
         existing.badge = params.badge || existing.badge;
+        existing.isActive = true;
         await existing.save();
         return existing;
       }
@@ -48,8 +49,18 @@ export async function syncAnnouncementBarNotification() {
   try {
     await connectToDatabase();
     const bar = await AnnouncementBarModel.findOne();
-    if (!bar || !bar.title) return;
 
+    // EĞER DUYURU BARI YOKSA VEYA PASİFSE (isActive: false):
+    // Bildirim listesindeki duyuru bildirimlerini KESİNLİKLE pasife çek ve gizle!
+    if (!bar || !bar.title || bar.isActive === false) {
+      await SiteNotificationModel.updateMany(
+        { type: 'announcement_bar' },
+        { $set: { isActive: false } }
+      );
+      return;
+    }
+
+    // Duyuru barı AKTİF ise bildirimlerde göster veya güncelle
     await createNotification({
       title: bar.title,
       message: bar.description || 'Yeni VIP duyurumuz yayında. Detayları keşfedin.',
@@ -68,7 +79,7 @@ export async function syncRecentListingsNotifications() {
   try {
     await connectToDatabase();
     const count = await SiteNotificationModel.countDocuments();
-    if (count > 0) return; // Zaten bildirimler varsa geçmişi doldurma
+    if (count > 0) return;
 
     const recentListings = await ListingModel.find({ status: { $in: ['yayinda', 'onay_bekliyor'] } })
       .sort({ createdAt: -1 })

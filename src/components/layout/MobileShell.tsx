@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Bell } from 'lucide-react';
+import { User, Bell } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 import HeaderTicker from '@/components/common/HeaderTicker';
 import SeoBacklinkFooter from '@/components/common/SeoBacklinkFooter';
@@ -212,14 +212,14 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
                 )}
               </Link>
 
-              {/* Panelim İkonu */}
+              {/* Panelim (Personel) İkonu */}
               <Link
                 href="/panelim"
-                aria-label="Müşteri Panelim"
-                title="Müşteri Panelim"
+                aria-label="Personel / Müşteri Paneli"
+                title="Personel / Müşteri Paneli"
                 className="w-9 h-9 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-amber-400 hover:text-amber-300 transition-all active:scale-95 flex items-center justify-center shrink-0 cursor-pointer"
               >
-                <LayoutDashboard className="w-4 h-4 stroke-[2.2]" />
+                <User className="w-4 h-4 stroke-[2.2]" />
               </Link>
             </div>
           </header>

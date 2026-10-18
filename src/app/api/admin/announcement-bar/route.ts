@@ -129,10 +129,16 @@ export async function POST(req: NextRequest) {
       { upsert: true, new: true }
     ).lean();
 
-    // ── BİLDİRİMLER LİSTESİNE DE OTOMATİK DÜŞÜR ──
+    // ── BİLDİRİMLER LİSTESİNDE AKTİF/PASİF SENKRONİZASYONU ──
     try {
       const { createNotification } = await import('@/lib/notificationService');
-      if (updated.title) {
+      const SiteNotificationModel = (await import('@/models/SiteNotification')).default;
+      if (!updated.isActive) {
+        await SiteNotificationModel.updateMany(
+          { type: 'announcement_bar' },
+          { $set: { isActive: false } }
+        );
+      } else if (updated.title) {
         await createNotification({
           title: updated.title,
           message: updated.description || 'Yeni VIP duyurumuz yayında. Detayları keşfedin.',

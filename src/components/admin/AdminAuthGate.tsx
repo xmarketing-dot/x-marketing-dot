@@ -540,6 +540,20 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                   GENEL
                 </span>
               </Link>
+              <Link
+                href="/bms-secure-portal/bildirimler"
+                prefetch={false}
+                className={`${getNavClass('/bms-secure-portal/bildirimler')} justify-between`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Bell className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="truncate">Bildirim Merkezi</span>
+                </div>
+                <span className="px-1.5 py-0.5 text-[9px] font-bold rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/30 shrink-0 whitespace-nowrap">
+                  CANLI
+                </span>
+              </Link>
+
 
               <Link
                 href="/bms-secure-portal/guvenlik"
@@ -891,6 +905,20 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     </div>
                     <span>Site Yönetimi</span>
                   </Link>
+                  <Link
+                    href="/bms-secure-portal/bildirimler"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-3 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white flex flex-col gap-1 border border-[#363b42] relative"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Bell className="w-5 h-5 text-amber-400" />
+                      <span className="px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-400 text-[9px] font-black">
+                        CANLI
+                      </span>
+                    </div>
+                    <span>Bildirimler</span>
+                  </Link>
+
 
                   <Link
                     href="/bms-secure-portal/guvenlik"
