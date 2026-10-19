@@ -12,7 +12,7 @@ import AdminWhatsAppSync from '@/components/common/AdminWhatsAppSync';
 import { Analytics } from '@vercel/analytics/next';
 import Script from 'next/script';
 import React, { Suspense } from 'react';
-import { headers } from 'next/headers';
+
 
 const inter = Inter({ subsets: ['latin', 'latin-ext'] });
 
@@ -153,13 +153,13 @@ const jsonLd = {
   ],
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const headersList = await headers();
-  const forceCorporate = headersList.get('x-force-corporate') === 'true';
+
+
   return (
     <html lang="tr" className={`${inter.className} h-full antialiased`}>
       <head>
@@ -261,7 +261,7 @@ export default async function RootLayout({
           <AnalyticsTracker />
           <RouteTransitionLoader />
         </Suspense>
-        <MobileShell forceCorporate={forceCorporate}>{children}</MobileShell>
+        <MobileShell forceCorporate={false}>{children}</MobileShell>
         <Analytics />
       </body>
     </html>

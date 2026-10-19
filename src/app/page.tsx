@@ -124,8 +124,8 @@ export default async function HomePage() {
 
   const allSortedListings = [...allSortedActive, ...passiveListings];
 
-  // Süresi dolmuş vitrin ilanlarını anında temizle ve kullanıcıları bilgilendir
-  await checkAndExpireShowcases().catch(() => { });
+  // Süresi dolmuş vitrin ilanlarını arka planda temizle (Kullanıcı açılışını bloke etmez)
+  checkAndExpireShowcases().catch(() => { });
 
   // Group ONLY ACTIVE listings by package tier (Pasif ilanlar VIP veya Gold vitrinine ASLA sızamaz!)
   const paidVipListings = allSortedActive.filter((l: any) => (l.rozet === 'vip' || l.rozet === 'ultravip') && !l.isPromo);

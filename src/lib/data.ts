@@ -150,6 +150,8 @@ export async function getHomepageConfig() {
   return JSON.parse(JSON.stringify(config));
 }
 
+const listingsMemoryCache = new Map<string, { data: any[]; time: number }>();
+
 export async function getListings({
   ilSlug,
   ilceSlug,
@@ -161,6 +163,13 @@ export async function getListings({
   kategoriSlug?: string;
   limit?: number;
 }) {
+  const cacheKey = `${ilSlug || ''}_${ilceSlug || ''}_${kategoriSlug || ''}_${limit || 20}`;
+  const nowMs = Date.now();
+  const cached = listingsMemoryCache.get(cacheKey);
+  if (cached && nowMs - cached.time < 30000) {
+    return cached.data;
+  }
+
   await connectToDatabase();
 
   const nowDate = new Date();
@@ -240,7 +249,12 @@ export async function getListings({
   });
 
   const finalResult = limit ? sortedListings.slice(0, limit) : sortedListings;
-  return JSON.parse(JSON.stringify(finalResult));
+  const cleanFinal = JSON.parse(JSON.stringify(finalResult));
+  listingsMemoryCache.set(cacheKey, { data: cleanFinal, time: nowMs });
+  if (listingsMemoryCache.size > 200) {
+    listingsMemoryCache.clear();
+  }
+  return cleanFinal;
 }
 
 export const getListingBySlug = cache(async (slug: string) => {

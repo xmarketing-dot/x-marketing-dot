@@ -190,6 +190,10 @@ const ListingSchema = new Schema<IListing>(
   }
 );
 
+ListingSchema.index({ status: 1, createdAt: -1 });
+ListingSchema.index({ status: 1, siraNo: 1, rozet: 1, createdAt: -1 });
+ListingSchema.index({ status: 1, ilSlug: 1, ilceSlug: 1, createdAt: -1 });
+
 if (process.env.NODE_ENV !== 'production' && mongoose.models && mongoose.models.Listing) {
   delete (mongoose.models as any).Listing;
 }
