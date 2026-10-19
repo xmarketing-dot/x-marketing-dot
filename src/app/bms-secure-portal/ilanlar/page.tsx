@@ -898,7 +898,20 @@ export default function AdminListingsPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <button
+            type="button"
+            onClick={() => {
+              setShowBulkPhoneModal(true);
+              setBulkResult(null);
+            }}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-emerald-400 hover:text-emerald-300 border border-emerald-500/40 font-black text-xs font-heading shadow-md active:scale-95 transition-all cursor-pointer"
+            title="Kullanıcı seçip tüm ilanlarının WhatsApp numarasını toplu güncelleyin"
+          >
+            <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="truncate">Toplu Numara Güncelle</span>
+          </button>
+
           <button
             onClick={() => setShowCreateModal(true)}
             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading shadow-md shadow-amber-500/25 active:scale-95 transition-all"
@@ -2797,6 +2810,275 @@ export default function AdminListingsPage() {
                 </button>
               </div>
 
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── KULLANICI BAZLI TOPLU WHATSAPP NUMARASI GÜNCELLEME MODALI ──────────────── */}
+      {showBulkPhoneModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="w-full max-w-xl bg-[#161b22] border border-[#30363d] rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col gap-4 max-h-[92vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="font-heading font-black text-sm sm:text-base text-white">
+                    Toplu WhatsApp Numarası Güncelle
+                  </h3>
+                  <span className="text-[10px] text-[#8b949e]">
+                    Kullanıcı seçin, o kullanıcının tüm ilanlarının numarasını tek seferde veya havuzdan dağıtın.
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowBulkPhoneModal(false)}
+                className="p-1.5 rounded-lg text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body Form */}
+            <form onSubmit={handleExecuteBulkPhone} className="flex flex-col gap-4 text-xs font-heading">
+              {/* 1. KULLANICI SEÇİMİ */}
+              <div className="flex flex-col gap-2">
+                <label className="text-white font-bold flex items-center justify-between">
+                  <span>1. Hedef Kullanıcı:</span>
+                  {bulkPhoneUser && (
+                    <span className="text-[10px] text-amber-400 font-mono">
+                      Seçili: @{bulkPhoneUser}
+                    </span>
+                  )}
+                </label>
+
+                {/* Hızlı Seçim Hapları (İlanı Olan Kullanıcılar) */}
+                {userListingStats.length > 0 && (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] text-[#8b949e]">Kayıtlı İlan Sahiplerinden Hızlı Seç:</span>
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
+                      {userListingStats.slice(0, 20).map((stat) => {
+                        const isSelected = bulkPhoneUser.toLowerCase() === stat.username.toLowerCase();
+                        return (
+                          <button
+                            key={stat.username}
+                            type="button"
+                            onClick={() => handleSelectBulkUser(stat.username)}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0 transition-all flex items-center gap-1 border ${
+                              isSelected
+                                ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm'
+                                : 'bg-[#0d1117] text-[#8b949e] hover:text-white border-[#30363d]'
+                            }`}
+                          >
+                            <span>@{stat.username}</span>
+                            <span className={`px-1 py-0.2 rounded-full text-[9px] ${isSelected ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-[#21262d] text-amber-400'}`}>
+                              {stat.count}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Manuel Kullanıcı Adı Girişi */}
+                <div className="relative">
+                  <AtSign className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
+                  <input
+                    type="text"
+                    placeholder="veya kullanıcı adını elle yazın (örn: esra_vip)..."
+                    value={bulkPhoneUser}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/^@/, '');
+                      setBulkPhoneUser(val);
+                      fetchBulkUserPreview(val);
+                    }}
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-bold"
+                  />
+                </div>
+
+                {/* Kullanıcı İlan Önizleme Kartı */}
+                {bulkPreviewLoading ? (
+                  <div className="p-3 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center gap-2 text-[#8b949e]">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
+                    <span>Kullanıcıya ait ilanlar taranıyor...</span>
+                  </div>
+                ) : bulkPreviewData ? (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col gap-1 text-emerald-300">
+                    <div className="flex items-center justify-between font-bold">
+                      <span>✓ @{bulkPhoneUser} Kullanıcısı Bulundu</span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px]">
+                        {bulkPreviewData.totalListings} İlan Mevcut
+                      </span>
+                    </div>
+                    {bulkPreviewData.currentNumbers.length > 0 && (
+                      <span className="text-[10px] text-[#8b949e] font-mono truncate">
+                        Şu Anki Numaralar: {bulkPreviewData.currentNumbers.join(', ')}
+                      </span>
+                    )}
+                  </div>
+                ) : bulkPhoneUser.trim() ? (
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[11px]">
+                    ⚠️ Bu kullanıcı adına ait ilan taranıyor veya sistemde eşleşen ilan yok.
+                  </div>
+                ) : null}
+              </div>
+
+              {/* 2. NUMARA GİRİŞ MODU (TEKİL / HAVUZ) */}
+              <div className="flex flex-col gap-2 pt-1 border-t border-[#30363d]/60">
+                <label className="text-white font-bold">2. Numaralandırma Yöntemi:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setBulkPhoneInputMode('single')}
+                    className={`p-2.5 rounded-xl border flex flex-col gap-0.5 text-left transition-all ${
+                      bulkPhoneInputMode === 'single'
+                        ? 'bg-amber-500/15 border-amber-500 text-amber-300 shadow-sm'
+                        : 'bg-[#0d1117] border-[#30363d] text-[#8b949e] hover:text-white'
+                    }`}
+                  >
+                    <span className="font-bold text-xs flex items-center gap-1.5">
+                      <span>📱 Tek Numara Ata</span>
+                      {bulkPhoneInputMode === 'single' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                    </span>
+                    <span className="text-[10px] opacity-75">Tüm ilanlara aynı numarayı yazar</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setBulkPhoneInputMode('pool')}
+                    className={`p-2.5 rounded-xl border flex flex-col gap-0.5 text-left transition-all ${
+                      bulkPhoneInputMode === 'pool'
+                        ? 'bg-amber-500/15 border-amber-500 text-amber-300 shadow-sm'
+                        : 'bg-[#0d1117] border-[#30363d] text-[#8b949e] hover:text-white'
+                    }`}
+                  >
+                    <span className="font-bold text-xs flex items-center gap-1.5">
+                      <span>🎲 Havuzdan Dağıt</span>
+                      {bulkPhoneInputMode === 'pool' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                    </span>
+                    <span className="text-[10px] opacity-75">Çoklu numarayı eşit/rastgele paylaştırır</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Tek Numara Formu */}
+              {bulkPhoneInputMode === 'single' ? (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[#8b949e] font-bold">Yeni WhatsApp Numarası:</label>
+                  <div className="relative">
+                    <Phone className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      placeholder="Örn: +90 534 000 0000"
+                      value={bulkSingleNumber}
+                      onChange={(e) => setBulkSingleNumber(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-mono"
+                    />
+                  </div>
+                </div>
+              ) : (
+                /* Havuz Numaraları Formu */
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[#8b949e] font-bold">Numara Havuzu (Her satıra bir numara):</label>
+                    <span className="text-[10px] text-amber-400 font-mono font-bold">
+                      {parsedPoolNumbers.length} Geçerli Numara
+                    </span>
+                  </div>
+
+                  <textarea
+                    rows={4}
+                    placeholder="+905340000001&#10;+905340000002&#10;+905340000003"
+                    value={bulkPoolNumbersText}
+                    onChange={(e) => setBulkPoolNumbersText(e.target.value)}
+                    className="w-full p-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-mono leading-relaxed"
+                  />
+
+                  {/* Dağıtım Stratejisi */}
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[#8b949e] font-bold">Dağıtım Şekli:</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setBulkDistributionMode('round_robin')}
+                        className={`p-2 rounded-lg border text-left text-[11px] font-bold transition-all ${
+                          bulkDistributionMode === 'round_robin'
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500'
+                            : 'bg-[#0d1117] text-[#8b949e] border-[#30363d]'
+                        }`}
+                      >
+                        ⚖️ Eşit / Dengeli Dağıt (Sırayla)
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setBulkDistributionMode('random')}
+                        className={`p-2 rounded-lg border text-left text-[11px] font-bold transition-all ${
+                          bulkDistributionMode === 'random'
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500'
+                            : 'bg-[#0d1117] text-[#8b949e] border-[#30363d]'
+                        }`}
+                      >
+                        🎲 Tamamen Rastgele Dağıt
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sonuç Özeti / Alert */}
+              {bulkResult && (
+                <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex flex-col gap-1.5 text-emerald-300">
+                  <div className="flex items-center gap-1.5 font-black text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Başarılı! Toplam {bulkResult.totalUpdated} İlan Güncellendi</span>
+                  </div>
+                  {bulkResult.distribution && Object.keys(bulkResult.distribution).length > 0 && (
+                    <div className="flex flex-col gap-0.5 pt-1 border-t border-emerald-500/20 font-mono text-[10px]">
+                      {Object.entries(bulkResult.distribution).map(([num, count]: any) => (
+                        <div key={num} className="flex justify-between">
+                          <span>{num}:</span>
+                          <span className="font-bold">{count} ilana atandı</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+                <button
+                  type="button"
+                  onClick={() => setShowBulkPhoneModal(false)}
+                  className="px-4 py-2 rounded-xl bg-[#21262d] text-white font-bold text-xs hover:bg-[#30363d] transition-colors"
+                >
+                  Kapat
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={bulkExecuting || !bulkPhoneUser.trim()}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md flex items-center gap-1.5 disabled:opacity-40 transition-all cursor-pointer"
+                >
+                  {bulkExecuting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Güncelleniyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>Numaraları Toplu Güncelle</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
         </div>
