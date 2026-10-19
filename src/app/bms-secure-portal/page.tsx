@@ -465,7 +465,6 @@ export default function BmsSecurePortalDashboard() {
     totalListingViews = 0,
     totalWhatsappClicks = 0,
     totalShares = 0,
-    specialAdStats = { impressions: 0, uniqueVisitors: 0, clicks: 0, whatsappClicks: 0, ctr: '0.0' },
     googleConversionStats = {
       googleVisitors: 0,
       googleWhatsappClicks: 0,
@@ -1639,8 +1638,8 @@ export default function BmsSecurePortalDashboard() {
 
             if (leads.length === 0) {
               return (
-                <div className="p-16 rounded-[32px] bg-[#161b22] border border-[#30363d] text-center flex flex-col items-center justify-center gap-4 shadow-xl">
-                  <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <div className="p-12 rounded-2xl bg-[#0c1017] border border-slate-800 text-center flex flex-col items-center justify-center gap-4 shadow-xl">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
                     <OfficialWhatsAppIcon className="w-8 h-8 fill-emerald-400" />
                   </div>
                   <div className="flex flex-col gap-1">
@@ -1915,7 +1914,7 @@ export default function BmsSecurePortalDashboard() {
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-800">
                           <span className="text-[10px] text-[#8b949e] font-mono">
                             {isMobile ? '📱 Mobil' : '💻 PC'} • {lead.ip || '127.0.0.1'}
                           </span>
@@ -2746,7 +2745,7 @@ export default function BmsSecurePortalDashboard() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-3 gap-2 bg-[#161b22] p-2.5 rounded-xl border border-[#21262d] text-center">
+                      <div className="grid grid-cols-3 gap-2 bg-[#0c1017] p-2.5 rounded-xl border border-slate-800 text-center">
                         <div className="flex flex-col">
                           <span className="text-[10px] text-[#8b949e]">
                             {range === 'today' ? 'Bugün Görüntülenme' : range === 'yesterday' ? 'Dün Görüntülenme' : 'Görüntülenme'}
@@ -2758,7 +2757,7 @@ export default function BmsSecurePortalDashboard() {
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-col border-x border-[#21262d]">
+                        <div className="flex flex-col border-x border-slate-800">
                           <span className="text-[10px] text-[#8b949e]">
                             {range === 'today' ? 'Bugün WhatsApp' : range === 'yesterday' ? 'Dün WhatsApp' : 'WhatsApp'}
                           </span>
@@ -2789,7 +2788,7 @@ export default function BmsSecurePortalDashboard() {
                         {item.referrers?.direct > 0 && <span className="px-2 py-0.5 rounded bg-[#21262d] text-[#8b949e] text-[10px] font-bold font-mono">🔗 Direkt: {item.referrers.direct}</span>}
                       </div>
 
-                      <div className="flex items-center justify-between pt-1 border-t border-[#21262d]">
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-800">
                         <button
                           type="button"
                           onClick={() => setExpandedListingId(isExpanded ? null : item.id)}
@@ -2806,7 +2805,7 @@ export default function BmsSecurePortalDashboard() {
                       </div>
 
                       {isExpanded && (
-                        <div className="p-3 rounded-xl bg-[#161b22] border border-amber-500/30 flex flex-col gap-2 mt-1">
+                        <div className="p-3 rounded-xl bg-[#0c1017] border border-amber-500/30 flex flex-col gap-2 mt-1">
                           <span className="text-[11px] font-bold text-amber-400">Bu İlana Gelen Dış Linkler:</span>
                           {item.rawReferrers && item.rawReferrers.length > 0 ? (
                             item.rawReferrers.map((r: string, rIdx: number) => (
@@ -2825,10 +2824,10 @@ export default function BmsSecurePortalDashboard() {
               </div>
 
               {/* MASAÜSTÜ GÖRÜNÜM: Tam Tablo */}
-              <div className="hidden md:block overflow-x-auto rounded-2xl border border-[#30363d] bg-[#0d1117]">
+              <div className="hidden md:block overflow-x-auto rounded-2xl border border-slate-800 bg-[#070a0f]">
                 <table className="w-full text-left text-xs border-collapse min-w-[850px]">
                   <thead>
-                    <tr className="border-b border-[#30363d] bg-[#161b22] text-[#8b949e] font-heading font-black text-[11px]">
+                    <tr className="border-b border-slate-800 bg-[#0c1017] text-slate-400 font-heading font-black text-[11px]">
                       <th className="py-3 px-4">İLAN BİLGİSİ</th>
                       
                       <th 
@@ -2906,7 +2905,7 @@ export default function BmsSecurePortalDashboard() {
                             {/* İlan Bilgisi */}
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-3">
-                                <div className="relative w-12 h-16 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                                <div className="relative w-12 h-16 rounded-xl overflow-hidden bg-[#0c1017] border border-slate-800 shrink-0">
                                   <Image
                                     src={item.fotoUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
                                     alt={item.baslik}
@@ -3065,7 +3064,7 @@ export default function BmsSecurePortalDashboard() {
                           {isExpanded && (
                             <tr className="bg-[#0d1117] border-b border-[#30363d]">
                               <td colSpan={6} className="p-4 sm:p-5">
-                                <div className="p-4 rounded-2xl bg-[#161b22] border border-amber-500/30 flex flex-col gap-3">
+                                <div className="p-4 rounded-2xl bg-[#0c1017] border border-amber-500/30 flex flex-col gap-3">
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
                                       <Link2 className="w-4 h-4" />
@@ -3204,7 +3203,7 @@ export default function BmsSecurePortalDashboard() {
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all border ${
                     !searchTermFilter 
                       ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' 
-                      : 'bg-[#161b22] text-[#8b949e] border-[#30363d] hover:text-white'
+                      : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white'
                   }`}
                 >
                   Tümü
@@ -3214,7 +3213,7 @@ export default function BmsSecurePortalDashboard() {
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 border ${
                     searchTermFilter === 'besteskort'
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                      : 'bg-[#161b22] text-emerald-400 border-[#30363d] hover:text-emerald-300'
+                      : 'bg-slate-900/60 text-emerald-400 border-slate-800 hover:text-emerald-300'
                   }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -3225,7 +3224,7 @@ export default function BmsSecurePortalDashboard() {
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 border ${
                     searchTermFilter === 'escturkiye'
                       ? 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40'
-                      : 'bg-[#161b22] text-fuchsia-400 border-[#30363d] hover:text-fuchsia-300'
+                      : 'bg-slate-900/60 text-fuchsia-400 border-slate-800 hover:text-fuchsia-300'
                   }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400"></span>
@@ -3234,7 +3233,7 @@ export default function BmsSecurePortalDashboard() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] text-[#8b949e] pt-1 border-t border-[#21262d]">
+            <div className="flex items-center gap-2 text-[11px] text-[#8b949e] pt-1 border-t border-slate-800">
               <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
                 ✅ Google / Yandex Korumalı
               </span>
@@ -3280,7 +3279,7 @@ export default function BmsSecurePortalDashboard() {
                         🚨 ŞÜPHELİ / BOT
                       </span>
                       {analysis.reasons.map((r: string, idx: number) => (
-                        <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-[#161b22] text-amber-300 border border-[#30363d] font-mono">
+                        <span key={idx} className="text-[9px] px-1.5 py-0.5 rounded bg-slate-900/60 text-amber-300 border border-slate-800 font-mono">
                           {r}
                         </span>
                       ))}
@@ -3304,7 +3303,7 @@ export default function BmsSecurePortalDashboard() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-1.5 border-t border-[#21262d]">
+                  <div className="flex items-center justify-between text-[10px] text-[#8b949e] pt-1.5 border-t border-slate-800">
                     <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} ({v.browser})</span>
                     <span className="text-emerald-400 font-mono font-bold">{v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}</span>
                   </div>
@@ -3580,10 +3579,10 @@ export default function BmsSecurePortalDashboard() {
       {/* ── YÖNETİCİ İLAN DÜZENLEME MODALI ──────────────── */}
       {editingListing && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-xl bg-[#161b22] border border-amber-500/50 rounded-3xl p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left animate-fadeIn my-auto">
+          <div className="w-full max-w-xl bg-[#0c1017] border border-emerald-500/40 rounded-2xl p-6 shadow-2xl flex flex-col gap-5 text-left my-auto">
             <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-black">
                   <Edit3 className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
@@ -3703,9 +3702,9 @@ export default function BmsSecurePortalDashboard() {
       {/* ── EN ÇOK ZİYARET EDİLEN SAYFALAR DRAWER (GENİŞLETİLMİŞ MOBİL BOTTOM SHEET / MODAL) ── */}
       {showPagesDrawer && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex justify-end animate-fadeIn">
-          <div className="w-full max-w-xl h-full bg-[#161b22] border-l border-[#30363d] flex flex-col shadow-2xl">
+          <div className="w-full max-w-xl h-full bg-[#0c1017] border-l border-slate-800 flex flex-col shadow-2xl">
             {/* Drawer Header */}
-            <div className="p-4 sm:p-5 border-b border-[#30363d] flex items-center justify-between gap-3 bg-[#0d1117]">
+            <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between gap-3 bg-[#070a0f]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
                   <Eye className="w-5 h-5" />
@@ -3719,14 +3718,14 @@ export default function BmsSecurePortalDashboard() {
               </div>
               <button
                 onClick={() => setShowPagesDrawer(false)}
-                className="w-9 h-9 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Drawer Search */}
-            <div className="p-3.5 border-b border-[#30363d] bg-[#161b22]">
+            <div className="p-3.5 border-b border-slate-800 bg-[#0c1017]">
               <div className="relative">
                 <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -3734,7 +3733,7 @@ export default function BmsSecurePortalDashboard() {
                   value={pageDrawerSearch}
                   onChange={(e) => setPageDrawerSearch(e.target.value)}
                   placeholder="Sayfa URL veya başlık ara..."
-                  className="w-full pl-9 pr-4 py-2 bg-[#0d1117] border border-[#30363d] rounded-xl text-white text-xs placeholder:text-[#8b949e] outline-none focus:border-amber-500 font-mono"
+                  className="w-full pl-9 pr-4 py-2 bg-[#070a0f] border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-500 outline-none focus:border-emerald-500 font-mono"
                 />
               </div>
             </div>
@@ -3766,7 +3765,7 @@ export default function BmsSecurePortalDashboard() {
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] text-[#8b949e] border-t border-[#21262d] pt-1.5">
+                        <div className="flex items-center justify-between text-[11px] text-[#8b949e] border-t border-slate-800 pt-1.5">
                           <span className="truncate">{p.pageTitle || 'Sayfa'}</span>
                           <div className="flex items-center gap-3 shrink-0">
                             <span className="flex items-center gap-1 font-mono text-emerald-400 font-bold">
@@ -3966,9 +3965,9 @@ export default function BmsSecurePortalDashboard() {
       {/* ── EN ÇOK WHATSAPP ETKİLEŞİM DETAYLARI DRAWER (BOTTOM SHEET / MODAL) ── */}
       {showWaDrawer && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex justify-end animate-fadeIn">
-          <div className="w-full max-w-xl h-full bg-[#161b22] border-l border-[#30363d] flex flex-col shadow-2xl">
+          <div className="w-full max-w-xl h-full bg-[#0c1017] border-l border-slate-800 flex flex-col shadow-2xl">
             {/* Drawer Header */}
-            <div className="p-4 sm:p-5 border-b border-[#30363d] flex items-center justify-between gap-3 bg-[#0d1117]">
+            <div className="p-4 sm:p-5 border-b border-slate-800 flex items-center justify-between gap-3 bg-[#070a0f]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-bold">
                   <OfficialWhatsAppIcon className="w-5 h-5 fill-[#25D366]" />
@@ -3982,14 +3981,14 @@ export default function BmsSecurePortalDashboard() {
               </div>
               <button
                 onClick={() => setShowWaDrawer(false)}
-                className="w-9 h-9 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Drawer Search */}
-            <div className="p-3.5 border-b border-[#30363d] bg-[#161b22]">
+            <div className="p-3.5 border-b border-slate-800 bg-[#0c1017]">
               <div className="relative">
                 <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -3997,7 +3996,7 @@ export default function BmsSecurePortalDashboard() {
                   value={waDrawerSearch}
                   onChange={(e) => setWaDrawerSearch(e.target.value)}
                   placeholder="İlan başlığı ara..."
-                  className="w-full pl-9 pr-4 py-2 bg-[#0d1117] border border-[#30363d] rounded-xl text-white text-xs placeholder:text-[#8b949e] outline-none focus:border-emerald-500 font-mono"
+                  className="w-full pl-9 pr-4 py-2 bg-[#070a0f] border border-slate-800 rounded-xl text-white text-xs placeholder:text-slate-500 outline-none focus:border-emerald-500 font-mono"
                 />
               </div>
             </div>
@@ -4032,7 +4031,7 @@ export default function BmsSecurePortalDashboard() {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                      <div className="flex items-center justify-between text-[11px] text-[#8b949e] border-t border-slate-800 pt-2">
                         <span className="flex items-center gap-1 text-purple-300">
                           <Share2 className="w-3 h-3" /> {item.shares || 0} Paylaşım
                         </span>
@@ -4064,11 +4063,11 @@ export default function BmsSecurePortalDashboard() {
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-[#161b22] border border-[#30363d] rounded-[32px] p-6 shadow-2xl flex flex-col gap-4 text-left animate-in zoom-in-95 duration-200 max-h-[80vh]"
+            className="w-full max-w-lg bg-[#0c1017] border border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[80vh]"
           >
             <div className="flex items-center justify-between border-b border-[#30363d] pb-4 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-black">
                   <Users className="w-5 h-5" />
                 </div>
                 <div className="flex flex-col">
@@ -4196,10 +4195,10 @@ export default function BmsSecurePortalDashboard() {
           >
             <div 
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-5xl bg-gradient-to-b from-[#161b22] via-[#0d1117] to-[#0d1117] border border-[#30363d] rounded-[36px] shadow-[0_25px_70px_rgba(0,0,0,0.85)] flex flex-col gap-0 text-left animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-hidden"
+              className="w-full max-w-5xl bg-[#0c1017] border border-slate-800 rounded-2xl shadow-2xl flex flex-col gap-0 text-left max-h-[90vh] overflow-hidden"
             >
               {/* Modal Başlığı & Canlı Radar Başlığı */}
-              <div className="p-5 sm:p-7 border-b border-[#30363d] bg-gradient-to-r from-emerald-500/10 via-[#161b22] to-transparent shrink-0 flex flex-col gap-4">
+              <div className="p-5 sm:p-6 border-b border-slate-800 bg-[#070a0f] shrink-0 flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3.5">
                     <div className="relative">
@@ -4208,7 +4207,7 @@ export default function BmsSecurePortalDashboard() {
                       </div>
                       <span className="absolute -top-1 -right-1 flex h-4 w-4">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[#161b22]"></span>
+                        <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[#0c1017]"></span>
                       </span>
                     </div>
 
@@ -4313,10 +4312,10 @@ export default function BmsSecurePortalDashboard() {
                     return (
                       <div 
                         key={v._id || idx} 
-                        className={`p-4 sm:p-5 rounded-3xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg hover:shadow-2xl group ${
+                        className={`p-4 sm:p-5 rounded-2xl bg-[#0c1017] border transition-all flex flex-col gap-3 shadow-lg hover:shadow-2xl group ${
                           isListing 
-                            ? 'border-amber-500/30 hover:border-amber-400/80 bg-gradient-to-r from-amber-500/5 via-[#161b22] to-transparent' 
-                            : 'border-[#30363d] hover:border-emerald-500/50 bg-[#161b22]'
+                            ? 'border-amber-500/30 hover:border-amber-400/80 bg-gradient-to-r from-amber-500/5 via-[#0c1017] to-transparent' 
+                            : 'border-slate-800 hover:border-emerald-500/50 bg-[#070a0f]'
                         }`}
                       >
                         {/* Üst Bar: Ziyaretçi Profili + Canlı Süre + Kaynak */}
@@ -4415,7 +4414,7 @@ export default function BmsSecurePortalDashboard() {
               </div>
 
               {/* Modal Alt Footer Bar */}
-              <div className="p-4 sm:p-5 border-t border-[#30363d] bg-[#161b22] flex items-center justify-between shrink-0">
+              <div className="p-4 sm:p-5 border-t border-slate-800 bg-[#070a0f] flex items-center justify-between shrink-0">
                 <span className="text-xs text-[#8b949e] flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-emerald-400" />
                   <span>Sistem her 15 saniyede bir yeni ziyaretçi hareketlerini otomatik çeker.</span>

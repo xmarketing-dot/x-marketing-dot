@@ -1543,7 +1543,7 @@ export default function AdminListingsPage() {
                   <div
                     key={item._id}
                     className={`p-3 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all flex flex-col gap-3 shadow-lg ${isPending
-                        ? 'border-amber-500/60 shadow-amber-500/5 bg-gradient-to-b from-[#1c1811] to-[#161b22]'
+                        ? 'border-amber-500/60 shadow-amber-500/5 bg-gradient-to-b from-[#1c1811] to-[#0c1017]'
                         : 'border-slate-800 hover:border-slate-700'
                       }`}
                   >

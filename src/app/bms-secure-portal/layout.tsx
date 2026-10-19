@@ -1,6 +1,5 @@
 import React from 'react';
 import AdminAuthGate from '@/components/admin/AdminAuthGate';
-import AdminGlobalLiveNotification from '@/components/admin/AdminGlobalLiveNotification';
 
 export const metadata = {
   title: 'BMS Secure Portal | System Gate',
@@ -14,7 +13,6 @@ export default function BmsSecurePortalLayout({ children }: { children: React.Re
   return (
     <AdminAuthGate>
       {children}
-      <AdminGlobalLiveNotification />
     </AdminAuthGate>
   );
 }

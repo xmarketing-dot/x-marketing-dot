@@ -595,7 +595,7 @@ function SiteYonetimiContent() {
         <div className="flex flex-col gap-4 sm:gap-6 animate-fadeIn w-full">
           
           {/* CANLI WHATSAPP HATTI (PROFESSIONAL RESPONSIVE CARD) */}
-          <div className="p-3.5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-3.5 sm:gap-4 w-full">
+          <div className="p-3.5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#121c15] via-[#0c1017] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-3.5 sm:gap-4 w-full">
             
             {/* Header: Başlık & Durum */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-emerald-500/20">

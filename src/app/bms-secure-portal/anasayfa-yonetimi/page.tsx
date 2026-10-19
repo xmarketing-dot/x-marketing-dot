@@ -2766,7 +2766,7 @@ export default function AdminHomepageConfigPage() {
       {activeMainTab === 'whatsapp' && (
         <div className="w-full flex flex-col gap-6">
           {/* ── CANLI ADMİN WHATSAPP DESTEK HATTI YÖNETİM PANELİ (ANINDA CANLIYA AL) ──────────────── */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#111a14] via-[#161b22] to-[#121c16] border border-emerald-500/40 shadow-2xl flex flex-col gap-3.5">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#111a14] via-[#0c1017] to-[#121c16] border border-emerald-500/40 shadow-2xl flex flex-col gap-3.5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">

@@ -184,12 +184,12 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   // 1. Loading state while checking session
   if (isAuthenticated === null) {
     return (
-      <div className="min-h-screen w-full bg-[#0d1117] flex items-center justify-center">
+      <div className="min-h-screen w-full bg-[#070a0f] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center animate-spin text-amber-400">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center animate-spin text-emerald-400">
             <Loader2 className="w-6 h-6" />
           </div>
-          <span className="text-xs text-[#8b949e] font-mono">Güvenlik Doğrulanıyor...</span>
+          <span className="text-xs text-slate-400 font-mono">Güvenlik Doğrulanıyor...</span>
         </div>
       </div>
     );
@@ -198,30 +198,30 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   // 2. UN-AUTHENTICATED: Show Secret Admin Login Gate
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen w-full bg-[#0d1117] flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950">
-        <div className="w-full max-w-md bg-[#161b22] border-2 border-amber-500/60 rounded-[36px] p-6 sm:p-8 shadow-[0_0_80px_rgba(245,158,11,0.2)] flex flex-col gap-6 text-center">
+      <div className="min-h-screen w-full bg-[#070a0f] flex items-center justify-center p-4 selection:bg-emerald-500 selection:text-slate-950">
+        <div className="w-full max-w-md bg-[#0c1017] border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl flex flex-col gap-6 text-center">
           
           {/* Logo & Gate Header */}
           <div className="flex flex-col items-center gap-3">
             <div className="relative">
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-xl shadow-amber-500/30">
-                <Lock className="w-8 h-8 stroke-[2.5]" />
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-emerald-400 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/25">
+                <Lock className="w-7 h-7 stroke-[2.5]" />
               </div>
-              <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 ring-4 ring-[#161b22] animate-pulse" />
+              <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 ring-4 ring-[#0c1017] animate-pulse" />
             </div>
 
             <div className="flex flex-col">
-              <span className="font-black text-xl sm:text-2xl text-white font-heading tracking-tight">
+              <span className="font-black text-xl text-white font-heading tracking-tight">
                 BMS Secure Gate
               </span>
-              <span className="text-xs text-amber-400 font-mono font-bold mt-0.5">
+              <span className="text-xs text-emerald-400 font-mono font-bold mt-0.5">
                 ● Yetkili Yönetici Giriş Portalı
               </span>
             </div>
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold flex items-center gap-2 text-left">
+            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold flex items-center gap-2 text-left">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -232,7 +232,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             
             {/* E-Posta Input */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
+              <label className="text-xs font-black uppercase text-slate-400 tracking-wider">
                 Yönetici E-Posta Adresi
               </label>
               <div className="relative">
@@ -242,15 +242,15 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                   placeholder="admin@yonetim.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
-                <Mail className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3.5" />
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
               </div>
             </div>
 
             {/* Şifre Input */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
+              <label className="text-xs font-black uppercase text-slate-400 tracking-wider">
                 Yönetici Şifresi
               </label>
               <div className="relative">
@@ -260,13 +260,13 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                   placeholder="••••••••••••"
                   value={sifre}
                   onChange={(e) => setSifre(e.target.value)}
-                  className="w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full pl-11 pr-11 py-3 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
                 />
-                <KeyRound className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3.5" />
+                <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 top-3.5" />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3.5 text-[#8b949e] hover:text-white"
+                  className="absolute right-3.5 top-3.5 text-slate-500 hover:text-white transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -277,7 +277,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-xl shadow-amber-500/25 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="mt-2 py-3 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -294,8 +294,8 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
           </form>
 
-          <div className="pt-2 border-t border-white/10 flex items-center justify-center gap-2 text-[11px] text-[#8b949e]">
-            <Lock className="w-3.5 h-3.5 text-amber-400" />
+          <div className="pt-2 border-t border-slate-800 flex items-center justify-center gap-2 text-[11px] text-slate-500">
+            <Lock className="w-3.5 h-3.5 text-emerald-400" />
             <span>256-Bit SHA-256 Korumalı Yönetim Altyapısı</span>
           </div>
 
@@ -308,14 +308,14 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     const isActive = pathname === path || (path === '/bms-secure-portal/bildirimler' && pathname === '/bms-secure-portal/uygulama');
     return `flex items-center ${isSidebarCollapsed ? 'justify-center p-2.5' : 'gap-2.5 px-3 py-2 xl:py-2.5'} rounded-xl transition-all text-xs font-semibold ${
       isActive 
-        ? 'bg-slate-800 text-white border border-slate-700/60 shadow-sm' 
+        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/5' 
         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
     }`;
   };
 
   // 3. AUTHENTICATED: Render Full Admin Portal Layout
   return (
-    <div className="min-h-screen md:h-screen md:max-h-screen md:overflow-hidden bg-[#070a0f] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative">
+    <div className="min-h-screen md:h-screen md:max-h-screen md:overflow-hidden bg-[#070a0f] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-emerald-500 selection:text-slate-950 relative">
       
       {/* Mobile Top Header */}
       <div className="md:hidden flex items-center justify-between bg-[#0c1017] border-b border-slate-800/80 px-4 py-3 sticky top-0 z-30 shadow-md">
