@@ -65,7 +65,7 @@ export default function CategorizedListingsSection({
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {displayedVip.map((listing: any, index: number) => (
               <React.Fragment key={listing._id || index}>
-                <CompactListingCard listing={listing} />
+                <CompactListingCard listing={listing} priority={index < 6} />
                 {(index + 1) % 12 === 0 && index < displayedVip.length - 1 && (
                   <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
@@ -107,7 +107,7 @@ export default function CategorizedListingsSection({
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {displayedGold.map((listing: any, index: number) => (
               <React.Fragment key={listing._id || index}>
-                <CompactListingCard listing={listing} />
+                <CompactListingCard listing={listing} priority={false} />
                 {(index + 1) % 12 === 0 && index < displayedGold.length - 1 && (
                   <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
@@ -149,7 +149,7 @@ export default function CategorizedListingsSection({
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {displayedSilver.map((listing: any, index: number) => (
               <React.Fragment key={listing._id || index}>
-                <CompactListingCard listing={listing} />
+                <CompactListingCard listing={listing} priority={false} />
                 {(index + 1) % 12 === 0 && index < displayedSilver.length - 1 && (
                   <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
@@ -213,7 +213,7 @@ export default function CategorizedListingsSection({
           <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
             {displayedAll.map((listing: any, index: number) => (
               <React.Fragment key={listing._id || index}>
-                <CompactListingCard listing={listing} />
+                <CompactListingCard listing={listing} priority={index < 6} />
                 {(index + 1) % 12 === 0 && index < displayedAll.length - 1 && (
                   <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />

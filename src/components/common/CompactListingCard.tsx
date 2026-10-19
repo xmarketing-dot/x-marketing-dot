@@ -40,9 +40,10 @@ interface CompactListingCardProps {
     isPassive?: boolean;
     status?: string;
   };
+  priority?: boolean;
 }
 
-export default function CompactListingCard({ listing }: CompactListingCardProps) {
+export default function CompactListingCard({ listing, priority = false }: CompactListingCardProps) {
   if (!listing) return null;
   const isPassive = Boolean(listing.isPassive || listing.status === 'pasif' || listing.status === 'suresi_doldu');
   const rozet = listing.rozet || 'silver';
@@ -226,7 +227,8 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
                   <img
                     src={imgUrl}
                     alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
-                    loading={idx === 0 ? "eager" : "lazy"}
+                    loading={priority && idx === 0 ? "eager" : "lazy"}
+                    fetchPriority={priority && idx === 0 ? "high" : "low"}
                     decoding="async"
                     className={`w-full h-full object-cover object-top select-none pointer-events-none ${
                       isPassive ? 'grayscale contrast-125 brightness-75' : ''

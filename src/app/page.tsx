@@ -19,7 +19,7 @@ import {
   ArrowRight,
   Sparkle
 } from 'lucide-react';
-import { getHomepageConfig, getAllLocations, getListings, getActiveBanner } from '@/lib/data';
+import { getHomepageConfig, getListings, getActiveBanner } from '@/lib/data';
 import connectToDatabase from '@/lib/mongodb';
 import ListingModel from '@/models/Listing';
 import { checkAndExpireShowcases } from '@/lib/vitrinManager';
@@ -92,8 +92,7 @@ export default async function HomePage() {
   const homeFaq = generateTurkeyHomeFaq();
   const homeGraph = generateHomeSeoGraph(siteUrl, homeFaq);
 
-  const [locations, rawListings, homepageConfig, activeBanner] = await Promise.all([
-    getAllLocations(),
+  const [rawListings, homepageConfig, activeBanner] = await Promise.all([
     getListings({ limit: 500 }),
     getHomepageConfig(),
     getActiveBanner('anasayfa'),
@@ -197,15 +196,6 @@ export default async function HomePage() {
 
   // Grid listings
   const gridListings = allSortedListings.slice(0, 48);
-
-  // Group locations by region for the 81-city crawl hub
-  const regionalHubs = {
-    'Marmara & Metropol': locations.filter((l: any) => ['istanbul', 'bursa', 'kocaeli', 'tekirdag', 'balikesir', 'canakkale', 'edirne', 'kirklareli', 'sakarya', 'yalova', 'bilecik'].includes(l.ilSlug)),
-    'Ege & Akdeniz': locations.filter((l: any) => ['izmir', 'antalya', 'mugla', 'aydin', 'denizli', 'manisa', 'mersin', 'adana', 'hatay', 'isparta', 'burdur', 'osmaniye', 'kahramanmaras'].includes(l.ilSlug)),
-    'İç Anadolu & Başkent': locations.filter((l: any) => ['ankara', 'konya', 'kayseri', 'eskisehir', 'sivas', 'aksaray', 'karaman', 'kirikkale', 'kirsehir', 'nevsehir', 'nigde', 'yozgat', 'cankiri'].includes(l.ilSlug)),
-    'Karadeniz Bölgesi': locations.filter((l: any) => ['samsun', 'trabzon', 'ordu', 'giresun', 'rize', 'artvin', 'zonguldak', 'karabuk', 'bartin', 'kastamonu', 'sinop', 'bolu', 'duzce', 'amasya', 'corum', 'tokat', 'gumushane', 'bayburt'].includes(l.ilSlug)),
-    'Güneydoğu & Doğu Anadolu': locations.filter((l: any) => ['gaziantep', 'diyarbakir', 'sanliurfa', 'batman', 'mardin', 'adiyaman', 'sirnak', 'siirt', 'kilis', 'malatya', 'elazig', 'erzurum', 'van', 'agri', 'kars', 'igdir', 'ardahan', 'mus', 'bingol', 'bitlis', 'hakkari', 'tunceli', 'erzincan'].includes(l.ilSlug)),
-  };
 
   // ── JSON-LD SCHEMA OBJECTS (Google & Yandex Rich Snippets) ──
   const webSiteSchema = {
