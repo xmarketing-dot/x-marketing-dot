@@ -914,96 +914,76 @@ export default function BmsSecurePortalDashboard() {
           </div>
         </div>
 
-        {/* ── 2. BÜYÜK & BELİRGİN CANLI ONLİNE / ZİYARETÇİ KONTROL KARTLARI ──── */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-4 pt-1 border-t border-slate-800/80">
-          {/* 1. Canlı Ziyaretçi Sayacı (Zümrüt Yeşil Neon) */}
+        {/* ── 2. KOMPAKT & ŞIK CANLI ONLİNE / ZİYARETÇİ KONTROL KARTLARI ──── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+          {/* 1. Canlı Ziyaretçi Sayacı (Zümrüt Yeşil) */}
           <button
             type="button"
             onClick={() => setShowActiveVisitorsModal(true)}
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-950/70 via-[#07140f] to-[#0c1017] border border-emerald-500/40 hover:border-emerald-400/90 p-3 sm:p-4 text-left transition-all duration-300 shadow-xl shadow-emerald-950/50 hover:shadow-emerald-500/20 active:scale-[0.98] flex flex-col justify-between gap-2 cursor-pointer"
+            className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-emerald-950/40 via-[#0a1611] to-[#0c1017] border border-emerald-500/30 hover:border-emerald-400/80 px-3 py-2 sm:px-4 sm:py-2.5 text-left transition-all duration-200 shadow-md hover:shadow-emerald-500/10 active:scale-[0.99] flex items-center justify-between cursor-pointer"
           >
-            {/* Arka plan süzülen neon parlama */}
-            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-28 h-28 bg-emerald-500/15 rounded-full blur-2xl group-hover:bg-emerald-500/25 transition-all pointer-events-none" />
-
-            <div className="flex items-center justify-between gap-1 w-full z-10">
-              <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-400 font-heading">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                </span>
-                <span>ZİYARETÇİ AKTİF</span>
-              </span>
-              <span className="text-[10px] sm:text-xs text-emerald-400/80 group-hover:text-emerald-300 font-bold flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                <span>Canlı İzle</span>
-                <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </span>
-            </div>
-
-            <div className="flex items-baseline gap-2 sm:gap-3 z-10 my-0.5">
-              <span className="text-3xl sm:text-5xl font-black text-white font-mono tracking-tight drop-shadow-[0_0_16px_rgba(16,185,129,0.4)]">
-                {activeUsers}
+            <div className="flex items-center gap-2.5 sm:gap-3 z-10">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
               <div className="flex flex-col">
-                <span className="text-xs sm:text-sm font-extrabold text-emerald-300 leading-tight">
-                  Kişi Sitede
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-emerald-400 font-heading">
+                  Ziyaretçi Aktif
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-emerald-500/80 font-medium hidden sm:inline">
-                  Anlık gezinmeler
-                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xl sm:text-2xl font-black text-white font-mono tracking-tight drop-shadow-[0_0_12px_rgba(16,185,129,0.35)]">
+                    {activeUsers}
+                  </span>
+                  <span className="text-[11px] sm:text-xs text-slate-300 font-medium">
+                    kişi online
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-400 z-10 pt-1 border-t border-emerald-500/20">
-              <span className="truncate">Sitedeki anlık sayfaları incelemek için tıkla</span>
-            </div>
+            <span className="text-[10px] sm:text-xs text-emerald-400 group-hover:text-emerald-300 font-semibold flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/25 shrink-0">
+              <span>Canlı İzle</span>
+              <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </span>
           </button>
 
-          {/* 2. Müşteri Online Sayacı (Altın/Amber VIP) */}
+          {/* 2. Müşteri Online Sayacı (Altın/Amber) */}
           <button
             type="button"
             onClick={() => setShowOnlineUsersModal(true)}
-            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-950/70 via-[#181206] to-[#0c1017] border border-amber-500/40 hover:border-amber-400/90 p-3 sm:p-4 text-left transition-all duration-300 shadow-xl shadow-amber-950/50 hover:shadow-amber-500/20 active:scale-[0.98] flex flex-col justify-between gap-2 cursor-pointer"
+            className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-950/40 via-[#181308] to-[#0c1017] border border-amber-500/30 hover:border-amber-400/80 px-3 py-2 sm:px-4 sm:py-2.5 text-left transition-all duration-200 shadow-md hover:shadow-amber-500/10 active:scale-[0.99] flex items-center justify-between cursor-pointer"
           >
-            {/* Arka plan süzülen altın parlama */}
-            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-28 h-28 bg-amber-500/15 rounded-full blur-2xl group-hover:bg-amber-500/25 transition-all pointer-events-none" />
-
-            <div className="flex items-center justify-between gap-1 w-full z-10">
-              <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-400 font-heading">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
-                </span>
-                <span>MÜŞTERİ PANELİ</span>
-              </span>
-              <span className="text-[10px] sm:text-xs text-amber-400/80 group-hover:text-amber-300 font-bold flex items-center gap-0.5 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                <span>Oturumlar</span>
-                <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </span>
-            </div>
-
-            <div className="flex items-baseline gap-2 sm:gap-3 z-10 my-0.5">
-              <span className="text-3xl sm:text-5xl font-black text-white font-mono tracking-tight drop-shadow-[0_0_16px_rgba(245,158,11,0.4)]">
-                {onlineUsers.length}
+            <div className="flex items-center gap-2.5 sm:gap-3 z-10">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
               </span>
               <div className="flex flex-col">
-                <span className="text-xs sm:text-sm font-extrabold text-amber-300 leading-tight">
-                  Oturum Açık
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-amber-400 font-heading">
+                  Müşteri Paneli
                 </span>
-                <span className="text-[10px] sm:text-[11px] text-amber-500/80 font-medium hidden sm:inline">
-                  Giriş yapmış modeller
-                </span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-xl sm:text-2xl font-black text-white font-mono tracking-tight drop-shadow-[0_0_12px_rgba(245,158,11,0.35)]">
+                    {onlineUsers.length}
+                  </span>
+                  <span className="text-[11px] sm:text-xs text-slate-300 font-medium">
+                    oturum açık
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-400 z-10 pt-1 border-t border-amber-500/20">
-              <span className="truncate">Panelde aktif ilan sahiplerini gör</span>
-            </div>
+            <span className="text-[10px] sm:text-xs text-amber-400 group-hover:text-amber-300 font-semibold flex items-center gap-1 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/25 shrink-0">
+              <span>Oturumlar</span>
+              <ArrowUpRight className="w-3 h-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </span>
           </button>
         </div>
       </div>
 
-      {/* ── 2. SEGMENTED TAB NAVIGATION ───────────────────────────────────── */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-800/80 no-scrollbar">
+      {/* ── 2. SEGMENTED TAB NAVIGATION (YÜKSEK KONTRAST & BELİRGİN SEKMELER) ── */}
+      <div className="flex items-center gap-2 overflow-x-auto p-1.5 bg-[#090d14] rounded-2xl border border-slate-800 shadow-md no-scrollbar">
         {[
           { id: 'overview', icon: BarChart3, label: 'Genel Bakış', count: null },
           { id: 'whatsapp_leads', icon: MessageSquare, label: 'WhatsApp Randevu', count: eventCounts.whatsappClicks || null },
@@ -1018,17 +998,19 @@ export default function BmsSecurePortalDashboard() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
+                className={`px-3.5 py-2.5 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap shrink-0 border cursor-pointer ${
                   isActive
-                    ? 'bg-slate-800 text-white font-semibold shadow-sm border border-slate-700/60'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                    ? 'bg-gradient-to-r from-emerald-500/25 via-emerald-600/20 to-teal-500/25 text-emerald-300 border-emerald-500/60 shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-500/40'
+                    : 'bg-[#111724] text-slate-200 border-slate-700/60 hover:border-slate-500 hover:text-white hover:bg-slate-800/90 shadow-sm'
                 }`}
               >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-400' : 'text-slate-500'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
                 <span>{tab.label}</span>
                 {tab.count !== null && (
-                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono font-semibold ${
-                    isActive ? 'bg-slate-900 text-emerald-400' : 'bg-slate-800/70 text-slate-400'
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono font-bold border ${
+                    isActive
+                      ? 'bg-emerald-500/30 text-emerald-200 border-emerald-400/50 shadow-[0_0_8px_rgba(16,185,129,0.3)]'
+                      : 'bg-slate-800 text-slate-300 border-slate-600/50'
                   }`}>
                     {tab.count}
                   </span>
