@@ -1384,37 +1384,7 @@ export default function BmsSecurePortalDashboard() {
                 </div>
               </div>
 
-              {/* Özel Vitrin Popup & Banner Özeti */}
-              <div className="bg-[#0e131f] border border-slate-800/90 rounded-2xl p-4 sm:p-5 shadow-md flex flex-col gap-3">
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-                  <div>
-                    <h2 className="text-sm font-semibold text-white">Özel Vitrin Popup &amp; Banner</h2>
-                    <p className="text-[11px] text-slate-400">Öne çıkan vitrin ve popup reklam dönüşümleri</p>
-                  </div>
-                  <span className="text-xs font-mono font-medium text-emerald-400">
-                    Dönüşüm: %{specialAdStats?.ctr || '0.0'}
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-col">
-                    <span className="text-[10px] text-slate-400">Gösterim</span>
-                    <span className="font-mono font-bold text-base text-white">{specialAdStats?.impressions || 0}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-col">
-                    <span className="text-[10px] text-slate-400">Tekil Kişi</span>
-                    <span className="font-mono font-bold text-base text-slate-200">{specialAdStats?.uniqueVisitors || 0}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-col">
-                    <span className="text-[10px] text-slate-400">Tıklama</span>
-                    <span className="font-mono font-bold text-base text-cyan-400">{specialAdStats?.clicks || 0}</span>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-col">
-                    <span className="text-[10px] text-slate-400">WhatsApp Tık</span>
-                    <span className="font-mono font-bold text-base text-emerald-400">{specialAdStats?.whatsappClicks || 0}</span>
-                  </div>
-                </div>
-              </div>
 
             </div>
 

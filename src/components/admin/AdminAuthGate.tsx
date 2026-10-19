@@ -36,6 +36,7 @@ import {
   PanelLeftOpen
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
+import AdminFloatingChat from './AdminFloatingChat';
 
 interface AdminAuthGateProps {
   children: React.ReactNode;
@@ -986,6 +987,8 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         </div>
       )}
 
+      {/* Facebook Messenger Style Floating Live Chat */}
+      <AdminFloatingChat />
     </div>
   );
 }
