@@ -155,13 +155,7 @@ export function middleware(req: NextRequest) {
     return rewriteRes;
   }
 
-  const res = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
-
-  
-
-  return res;
+  return NextResponse.next();
 }
 
 export const config = {

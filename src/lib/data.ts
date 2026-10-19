@@ -209,14 +209,30 @@ export async function getListings({
     .limit(limit ? Math.max(limit * 2, 250) : 500)
     .lean();
 
+  const sanitizeImgUrl = (val: any) => {
+    if (!val) return '';
+    const u = typeof val === 'string' ? val : val?.url;
+    if (typeof u === 'string' && u.startsWith('data:image')) {
+      return 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=600';
+    }
+    return typeof val === 'string' ? val : (val?.url || '');
+  };
+
   const cleanedListings = (listings as any[]).map((l: any) => {
     const isPassive =
       l.status === 'suresi_doldu' ||
       l.status === 'pasif' ||
       (l.paketBitisTarihi ? new Date(l.paketBitisTarihi) <= nowDate : false);
 
+    const cleanAnaFoto = l.anaFotograf ? { url: sanitizeImgUrl(l.anaFotograf) } : undefined;
+    const cleanFotos = Array.isArray(l.fotograflar)
+      ? l.fotograflar.slice(0, 4).map((f: any) => ({ url: sanitizeImgUrl(f) }))
+      : [];
+
     return {
       ...l,
+      anaFotograf: cleanAnaFoto,
+      fotograflar: cleanFotos,
       isPassive,
       // GÜVENLİK KİLİDİ: Pasif ilanların telefon numarasını istemciye asla iletme
       whatsappNumara: isPassive ? '' : l.whatsappNumara,
