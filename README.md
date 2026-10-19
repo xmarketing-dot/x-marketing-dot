@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Best Eskort — Web & Admin Portal Platformu
 
-## Getting Started
+> **Son Güncelleme:** 19 Ekim 2026  
+> **Sürüm:** `v2.4.0 (Senior Cyber Luxury & Floating Live Mesh)`  
+> **Teknik Mimari & Kurallar Belgesi:** Detaylı geliştirici ve yapay zeka ajan kuralları için [`agent.md`](./agent.md) dosyasını inceleyin.
 
-First, run the development server:
+---
+
+## 📌 Proje Özeti
+
+Best Eskort; Türkiye genelinde 81 il ve tüm ilçelerde eskort ve model ilanlarını yayınlayan, yüksek hızlı arama motoru optimizasyonu (SEO), gerçek zamanlı canlı müşteri sohbeti ve ileri düzey kurumsal yönetim paneline sahip modern bir web platformudur.
+
+---
+
+## 🛠️ Teknoloji Yığını
+
+* **Framework:** Next.js 15 (App Router, Server Components & React 19)
+* **Veritabanı:** MongoDB Atlas + Mongoose
+* **Medya Depolama:** MongoDB GridFS (`uploads` bucket) + Sharp (WebP dönüşümü ve filigran)
+* **Canlı İletişim:** Server-Sent Events (SSE), EventEmitter ve optimize edilmiş polling
+* **Stil & Arayüz:** Tailwind CSS (Obsidian & Emerald Cyber Luxury Tasarım Sistemi)
+* **İkonlar:** Lucide React
+* **Yönetici Güvenliği:** Edge Middleware + SHA-256 korumalı `bms_admin_auth` çerezi
+
+---
+
+## 🚀 Başlangıç ve Çalıştırma
+
+Projeyi yerel ortamda çalıştırmak için:
 
 ```bash
+# Bağımlılıkları yükleyin
+npm install
+
+# Geliştirme sunucusunu başlatın
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresine gidin.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Tip Kontrolü
+Değişikliklerin TypeScript doğruluğunu sınamak için:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx tsc --noEmit
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🔒 Güvenli Yönetici Portalı (`/bms-secure-portal`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Yönetim paneli; canlı trafik takibi, Facebook tarzı sağ alttan açılan yüzen canlı sohbet (`AdminFloatingChat`), ilan moderasyonu, kullanıcı hesap yönetimi, SEO backlink ağı ve push bildirim araçlarını barındırır.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Tasarım standartları, altın kurallar ve mimari kararlar için [`agent.md`](./agent.md) belgesine başvurun.
