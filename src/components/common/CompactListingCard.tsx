@@ -47,9 +47,9 @@ function getSharedObserver() {
 }
 
 /**
- * Grid görünümünde 1600px orijinal yerine 360px (~11KB) hafif thumbnail ister
+ * Grid görünümünde 1600px orijinal yerine 480px Retina (~15KB) hafif ve net thumbnail ister
  */
-function getThumbnailUrl(rawUrl: string, width = 360): string {
+function getThumbnailUrl(rawUrl: string, width = 480): string {
   if (!rawUrl) return '';
   if (rawUrl.startsWith('/api/img/')) {
     const separator = rawUrl.includes('?') ? '&' : '?';

@@ -25,7 +25,8 @@ export async function GET(
       return new NextResponse('Geçersiz resim ID', { status: 400 });
     }
 
-    const targetWidth = Math.min(1200, Math.max(80, parseInt(req.nextUrl.searchParams.get('w') || '0', 10)));
+    const rawW = req.nextUrl.searchParams.get('w');
+    const targetWidth = rawW ? Math.min(1200, Math.max(80, parseInt(rawW, 10) || 0)) : 0;
     const cacheKey = targetWidth > 0 ? `${id}_w${targetWidth}` : id;
 
     // 1. Sıcak bellek kontrolü (0ms, 0 db bağlantısı)
@@ -105,7 +106,7 @@ export async function GET(
       try {
         finalBuffer = await sharp(originalBuffer)
           .resize(targetWidth, null, { withoutEnlargement: true })
-          .webp({ quality: 80, effort: 4 })
+          .webp({ quality: 86, effort: 4 })
           .toBuffer();
         finalContentType = 'image/webp';
       } catch (sharpErr) {
