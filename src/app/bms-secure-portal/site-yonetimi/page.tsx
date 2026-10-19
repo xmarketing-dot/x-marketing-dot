@@ -451,7 +451,7 @@ function SiteYonetimiContent() {
     if (displayType === 'drawer') {
       return (
         <div className="p-3 sm:p-5 rounded-2xl bg-[#070a0f] border border-slate-800 flex justify-center items-center w-full">
-          <div className="w-full max-w-sm bg-[#0c1017]/95 border border-amber-500/40 rounded-2xl sm:rounded-3xl shadow-2xl p-3.5 sm:p-5 flex flex-col justify-between items-center text-center space-y-2.5 sm:space-y-3">
+          <div className="w-full max-w-sm bg-[#0c1017]/95 border border-amber-500/40 rounded-2xl shadow-2xl p-3.5 sm:p-5 flex flex-col justify-between items-center text-center space-y-2.5 sm:space-y-3">
             <div className="w-10 sm:w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-0.5" />
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/50 shadow-inner">
@@ -525,9 +525,9 @@ function SiteYonetimiContent() {
     <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-full text-left font-sans animate-fadeIn pb-20 md:pb-12">
       
       {/* ── 1. ÜST BAŞLIK VE SAYFA KİMLİĞİ (PRO RESPONSIVE HEADER) ─────────── */}
-      <div className="p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-3.5 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-start sm:items-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-lg mt-0.5 sm:mt-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shrink-0 shadow-lg mt-0.5 sm:mt-0">
             <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
           <div className="flex flex-col min-w-0">
@@ -564,8 +564,7 @@ function SiteYonetimiContent() {
           type="button"
           onClick={() => handleTabChange('genel')}
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            activeTab === 'genel'
-              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 font-black'
+            activeTab === 'genel' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shadow-sm'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -577,8 +576,7 @@ function SiteYonetimiContent() {
           type="button"
           onClick={() => handleTabChange('duyuru')}
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer ${
-            activeTab === 'duyuru'
-              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 font-black'
+            activeTab === 'duyuru' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shadow-sm'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -597,7 +595,7 @@ function SiteYonetimiContent() {
         <div className="flex flex-col gap-4 sm:gap-6 animate-fadeIn w-full">
           
           {/* CANLI WHATSAPP HATTI (PROFESSIONAL RESPONSIVE CARD) */}
-          <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-3.5 sm:gap-4 w-full">
+          <div className="p-3.5 sm:p-6 rounded-2xl bg-gradient-to-br from-[#121c15] via-[#161b22] to-[#0f1712] border-2 border-emerald-500/40 shadow-2xl flex flex-col gap-3.5 sm:gap-4 w-full">
             
             {/* Header: Başlık & Durum */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-emerald-500/20">
@@ -703,10 +701,10 @@ function SiteYonetimiContent() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             
             {/* ANASAYFA HERO VE MARKA METİNLERİ */}
-            <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col justify-between gap-3.5 sm:gap-4">
+            <div className="p-3.5 sm:p-6 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col justify-between gap-3.5 sm:gap-4">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2.5 sm:gap-3 pb-2.5 sm:pb-3 border-b border-slate-800">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black shrink-0">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 flex items-center justify-center font-bold shrink-0">
                     <Type className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
@@ -729,7 +727,7 @@ function SiteYonetimiContent() {
                       value={heroBaslik}
                       onChange={(e) => setHeroBaslik(e.target.value)}
                       placeholder="Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
-                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs sm:text-sm font-medium focus:border-amber-400 focus:outline-none transition-colors"
+                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs sm:text-sm font-medium focus:border-emerald-500/60 focus:outline-none transition-colors"
                     />
                   </div>
 
@@ -742,7 +740,7 @@ function SiteYonetimiContent() {
                       value={heroAltBaslik}
                       onChange={(e) => setHeroAltBaslik(e.target.value)}
                       placeholder="81 il ve tüm ilçelerde doğrulanmış eskort ilanları ve WhatsApp iletişim hatları."
-                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs sm:text-sm font-medium focus:border-amber-400 focus:outline-none transition-colors resize-none"
+                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs sm:text-sm font-medium focus:border-emerald-500/60 focus:outline-none transition-colors resize-none"
                     />
                   </div>
                 </div>
@@ -764,7 +762,7 @@ function SiteYonetimiContent() {
                   type="button"
                   onClick={handleSaveHero}
                   disabled={savingHero}
-                  className="py-2.5 px-4 sm:px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer min-h-[40px]"
+                  className="py-2.5 px-4 sm:px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95 disabled:opacity-40 cursor-pointer min-h-[40px]"
                 >
                   {savingHero ? 'Kaydediliyor...' : 'Metinleri Kaydet'}
                 </button>
@@ -772,7 +770,7 @@ function SiteYonetimiContent() {
             </div>
 
             {/* HIZLI SİSTEM & SEO AKSİYONLARI */}
-            <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col justify-between gap-3.5 sm:gap-4">
+            <div className="p-3.5 sm:p-6 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col justify-between gap-3.5 sm:gap-4">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2.5 sm:gap-3 pb-2.5 sm:pb-3 border-b border-slate-800">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black shrink-0">
@@ -1049,7 +1047,7 @@ function SiteYonetimiContent() {
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 w-full items-start">
             
             {/* SOL KOLON (XL: 7 / 2XL: 8): FORM VE AYARLAR */}
-            <div className="xl:col-span-7 2xl:col-span-8 p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl space-y-4 sm:space-y-5 w-full">
+            <div className="xl:col-span-7 2xl:col-span-8 p-3.5 sm:p-6 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl space-y-4 sm:space-y-5 w-full">
               <h2 className="text-sm sm:text-base font-heading font-black text-white flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-amber-400" />
                 <span>Duyuru İçerik &amp; Format Yapılandırması</span>
@@ -1096,7 +1094,7 @@ function SiteYonetimiContent() {
                   <select
                     value={delaySeconds}
                     onChange={(e) => setDelaySeconds(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs font-bold focus:border-amber-400 focus:outline-none cursor-pointer"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs font-bold focus:border-emerald-500/60 focus:outline-none cursor-pointer"
                   >
                     <option value={0}>0 sn (Hemen Açılır)</option>
                     <option value={1}>1 saniye sonra</option>
@@ -1139,7 +1137,7 @@ function SiteYonetimiContent() {
                       setMediaType(e.target.value.includes('.gif') ? 'gif' : 'image');
                     }}
                     placeholder="https://... veya dosya seçin"
-                    className="flex-1 w-full px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58]"
+                    className="flex-1 w-full px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 focus:border-emerald-500/60 focus:outline-none text-white text-xs placeholder-[#484f58]"
                   />
 
                   <input
@@ -1154,7 +1152,7 @@ function SiteYonetimiContent() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingMedia}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer min-h-[40px]"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-md shadow-emerald-500/20 cursor-pointer min-h-[40px]"
                   >
                     <Upload className={`w-3.5 h-3.5 ${uploadingMedia ? 'animate-bounce' : ''}`} />
                     <span>{uploadingMedia ? 'Yükleniyor...' : 'Görsel / GIF Seç'}</span>
@@ -1173,7 +1171,7 @@ function SiteYonetimiContent() {
                     value={duyuruTitle}
                     onChange={(e) => setDuyuruTitle(e.target.value)}
                     placeholder="Türkiyenin en büyük eskort sitesi açıldı !"
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-emerald-500/60 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
                   />
                 </div>
 
@@ -1186,7 +1184,7 @@ function SiteYonetimiContent() {
                     value={duyuruDescription}
                     onChange={(e) => setDuyuruDescription(e.target.value)}
                     placeholder="VIP ilanları ve WhatsApp iletişim hatlarını hemen keşfedin."
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-amber-400 focus:outline-none text-white text-xs placeholder-[#484f58] resize-none"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-emerald-500/60 focus:outline-none text-white text-xs placeholder-[#484f58] resize-none"
                   />
                 </div>
 
@@ -1199,7 +1197,7 @@ function SiteYonetimiContent() {
                     value={duyuruBadgeText}
                     onChange={(e) => setDuyuruBadgeText(e.target.value)}
                     placeholder="🚀 YENİ"
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-emerald-500/60 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
                   />
                 </div>
 
@@ -1212,7 +1210,7 @@ function SiteYonetimiContent() {
                     value={duyuruButtonText}
                     onChange={(e) => setDuyuruButtonText(e.target.value)}
                     placeholder="Hemen İncele →"
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-amber-400 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-emerald-500/60 focus:outline-none text-white text-xs font-bold placeholder-[#484f58]"
                   />
                 </div>
 
@@ -1225,7 +1223,7 @@ function SiteYonetimiContent() {
                     value={duyuruTargetUrl}
                     onChange={(e) => setDuyuruTargetUrl(e.target.value)}
                     placeholder="https://... veya /ilan-ver"
-                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-amber-400 focus:outline-none text-amber-300 font-mono text-xs font-bold placeholder-[#484f58]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 focus:border-emerald-500/60 focus:outline-none text-amber-300 font-mono text-xs font-bold placeholder-[#484f58]"
                   />
                 </div>
               </div>
@@ -1287,7 +1285,7 @@ function SiteYonetimiContent() {
             <div className="hidden xl:flex xl:col-span-5 2xl:col-span-4 flex-col gap-5 xl:sticky xl:top-6">
               
               {/* Canlı Önizleme Kartı */}
-              <div className="p-5 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl space-y-3 w-full">
+              <div className="p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl space-y-3 w-full">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-800">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
                     <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
@@ -1301,7 +1299,7 @@ function SiteYonetimiContent() {
               </div>
 
               {/* Kampanya Sıfırlama Kartı */}
-              <div className="p-5 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col justify-between gap-4 w-full">
+              <div className="p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col justify-between gap-4 w-full">
                 <div className="space-y-3">
                   <h3 className="text-sm font-heading font-black text-white flex items-center gap-2">
                     <RotateCcw className="w-4 h-4 text-rose-400 shrink-0" />
@@ -1342,7 +1340,7 @@ function SiteYonetimiContent() {
           </div>
 
           {/* ── ZİYARETÇİ ETKİLEŞİM GÜNLÜĞÜ (FULL WIDTH RESPONSIVE) ─────────── */}
-          <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl space-y-3.5 sm:space-y-4 w-full">
+          <div className="p-3.5 sm:p-6 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl space-y-3.5 sm:space-y-4 w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
                 <h2 className="text-sm sm:text-base font-heading font-black text-white flex items-center gap-2">
@@ -1370,7 +1368,7 @@ function SiteYonetimiContent() {
                     setLogPage(1);
                   }}
                   placeholder="IP veya şehir ile ara..."
-                  className="w-full pl-8 sm:pl-9 pr-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                  className="w-full pl-8 sm:pl-9 pr-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs placeholder-[#484f58] focus:border-emerald-500/60 focus:outline-none"
                 />
               </div>
 

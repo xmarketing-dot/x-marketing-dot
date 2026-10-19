@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -16,27 +16,25 @@ import {
   TrendingUp, 
   Eye, 
   MousePointerClick, 
-  ChevronLeft,
-  AlertCircle,
-  ShieldCheck,
-  Plus,
-  ArrowUpRight,
-  Filter,
-  CheckCircle2,
-  XCircle,
-  Timer,
-  Phone,
-  Layers,
-  Copy,
-  KeyRound,
-  SlidersHorizontal,
-  PauseCircle,
-  PlayCircle
+  AlertCircle, 
+  ShieldCheck, 
+  Plus, 
+  ArrowUpRight, 
+  Filter, 
+  CheckCircle2, 
+  XCircle, 
+  Timer, 
+  Phone, 
+  Layers, 
+  Copy, 
+  KeyRound, 
+  SlidersHorizontal, 
+  PauseCircle, 
+  PlayCircle 
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 
-
-function MetricCircle({ percent, color = '#f59e0b', size = 42, strokeWidth = 3.5 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
+function MetricCircle({ percent, color = '#10b981', size = 38, strokeWidth = 3.5 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
   const safePercent = Math.min(Math.max(percent || 0, 0), 100);
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -66,7 +64,7 @@ function MetricCircle({ percent, color = '#f59e0b', size = 42, strokeWidth = 3.5
           className="transition-all duration-700 ease-out"
         />
       </svg>
-      <span className="absolute text-[10px] font-mono font-black text-white">
+      <span className="absolute text-[10px] font-mono font-bold text-white">
         %{Math.round(safePercent)}
       </span>
     </div>
@@ -96,7 +94,6 @@ export default function AdminBannerManagementPage() {
         setEmptyClicks(data.emptyClicksCount || 0);
       }
     } catch (e) {
-      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -142,169 +139,140 @@ export default function AdminBannerManagementPage() {
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-    // Progress hesaplama
     const start = banner.baslangicTarihi ? new Date(banner.baslangicTarihi).getTime() : end - banner.sureGun * 86400000;
     const total = end - start;
     const elapsed = now - start;
     const progress = Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
 
-    let text = `${Math.max(1, minutes)} Dakika Kaldı`;
-    if (days > 0) {
-      text = `${days} Gün ${hours} Saat Kaldı`;
-    } else if (hours > 0) {
-      text = `${hours} Saat ${minutes > 0 ? `${minutes} Dk ` : ''}Kaldı`;
-    }
-
     return {
       expired: false,
-      text,
-      days,
-      hours,
-      minutes,
+      text: `${days} gün ${hours} saat`,
       progress,
     };
   };
 
-  const filteredBanners = banners.filter((b) => {
-    if (statusFilter === 'all') return true;
-    return b.durum === statusFilter;
-  });
-
-  const totalViews = banners.reduce((acc, b) => acc + (b.goruntulenmeSayisi || 0), 0);
-  const totalClicks = banners.reduce((acc, b) => acc + (b.tiklamaSayisi || 0), 0);
+  const totalViews = useMemo(() => banners.reduce((acc, b) => acc + (b.goruntulenmeSayisi || 0), 0), [banners]);
+  const totalClicks = useMemo(() => banners.reduce((acc, b) => acc + (b.tiklamaSayisi || 0), 0), [banners]);
   const averageCtr = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0.0';
 
+  const filteredBanners = useMemo(() => {
+    if (statusFilter === 'all') return banners;
+    return banners.filter((b) => b.durum === statusFilter);
+  }, [banners, statusFilter]);
+
   return (
-    <div className="flex flex-col gap-5 w-full max-w-full text-left pb-16 text-[#f0f6fc]">
+    <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-full text-left font-sans animate-fadeIn pb-20 md:pb-12">
       
-      {/* ── 1. ÜST HEADER KONTROL KARTI ──────────────── */}
-      <div className="flex flex-col gap-3 p-3 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <Link
-              href="/bms-secure-portal"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#070a0f] hover:bg-[#30363d] border border-slate-800 text-amber-400 hover:text-amber-300 flex items-center justify-center shrink-0 transition-all active:scale-95 shadow-md"
-              title="Ana Yönetim Paneline Dön"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </Link>
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="font-heading font-black text-base sm:text-2xl text-white tracking-tight truncate">
-                  Banner &amp; Reklam Masası
-                </h1>
-                <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black font-heading shrink-0">
-                  CANLI
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 truncate hidden sm:block">
-                Sponsor banner yayın süreleri, tıklama oranları ve rezervasyon yönetimi
-              </p>
+      {/* ── 1. ÜST HEADER BAR & SAYFA KİMLİĞİ ──────────────── */}
+      <div className="p-3.5 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shrink-0 shadow-lg mt-0.5 sm:mt-0">
+            <Megaphone className="w-5 h-5" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-bold text-base sm:text-xl text-white tracking-tight">
+                Sponsorlu Banner Yönetimi
+              </h1>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] sm:text-[10px] font-mono font-bold">
+                {banners.filter((b) => b.durum === 'yayinda').length} AKTİF SPONSOR
+              </span>
             </div>
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+              Sponsor banner yayın süreleri, tıklama oranları ve rezervasyon yönetimi.
+            </p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <Link
-              href="/reklam-ver"
-              target="_blank"
-              className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs flex items-center gap-1 shadow-md shadow-amber-500/20 transition-all active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5 stroke-[3]" />
-              <span className="hidden sm:inline">Yeni Banner Ekle</span>
-              <span className="sm:hidden">Ekle</span>
-            </Link>
-            <button
-              onClick={fetchBanners}
-              disabled={loading}
-              className="p-2 sm:p-2.5 rounded-xl bg-[#070a0f] hover:bg-[#30363d] border border-slate-800 text-amber-400 hover:text-white transition-all active:scale-95"
-              title="Verileri Yenile"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
+        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
+          <Link
+            href="/reklam-ver"
+            target="_blank"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>Yeni Banner Ekle</span>
+          </Link>
+
+          <button
+            onClick={fetchBanners}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-all cursor-pointer"
+            title="Verileri Yenile"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
+          </button>
         </div>
       </div>
 
-      {/* ── 2. İSTATİSTİK KARTLARI (2x2 + ÖZEL KART) ──────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3">
-        {/* 1. Yayındakiler */}
-        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0c1017] border border-emerald-500/30 flex flex-col justify-between gap-1 shadow-md hover:border-emerald-500/50 transition-colors">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] sm:text-xs font-heading font-black uppercase text-emerald-400">Yayında</span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <Crown className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <span className="font-heading font-black text-xl sm:text-3xl text-emerald-400 mt-0.5">
-            {banners.filter((b) => b.durum === 'yayinda').length}
-          </span>
-          <span className="text-[10px] text-slate-400 truncate">Aktif sponsor</span>
-        </div>
-
-        {/* 2. Onay Bekleyenler */}
-        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0c1017] border border-amber-500/40 flex flex-col justify-between gap-1 shadow-md shadow-amber-500/5 hover:border-amber-400 transition-colors">
-          <div className="flex items-center justify-between text-amber-400">
-            <span className="text-[10px] sm:text-xs font-heading font-black uppercase">Onay Bekleyen</span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-              <AlertCircle className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <span className="font-heading font-black text-xl sm:text-3xl text-amber-400 mt-0.5">
-            {banners.filter((b) => b.durum === 'onay_bekliyor').length}
-          </span>
-          <span className="text-[10px] text-amber-300/80 truncate">Teyit bekleyen</span>
-        </div>
-
-        {/* 3. Toplam Gösterim */}
-        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0c1017] border border-slate-800 flex flex-col justify-between gap-1 shadow-md hover:border-blue-500/40 transition-colors">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] sm:text-xs font-heading font-black uppercase">Gösterim</span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
-              <Eye className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <span className="font-heading font-black text-xl sm:text-3xl text-white mt-0.5">
-            {totalViews.toLocaleString('tr-TR')}
-          </span>
-          <span className="text-[10px] text-slate-400 truncate">Kullanıcı gösterimi</span>
-        </div>
-
-        {/* 4. Sponsor Tıklama */}
-        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0c1017] border border-slate-800 flex flex-col justify-between gap-1 shadow-md hover:border-emerald-500/40 transition-colors">
-          <div className="flex items-center justify-between text-slate-400">
-            <span className="text-[10px] sm:text-xs font-heading font-black uppercase">Tıklama</span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-              <MousePointerClick className="w-3.5 h-3.5" />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-1 mt-0.5 flex-wrap">
-            <span className="font-heading font-black text-xl sm:text-3xl text-emerald-400">
-              {totalClicks.toLocaleString('tr-TR')}
+      {/* ── 2. EXECUTIVE KPI ŞERİDİ ──────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
+        <div className="p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Yayında</span>
+            <span className="font-mono font-bold text-lg text-emerald-400 mt-0.5">
+              {banners.filter((b) => b.durum === 'yayinda').length}
             </span>
-            <span className="text-[9px] sm:text-xs font-mono font-bold text-amber-400">%{averageCtr}</span>
+            <span className="text-[10px] text-slate-500">Aktif sponsor</span>
           </div>
-          <span className="text-[10px] text-slate-400 truncate">Hedef link tıklandı</span>
+          <MetricCircle percent={banners.length ? (banners.filter((b) => b.durum === 'yayinda').length / banners.length) * 100 : 0} color="#10b981" size={38} />
         </div>
 
-        {/* 5. Boşken Tıklama (Mobilde 2 sütun) */}
-        <div className="col-span-2 lg:col-span-1 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-r lg:bg-gradient-to-br from-[#2a1b04] via-[#1c1917] to-[#161b22] border-2 border-dashed border-amber-500/60 flex flex-col justify-between gap-1 shadow-md shadow-amber-500/10">
-          <div className="flex items-center justify-between text-amber-300">
-            <span className="text-[10px] sm:text-xs font-heading font-black uppercase">"Reklam Ver" Tıklayan</span>
-            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-            </div>
+        <div className="p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider">Onay Bekleyen</span>
+            <span className="font-mono font-bold text-lg text-amber-400 mt-0.5">
+              {banners.filter((b) => b.durum === 'onay_bekliyor').length}
+            </span>
+            <span className="text-[10px] text-slate-500">Teyit bekleyen</span>
           </div>
-          <span className="font-heading font-black text-xl sm:text-3xl text-amber-300 mt-0.5">
-            {emptyClicks.toLocaleString('tr-TR')} Kişi
-          </span>
-          <span className="text-[10px] text-amber-200/80 truncate">Potansiyel müşteri</span>
+          <MetricCircle percent={banners.length ? (banners.filter((b) => b.durum === 'onay_bekliyor').length / banners.length) * 100 : 0} color="#f59e0b" size={38} />
+        </div>
+
+        <div className="p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Gösterim</span>
+            <span className="font-mono font-bold text-lg text-white mt-0.5">
+              {totalViews.toLocaleString('tr-TR')}
+            </span>
+            <span className="text-[10px] text-slate-500">Tekil izlenme</span>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-blue-500/15 text-blue-400 flex items-center justify-center">
+            <Eye className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider">Tıklama</span>
+            <div className="flex items-baseline gap-1 mt-0.5">
+              <span className="font-mono font-bold text-lg text-cyan-400">{totalClicks.toLocaleString('tr-TR')}</span>
+              <span className="text-[10px] font-mono font-bold text-amber-400">%{averageCtr}</span>
+            </div>
+            <span className="text-[10px] text-slate-500">Hedefe yönlendirme</span>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
+            <MousePointerClick className="w-4 h-4" />
+          </div>
+        </div>
+
+        <div className="col-span-2 lg:col-span-1 p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-emerald-500/30 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-emerald-300 uppercase tracking-wider">"Reklam Ver" Tık</span>
+            <span className="font-mono font-bold text-lg text-emerald-300 mt-0.5">
+              {emptyClicks.toLocaleString('tr-TR')}
+            </span>
+            <span className="text-[10px] text-slate-500">Potansiyel müşteri</span>
+          </div>
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+            <Sparkles className="w-4 h-4" />
+          </div>
         </div>
       </div>
 
-      {/* ── 3. MODERN TOGGLE / SEGMENTED FİLTRE ÇUBUĞU ──────────────── */}
-      <div className="p-1 rounded-xl bg-[#0c1017] border border-slate-800 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-md">
+      {/* ── 3. SEGMENTED FİLTRE ÇUBUĞU ──────────────── */}
+      <div className="p-1 rounded-xl bg-[#0c1017] border border-slate-800 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-sm">
         {[
           { id: 'all', label: 'Tüm Bannerlar', count: banners.length },
           { id: 'onay_bekliyor', label: 'Onay Bekleyen', count: banners.filter((b) => b.durum === 'onay_bekliyor').length },
@@ -315,15 +283,15 @@ export default function AdminBannerManagementPage() {
           <button
             key={tab.id}
             onClick={() => setStatusFilter(tab.id as any)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer ${
               statusFilter === tab.id
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
-                : 'text-slate-400 hover:text-white hover:bg-[#070a0f]'
+                ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <span>{tab.label}</span>
             <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
-              statusFilter === tab.id ? 'bg-slate-950/30 text-slate-950' : 'bg-[#070a0f] text-amber-400'
+              statusFilter === tab.id ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-900 text-slate-500'
             }`}>
               {tab.count}
             </span>
@@ -331,15 +299,15 @@ export default function AdminBannerManagementPage() {
         ))}
       </div>
 
-      {/* ── 4. BANNER LİSTESİ (TAM BOY PREVIEW & ALT KONTROL MASASI) ──────────────── */}
+      {/* ── 4. BANNER LİSTESİ ──────────────── */}
       {filteredBanners.length === 0 ? (
-        <div className="p-8 sm:p-14 text-center text-xs text-slate-400 bg-[#0c1017] rounded-2xl border border-slate-800 flex flex-col items-center gap-2.5 shadow-xl">
-          <Megaphone className="w-8 h-8 text-slate-400/40" />
-          <span className="font-heading font-bold text-sm text-white">Bu filtrede kayıtlı banner bulunamadı.</span>
-          <p className="text-[11px] text-slate-400">Yeni bir sponsor banner ekleyebilir veya diğer sekmeleri kontrol edebilirsiniz.</p>
+        <div className="p-10 text-center text-xs text-slate-500 bg-[#0e131f] rounded-2xl border border-slate-800/90 flex flex-col items-center gap-2 shadow-sm">
+          <Megaphone className="w-8 h-8 opacity-40" />
+          <span className="font-bold text-sm text-slate-300">Bu filtrede kayıtlı banner bulunamadı.</span>
+          <p className="text-[11px] text-slate-500">Yeni bir sponsor banner ekleyebilir veya diğer sekmeleri kontrol edebilirsiniz.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3.5 sm:gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-4">
           {filteredBanners.map((b) => {
             const timeInfo = getRemainingTime(b);
             const ctr = b.goruntulenmeSayisi > 0 ? ((b.tiklamaSayisi / b.goruntulenmeSayisi) * 100).toFixed(1) : '0.0';
@@ -347,50 +315,46 @@ export default function AdminBannerManagementPage() {
             return (
               <div
                 key={b._id}
-                className={`p-3 sm:p-4.5 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#181f2a] via-[#161b22] to-[#12161c] border transition-all flex flex-col gap-3 shadow-xl ${
+                className={`p-4 rounded-2xl bg-[#0e131f] border transition-all flex flex-col gap-3 shadow-md ${
                   b.durum === 'yayinda'
-                    ? 'border-emerald-500/40 hover:border-emerald-500/70 shadow-emerald-500/5'
+                    ? 'border-slate-800/90 hover:border-emerald-500/50'
                     : b.durum === 'onay_bekliyor'
-                    ? 'border-amber-500/50 hover:border-amber-400 shadow-amber-500/5'
-                    : 'border-slate-800 opacity-90'
+                    ? 'border-amber-500/40 hover:border-amber-400'
+                    : 'border-slate-800/80 opacity-90'
                 }`}
               >
-                {/* ── 1. ÜSTTE TAM GENİŞLİK BANNER GÖRSELİ (PREVIEW) ──────────────── */}
-                <div className="relative w-full aspect-[21/9] sm:aspect-[3.5/1] max-h-52 rounded-xl overflow-hidden bg-[#070a0f] border border-slate-800 shrink-0 group shadow-inner">
+                {/* ── 1. BANNER GÖRSELİ ──────────────── */}
+                <div className="relative w-full aspect-[21/9] sm:aspect-[3.5/1] max-h-48 rounded-xl overflow-hidden bg-[#070a0f] border border-slate-800 shrink-0 group">
                   <Image src={b.gorselUrl} alt={b.baslik} fill className="object-cover" />
-                  
-                  {/* Karartma degrade */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
 
-                  {/* Sol Üst Rozetler */}
                   <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10 flex-wrap">
                     <span
-                      className={`px-2.5 py-0.5 rounded-lg text-[10px] font-black font-heading backdrop-blur-md shadow-md border flex items-center gap-1 ${
+                      className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold backdrop-blur-md border flex items-center gap-1 ${
                         b.durum === 'yayinda'
-                          ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                           : b.durum === 'onay_bekliyor'
-                          ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
-                          : 'bg-red-500 text-white border-red-400'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
                       }`}
                     >
                       <span className={`w-1.5 h-1.5 rounded-full ${
-                        b.durum === 'yayinda' ? 'bg-slate-950 animate-pulse' : b.durum === 'onay_bekliyor' ? 'bg-slate-950 animate-ping' : 'bg-white'
+                        b.durum === 'yayinda' ? 'bg-emerald-400 animate-pulse' : b.durum === 'onay_bekliyor' ? 'bg-amber-400 animate-ping' : 'bg-rose-400'
                       }`}></span>
                       <span>{b.durum === 'yayinda' ? 'YAYINDA' : b.durum === 'onay_bekliyor' ? 'ONAY BEKLİYOR' : 'SÜRESİ DOLDU'}</span>
                     </span>
 
-                    <span className="text-[10px] text-white px-2 py-0.5 rounded-lg bg-slate-950/85 backdrop-blur-md font-bold border border-white/15 shadow-md">
+                    <span className="text-[10px] text-white px-2 py-0.5 rounded-md bg-slate-950/85 backdrop-blur-md font-mono border border-white/10">
                       {b.konum === 'anasayfa' ? 'Anasayfa Vitrini' : b.konum === 'ilan_detay' ? 'İlan Detay Vitrini' : 'Tüm Sayfalar'}
                     </span>
                   </div>
 
-                  {/* Sağ Alt Hızlı Bağlantı */}
                   <div className="absolute bottom-2.5 right-2.5 z-10 flex items-center gap-1.5">
                     <a
                       href={b.hedefUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-white px-3 py-1 rounded-lg bg-slate-950/90 hover:bg-blue-600 backdrop-blur-md font-bold border border-white/20 shadow-lg flex items-center gap-1 transition-all active:scale-95"
+                      className="text-xs text-white px-2.5 py-1 rounded-lg bg-slate-950/90 hover:bg-emerald-600 backdrop-blur-md font-semibold border border-white/20 shadow-md flex items-center gap-1 transition-all active:scale-95"
                     >
                       <span>Siteyi Aç</span>
                       <ExternalLink className="w-3 h-3" />
@@ -398,149 +362,85 @@ export default function AdminBannerManagementPage() {
                   </div>
                 </div>
 
-                {/* ── 2. BAŞLIK VE FİYAT SATIRI ──────────────── */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-800/60 pb-2.5">
+                {/* ── 2. BAŞLIK VE FİYAT ──────────────── */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-800/80 pb-2.5">
                   <div className="flex flex-col min-w-0">
-                    <h3 className="font-heading font-black text-base sm:text-lg text-white truncate">
+                    <h3 className="font-bold text-sm sm:text-base text-white truncate">
                       {b.baslik}
                     </h3>
-                    <span className="text-[10px] text-slate-400">Sponsor Kaydı #{b._id.slice(-6)}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">Sponsor Kaydı #{b._id.slice(-6)}</span>
                   </div>
 
                   <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-                    <span className="text-xs sm:text-sm font-black text-amber-400 font-mono bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30 flex items-center gap-1.5">
+                    <span className="text-xs sm:text-sm font-bold text-emerald-400 font-mono bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/30 flex items-center gap-1.5">
                       <span>{b.fiyatTL?.toLocaleString('tr-TR')} ₺</span>
                       <span className="text-[10px] text-slate-400 font-sans">({b.sureGun} Günlük)</span>
                     </span>
                   </div>
                 </div>
 
-                {/* ── 3. DETAYLI MÜŞTERİ & HEDEF BİLGİ KARTLARI ──────────────── */}
+                {/* ── 3. DETAY KARTLARI ──────────────── */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                  {/* Müşteri İletişim */}
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070a0f] border border-slate-800">
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-[#070a0f] border border-slate-800">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                        <Phone className="w-3.5 h-3.5" />
+                      <div className="w-6 h-6 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center shrink-0">
+                        <Phone className="w-3 h-3" />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-slate-400">Giriş / Telefon:</span>
-                        <strong className="text-emerald-300 font-mono truncate">{b.musteriIletisim}</strong>
+                        <span className="text-[9px] text-slate-400">Telefon:</span>
+                        <strong className="text-emerald-300 font-mono text-[11px] truncate">{b.musteriIletisim}</strong>
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         onClick={() => copyToClipboard(b.musteriIletisim, `${b._id}_phone`)}
-                        className="p-1 rounded-lg bg-[#070a0f] hover:bg-[#30363d] text-slate-400 hover:text-white text-[11px] font-bold transition-colors"
+                        className="p-1 rounded-lg bg-slate-900 text-slate-400 hover:text-white transition-colors"
                         title="Telefonu Kopyala"
                       >
                         {copiedId === `${b._id}_phone` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                       </button>
-                      <a
-                        href={`https://wa.me/${(b.musteriIletisim || '').replace(/[^0-9]/g, '')}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-2 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-slate-950 text-[11px] font-bold font-heading flex items-center gap-0.5 transition-colors shrink-0"
-                      >
-                        <OfficialWhatsAppIcon className="w-3 h-3 fill-current" />
-                        <span>WA</span>
-                      </a>
                     </div>
                   </div>
 
-                  {/* Panel Giriş Şifresi */}
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070a0f] border border-slate-800">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                        <KeyRound className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-slate-400">Panel Şifresi:</span>
-                        <strong className="text-amber-400 font-mono text-xs">{b.panelSifresi || '123456'}</strong>
-                      </div>
+                  <div className="flex items-center p-2 rounded-xl bg-[#070a0f] border border-slate-800 col-span-2">
+                    <div className="flex items-center gap-2 min-w-0 w-full justify-between">
+                      <span className="text-[11px] text-slate-400 truncate">Hedef: <span className="font-mono text-cyan-300 font-medium">{b.hedefUrl}</span></span>
+                      <span className="text-[10px] text-slate-500 font-mono shrink-0">{new Date(b.createdAt).toLocaleDateString('tr-TR')}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(b.panelSifresi || '123456', `${b._id}_pass`)}
-                      className="px-2 py-1 rounded-lg bg-[#070a0f] hover:bg-[#30363d] text-slate-400 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors shrink-0"
-                      title="Şifreyi Kopyala"
-                    >
-                      {copiedId === `${b._id}_pass` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                      <span>{copiedId === `${b._id}_pass` ? 'Kopyalandı' : 'Kopyala'}</span>
-                    </button>
-                  </div>
-
-                  {/* Hedef URL */}
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070a0f] border border-slate-800">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-slate-400">Hedef Link:</span>
-                        <span className="text-blue-300 font-mono truncate max-w-[120px] sm:max-w-[140px]">{b.hedefUrl}</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => copyToClipboard(b.hedefUrl, b._id)}
-                      className="px-2 py-1 rounded-lg bg-[#070a0f] hover:bg-[#30363d] text-slate-400 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors shrink-0"
-                      title="Linki Kopyala"
-                    >
-                      <Copy className="w-3 h-3" />
-                      <span>{copiedId === b._id ? 'Kopyalandı' : 'Kopyala'}</span>
-                    </button>
                   </div>
                 </div>
 
-                {/* Başlangıç ve Bitiş Tarihleri */}
-                {b.baslangicTarihi && b.bitisTarihi && (
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-[#070a0f] border border-slate-800 text-[11px] sm:text-xs text-slate-400 font-mono">
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                      <span>Başlangıç: <strong className="text-white">{new Date(b.baslangicTarihi).toLocaleDateString('tr-TR')}</strong></span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span>Bitiş: <strong className="text-amber-300 font-bold">{new Date(b.bitisTarihi).toLocaleDateString('tr-TR')}</strong></span>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── 4. 3'LÜ PERFORMANS İSTATİSTİK SAYACI ──────────────── */}
-                <div className="grid grid-cols-3 gap-1.5 bg-[#070a0f] p-2.5 rounded-xl border border-slate-800 text-center">
+                {/* ── 4. PERFORMANS İSTATİSTİĞİ ──────────────── */}
+                <div className="grid grid-cols-3 gap-2 bg-[#070a0f] p-2 rounded-xl border border-slate-800 text-center">
                   <div className="flex flex-col">
-                    <span className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-bold">Gösterim</span>
-                    <span className="font-mono font-black text-sm sm:text-base text-white mt-0.5">{(b.goruntulenmeSayisi || 0).toLocaleString()}</span>
+                    <span className="text-[10px] text-slate-500 uppercase font-mono">Gösterim</span>
+                    <span className="font-mono font-bold text-sm text-white mt-0.5">{(b.goruntulenmeSayisi || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex flex-col border-x border-slate-800 px-1">
-                    <span className="text-[9px] sm:text-[10px] text-emerald-400 uppercase font-bold">Tıklama</span>
-                    <span className="font-mono font-black text-sm sm:text-base text-emerald-400 mt-0.5">{(b.tiklamaSayisi || 0).toLocaleString()}</span>
+                    <span className="text-[10px] text-emerald-400 uppercase font-mono">Tıklama</span>
+                    <span className="font-mono font-bold text-sm text-emerald-400 mt-0.5">{(b.tiklamaSayisi || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[9px] sm:text-[10px] text-amber-400 uppercase font-bold">CTR (%)</span>
-                    <span className="font-mono font-black text-sm sm:text-base text-amber-400 mt-0.5">%{ctr}</span>
+                    <span className="text-[10px] text-cyan-400 uppercase font-mono">CTR</span>
+                    <span className="font-mono font-bold text-sm text-cyan-400 mt-0.5">%{ctr}</span>
                   </div>
                 </div>
 
-                {/* ── 5. DİNAMİK KALAN SÜRE PROGRESS BAR ──────────────── */}
+                {/* ── 5. KALAN SÜRE ──────────────── */}
                 {timeInfo && (
-                  <div className="p-2.5 sm:p-3 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-1.5">
-                    <div className="flex items-center justify-between text-xs font-heading font-black">
-                      <span className="flex items-center gap-1.5 text-amber-400 text-[11px] sm:text-xs">
+                  <div className="p-2.5 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="flex items-center gap-1.5 text-cyan-400 text-[11px]">
                         <Timer className="w-3.5 h-3.5" />
                         <span>Kalan Süre: {timeInfo.text}</span>
                       </span>
-                      <span className="text-slate-400 font-mono text-[10px] sm:text-[11px]">%{timeInfo.progress} Doldu</span>
+                      <span className="text-slate-400 font-mono text-[10px]">%{timeInfo.progress} Doldu</span>
                     </div>
-                    {/* Progress Bar */}
-                    <div className="w-full h-1.5 sm:h-2 rounded-full bg-[#0c1017] overflow-hidden border border-white/5">
+                    <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden border border-white/5">
                       <div
                         className={`h-full transition-all duration-500 rounded-full ${
-                          timeInfo.progress > 85
-                            ? 'bg-red-500'
-                            : timeInfo.progress > 50
-                            ? 'bg-amber-500'
-                            : 'bg-emerald-500'
+                          timeInfo.progress > 85 ? 'bg-rose-500' : timeInfo.progress > 50 ? 'bg-amber-500' : 'bg-emerald-500'
                         }`}
                         style={{ width: `${timeInfo.progress}%` }}
                       />
@@ -548,30 +448,24 @@ export default function AdminBannerManagementPage() {
                   </div>
                 )}
 
-                {/* ── 6. DÜZENLENMİŞ VE MOBİL UYUMLU AKSİYON BUTONLARI ──────────────── */}
-                <div className="flex flex-col gap-2 border-t border-slate-800/60 pt-2.5">
-                  <div className="flex items-stretch gap-2 flex-wrap sm:flex-nowrap">
-                    {/* Süreyi Uzat / Düzenle Butonu (Geniş / Esnek) */}
-                    <button
-                      onClick={() => setEditingBanner(editingBanner?._id === b._id ? null : b)}
-                      className={`flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border ${
-                        editingBanner?._id === b._id
-                          ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md shadow-amber-500/20'
-                          : 'bg-[#070a0f] hover:bg-[#30363d] text-amber-300 border-slate-800'
-                      }`}
-                    >
-                      <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{editingBanner?._id === b._id ? 'Paneli Kapat' : 'Süreyi Uzat / Düzenle'}</span>
-                    </button>
+                {/* ── 6. AKSİYON BUTONLARI ──────────────── */}
+                <div className="flex items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 flex-wrap">
+                  <button
+                    onClick={() => setEditingBanner(editingBanner?._id === b._id ? null : b)}
+                    className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    <span>{editingBanner?._id === b._id ? 'Paneli Kapat' : 'Süre Uzat / Düzenle'}</span>
+                  </button>
 
-                    {/* Onay Bekleyen Durumu Butonları */}
+                  <div className="flex items-center gap-1.5">
                     {b.durum === 'onay_bekliyor' && (
                       <>
                         <button
                           onClick={() => handleAction(b._id, 'onayla', { sureGun: b.sureGun || 7 })}
-                          className="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-heading font-black flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20 transition-all active:scale-95 shrink-0"
+                          className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1 shadow-sm transition-all"
                         >
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          <Check className="w-3.5 h-3.5" />
                           <span>Onayla</span>
                         </button>
                         <button
@@ -579,77 +473,56 @@ export default function AdminBannerManagementPage() {
                             const sebep = prompt('Reddetme nedeni:');
                             if (sebep) handleAction(b._id, 'reddet', { redNedeni: sebep });
                           }}
-                          className="py-2.5 px-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-heading font-bold transition-all border border-red-500/30 shrink-0"
+                          className="px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold border border-rose-500/20 transition-all"
                         >
                           Reddet
                         </button>
                       </>
                     )}
 
-                    {/* Yayında Durumu: Yayından Kaldır Butonu */}
                     {b.durum === 'yayinda' && (
                       <button
                         onClick={() => handleAction(b._id, 'durdur')}
-                        className="py-2.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-heading font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 active:scale-95"
+                        className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1 transition-all"
                       >
-                        <PauseCircle className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Yayından Kaldır</span>
+                        <PauseCircle className="w-3.5 h-3.5" />
+                        <span>Durdur</span>
                       </button>
                     )}
 
-                    {/* Süresi Dolan / Reddedilen Durumu: Yeniden Başlat Butonu */}
-                    {(b.durum === 'suresi_doldu' || b.durum === 'reddedildi') && (
-                      <button
-                        onClick={() => {
-                          setEditingBanner(b);
-                          setEditSureGun(7);
-                        }}
-                        className="py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-heading font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 active:scale-95"
-                      >
-                        <PlayCircle className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Yeniden Başlat</span>
-                      </button>
-                    )}
-
-                    {/* Silme Butonu */}
                     <button
                       onClick={() => {
-                        if (confirm('Bu banner kaydını tamamen silmek istediğinize emin misiniz?')) {
+                        if (confirm('Bu banner kaydını silmek istediğinize emin misiniz?')) {
                           handleAction(b._id, 'delete');
                         }
                       }}
-                      className="py-2.5 px-2.5 sm:px-3 rounded-xl bg-[#070a0f] text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-slate-800 hover:border-red-500/30 transition-all flex items-center justify-center gap-1 shrink-0"
-                      title="Bannerı Sil"
+                      className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-rose-400 transition-colors"
+                      title="Sil"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      <span className="text-xs font-heading font-bold hidden sm:inline">Sil</span>
                     </button>
                   </div>
                 </div>
 
-                {/* ── 7. AÇILIR SÜRE UZATMA PANELİ (TOUCH SEGMENTED) ──────────────── */}
+                {/* ── 7. SÜRE UZATMA PANELİ ──────────────── */}
                 {editingBanner?._id === b._id && (
-                  <div className="p-3 sm:p-4 rounded-xl bg-[#070a0f] border-2 border-amber-500/50 flex flex-col gap-3 animate-fadeIn shadow-2xl">
-                    <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                      <span className="text-xs font-heading font-black text-white flex items-center gap-1.5">
-                        <SlidersHorizontal className="w-3.5 h-3.5 text-amber-400" />
-                        Yayın Süresini Uzat:
-                      </span>
-                      <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/30">
+                  <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-2.5 animate-fadeIn">
+                    <div className="flex items-center justify-between text-xs font-semibold text-white">
+                      <span>Süreyi Uzat:</span>
+                      <span className="font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
                         +{editSureGun} Gün
                       </span>
                     </div>
 
-                    {/* Gün Seçenekleri */}
-                    <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+                    <div className="grid grid-cols-4 gap-1.5">
                       {[7, 15, 30, 60].map((gun) => (
                         <button
                           key={gun}
                           onClick={() => setEditSureGun(gun)}
-                          className={`py-2 rounded-lg sm:rounded-xl text-xs font-mono font-bold transition-all border ${
+                          className={`py-1.5 rounded-lg text-xs font-mono font-bold transition-all border ${
                             editSureGun === gun
-                              ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md shadow-amber-500/20 scale-[1.02]'
-                              : 'bg-[#0c1017] text-slate-400 border-slate-800 hover:text-white'
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold'
+                              : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white'
                           }`}
                         >
                           +{gun} Gün
@@ -661,9 +534,9 @@ export default function AdminBannerManagementPage() {
                       onClick={() => {
                         handleAction(b._id, 'onayla', { sureGun: editSureGun });
                       }}
-                      className="w-full py-2.5 sm:py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                      className="w-full py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95"
                     >
-                      <Check className="w-4 h-4 stroke-[3]" />
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                       <span>Süreyi Kaydet ve Yayına Al</span>
                     </button>
                   </div>

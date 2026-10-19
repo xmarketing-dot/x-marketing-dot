@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -29,22 +29,21 @@ import {
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 
-function MetricCircle({ percent, color, size = 42, strokeWidth = 3.5 }: { percent: number; color: string; size?: number; strokeWidth?: number }) {
+function MetricCircle({ percent, color = '#10b981', size = 38, strokeWidth = 3.5 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
+  const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
   const strokeDashoffset = circumference - (safePercent / 100) * circumference;
 
   return (
-    <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+    <div className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="transform -rotate-90">
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="currentColor"
+          stroke="#1e293b"
           strokeWidth={strokeWidth}
-          className="text-slate-800"
           fill="transparent"
         />
         <circle
@@ -60,13 +59,12 @@ function MetricCircle({ percent, color, size = 42, strokeWidth = 3.5 }: { percen
           className="transition-all duration-700 ease-out"
         />
       </svg>
-      <span className="absolute text-[10px] font-mono font-black text-white">
+      <span className="absolute text-[10px] font-mono font-bold text-white">
         %{Math.round(safePercent)}
       </span>
     </div>
   );
 }
-
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -77,6 +75,7 @@ export default function AdminUsersPage() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // New user form states
   const [kullaniciAdi, setKullaniciAdi] = useState('');
@@ -100,41 +99,46 @@ export default function AdminUsersPage() {
     setEditMsg(null);
   };
 
-  const handleSaveUserEdit = async (e: React.FormEvent) => {
+  const handleSaveEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
     setEditLoading(true);
     setEditMsg(null);
+
     try {
       const res = await fetch('/api/admin/users', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: editingUser._id,
-          kullaniciAdi: editUsername,
-          sifre: editPassword,
-          telefon: editPhone
+          userId: editingUser._id,
+          kullaniciAdi: editUsername.trim(),
+          sifreHash: editPassword.trim(),
+          telefon: editPhone.trim(),
         }),
       });
+
       const data = await res.json();
       if (res.ok && data.success) {
-        setEditMsg({ type: 'success', text: 'Kullanıcı hesabı başarıyla güncellendi!' });
-        fetchUsers();
+        setEditMsg({ type: 'success', text: '✅ Kullanıcı başarıyla güncellendi!' });
+        setUsers((prev) =>
+          prev.map((u) =>
+            u._id === editingUser._id
+              ? { ...u, kullaniciAdi: editUsername.trim(), sifreHash: editPassword.trim(), telefon: editPhone.trim() }
+              : u
+          )
+        );
         setTimeout(() => {
           setEditingUser(null);
-          setEditMsg(null);
-        }, 1000);
+        }, 1200);
       } else {
-        setEditMsg({ type: 'error', text: data.error || 'Güncelleme başarısız.' });
+        setEditMsg({ type: 'error', text: data.error || 'Güncellenemedi.' });
       }
-    } catch (err: any) {
-      setEditMsg({ type: 'error', text: 'Bağlantı hatası oluştu.' });
+    } catch (e: any) {
+      setEditMsg({ type: 'error', text: e.message || 'Bağlantı hatası.' });
     } finally {
       setEditLoading(false);
     }
   };
-
-  const [modalMessage, setModalMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -145,11 +149,12 @@ export default function AdminUsersPage() {
     try {
       const res = await fetch('/api/admin/users');
       const data = await res.json();
-      if (data.users) {
+      if (data.users && Array.isArray(data.users)) {
         setUsers(data.users);
+      } else if (Array.isArray(data)) {
+        setUsers(data);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
     } finally {
       setLoading(false);
     }
@@ -157,21 +162,29 @@ export default function AdminUsersPage() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    setModalMessage(null);
+    if (!kullaniciAdi.trim() || !sifre.trim()) {
+      setModalMessage({ type: 'error', text: 'Lütfen kullanıcı adı ve şifre giriniz.' });
+      return;
+    }
+
     setSubmitting(true);
+    setModalMessage(null);
 
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ kullaniciAdi, sifre, telefon }),
+        body: JSON.stringify({
+          kullaniciAdi: kullaniciAdi.trim(),
+          sifre: sifre.trim(),
+          telefon: telefon.trim(),
+        }),
       });
+
       const data = await res.json();
 
-      if (!res.ok || data.error) {
-        setModalMessage({ type: 'error', text: data.error || 'Kullanıcı oluşturulamadı.' });
-      } else {
-        setModalMessage({ type: 'success', text: `"${kullaniciAdi}" hesabı başarıyla kaydedildi!` });
+      if (res.ok && data.user) {
+        setModalMessage({ type: 'success', text: `✅ "${data.user.kullaniciAdi}" başarıyla açıldı!` });
         setKullaniciAdi('');
         setSifre('');
         setTelefon('');
@@ -180,20 +193,23 @@ export default function AdminUsersPage() {
           setIsModalOpen(false);
           setModalMessage(null);
         }, 1200);
+      } else {
+        setModalMessage({ type: 'error', text: data.error || 'Kullanıcı oluşturulamadı.' });
       }
     } catch (err: any) {
-      setModalMessage({ type: 'error', text: err.message || 'Bir hata oluştu.' });
+      setModalMessage({ type: 'error', text: 'Bağlantı hatası oluştu.' });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleDeleteUser = async (id: string, usernameStr: string) => {
-    if (!confirm(`"${usernameStr}" kullanıcısını tamamen silmek istediğinizden emin misiniz?`)) return;
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (!confirm(`"${name}" kullanıcısını silmek istediğinize emin misiniz? (Kullanıcıya bağlı ilanlar sahipsiz kalabilir)`)) return;
 
     try {
       const res = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
       const data = await res.json();
+
       if (res.ok && data.success) {
         setUsers((prev) => prev.filter((u) => u._id !== id));
       } else {
@@ -216,792 +232,546 @@ export default function AdminUsersPage() {
 
   // Summary counts
   const totalUsersCount = users.length;
-  const totalListingsCount = users.reduce((acc, u) => acc + (u.stats?.totalListings || 0), 0);
-  const totalActiveListingsCount = users.reduce((acc, u) => acc + (u.stats?.activeListings || 0), 0);
-  const totalWhatsappClicksCount = users.reduce((acc, u) => acc + (u.stats?.totalWhatsapp || 0), 0);
+  const totalListingsCount = useMemo(() => users.reduce((acc, u) => acc + (u.stats?.totalListings || 0), 0), [users]);
+  const totalActiveListingsCount = useMemo(() => users.reduce((acc, u) => acc + (u.stats?.activeListings || 0), 0), [users]);
+  const totalWhatsappClicksCount = useMemo(() => users.reduce((acc, u) => acc + (u.stats?.totalWhatsapp || 0), 0), [users]);
 
-  const filteredUsers = users.filter((u) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    const matchesUser = (u.kullaniciAdi || '').toLowerCase().includes(term);
-    const matchesPhone = (u.telefon || '').toLowerCase().includes(term);
-    const matchesPwd = (u.sifreHash || '').toLowerCase().includes(term);
-    const matchesListing = Array.isArray(u.listings) && u.listings.some((l: any) => 
-      (l.baslik || '').toLowerCase().includes(term) ||
-      (l.ilSlug || '').toLowerCase().includes(term) ||
-      (l.ilceSlug || '').toLowerCase().includes(term)
-    );
-    return matchesUser || matchesPhone || matchesPwd || matchesListing;
-  });
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm.trim()) return users;
+    const term = searchTerm.toLowerCase().trim();
+    return users.filter((u) => {
+      const matchesUser = (u.kullaniciAdi || '').toLowerCase().includes(term);
+      const matchesPhone = (u.telefon || '').toLowerCase().includes(term);
+      const matchesPwd = (u.sifreHash || '').toLowerCase().includes(term);
+      const matchesListing = Array.isArray(u.listings) && u.listings.some((l: any) => 
+        (l.baslik || '').toLowerCase().includes(term) ||
+        (l.ilSlug || '').toLowerCase().includes(term) ||
+        (l.ilceSlug || '').toLowerCase().includes(term)
+      );
+      return matchesUser || matchesPhone || matchesPwd || matchesListing;
+    });
+  }, [users, searchTerm]);
 
   return (
-    <div className="flex flex-col gap-6 sm:gap-8 w-full max-w-full text-left">
+    <div className="flex flex-col gap-4 sm:gap-6 w-full max-w-full text-left font-sans animate-fadeIn pb-20 md:pb-12">
       
-      {/* ── HEADER BAR ────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0c1017] p-5 sm:p-6 rounded-2xl border border-slate-800/80 shadow-2xl">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 shrink-0">
-            <Users className="w-6 h-6" />
+      {/* ── 1. ÜST HEADER BAR & SAYFA KİMLİĞİ ──────────────── */}
+      <div className="p-3.5 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shrink-0 shadow-lg mt-0.5 sm:mt-0">
+            <Users className="w-5 h-5" />
           </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <h1 className="font-black text-xl sm:text-2xl text-white font-heading">Kullanıcı &amp; İlan Yönetimi</h1>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-400/15 text-amber-300 text-[10px] font-black uppercase font-mono">
-                {totalUsersCount} Hesap
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-bold text-base sm:text-xl text-white tracking-tight">
+                Kullanıcı &amp; İlan Yönetimi
+              </h1>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] sm:text-[10px] font-mono font-bold">
+                {totalUsersCount} HESAP
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">Tüm kullanıcı hesapları, bağlı ilan sayıları ve panel şifreleri.</p>
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+              Tüm kullanıcı hesapları, bağlı ilan sayıları ve müşteri panel şifreleri.
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 self-stretch sm:self-auto justify-end">
+        <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
           <button
             type="button"
             onClick={() => {
               setModalMessage(null);
               setIsModalOpen(true);
             }}
-            className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs uppercase font-heading shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>Yeni Kullanıcı Aç</span>
           </button>
 
           <button
             type="button"
             onClick={fetchUsers}
-            className="p-3 sm:px-4 sm:py-3 rounded-2xl bg-[#070a0f] hover:bg-slate-900 text-white border border-slate-800 font-bold text-xs transition-colors shadow-md flex items-center justify-center gap-2 shrink-0"
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-all cursor-pointer"
             title="Listeyi Yenile"
           >
-            <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-            <span className="font-heading font-black">Yenile</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* ── TOP STATS PILLS ────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 hover:border-slate-700 transition-colors flex items-center gap-3.5 shadow-lg">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center font-bold shrink-0">
-            <Users className="w-5 h-5" />
+      {/* ── 2. EXECUTIVE KPI ŞERİDİ ──────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+        <div className="p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Kayıtlı Kullanıcı</span>
+            <span className="font-mono font-bold text-lg text-white mt-0.5">{totalUsersCount}</span>
+            <span className="text-[10px] text-slate-500">Müşteri hesabı</span>
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Kayıtlı Kullanıcı</span>
-            <span className="font-black text-lg sm:text-xl text-white font-heading truncate">{totalUsersCount} Kişi</span>
-          </div>
+          <MetricCircle percent={totalUsersCount > 0 ? 100 : 0} color="#10b981" size={38} />
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 hover:border-slate-700 transition-colors flex items-center gap-3.5 shadow-lg">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center font-bold shrink-0">
-            <Layers className="w-5 h-5" />
+        <div className="p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider">Toplam İlan</span>
+            <span className="font-mono font-bold text-lg text-cyan-400 mt-0.5">{totalListingsCount}</span>
+            <span className="text-[10px] text-slate-500">Kayıtlı portföy</span>
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Toplam İlan</span>
-            <span className="font-black text-lg sm:text-xl text-blue-400 font-heading truncate">{totalListingsCount} Adet</span>
-          </div>
+          <MetricCircle percent={totalListingsCount ? 100 : 0} color="#06b6d4" size={38} />
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 hover:border-slate-700 transition-colors flex items-center gap-3.5 shadow-lg">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold shrink-0">
-            <Crown className="w-5 h-5" />
+        <div className="p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider">Yayındaki İlan</span>
+            <span className="font-mono font-bold text-lg text-emerald-400 mt-0.5">{totalActiveListingsCount}</span>
+            <span className="text-[10px] text-slate-500">Aktif yayında</span>
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Yayındaki İlan</span>
-            <span className="font-black text-lg sm:text-xl text-emerald-400 font-heading truncate">{totalActiveListingsCount} Yayında</span>
-          </div>
+          <MetricCircle percent={totalListingsCount ? (totalActiveListingsCount / totalListingsCount) * 100 : 0} color="#10b981" size={38} />
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 hover:border-slate-700 transition-colors flex items-center gap-3.5 shadow-lg">
-          <div className="w-10 h-10 rounded-xl bg-green-500/15 text-[#25D366] flex items-center justify-center font-bold shrink-0">
-            <OfficialWhatsAppIcon className="w-5 h-5 fill-[#25D366]" />
+        <div className="p-3 sm:p-4 rounded-xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-mono text-green-400 uppercase tracking-wider">WhatsApp Hit</span>
+            <span className="font-mono font-bold text-lg text-green-400 mt-0.5">{totalWhatsappClicksCount.toLocaleString()}</span>
+            <span className="text-[10px] text-slate-500">Müşteri etkileşimi</span>
           </div>
-          <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">WhatsApp Hit</span>
-            <span className="font-black text-lg sm:text-xl text-[#25D366] font-heading truncate">{totalWhatsappClicksCount.toLocaleString()}</span>
+          <div className="w-8 h-8 rounded-lg bg-green-500/15 text-green-400 flex items-center justify-center">
+            <OfficialWhatsAppIcon className="w-4 h-4 fill-green-400" />
           </div>
         </div>
       </div>
 
-      {/* ── FULL WIDTH USERS LIST ──────────────────────────── */}
-      <div className="w-full flex flex-col gap-4">
-        
-        {/* Arama & Filtre Çubuğu */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-400 shrink-0" />
-            <h2 className="font-extrabold text-sm sm:text-base text-white font-heading">
-              Kayıtlı Kullanıcılar ({filteredUsers.length})
+      {/* ── 3. FULL WIDTH USERS LIST ──────────────── */}
+      <div className="bg-[#0e131f] border border-slate-800/90 rounded-2xl p-4 sm:p-5 shadow-md flex flex-col gap-3">
+        <div className="border-b border-slate-800/80 pb-3 flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+              <Users className="w-4 h-4 text-emerald-400" />
+              <span>Kayıtlı Kullanıcılar ({filteredUsers.length})</span>
             </h2>
+            <p className="text-[11px] text-slate-400">Panel şifreleri, bağlı ilanlar ve canlı oturum durumları.</p>
           </div>
 
-          <div className="relative w-full sm:w-80">
+          <div className="relative min-w-[240px]">
             <input
               type="text"
-              placeholder="Kullanıcı adı, şifre, tel veya ilan ara..."
+              placeholder="Kullanıcı, tel veya ilan ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none"
+              className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder:text-slate-500 focus:border-emerald-500/60 focus:outline-none transition-colors"
             />
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
           </div>
         </div>
 
-        {/* Kullanıcı Listesi: Masaüstü Tablo + Mobil Kartlar */}
+        {/* Masaüstü Tablo */}
         {loading ? (
-          <div className="flex flex-col gap-4">
-            {/* Desktop Table Skeleton */}
-            <div className="hidden md:block rounded-2xl bg-[#0c1017] border border-slate-800/80 overflow-hidden shadow-xl">
-              <div className="p-4 bg-[#070a0f] border-b border-slate-800 flex items-center justify-between">
-                <div className="h-4 w-36 bg-slate-800 rounded animate-pulse" />
-                <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
-              </div>
-              <div className="p-4 space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-16 rounded-xl bg-slate-900/40 border border-slate-800/50 animate-pulse flex items-center justify-between px-4 gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-800 shrink-0" />
-                      <div className="space-y-1.5">
-                        <div className="h-4 w-32 bg-slate-700/60 rounded" />
-                        <div className="h-3 w-20 bg-slate-800 rounded" />
-                      </div>
-                    </div>
-                    <div className="h-4 w-28 bg-slate-800 rounded" />
-                    <div className="h-6 w-20 bg-slate-800 rounded-xl" />
-                    <div className="h-5 w-24 bg-slate-800 rounded-full" />
-                    <div className="h-5 w-28 bg-slate-800 rounded" />
-                    <div className="flex gap-2">
-                      <div className="w-24 h-8 rounded-xl bg-slate-800" />
-                      <div className="w-8 h-8 rounded-xl bg-slate-800" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mobile Cards Skeleton */}
-            <div className="md:hidden flex flex-col gap-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="p-5 rounded-3xl bg-[#0c1017] border border-slate-800/80 animate-pulse flex flex-col gap-4 shadow-xl">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-800 shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 w-2/3 bg-slate-700/60 rounded" />
-                      <div className="h-3 w-1/2 bg-slate-800 rounded" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800/60">
-                    {[1, 2, 3, 4].map((j) => (
-                      <div key={j} className="h-12 bg-[#070a0f] rounded-2xl border border-slate-800/80" />
-                    ))}
-                  </div>
-                  <div className="h-10 w-full bg-slate-800 rounded-2xl" />
-                </div>
-              ))}
-            </div>
+          <div className="space-y-2 p-1">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 rounded-xl bg-slate-900/40 border border-slate-800/50 animate-pulse" />
+            ))}
           </div>
         ) : filteredUsers.length === 0 ? (
-          <div className="p-12 text-center text-xs text-slate-400 bg-[#0c1017] rounded-3xl border border-slate-800">
+          <div className="p-8 text-center text-xs text-slate-500 bg-[#070a0f] rounded-xl border border-slate-800">
             Arama kriterlerine uygun kullanıcı bulunamadı.
           </div>
         ) : (
-          <>
-            {/* ── MASAÜSTÜ KULLANICI TABLOSU (DESKTOP DATA TABLE - md & üstü) ──────────────── */}
-            <div className="hidden md:block w-full overflow-hidden rounded-2xl bg-[#0c1017] border border-slate-800 shadow-2xl">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-[#070a0f] border-b border-slate-800 text-[11px] font-black uppercase text-slate-400 font-heading tracking-wider">
-                      <th className="py-3.5 px-4">Kullanıcı &amp; Bağlı İlan</th>
-                      <th className="py-3.5 px-4">İletişim &amp; WhatsApp</th>
-                      <th className="py-3.5 px-4">Panel Şifresi</th>
-                      <th className="py-3.5 px-4">Oturum &amp; Canlı Durum</th>
-                      <th className="py-3.5 px-4 text-center">İlan Durumu</th>
-                      <th className="py-3.5 px-4 text-center">Toplam Hit</th>
-                      <th className="py-3.5 px-4 text-right">İşlemler</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/50 text-xs">
-                    {filteredUsers.map((u) => {
-                      const isExpanded = expandedUserId === u._id;
-                      const stats = u.stats || { totalListings: 0, activeListings: 0, pendingListings: 0, totalViews: 0, totalWhatsapp: 0 };
-                      const listings = u.listings || [];
-                      const isCopied = copiedId === u._id;
-                      
-                      const now = new Date();
-                      const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
-                      const startedAt = u.sessionStartedAt ? new Date(u.sessionStartedAt) : (u.lastActiveAt ? new Date(u.lastActiveAt) : null);
-                      const minsInside = startedAt ? Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60000)) : 0;
-                      const entryTimeStr = startedAt ? startedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
-                      const lastActiveStr = u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
-                      const lastLogoutStr = u.lastLogoutAt ? new Date(u.lastLogoutAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : lastActiveStr;
-
-                      return (
-                        <React.Fragment key={u._id}>
-                          <tr className="hover:bg-slate-900/50 transition-colors group">
-                            {/* Kullanıcı */}
-                            <td className="py-3.5 px-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black text-sm shadow-md shrink-0 relative">
-                                  {u.kullaniciAdi?.charAt(0).toUpperCase() || 'U'}
-                                  {isActuallyOnline && (
-                                    <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#161b22] animate-pulse"></span>
-                                  )}
-                                </div>
-                                <div className="flex flex-col min-w-0 max-w-[200px]">
-                                  <span className="font-black text-sm text-white font-mono flex items-center gap-1 truncate">
-                                    <AtSign className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                                    {u.kullaniciAdi}
-                                  </span>
-                                  {listings.length > 0 ? (
-                                    <span className="text-xs text-amber-300 font-bold truncate mt-0.5">
-                                      👑 {listings[0].baslik}
-                                    </span>
-                                  ) : (
-                                    <span className="text-[10px] text-slate-400 font-mono mt-0.5">
-                                      {u.ad && u.ad !== u.kullaniciAdi ? u.ad : 'İlan henüz yok'}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-
-                            {/* İletişim */}
-                            <td className="py-3.5 px-4">
-                              {u.telefon ? (
-                                <a
-                                  href={`https://wa.me/${u.telefon.replace(/\D/g, '')}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 text-emerald-400 font-mono font-bold hover:text-emerald-300 transition-colors"
-                                >
-                                  <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400 shrink-0" />
-                                  <span>{u.telefon}</span>
-                                </a>
-                              ) : (
-                                <span className="text-slate-400 font-mono">Belirtilmedi</span>
-                              )}
-                            </td>
-
-                            {/* Şifre */}
-                            <td className="py-3.5 px-4">
-                              <button
-                                type="button"
-                                onClick={() => handleCopyPassword(u.sifreHash || '', u._id)}
-                                className="inline-flex items-center gap-1.5 text-amber-300 font-mono font-bold bg-[#070a0f] hover:bg-slate-900 px-2.5 py-1 rounded-xl text-xs border border-slate-800 transition-colors"
-                                title="Şifreyi Kopyala"
-                              >
-                                <Lock className="w-3 h-3 text-amber-400" />
-                                <span>{u.sifreHash || '—'}</span>
-                                {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
-                              </button>
-                            </td>
-
-                            {/* Oturum & Canlı Durum */}
-                            <td className="py-3.5 px-4">
-                              {isActuallyOnline ? (
-                                <div className="flex flex-col items-start gap-1">
-                                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black font-mono flex items-center gap-1.5 animate-pulse">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                                    ONLINE (İÇERİDE)
-                                  </span>
-                                  <span className="text-[10px] text-amber-300 font-mono font-bold">
-                                    Giriş: {entryTimeStr || 'Az önce'} ({minsInside > 0 ? `${minsInside} dk` : 'yeni'})
-                                  </span>
-                                  {u.currentTab && (
-                                    <span className="text-[9px] text-cyan-400 font-mono">
-                                      Sekme: {u.currentTab}
-                                    </span>
-                                  )}
-                                </div>
-                              ) : u.lastActiveAt ? (
-                                <div className="flex flex-col items-start gap-0.5 font-mono text-[10px]">
-                                  <span className="text-slate-400 font-bold flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
-                                    Çevrimdışı
-                                  </span>
-                                  <span className="text-slate-400">
-                                    Giriş: {entryTimeStr || '—'}
-                                  </span>
-                                  <span className="text-slate-500">
-                                    Çıkış: {lastLogoutStr || '—'} ({new Date(u.lastActiveAt).toLocaleDateString('tr-TR')})
-                                  </span>
-                                </div>
-                              ) : (
-                                <span className="text-[10px] text-slate-400 font-mono">
-                                  Kayıt: {new Date(u.createdAt).toLocaleDateString('tr-TR')}
-                                </span>
-                              )}
-                            </td>
-
-                            {/* İlan Durumu */}
-                            <td className="py-3.5 px-4 text-center">
-                              <div className="inline-flex items-center gap-2">
-                                <span className="px-2 py-0.5 rounded-lg bg-blue-500/15 text-blue-400 font-mono font-bold text-xs">
-                                  {stats.totalListings} Toplam
-                                </span>
-                                <span className="px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-400 font-mono font-bold text-xs">
-                                  {stats.activeListings} Yayında
-                                </span>
-                              </div>
-                            </td>
-
-                            {/* Hit & WhatsApp */}
-                            <td className="py-3.5 px-4 text-center">
-                              <div className="inline-flex items-center gap-3 font-mono text-xs">
-                                <span className="text-slate-400" title="Görüntülenme">
-                                  👁️ {stats.totalViews.toLocaleString()}
-                                </span>
-                                <span className="text-emerald-400 font-bold" title="WhatsApp Tıklaması">
-                                  💬 {stats.totalWhatsapp.toLocaleString()}
-                                </span>
-                              </div>
-                            </td>
-
-                            {/* İşlemler */}
-                            <td className="py-3.5 px-4 text-right">
-                              <div className="inline-flex items-center gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => toggleExpand(u._id)}
-                                  className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all font-heading ${
-                                    isExpanded
-                                      ? 'bg-amber-500 text-slate-950 border-amber-400'
-                                      : 'bg-[#070a0f] hover:bg-slate-900 text-white border-slate-800'
-                                  }`}
-                                >
-                                  <Layers className="w-3.5 h-3.5" />
-                                  <span>İlanlar ({stats.totalListings})</span>
-                                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteUser(u._id, u.kullaniciAdi)}
-                                  className="p-2 rounded-xl bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 transition-all"
-                                  title="Kullanıcıyı Sil"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-
-                          {/* Genişletilmiş İlanlar Satırı (Table Expand Row) */}
-                          {isExpanded && (
-                            <tr className="bg-[#070a0f]/80">
-                              <td colSpan={6} className="p-4 sm:p-5 border-b border-slate-800">
-                                <div className="flex flex-col gap-3">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
-                                      <Layers className="w-3.5 h-3.5" />
-                                      <span>@{u.kullaniciAdi} Hesabına Bağlı İlanlar ({listings.length})</span>
-                                    </span>
-                                  </div>
-
-                                  {listings.length === 0 ? (
-                                    <div className="p-4 text-center text-xs text-slate-400 bg-[#0c1017] rounded-xl border border-slate-800">
-                                      Bu kullanıcıya ait henüz bir ilan bulunmamaktadır.
-                                    </div>
-                                  ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                      {listings.map((item: any) => (
-                                        <div 
-                                          key={item._id}
-                                          className="p-3 rounded-2xl bg-[#0c1017] border border-slate-800 hover:border-amber-500/40 flex items-center gap-3 justify-between transition-all"
-                                        >
-                                          <div className="flex items-center gap-3 min-w-0">
-                                            <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-[#070a0f] border border-slate-800 shrink-0">
-                                              <Image
-                                                src={item.anaFotograf || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
-                                                alt={item.baslik}
-                                                fill
-                                                sizes="44px"
-                                                className="object-cover"
-                                              />
-                                            </div>
-                                            <div className="flex flex-col min-w-0">
-                                              <span className="font-bold text-xs text-white truncate font-heading">
-                                                {item.baslik}
-                                              </span>
-                                              <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
-                                                <span className="text-amber-400 font-bold uppercase">
-                                                  📍 {item.ilSlug}/{item.ilceSlug}
-                                                </span>
-                                                <span className={`px-1.5 py-0.2 rounded font-black uppercase text-[8px] ${
-                                                  item.status === 'yayinda' 
-                                                    ? 'bg-emerald-500/20 text-emerald-400' 
-                                                    : 'bg-amber-500/20 text-amber-300'
-                                                }`}>
-                                                  {item.status === 'yayinda' ? 'YAYINDA' : item.status}
-                                                </span>
-                                              </div>
-                                            </div>
-                                          </div>
-
-                                          <Link
-                                            href={`/ilan/${item.slug}`}
-                                            target="_blank"
-                                            className="p-2 rounded-xl bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition-colors shrink-0 flex items-center justify-center shadow-md"
-                                            title="İlanı Sitede Gör"
-                                          >
-                                            <ExternalLink className="w-3.5 h-3.5" />
-                                          </Link>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* ── MOBİL KULLANICI KARTLARI (MOBILE CARDS - md altında 100% korunan düzen) ──────────────── */}
-            <div className="md:hidden grid grid-cols-1 gap-4">
-              {filteredUsers.map((u) => {
-                const isExpanded = expandedUserId === u._id;
-                const stats = u.stats || { totalListings: 0, activeListings: 0, pendingListings: 0, totalViews: 0, totalWhatsapp: 0 };
-                const listings = u.listings || [];
-                const isCopied = copiedId === u._id;
-                
-                const now = new Date();
-                const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
-                const startedAt = u.sessionStartedAt ? new Date(u.sessionStartedAt) : (u.lastActiveAt ? new Date(u.lastActiveAt) : null);
-                const minsInside = startedAt ? Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60000)) : 0;
-                const entryTimeStr = startedAt ? startedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
-                const lastActiveStr = u.lastActiveAt ? new Date(u.lastActiveAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
-                const lastLogoutStr = u.lastLogoutAt ? new Date(u.lastLogoutAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : lastActiveStr;
-
-                return (
-                  <div 
-                    key={u._id} 
-                    className="p-5 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 hover:border-amber-500/50 transition-all flex flex-col gap-4 shadow-xl"
-                  >
+          <div className="w-full overflow-hidden rounded-xl border border-slate-800 bg-[#070a0f]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-950/80 border-b border-slate-800 text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                    <th className="py-2.5 px-3.5">Kullanıcı &amp; İlan</th>
+                    <th className="py-2.5 px-3.5">İletişim / WhatsApp</th>
+                    <th className="py-2.5 px-3.5">Panel Şifresi</th>
+                    <th className="py-2.5 px-3.5">Oturum Durumu</th>
+                    <th className="py-2.5 px-3.5 text-center">İlan Sayısı</th>
+                    <th className="py-2.5 px-3.5 text-center">Hit</th>
+                    <th className="py-2.5 px-3.5 text-right">İşlemler</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 text-xs">
+                  {filteredUsers.map((u) => {
+                    const isExpanded = expandedUserId === u._id;
+                    const stats = u.stats || { totalListings: 0, activeListings: 0, pendingListings: 0, totalViews: 0, totalWhatsapp: 0 };
+                    const listings = u.listings || [];
+                    const isCopied = copiedId === u._id;
                     
-                    {/* User Header Info & Controls */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      
-                      <div className="flex items-center gap-3.5">
-                        <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black text-lg shadow-md shrink-0">
-                          {u.kullaniciAdi?.charAt(0).toUpperCase() || 'U'}
-                          {isActuallyOnline && (
-                            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#161b22] animate-pulse"></span>
-                          )}
-                        </div>
-                        
-                        <div className="flex flex-col min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-black text-sm sm:text-base text-white font-mono flex items-center gap-1">
-                              <AtSign className="w-4 h-4 text-amber-400" />
-                              {u.kullaniciAdi}
-                            </span>
+                    const now = new Date();
+                    const isActuallyOnline = u.isOnline || (u.lastActiveAt && (now.getTime() - new Date(u.lastActiveAt).getTime()) < 5 * 60000);
+                    const startedAt = u.sessionStartedAt ? new Date(u.sessionStartedAt) : (u.lastActiveAt ? new Date(u.lastActiveAt) : null);
+                    const minsInside = startedAt ? Math.max(0, Math.floor((now.getTime() - startedAt.getTime()) / 60000)) : 0;
+                    const entryTimeStr = startedAt ? startedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : null;
 
-                            {/* Password Badge with Copy */}
+                    return (
+                      <React.Fragment key={u._id}>
+                        <tr className="hover:bg-slate-900/40 transition-colors">
+                          <td className="py-2.5 px-3.5">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shrink-0 relative">
+                                {u.kullaniciAdi?.charAt(0).toUpperCase() || 'U'}
+                                {isActuallyOnline && (
+                                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#070a0f] animate-pulse"></span>
+                                )}
+                              </div>
+                              <div className="flex flex-col min-w-0 max-w-[180px]">
+                                <span className="font-bold text-xs text-white font-mono flex items-center gap-1 truncate">
+                                  @{u.kullaniciAdi}
+                                </span>
+                                {listings.length > 0 ? (
+                                  <span className="text-[10px] text-amber-300 font-semibold truncate">
+                                    👑 {listings[0].baslik}
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-500 font-mono">
+                                    İlan henüz yok
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="py-2.5 px-3.5">
+                            {u.telefon ? (
+                              <a
+                                href={`https://wa.me/${u.telefon.replace(/\D/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-emerald-400 font-mono text-xs hover:underline"
+                              >
+                                <OfficialWhatsAppIcon className="w-3 h-3 fill-emerald-400 shrink-0" />
+                                <span>{u.telefon}</span>
+                              </a>
+                            ) : (
+                              <span className="text-slate-500 font-mono text-xs">—</span>
+                            )}
+                          </td>
+
+                          <td className="py-2.5 px-3.5">
                             <button
                               type="button"
                               onClick={() => handleCopyPassword(u.sifreHash || '', u._id)}
-                              className="text-amber-300 font-mono font-bold bg-[#070a0f] hover:bg-slate-900 px-2.5 py-1 rounded-xl text-xs border border-slate-800 flex items-center gap-1.5 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1.5 text-cyan-300 font-mono text-xs bg-slate-900/80 hover:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-800 transition-colors"
                               title="Şifreyi Kopyala"
                             >
-                              <span>Şifre: {u.sifreHash || '—'}</span>
-                              {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
+                              <Lock className="w-3 h-3 text-cyan-400" />
+                              <span>{u.sifreHash || '—'}</span>
+                              {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-500" />}
                             </button>
-                          </div>
+                          </td>
 
-                          {listings.length > 0 && (
-                            <div className="text-xs text-amber-300 font-bold truncate mt-1">
-                              👑 {listings[0].baslik}
-                            </div>
-                          )}
-
-                          <div className="flex flex-wrap items-center gap-2 text-xs mt-1.5 text-slate-400">
-                            {u.telefon ? (
-                              <span className="flex items-center gap-1 text-emerald-400 font-mono font-bold">
-                                <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
-                                <span>{u.telefon}</span>
-                              </span>
-                            ) : (
-                              <span className="text-slate-400">Tel: Belirtilmedi</span>
-                            )}
-                            <span className="text-[#30363d]">●</span>
+                          <td className="py-2.5 px-3.5">
                             {isActuallyOnline ? (
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-[10px] font-mono flex items-center gap-1">
-                                🟢 Online ({entryTimeStr} - {minsInside} dk)
-                              </span>
-                            ) : u.lastActiveAt ? (
-                              <span className="text-[11px] text-slate-400 font-mono">
-                                Son Çıkış: {lastLogoutStr || '—'} ({new Date(u.lastActiveAt).toLocaleDateString('tr-TR')})
-                              </span>
+                              <div className="flex items-center gap-1.5 font-mono text-[10px]">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span className="text-emerald-400 font-bold">Online ({minsInside} dk)</span>
+                              </div>
                             ) : (
-                              <span className="text-[11px] text-slate-400">
-                                Kayıt: {new Date(u.createdAt).toLocaleDateString('tr-TR')}
+                              <span className="text-slate-500 font-mono text-[10px]">
+                                {u.lastActiveAt ? `Son: ${new Date(u.lastActiveAt).toLocaleDateString('tr-TR')}` : 'Çevrimdışı'}
                               </span>
                             )}
-                          </div>
-                        </div>
-                      </div>
+                          </td>
 
-                      {/* Expand & Delete Actions */}
-                      <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
-                        <button
-                          type="button"
-                          onClick={() => toggleExpand(u._id)}
-                          className={`flex-1 sm:flex-initial px-4 py-2 rounded-2xl text-xs font-bold border flex items-center justify-center gap-2 transition-all font-heading ${
-                            isExpanded
-                              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
-                              : 'bg-[#070a0f] hover:bg-slate-900 text-white border-slate-800'
-                          }`}
-                        >
-                          <Layers className="w-3.5 h-3.5" />
-                          <span>İlanları Gör ({stats.totalListings})</span>
-                          {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                        </button>
+                          <td className="py-2.5 px-3.5 text-center">
+                            <div className="inline-flex items-center gap-1.5 font-mono text-xs">
+                              <span className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">
+                                {stats.totalListings} Toplam
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
+                                {stats.activeListings} Yayında
+                              </span>
+                            </div>
+                          </td>
 
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteUser(u._id, u.kullaniciAdi)}
-                          className="p-2.5 rounded-2xl bg-red-500/15 hover:bg-red-500 text-red-400 hover:text-white transition-all active:scale-95 shrink-0"
-                          title="Kullanıcıyı Sil"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
+                          <td className="py-2.5 px-3.5 text-center">
+                            <div className="inline-flex items-center gap-2 font-mono text-xs">
+                              <span className="text-slate-400">👁️ {stats.totalViews}</span>
+                              <span className="text-emerald-400">💬 {stats.totalWhatsapp}</span>
+                            </div>
+                          </td>
 
-                    {/* Quick Stats Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800/60 text-center font-heading">
-                      <div className="p-2.5 rounded-2xl bg-[#070a0f] border border-slate-800 flex flex-col">
-                        <span className="text-[10px] text-slate-400 uppercase font-bold">Toplam İlan</span>
-                        <span className="font-black text-sm text-white">{stats.totalListings} Adet</span>
-                      </div>
-
-                      <div className="p-2.5 rounded-2xl bg-[#070a0f] border border-emerald-500/30 flex flex-col">
-                        <span className="text-[10px] text-emerald-400 uppercase font-bold">Yayındaki İlan</span>
-                        <span className="font-black text-sm text-emerald-400">{stats.activeListings} Yayında</span>
-                      </div>
-
-                      <div className="p-2.5 rounded-2xl bg-[#070a0f] border border-blue-500/30 flex flex-col">
-                        <span className="text-[10px] text-blue-400 uppercase font-bold">Görüntülenme</span>
-                        <span className="font-black text-sm text-blue-400">{stats.totalViews.toLocaleString()}</span>
-                      </div>
-
-                      <div className="p-2.5 rounded-2xl bg-[#070a0f] border border-green-500/30 flex flex-col">
-                        <span className="text-[10px] text-[#25D366] uppercase font-bold">WhatsApp Hit</span>
-                        <span className="font-black text-sm text-[#25D366]">{stats.totalWhatsapp.toLocaleString()}</span>
-                      </div>
-                    </div>
-
-                    {/* Expandable Listings Section */}
-                    {isExpanded && (
-                      <div className="p-4 sm:p-5 rounded-2xl bg-[#070a0f] border border-amber-500/30 flex flex-col gap-3 animate-in fade-in duration-200">
-                        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                          <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
-                            <Layers className="w-3.5 h-3.5" />
-                            <span>Kullanıcıya Bağlı İlanlar</span>
-                          </span>
-                          <span className="text-[11px] text-slate-400">
-                            {listings.length} ilan listelendi
-                          </span>
-                        </div>
-
-                        {listings.length === 0 ? (
-                          <div className="p-6 text-center text-xs text-slate-400">
-                            Bu kullanıcıya ait henüz bir ilan bulunmamaktadır.
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {listings.map((item: any) => (
-                              <div 
-                                key={item._id}
-                                className="p-3.5 rounded-2xl bg-[#0c1017] border border-slate-800 hover:border-amber-500/40 flex items-center gap-3 justify-between transition-all"
+                          <td className="py-2.5 px-3.5 text-right">
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditUser(u)}
+                                className="p-1 rounded-lg bg-slate-900 text-slate-300 hover:text-white transition-colors"
+                                title="Kullanıcıyı Düzenle"
                               >
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[#070a0f] border border-slate-800 shrink-0">
-                                    <Image
-                                      src={item.anaFotograf || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
-                                      alt={item.baslik}
-                                      fill
-                                      sizes="48px"
-                                      className="object-cover"
-                                    />
-                                  </div>
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="font-bold text-xs text-white truncate font-heading">
-                                      {item.baslik}
-                                    </span>
-                                    <div className="flex items-center gap-1.5 text-[10px] mt-0.5">
-                                      <span className="text-amber-400 font-bold uppercase">
-                                        📍 {item.ilSlug}/{item.ilceSlug}
-                                      </span>
-                                      <span className={`px-1.5 py-0.5 rounded font-black uppercase text-[9px] ${
-                                        item.status === 'yayinda' 
-                                          ? 'bg-emerald-500/20 text-emerald-400' 
-                                          : 'bg-amber-500/20 text-amber-300'
-                                      }`}>
-                                        {item.status === 'yayinda' ? 'YAYINDA' : item.status}
-                                      </span>
-                                      {item.createdAt && (
-                                        <span className="text-[9px] text-slate-400 font-mono">
-                                          • {new Date(item.createdAt).toLocaleDateString('tr-TR')}
-                                        </span>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
 
-                                <Link
-                                  href={`/ilan/${item.slug}`}
-                                  target="_blank"
-                                  className="p-2.5 rounded-xl bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition-colors shrink-0 flex items-center justify-center shadow-md"
-                                  title="İlanı Sitede Gör"
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </Link>
+                              <button
+                                type="button"
+                                onClick={() => toggleExpand(u._id)}
+                                className={`px-2 py-1 rounded-lg text-xs font-semibold border flex items-center gap-1 transition-all ${
+                                  isExpanded
+                                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                    : 'bg-slate-900 text-slate-300 border-slate-800 hover:text-white'
+                                }`}
+                              >
+                                <Layers className="w-3 h-3" />
+                                <span>İlanlar ({stats.totalListings})</span>
+                                {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteUser(u._id, u.kullaniciAdi)}
+                                className="p-1 rounded-lg bg-slate-900 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                title="Kullanıcıyı Sil"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {isExpanded && (
+                          <tr className="bg-slate-950/60">
+                            <td colSpan={7} className="p-3 sm:p-4 border-b border-slate-800">
+                              <div className="flex flex-col gap-2">
+                                <span className="text-[11px] font-mono font-bold text-slate-400 uppercase">
+                                  @{u.kullaniciAdi} Hesabına Bağlı İlanlar ({listings.length})
+                                </span>
+                                {listings.length === 0 ? (
+                                  <div className="p-3 text-center text-xs text-slate-500 bg-[#070a0f] rounded-lg border border-slate-800">
+                                    Bu kullanıcıya ait henüz bir ilan bulunmamaktadır.
+                                  </div>
+                                ) : (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                    {listings.map((item: any) => (
+                                      <div 
+                                        key={item._id}
+                                        className="p-2.5 rounded-xl bg-[#070a0f] border border-slate-800 flex items-center justify-between gap-2"
+                                      >
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-slate-900 shrink-0">
+                                            <Image
+                                              src={item.anaFotograf || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
+                                              alt={item.baslik}
+                                              fill
+                                              sizes="32px"
+                                              className="object-cover"
+                                            />
+                                          </div>
+                                          <div className="flex flex-col min-w-0">
+                                            <span className="font-semibold text-xs text-white truncate">{item.baslik}</span>
+                                            <span className="text-[10px] text-slate-400 font-mono">📍 {item.ilSlug}/{item.ilceSlug}</span>
+                                          </div>
+                                        </div>
+
+                                        <Link
+                                          href={`/ilan/${item.slug}`}
+                                          target="_blank"
+                                          className="p-1 rounded-lg bg-slate-900 text-slate-400 hover:text-emerald-400 transition-colors shrink-0"
+                                          title="İlanı Aç"
+                                        >
+                                          <ExternalLink className="w-3.5 h-3.5" />
+                                        </Link>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                            ))}
-                          </div>
+                            </td>
+                          </tr>
                         )}
-                      </div>
-                    )}
-
-                  </div>
-                );
-              })}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          </>
+          </div>
         )}
-
       </div>
 
-      {/* ── ➕ YENİ KULLANICI AÇMA MODAL POPUP ──────────────── */}
+      {/* ── YENİ KULLANICI AÇMA MODALI ──────────────── */}
       {isModalOpen && (
         <div 
           onClick={() => setIsModalOpen(false)}
-          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-[#0c1017] border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left animate-in zoom-in-95 duration-200"
+            className="w-full max-w-md bg-[#0e131f] border border-slate-800/90 rounded-2xl shadow-2xl p-5 sm:p-6 flex flex-col gap-4 text-left"
           >
-            
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black">
-                  <UserPlus className="w-5 h-5 stroke-[2.5]" />
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold">
+                  <UserPlus className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
-                  <h3 className="font-black text-lg text-white font-heading">
-                    Yeni Kullanıcı Hesabı Aç
-                  </h3>
-                  <span className="text-xs text-slate-400">
-                    Müşteri için giriş bilgilerini tanımlayın.
-                  </span>
+                  <h3 className="font-bold text-sm text-white">Yeni Kullanıcı Hesabı Aç</h3>
+                  <span className="text-[11px] text-slate-400">Müşteri için giriş bilgilerini tanımlayın.</span>
                 </div>
               </div>
-
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white transition-colors"
+                className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors"
               >
-                <X className="w-4 h-4 stroke-[2.5]" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
             {modalMessage && (
-              <div className={`p-3.5 rounded-2xl text-xs font-bold flex items-center gap-2.5 ${
-                modalMessage.type === 'success'
-                  ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-400'
-                  : 'bg-red-500/15 border border-red-500/40 text-red-400'
+              <div className={`p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                modalMessage.type === 'success' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
               }`}>
-                {modalMessage.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
-                <span className="leading-tight">{modalMessage.text}</span>
+                {modalMessage.type === 'success' ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
+                <span>{modalMessage.text}</span>
               </div>
             )}
 
-            <form onSubmit={handleCreateUser} className="flex flex-col gap-4">
-              
-              {/* Kullanıcı Adı */}
-              <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
-                <span>Kullanıcı Adı <span className="text-amber-400">*</span></span>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    placeholder="Örn: ahmetyilmaz"
-                    value={kullaniciAdi}
-                    onChange={(e) => setKullaniciAdi(e.target.value.toLowerCase().replace(/\s+/g, ''))}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#070a0f] border border-slate-700/80 text-white text-xs focus:outline-none focus:border-amber-400 font-mono font-medium shadow-inner"
-                  />
-                  <AtSign className="w-4 h-4 text-amber-400 absolute left-3.5 top-3.5" />
-                </div>
-              </label>
+            <form onSubmit={handleCreateUser} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1 text-xs">
+                <label className="text-slate-400 text-[11px]">Kullanıcı Adı:</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Örn: ahmetyilmaz"
+                  value={kullaniciAdi}
+                  onChange={(e) => setKullaniciAdi(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                  className="px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-500/60 font-mono transition-colors"
+                />
+              </div>
 
-              {/* Şifre */}
-              <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
-                <span>Giriş Şifresi <span className="text-amber-400">*</span></span>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    placeholder="Örn: 123456"
-                    value={sifre}
-                    onChange={(e) => setSifre(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#070a0f] border border-slate-700/80 text-amber-300 text-xs focus:outline-none focus:border-amber-400 font-mono font-bold shadow-inner"
-                  />
-                  <Lock className="w-4 h-4 text-amber-400 absolute left-3.5 top-3.5" />
-                </div>
-              </label>
+              <div className="flex flex-col gap-1 text-xs">
+                <label className="text-slate-400 text-[11px]">Giriş Şifresi:</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Örn: 123456"
+                  value={sifre}
+                  onChange={(e) => setSifre(e.target.value)}
+                  className="px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-cyan-300 text-xs focus:outline-none focus:border-emerald-500/60 font-mono font-semibold transition-colors"
+                />
+              </div>
 
-              {/* İsteğe Bağlı Telefon Numarası */}
-              <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
-                <span>WhatsApp / Telefon Numarası (Opsiyonel)</span>
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Örn: 0542 000 00 00"
-                    value={telefon}
-                    onChange={(e) => setTelefon(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#070a0f] border border-slate-700/80 text-white text-xs focus:outline-none focus:border-amber-400 font-medium shadow-inner"
-                  />
-                  <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                </div>
-              </label>
+              <div className="flex flex-col gap-1 text-xs">
+                <label className="text-slate-400 text-[11px]">WhatsApp / Telefon (Opsiyonel):</label>
+                <input
+                  type="text"
+                  placeholder="Örn: 0542 000 00 00"
+                  value={telefon}
+                  onChange={(e) => setTelefon(e.target.value)}
+                  className="px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-500/60 font-mono transition-colors"
+                />
+              </div>
 
-              <div className="flex gap-2.5 pt-2">
+              <div className="flex gap-2 pt-2 border-t border-slate-800/80">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors"
+                  className="flex-1 py-2 px-3 rounded-xl bg-slate-900 text-slate-400 hover:text-white text-xs font-semibold"
                 >
                   İptal
                 </button>
-
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all active:scale-95 flex items-center justify-center gap-2 font-heading uppercase tracking-wider disabled:opacity-50"
+                  className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-40"
                 >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Kaydediliyor...</span>
-                    </>
-                  ) : (
-                    <span>Hesabı Oluştur</span>
-                  )}
+                  {submitting ? 'Kaydediliyor...' : 'Hesabı Aç ✓'}
                 </button>
               </div>
-
             </form>
+          </div>
+        </div>
+      )}
 
+      {/* ── KULLANICI DÜZENLEME MODALI ──────────────── */}
+      {editingUser && (
+        <div 
+          onClick={() => setEditingUser(null)}
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fadeIn"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-[#0e131f] border border-slate-800/90 rounded-2xl shadow-2xl p-5 sm:p-6 flex flex-col gap-4 text-left"
+          >
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 flex items-center justify-center font-bold">
+                  <Edit3 className="w-4 h-4" />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="font-bold text-sm text-white">Kullanıcıyı Düzenle</h3>
+                  <span className="text-[11px] text-slate-400">@{editingUser.kullaniciAdi}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingUser(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {editMsg && (
+              <div className={`p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                editMsg.type === 'success' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+              }`}>
+                {editMsg.type === 'success' ? <CheckCircle2 className="w-3.5 h-3.5 shrink-0" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0" />}
+                <span>{editMsg.text}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEditUser} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1 text-xs">
+                <label className="text-slate-400 text-[11px]">Kullanıcı Adı:</label>
+                <input
+                  type="text"
+                  required
+                  value={editUsername}
+                  onChange={(e) => setEditUsername(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                  className="px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-cyan-500/60 font-mono transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1 text-xs">
+                <label className="text-slate-400 text-[11px]">Giriş Şifresi:</label>
+                <input
+                  type="text"
+                  required
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-cyan-300 text-xs focus:outline-none focus:border-cyan-500/60 font-mono font-semibold transition-colors"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1 text-xs">
+                <label className="text-slate-400 text-[11px]">WhatsApp / Telefon:</label>
+                <input
+                  type="text"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  className="px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-cyan-500/60 font-mono transition-colors"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="flex-1 py-2 px-3 rounded-xl bg-slate-900 text-slate-400 hover:text-white text-xs font-semibold"
+                >
+                  İptal
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="flex-1 py-2 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20 active:scale-95 transition-all disabled:opacity-40"
+                >
+                  {editLoading ? 'Kaydediliyor...' : 'Güncelle ✓'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

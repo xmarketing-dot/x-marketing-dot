@@ -442,7 +442,7 @@ export default function AdminChatPage() {
           <div className="p-3.5 border-b border-slate-800 bg-[#070a0f] flex flex-col gap-2.5 shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-amber-500/15 text-amber-400 flex items-center justify-center font-black text-xs border border-amber-500/30 shadow-sm">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/30 shadow-sm">
                   <MessageSquare className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col text-left leading-tight">
@@ -491,7 +491,7 @@ export default function AdminChatPage() {
                 placeholder="Müşteri, telefon, ilan veya mesaj ara..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-7 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-amber-400/80 transition-all font-medium"
+                className="w-full pl-8 pr-7 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-all font-medium"
               />
               <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
               {searchQuery && (
@@ -565,7 +565,7 @@ export default function AdminChatPage() {
           <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#1e2433] max-md:no-scrollbar md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:w-1.5 md:[&::-webkit-scrollbar-thumb]:bg-slate-800 md:[&::-webkit-scrollbar-thumb]:rounded-full hover:md:[&::-webkit-scrollbar-thumb]:bg-[#343e52]">
             {loading ? (
               <div className="p-10 text-center flex flex-col items-center justify-center gap-2.5">
-                <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
+                <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
                 <span className="text-xs text-slate-400 font-medium">Sohbetler senkronize ediliyor...</span>
               </div>
             ) : filteredThreads.length > 0 ? (
@@ -580,8 +580,7 @@ export default function AdminChatPage() {
                     key={th._id}
                     onClick={() => setSelectedThread(th)}
                     className={`w-full p-3 flex items-start justify-between gap-3 text-left transition-all cursor-pointer relative group ${
-                      isSelected
-                        ? 'bg-amber-500/10 border-l-[3px] border-amber-400'
+                      isSelected ? 'bg-emerald-500/10 border-l-[3px] border-emerald-400'
                         : 'hover:bg-[#151b27] active:bg-[#1a2230]'
                     }`}
                   >
@@ -608,7 +607,7 @@ export default function AdminChatPage() {
                       <div className="flex items-center justify-between gap-1.5">
                         <div className="flex items-center gap-1.5 truncate">
                           <span className={`font-heading font-bold text-xs truncate ${
-                            isSelected ? 'text-amber-300' : 'text-[#f0f6fc]'
+                            isSelected ? 'text-emerald-300' : 'text-[#f0f6fc]'
                           }`}>
                             {th.kullaniciAdi}
                           </span>
@@ -650,7 +649,7 @@ export default function AdminChatPage() {
                     {/* Sağ Taraf: Rozet / Silme */}
                     <div className="flex flex-col items-end justify-between self-stretch shrink-0">
                       {hasUnread ? (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-heading font-black text-[10px] animate-pulse shadow-md shadow-amber-500/30">
+                        <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white font-mono font-bold text-[10px] animate-pulse shadow-md shadow-rose-500/20">
                           {th.okunmadiAdminSayisi}
                         </span>
                       ) : (
@@ -708,7 +707,7 @@ export default function AdminChatPage() {
                         <img src={selectedThread.listingFoto} alt="" className="w-full h-full object-cover" />
                       </div>
                     ) : (
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-300 text-slate-950 font-heading font-black flex items-center justify-center text-sm shadow-sm">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-sm shadow-md shadow-emerald-500/20">
                         {selectedThread.kullaniciAdi.replace('👑 ', '').charAt(0).toUpperCase() || 'M'}
                       </div>
                     )}

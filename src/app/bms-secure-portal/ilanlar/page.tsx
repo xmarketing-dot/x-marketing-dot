@@ -919,7 +919,7 @@ export default function AdminListingsPage() {
         {/* Main Header Card */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 shadow-2xl">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-lg shadow-amber-500/10">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shrink-0 shadow-md">
               <List className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div className="flex flex-col min-w-0">
@@ -956,7 +956,7 @@ export default function AdminListingsPage() {
 
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
               <span className="truncate">+ Yeni VIP Model / İlan</span>
@@ -964,7 +964,7 @@ export default function AdminListingsPage() {
 
             <button
               onClick={() => fetchListings(true)}
-              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-white border border-slate-800 transition-all active:scale-95 shrink-0 cursor-pointer"
+              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all active:scale-95 shrink-0 cursor-pointer"
               title="İlanları Yenile"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -978,7 +978,7 @@ export default function AdminListingsPage() {
           <div 
             onClick={() => setFilter('all')} 
             className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
-              filter === 'all' ? 'border-amber-500 ring-2 ring-amber-500/30 bg-gradient-to-br from-amber-950/20 to-[#0c1017]' : 'border-slate-800/80'
+              filter === 'all' ? 'border-emerald-500 ring-1 ring-emerald-500/30 bg-gradient-to-br from-emerald-950/20 to-[#0c1017]' : 'border-slate-800/80'
             }`}
           >
             <div className="flex flex-col min-w-0 z-10">
@@ -1080,7 +1080,7 @@ export default function AdminListingsPage() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="İlan ara: Model adı, şehir, ilçe, tel no veya kullanıcı..."
-              className="w-full pl-9 pr-8 py-2 text-xs bg-[#070a0f] border border-slate-800 rounded-xl text-white placeholder:text-slate-400/60 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full pl-9 pr-8 py-2 text-xs bg-[#070a0f] border border-slate-800 rounded-xl text-white placeholder:text-slate-400/60 focus:outline-none focus:border-emerald-500/60 transition-colors"
             />
             {searchTerm && (
               <button
@@ -1168,7 +1168,7 @@ export default function AdminListingsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full py-2 px-3 text-xs bg-[#070a0f] border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
+                className="w-full py-2 px-3 text-xs bg-[#070a0f] border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:border-emerald-500/60"
               >
                 <option value="expiry_asc">⏳ Az Zamanı Kalan (Önce Bitenler)</option>
                 <option value="created_desc">🆕 En Yeni Eklenen</option>
@@ -1786,7 +1786,7 @@ export default function AdminListingsPage() {
       {/* ── 4. FULL EDITING MODAL (MOBİL UYUMLU) ──────────────── */}
       {editingItem && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="w-full max-w-3xl bg-[#0c1017] border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+          <div className="w-full max-w-3xl bg-[#0c1017] border border-slate-700/80 rounded-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
             
             {/* Sticky Header */}
             <div className="px-5 py-3.5 sm:px-6 sm:py-4 bg-[#0c1017]/95 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between shrink-0">
@@ -2098,7 +2098,7 @@ export default function AdminListingsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-4xl bg-[#0c1017] border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden"
+            className="w-full max-w-4xl bg-[#0c1017] border border-slate-700/80 rounded-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden"
           >
             {/* Modal Header */}
             <div className="px-5 py-3.5 sm:px-6 sm:py-4 bg-[#0c1017]/95 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between shrink-0 gap-2">
@@ -2470,7 +2470,7 @@ export default function AdminListingsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-[#0c1017] border-2 border-amber-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
+            className="w-full max-w-lg bg-[#0c1017] border-2 border-amber-500/60 rounded-2xl sm:rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -2704,7 +2704,7 @@ export default function AdminListingsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl bg-[#0c1017] border-2 border-amber-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
+            className="w-full max-w-2xl bg-[#0c1017] border-2 border-amber-500/60 rounded-2xl sm:rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">

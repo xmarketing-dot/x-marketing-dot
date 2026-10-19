@@ -1032,10 +1032,10 @@ export default function AdminHomepageConfigPage() {
     <div className="flex flex-col gap-6 w-full max-w-full text-left pb-16">
 
       {/* ── ÜST DASHBOARD HEADER & CANLI METRİKLER (OBSIDIAN EXECUTIVE) ──────────────── */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-2xl flex flex-col gap-5">
+      <div className="p-5 sm:p-6 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-2xl flex flex-col gap-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-black shadow-lg shadow-amber-500/10 shrink-0">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shadow-md shrink-0">
               <Sliders className="w-6 h-6 stroke-[2.5]" />
             </div>
             <div className="flex flex-col text-left">
@@ -1043,7 +1043,7 @@ export default function AdminHomepageConfigPage() {
                 <h1 className="font-black text-xl sm:text-2xl text-white font-heading">
                   Anasayfa, Vitrin &amp; Reklam Yönetim Merkezi
                 </h1>
-                <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 font-mono text-[10px] font-bold">
+                <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono text-[10px] font-bold">
                   Obsidian Control
                 </span>
               </div>
@@ -1059,7 +1059,7 @@ export default function AdminHomepageConfigPage() {
               onClick={() => fetchConfig(false)}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#070a0f] hover:bg-slate-900 text-white border border-slate-800 font-bold text-xs transition-colors shadow-md"
             >
-              <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-400' : 'text-slate-400'}`} />
               <span>Yenile</span>
             </button>
 
@@ -1067,7 +1067,7 @@ export default function AdminHomepageConfigPage() {
               type="button"
               onClick={() => handleSaveAll()}
               disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-300 hover:from-amber-400 hover:to-amber-200 text-slate-950 font-black text-xs uppercase font-heading shadow-xl shadow-amber-500/25 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-40 cursor-pointer"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 stroke-[2.5]" />}
               <span>{saving ? 'Kaydediliyor...' : 'Tümünü Kaydet & Yayına Al'}</span>
@@ -1081,7 +1081,7 @@ export default function AdminHomepageConfigPage() {
           <div 
             onClick={() => setActiveMainTab('vitrin')}
             className={`p-4 rounded-2xl bg-[#070a0f] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
-              activeMainTab === 'vitrin' ? 'border-amber-500 ring-2 ring-amber-500/30' : 'border-slate-800/80'
+              activeMainTab === 'vitrin' ? 'border-emerald-500 ring-1 ring-emerald-500/30' : 'border-slate-800/80'
             }`}
           >
             <div className="flex flex-col min-w-0 z-10">
@@ -1163,8 +1163,7 @@ export default function AdminHomepageConfigPage() {
             type="button"
             onClick={() => setActiveMainTab('vitrin')}
             className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeMainTab === 'vitrin'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              activeMainTab === 'vitrin' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shadow-sm'
                 : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -1181,8 +1180,7 @@ export default function AdminHomepageConfigPage() {
             type="button"
             onClick={() => setActiveMainTab('popup')}
             className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeMainTab === 'popup'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              activeMainTab === 'popup' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shadow-sm'
                 : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -1197,8 +1195,7 @@ export default function AdminHomepageConfigPage() {
             type="button"
             onClick={() => setActiveMainTab('gif')}
             className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeMainTab === 'gif'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              activeMainTab === 'gif' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shadow-sm'
                 : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -1213,8 +1210,7 @@ export default function AdminHomepageConfigPage() {
             type="button"
             onClick={() => setActiveMainTab('duyuru')}
             className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeMainTab === 'duyuru'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              activeMainTab === 'duyuru' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shadow-sm'
                 : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -1226,8 +1222,7 @@ export default function AdminHomepageConfigPage() {
             type="button"
             onClick={() => setActiveMainTab('whatsapp')}
             className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
-              activeMainTab === 'whatsapp'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              activeMainTab === 'whatsapp' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold shadow-sm'
                 : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
             }`}
           >
@@ -1252,7 +1247,7 @@ export default function AdminHomepageConfigPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-7 flex flex-col gap-6">
             {/* ── 1. VİTRİN TALEPLERİ & ONAY MASASI (BEKLEYENLER) ──────────────── */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border-2 border-amber-500/50 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0c1017] border-2 border-amber-500/50 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
@@ -1599,7 +1594,7 @@ export default function AdminHomepageConfigPage() {
           </div>
           <div className="lg:col-span-5 flex flex-col gap-6">
             {/* ── 3. ANASAYFA ÜST VİTRİN SLIDER HAVUZU & İLAN SEÇİCİ ──────────────── */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-5">
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
@@ -1841,7 +1836,7 @@ export default function AdminHomepageConfigPage() {
       {activeMainTab === 'popup' && (
         <div className="w-full flex flex-col gap-6">
           {/* ── 4. ÇOKLU SPONSORLU POPUP REKLAMLARI (KONUM HEDEFLİ) ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-5">
+          <div className="p-6 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-5">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-amber-400" />
@@ -2298,7 +2293,7 @@ export default function AdminHomepageConfigPage() {
       {activeMainTab === 'gif' && (
         <div className="w-full flex flex-col gap-6">
           {/* ── 2. VİTRİN BOŞKEN DÖNECEK VIP GIF & REKLAM HAVUZU YÖNETİMİ ──────────────── */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border-2 border-purple-500/40 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
+          <div className="p-6 sm:p-7 rounded-2xl bg-[#0c1017] border-2 border-purple-500/40 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header */}
@@ -2639,7 +2634,7 @@ export default function AdminHomepageConfigPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div className="flex flex-col gap-6">
             {/* ── 3. HERO & METİN KARŞILAMA AYARLARI ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+          <div className="p-6 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
             <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
               <Sparkles className="w-5 h-5 text-amber-400" />
               <h2 className="font-black text-base text-white font-heading">Anasayfa Hero &amp; Karşılama Metinleri</h2>
@@ -2679,7 +2674,7 @@ export default function AdminHomepageConfigPage() {
           </div>
           <div className="flex flex-col gap-6">
             {/* ── 5. KAYAN DUYURU ŞERİDİ (TICKER) ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+          <div className="p-6 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-2">
               <div className="flex items-center gap-2">
                 <Megaphone className="w-5 h-5 text-amber-400" />
@@ -2771,7 +2766,7 @@ export default function AdminHomepageConfigPage() {
       {activeMainTab === 'whatsapp' && (
         <div className="w-full flex flex-col gap-6">
           {/* ── CANLI ADMİN WHATSAPP DESTEK HATTI YÖNETİM PANELİ (ANINDA CANLIYA AL) ──────────────── */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#111a14] via-[#161b22] to-[#121c16] border border-emerald-500/40 shadow-2xl flex flex-col gap-3.5">
+      <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#111a14] via-[#161b22] to-[#121c16] border border-emerald-500/40 shadow-2xl flex flex-col gap-3.5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">

@@ -318,13 +318,13 @@ export default function UnifiedNotificationsManagementPage() {
   }, [notifications, notifSearch]);
 
   return (
-    <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full text-left font-sans selection:bg-amber-500 selection:text-slate-950">
+    <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full text-left font-sans selection:bg-emerald-500 selection:text-slate-950">
       
       {/* ── 1. HEADER & CANLI YENİLE ────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold shadow-md">
               <BellRing className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
@@ -347,7 +347,7 @@ export default function UnifiedNotificationsManagementPage() {
             disabled={loading}
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-heading font-bold border border-slate-800 transition-all disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : 'text-slate-400'}`} />
             <span>Yenile</span>
           </button>
         </div>
@@ -502,7 +502,7 @@ export default function UnifiedNotificationsManagementPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Sol Kolon: Birleşik Form (7 Kolon) */}
-          <div className="lg:col-span-7 bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-5">
+          <div className="lg:col-span-7 bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col gap-5">
             <div className="flex flex-col gap-1 border-b border-slate-800/60 pb-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
@@ -590,7 +590,7 @@ export default function UnifiedNotificationsManagementPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Örn: 🔥 İstanbul Yeni İlanlar Yayında!"
-                  className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-emerald-500/60 transition-colors"
                 />
               </div>
 
@@ -607,7 +607,7 @@ export default function UnifiedNotificationsManagementPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Örn: Günün en popüler VIP ilanları eklendi. Hemen tıkla ve güncel profilleri incele."
-                  className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-emerald-500/60 transition-colors resize-none"
                 />
               </div>
 
@@ -622,7 +622,7 @@ export default function UnifiedNotificationsManagementPage() {
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="Örn: / veya /ilan/buca-izmir-197my"
-                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-emerald-500/60 transition-colors"
                   />
                 </div>
 
@@ -635,7 +635,7 @@ export default function UnifiedNotificationsManagementPage() {
                     value={badge}
                     onChange={(e) => setBadge(e.target.value)}
                     placeholder="Örn: VIP İLAN, YÖNETİCİ, DUYURU"
-                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-emerald-500/60 transition-colors"
                   />
                 </div>
               </div>
@@ -651,7 +651,7 @@ export default function UnifiedNotificationsManagementPage() {
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
                     placeholder="https://... (boş bırakılabilir)"
-                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-emerald-500/60 transition-colors"
                   />
                 </div>
 
@@ -663,7 +663,7 @@ export default function UnifiedNotificationsManagementPage() {
                     disabled={!sendWebPush}
                     value={pushPlatform}
                     onChange={(e: any) => setPushPlatform(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono focus:outline-none focus:border-amber-400 transition-colors disabled:opacity-40"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono focus:outline-none focus:border-emerald-500/60 transition-colors disabled:opacity-40"
                   >
                     <option value="all">🌐 Tüm Cihazlar ({stats.totalSubscribers} Cihaz)</option>
                     <option value="android">📱 Yalnızca Android ({stats.androidSubscribers} Cihaz)</option>
@@ -694,7 +694,7 @@ export default function UnifiedNotificationsManagementPage() {
               <button
                 type="submit"
                 disabled={sending || (!sendSiteNotification && !sendWebPush)}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-sm tracking-wide shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50 cursor-pointer"
+                className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-40 cursor-pointer"
               >
                 {sending ? (
                   <>
@@ -872,7 +872,7 @@ export default function UnifiedNotificationsManagementPage() {
 
       {/* ── 5. SEKME 2: SİTE BİLDİRİMLERİ GEÇMİŞİ ───────────────────────────── */}
       {activeTab === 'notifications' && (
-        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
+        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-amber-400" />
@@ -887,7 +887,7 @@ export default function UnifiedNotificationsManagementPage() {
                 placeholder="Başlık veya mesaj ara..."
                 value={notifSearch}
                 onChange={(e) => setNotifSearch(e.target.value)}
-                className="pl-8 pr-3 py-1.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400"
+                className="pl-8 pr-3 py-1.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-emerald-500/60"
               />
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             </div>
@@ -954,7 +954,7 @@ export default function UnifiedNotificationsManagementPage() {
 
       {/* ── 6. SEKME 3: PUSH KAMPANYALARI GEÇMİŞİ ───────────────────────────── */}
       {activeTab === 'campaigns' && (
-        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
+        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-purple-400" />
@@ -1015,7 +1015,7 @@ export default function UnifiedNotificationsManagementPage() {
 
       {/* ── 7. SEKME 4: CİHAZLAR & KURULUM AKIŞI (PWA & ABONE) ───────────────── */}
       {activeTab === 'devices' && (
-        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
+        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col gap-4">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -1032,7 +1032,7 @@ export default function UnifiedNotificationsManagementPage() {
                   placeholder="IP, Cihaz, ID, Şehir..."
                   value={deviceSearch}
                   onChange={(e) => setDeviceSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400"
+                  className="pl-8 pr-3 py-1.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-emerald-500/60"
                 />
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
               </div>
@@ -1041,7 +1041,7 @@ export default function UnifiedNotificationsManagementPage() {
                 <button
                   onClick={() => setDeviceFilter('all')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-heading font-bold transition-all ${
-                    deviceFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
+                    deviceFilter === 'all' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Tümü
@@ -1065,7 +1065,7 @@ export default function UnifiedNotificationsManagementPage() {
                 <button
                   onClick={() => setDeviceFilter('subscribers')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-heading font-bold transition-all ${
-                    deviceFilter === 'subscribers' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
+                    deviceFilter === 'subscribers' ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Push Aboneleri
