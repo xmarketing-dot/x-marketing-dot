@@ -807,121 +807,197 @@ export default function BmsSecurePortalDashboard() {
       )}
       
       {/* ── 1. UNIFIED EXECUTIVE COMMAND BAR ──────────────────────────────── */}
-      <div className="bg-[#0c1017] border border-slate-800/80 rounded-2xl p-3 sm:p-5 shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
-        {/* Sol: Başlık + Canlı Ziyaretçi & Müşteri Durumu */}
-        <div className="flex items-center justify-between xl:justify-start gap-3">
-          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
-              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-xl font-bold text-white tracking-tight truncate">
-                  Trafik &amp; İstihbarat Portalı
-                </h1>
-                <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 text-[10px] font-semibold shrink-0">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Canlı
-                </span>
+      <div className="bg-[#0c1017] border border-slate-800/80 rounded-2xl p-3 sm:p-5 shadow-xl flex flex-col gap-4">
+        {/* Üst Satır: Başlık (Sol) + Alan Adı Seçici & Filtreler (Sağ) */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
+          {/* Sol: Başlık & Canlı Durum */}
+          <div className="flex items-center justify-between gap-3 min-w-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-                <button 
-                  onClick={() => setShowActiveVisitorsModal(true)} 
-                  className="hover:text-emerald-400 transition-colors flex items-center gap-1"
-                  title="Canlı gezinmeleri incele"
-                >
-                  <span className="font-semibold text-white">{activeUsers}</span> Ziyaretçi Aktif
-                </button>
-                <span className="text-slate-600">•</span>
-                <button 
-                  onClick={() => setShowOnlineUsersModal(true)}
-                  className="hover:text-amber-400 transition-colors flex items-center gap-1"
-                  title="Sistemde oturum açmış müşteriler"
-                >
-                  <span className="font-semibold text-white">{onlineUsers.length}</span> Müşteri Online
-                </button>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base sm:text-xl font-bold text-white tracking-tight truncate">
+                    Trafik &amp; İstihbarat Portalı
+                  </h1>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold font-mono tracking-wider shrink-0 shadow-sm shadow-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>CANLI RADAR</span>
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                  Gerçek zamanlı ziyaretçi akışı, oturumlar ve istihbarat paneli
+                </p>
               </div>
             </div>
-          </div>
 
-          {/* Mobilde Hızlı Yenile İkonu */}
-          <button
-            onClick={fetchAnalytics}
-            disabled={loading}
-            className="p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors xl:hidden shrink-0"
-            title="Verileri Yenile"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
-          </button>
-        </div>
-
-        {/* Sağ: Alan Adı Seçici + Tarih Seçici + Hızlı Araçlar */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full xl:w-auto pb-0.5 xl:pb-0">
-          {/* Domain Segmented Control */}
-          <div className="flex items-center bg-[#06090e] p-0.5 sm:p-1 rounded-xl border border-slate-800 text-[11px] sm:text-xs shrink-0">
+            {/* Mobilde Hızlı Yenile İkonu */}
             <button
-              onClick={() => setSelectedDomain('all')}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
-                selectedDomain === 'all'
-                  ? 'bg-slate-800 text-white shadow-sm font-semibold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+              onClick={fetchAnalytics}
+              disabled={loading}
+              className="p-2 sm:p-2.5 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors xl:hidden shrink-0"
+              title="Verileri Yenile"
             >
-              Tüm Siteler
-            </button>
-            <button
-              onClick={() => setSelectedDomain('besteskort.online')}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
-                selectedDomain === 'besteskort.online'
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              besteskort.online
-            </button>
-            <button
-              onClick={() => setSelectedDomain('escturkiye.space')}
-              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
-                selectedDomain === 'escturkiye.space'
-                  ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              escturkiye.space
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
             </button>
           </div>
 
-          {/* Tarih Filtresi */}
-          <div className="flex items-center bg-[#06090e] p-0.5 sm:p-1 rounded-xl border border-slate-800 text-[11px] sm:text-xs shrink-0">
-            {[
-              { id: 'today', label: 'Bugün' },
-              { id: 'yesterday', label: 'Dün' },
-              { id: 'week', label: '7G' },
-              { id: 'month', label: '30G' },
-              { id: 'all', label: 'Tümü' },
-            ].map((r) => (
+          {/* Sağ: Alan Adı Seçici + Tarih Filtresi + Masaüstü Yenile */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full xl:w-auto pb-0.5 xl:pb-0">
+            {/* Domain Segmented Control */}
+            <div className="flex items-center bg-[#06090e] p-0.5 sm:p-1 rounded-xl border border-slate-800 text-[11px] sm:text-xs shrink-0">
               <button
-                key={r.id}
-                onClick={() => setRange(r.id)}
-                className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
-                  range === r.id
+                onClick={() => setSelectedDomain('all')}
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
+                  selectedDomain === 'all'
                     ? 'bg-slate-800 text-white shadow-sm font-semibold'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                {r.label}
+                Tüm Siteler
               </button>
-            ))}
-          </div>
+              <button
+                onClick={() => setSelectedDomain('besteskort.online')}
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
+                  selectedDomain === 'besteskort.online'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                besteskort.online
+              </button>
+              <button
+                onClick={() => setSelectedDomain('escturkiye.space')}
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
+                  selectedDomain === 'escturkiye.space'
+                    ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                escturkiye.space
+              </button>
+            </div>
 
-          {/* Masaüstü Yenile Butonu */}
+            {/* Tarih Filtresi */}
+            <div className="flex items-center bg-[#06090e] p-0.5 sm:p-1 rounded-xl border border-slate-800 text-[11px] sm:text-xs shrink-0">
+              {[
+                { id: 'today', label: 'Bugün' },
+                { id: 'yesterday', label: 'Dün' },
+                { id: 'week', label: '7G' },
+                { id: 'month', label: '30G' },
+                { id: 'all', label: 'Tümü' },
+              ].map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => setRange(r.id)}
+                  className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
+                    range === r.id
+                      ? 'bg-slate-800 text-white shadow-sm font-semibold'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Masaüstü Yenile Butonu */}
+            <button
+              onClick={fetchAnalytics}
+              disabled={loading}
+              className="hidden xl:flex p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0"
+              title="Verileri Yenile"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── 2. BÜYÜK & BELİRGİN CANLI ONLİNE / ZİYARETÇİ KONTROL KARTLARI ──── */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 pt-1 border-t border-slate-800/80">
+          {/* 1. Canlı Ziyaretçi Sayacı (Zümrüt Yeşil Neon) */}
           <button
-            onClick={fetchAnalytics}
-            disabled={loading}
-            className="hidden xl:flex p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0"
-            title="Verileri Yenile"
+            type="button"
+            onClick={() => setShowActiveVisitorsModal(true)}
+            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-950/70 via-[#07140f] to-[#0c1017] border border-emerald-500/40 hover:border-emerald-400/90 p-3 sm:p-4 text-left transition-all duration-300 shadow-xl shadow-emerald-950/50 hover:shadow-emerald-500/20 active:scale-[0.98] flex flex-col justify-between gap-2 cursor-pointer"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
+            {/* Arka plan süzülen neon parlama */}
+            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-28 h-28 bg-emerald-500/15 rounded-full blur-2xl group-hover:bg-emerald-500/25 transition-all pointer-events-none" />
+
+            <div className="flex items-center justify-between gap-1 w-full z-10">
+              <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-emerald-400 font-heading">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span>ZİYARETÇİ AKTİF</span>
+              </span>
+              <span className="text-[10px] sm:text-xs text-emerald-400/80 group-hover:text-emerald-300 font-bold flex items-center gap-0.5 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                <span>Canlı İzle</span>
+                <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2 sm:gap-3 z-10 my-0.5">
+              <span className="text-3xl sm:text-5xl font-black text-white font-mono tracking-tight drop-shadow-[0_0_16px_rgba(16,185,129,0.4)]">
+                {activeUsers}
+              </span>
+              <div className="flex flex-col">
+                <span className="text-xs sm:text-sm font-extrabold text-emerald-300 leading-tight">
+                  Kişi Sitede
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-emerald-500/80 font-medium hidden sm:inline">
+                  Anlık gezinmeler
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-400 z-10 pt-1 border-t border-emerald-500/20">
+              <span className="truncate">Sitedeki anlık sayfaları incelemek için tıkla</span>
+            </div>
+          </button>
+
+          {/* 2. Müşteri Online Sayacı (Altın/Amber VIP) */}
+          <button
+            type="button"
+            onClick={() => setShowOnlineUsersModal(true)}
+            className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-950/70 via-[#181206] to-[#0c1017] border border-amber-500/40 hover:border-amber-400/90 p-3 sm:p-4 text-left transition-all duration-300 shadow-xl shadow-amber-950/50 hover:shadow-amber-500/20 active:scale-[0.98] flex flex-col justify-between gap-2 cursor-pointer"
+          >
+            {/* Arka plan süzülen altın parlama */}
+            <div className="absolute top-0 right-0 -mr-6 -mt-6 w-28 h-28 bg-amber-500/15 rounded-full blur-2xl group-hover:bg-amber-500/25 transition-all pointer-events-none" />
+
+            <div className="flex items-center justify-between gap-1 w-full z-10">
+              <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-amber-400 font-heading">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                </span>
+                <span>MÜŞTERİ PANELİ</span>
+              </span>
+              <span className="text-[10px] sm:text-xs text-amber-400/80 group-hover:text-amber-300 font-bold flex items-center gap-0.5 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                <span>Oturumlar</span>
+                <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-2 sm:gap-3 z-10 my-0.5">
+              <span className="text-3xl sm:text-5xl font-black text-white font-mono tracking-tight drop-shadow-[0_0_16px_rgba(245,158,11,0.4)]">
+                {onlineUsers.length}
+              </span>
+              <div className="flex flex-col">
+                <span className="text-xs sm:text-sm font-extrabold text-amber-300 leading-tight">
+                  Oturum Açık
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-amber-500/80 font-medium hidden sm:inline">
+                  Giriş yapmış modeller
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-[10px] sm:text-xs text-slate-400 z-10 pt-1 border-t border-amber-500/20">
+              <span className="truncate">Panelde aktif ilan sahiplerini gör</span>
+            </div>
           </button>
         </div>
       </div>
