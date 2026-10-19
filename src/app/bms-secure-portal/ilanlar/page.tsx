@@ -790,6 +790,7 @@ export default function AdminListingsPage() {
   const selectedProvince = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
 
   const pendingCount = listings.filter((l) => l.status === 'onay_bekliyor').length;
+  const liveCount = listings.filter((l) => l.status === 'yayinda' && (!l.paketBitisTarihi || new Date(l.paketBitisTarihi).getTime() >= Date.now())).length;
   const expiredCount = listings.filter((l) => {
     if (l.status === 'suresi_doldu') return true;
     if (l.paketBitisTarihi && new Date(l.paketBitisTarihi).getTime() < Date.now()) return true;
@@ -874,80 +875,156 @@ export default function AdminListingsPage() {
   return (
     <div className="flex flex-col gap-3 sm:gap-6 w-full max-w-full px-1 sm:px-0 pb-24 sm:pb-8">
 
-      {/* ── 1. ÜST HEADER BAR ──────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-bold shrink-0">
-            <List className="w-5 h-5" />
+      {/* ── 1. ÜST HEADER BAR & EXECUTIVE KPI ŞERİDİ ──────────────── */}
+      <div className="flex flex-col gap-3 sm:gap-4">
+        {/* Main Header Card */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 shadow-2xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold shrink-0 shadow-lg shadow-amber-500/10">
+              <List className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="font-black text-lg sm:text-2xl text-white font-heading tracking-tight">
+                  İlan Moderasyon Masası
+                </h1>
+                {pendingCount > 0 && (
+                  <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[11px] font-black animate-pulse shrink-0 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+                    {pendingCount} Bekliyor
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 truncate mt-0.5">
+                VIP ilan vitrini, onay kuyruğu, süre uzatma ve üye bağlantı operasyonları.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col min-w-0">
-            <h1 className="font-black text-base sm:text-2xl text-white font-heading flex items-center gap-2 truncate">
-              <span>İlan Moderasyon Masası</span>
-              {pendingCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse shrink-0">
-                  {pendingCount} Bekliyor
-                </span>
-              )}
-              {expiredCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[10px] font-black shrink-0">
-                  {expiredCount} Süresi Doldu
-                </span>
-              )}
-            </h1>
-            <p className="text-[11px] text-[#8b949e] truncate">Gelen ilanları onaylayın, süreleri ve hesapları düzenleyin.</p>
+
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <button
+              type="button"
+              onClick={() => {
+                setShowBulkPhoneModal(true);
+                setBulkResult(null);
+              }}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 hover:text-emerald-300 border border-emerald-500/40 font-black text-xs font-heading shadow-md active:scale-95 transition-all cursor-pointer"
+              title="Kullanıcı seçip tüm ilanlarının WhatsApp numarasını toplu güncelleyin"
+            >
+              <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span className="truncate">Toplu Numara Güncelle</span>
+            </button>
+
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading shadow-lg shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span className="truncate">+ Yeni VIP Model / İlan</span>
+            </button>
+
+            <button
+              onClick={() => fetchListings(true)}
+              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 hover:text-white border border-slate-800 transition-all active:scale-95 shrink-0 cursor-pointer"
+              title="İlanları Yenile"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <button
-            type="button"
-            onClick={() => {
-              setShowBulkPhoneModal(true);
-              setBulkResult(null);
-            }}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-emerald-400 hover:text-emerald-300 border border-emerald-500/40 font-black text-xs font-heading shadow-md active:scale-95 transition-all cursor-pointer"
-            title="Kullanıcı seçip tüm ilanlarının WhatsApp numarasını toplu güncelleyin"
+        {/* Executive 4-KPI Metric Strip */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+          <div 
+            onClick={() => setFilter('all')} 
+            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg ${
+              filter === 'all' ? 'border-amber-500/50 ring-1 ring-amber-500/20' : 'border-slate-800/80'
+            }`}
           >
-            <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="truncate">Toplu Numara Güncelle</span>
-          </button>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-heading">Toplam İlan</span>
+              <span className="font-black text-xl sm:text-2xl text-white font-heading mt-0.5">{listings.length}</span>
+              <span className="text-[10px] text-slate-500">Tüm havuz</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <List className="w-5 h-5" />
+            </div>
+          </div>
 
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading shadow-md shadow-amber-500/25 active:scale-95 transition-all"
+          <div 
+            onClick={() => setFilter('onay_bekliyor')} 
+            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg ${
+              filter === 'onay_bekliyor' ? 'border-rose-500/50 ring-1 ring-rose-500/20' : 'border-slate-800/80'
+            } ${pendingCount > 0 ? 'bg-gradient-to-br from-rose-950/20 to-[#0c1017]' : ''}`}
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span className="truncate">+ Yeni VIP Model / İlan Ekle</span>
-          </button>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-rose-300 font-heading flex items-center gap-1.5">
+                {pendingCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />}
+                Onay Bekleyen
+              </span>
+              <span className="font-black text-xl sm:text-2xl text-rose-400 font-heading mt-0.5">{pendingCount}</span>
+              <span className="text-[10px] text-slate-500">Kuyrukta moderasyon</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5" />
+            </div>
+          </div>
 
-          <button
-            onClick={() => fetchListings(true)}
-            className="p-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 hover:text-white border border-[#30363d] transition-all active:scale-95 shrink-0"
-            title="İlanları Yenile"
+          <div 
+            onClick={() => setFilter('yayinda')} 
+            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg ${
+              filter === 'yayinda' ? 'border-emerald-500/50 ring-1 ring-emerald-500/20' : 'border-slate-800/80'
+            }`}
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 font-heading flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                Yayındaki İlan
+              </span>
+              <span className="font-black text-xl sm:text-2xl text-emerald-400 font-heading mt-0.5">{liveCount}</span>
+              <span className="text-[10px] text-slate-500">Canlı &amp; aktif vitrinde</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <Crown className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div 
+            onClick={() => setFilter('suresi_doldu')} 
+            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg ${
+              filter === 'suresi_doldu' ? 'border-amber-500/50 ring-1 ring-amber-500/20' : 'border-slate-800/80'
+            }`}
+          >
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 font-heading">Süresi Dolan</span>
+              <span className="font-black text-xl sm:text-2xl text-amber-400 font-heading mt-0.5">{expiredCount}</span>
+              <span className="text-[10px] text-slate-500">Yenileme bekleyen</span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* ── 2. FILTER TABS & SEARCH & SORT CONTROLS ──────────────── */}
-      <div className="flex flex-col gap-2.5 p-3 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg">
+      <div className="flex flex-col gap-2.5 p-3 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-lg">
         {/* Filter Tabs */}
-        <div className="p-1 rounded-xl bg-[#0d1117] border border-[#30363d]/60 flex items-center gap-1 overflow-x-auto no-scrollbar">
+        <div className="p-1 rounded-xl bg-[#070a0f] border border-slate-800/60 flex items-center gap-1 overflow-x-auto no-scrollbar">
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-900'
               }`}
           >
             <span>Tüm İlanlar</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#161b22] text-amber-400'}`}>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0c1017] text-amber-400'}`}>
               {listings.length}
             </span>
           </button>
 
           <button
             onClick={() => setFilter('onay_bekliyor')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-900'
               }`}
           >
             <span>⏳ Onay Bekleyenler</span>
@@ -960,18 +1037,18 @@ export default function AdminListingsPage() {
 
           <button
             onClick={() => setFilter('yayinda')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'yayinda' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'yayinda' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-900'
               }`}
           >
             <span>🟢 Yayındakiler</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'yayinda' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#161b22] text-emerald-400'}`}>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'yayinda' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0c1017] text-emerald-400'}`}>
               {listings.filter((l) => l.status === 'yayinda' && (!l.paketBitisTarihi || new Date(l.paketBitisTarihi).getTime() >= Date.now())).length}
             </span>
           </button>
 
           <button
             onClick={() => setFilter('suresi_doldu')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'suresi_doldu' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'suresi_doldu' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-900'
               }`}
           >
             <span>⏰ Süresi Dolanlar</span>
@@ -987,18 +1064,18 @@ export default function AdminListingsPage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
           {/* Arama Kutusu */}
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="İlan ara: Model adı, şehir, ilçe, tel no veya kullanıcı..."
-              className="w-full pl-9 pr-8 py-2 text-xs bg-[#0d1117] border border-[#30363d] rounded-xl text-white placeholder:text-[#8b949e]/60 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full pl-9 pr-8 py-2 text-xs bg-[#070a0f] border border-slate-800 rounded-xl text-white placeholder:text-slate-400/60 focus:outline-none focus:border-amber-500 transition-colors"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-[#8b949e] hover:text-white hover:bg-[#21262d]"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-900"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -1007,19 +1084,19 @@ export default function AdminListingsPage() {
 
           {/* Sıralama Seçenekleri (Sorting Toolbar) */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
-            <div className="flex items-center gap-1.5 text-xs text-[#8b949e] font-heading font-semibold whitespace-nowrap">
+            <div className="flex items-center gap-1.5 text-xs text-slate-400 font-heading font-semibold whitespace-nowrap">
               <ArrowUpDown className="w-3.5 h-3.5 text-amber-400" />
               <span className="hidden lg:inline">Sırala:</span>
             </div>
 
             {/* Desktop / Tablet Quick Sort Pills */}
-            <div className="hidden sm:flex items-center gap-1 bg-[#0d1117] p-1 rounded-xl border border-[#30363d]/60">
+            <div className="hidden sm:flex items-center gap-1 bg-[#070a0f] p-1 rounded-xl border border-slate-800/60">
               <button
                 onClick={() => setSortBy('expiry_asc')}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
                   sortBy === 'expiry_asc'
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
                 title="Süresi en az kalan veya bitmiş ilanlar en üstte"
               >
@@ -1032,7 +1109,7 @@ export default function AdminListingsPage() {
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
                   sortBy === 'created_desc'
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
                 <Sparkles className="w-3 h-3" />
@@ -1044,7 +1121,7 @@ export default function AdminListingsPage() {
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
                   sortBy === 'city_asc'
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
                 <MapPin className="w-3 h-3" />
@@ -1056,7 +1133,7 @@ export default function AdminListingsPage() {
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
                   sortBy === 'views_desc'
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
                 <Flame className="w-3 h-3" />
@@ -1068,7 +1145,7 @@ export default function AdminListingsPage() {
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
                   sortBy === 'whatsapp_desc'
                     ? 'bg-amber-500 text-slate-950 shadow-sm'
-                    : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
                 <MessageCircle className="w-3 h-3" />
@@ -1081,7 +1158,7 @@ export default function AdminListingsPage() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full py-2 px-3 text-xs bg-[#0d1117] border border-[#30363d] rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
+                className="w-full py-2 px-3 text-xs bg-[#070a0f] border border-slate-800 rounded-xl text-white font-medium focus:outline-none focus:border-amber-500"
               >
                 <option value="expiry_asc">⏳ Az Zamanı Kalan (Önce Bitenler)</option>
                 <option value="created_desc">🆕 En Yeni Eklenen</option>
@@ -1093,7 +1170,7 @@ export default function AdminListingsPage() {
             </div>
 
             {/* Total Results Count Badge */}
-            <div className="hidden xl:flex items-center px-2.5 py-1 rounded-lg bg-[#0d1117] border border-[#30363d]/50 text-[11px] font-mono text-[#8b949e] whitespace-nowrap">
+            <div className="hidden xl:flex items-center px-2.5 py-1 rounded-lg bg-[#070a0f] border border-slate-800/50 text-[11px] font-mono text-slate-400 whitespace-nowrap">
               <span>Sonuç: <strong className="text-amber-400">{filteredListings.length}</strong> ilan</span>
             </div>
           </div>
@@ -1103,22 +1180,83 @@ export default function AdminListingsPage() {
       {/* ── 3. LISTINGS DISPLAY (MASAÜSTÜ İÇİN TABLO & MOBİL İÇİN NATIVE KARTLAR) ──────────────── */}
       <div>
         {loading ? (
-          <div className="p-12 text-center flex flex-col items-center justify-center gap-2 bg-[#161b22] rounded-2xl border border-[#30363d]">
-            <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
-            <span className="text-xs text-[#8b949e]">İlanlar yükleniyor...</span>
+          <div className="flex flex-col gap-4">
+            {/* KPI Cards Skeleton */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-24 rounded-2xl bg-[#0c1017] border border-slate-800/80 p-4 animate-pulse flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <div className="h-3 w-20 bg-slate-800 rounded" />
+                    <div className="w-8 h-8 rounded-xl bg-slate-800" />
+                  </div>
+                  <div className="h-7 w-16 bg-slate-700/60 rounded" />
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table Skeleton */}
+            <div className="hidden md:block rounded-2xl bg-[#0c1017] border border-slate-800/80 overflow-hidden shadow-xl">
+              <div className="p-4 bg-[#070a0f] border-b border-slate-800 flex items-center justify-between">
+                <div className="h-4 w-32 bg-slate-800 rounded animate-pulse" />
+                <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
+              </div>
+              <div className="p-4 space-y-3">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-16 rounded-xl bg-slate-900/40 border border-slate-800/50 animate-pulse flex items-center justify-between px-4 gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-slate-800 shrink-0" />
+                      <div className="space-y-1.5">
+                        <div className="h-4 w-36 bg-slate-700/60 rounded" />
+                        <div className="h-3 w-24 bg-slate-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="h-4 w-24 bg-slate-800 rounded hidden lg:block" />
+                    <div className="h-5 w-20 bg-slate-800 rounded" />
+                    <div className="h-4 w-28 bg-slate-800 rounded hidden xl:block" />
+                    <div className="flex gap-1.5">
+                      <div className="w-8 h-8 rounded-xl bg-slate-800" />
+                      <div className="w-8 h-8 rounded-xl bg-slate-800" />
+                      <div className="w-8 h-8 rounded-xl bg-slate-800" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Cards Skeleton */}
+            <div className="md:hidden flex flex-col gap-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-4 rounded-2xl bg-[#0c1017] border border-slate-800/80 animate-pulse flex flex-col gap-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-16 h-16 rounded-xl bg-slate-800 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-3/4 bg-slate-700/60 rounded" />
+                      <div className="h-3 w-1/2 bg-slate-800 rounded" />
+                      <div className="h-3 w-2/3 bg-slate-800 rounded" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5 p-2 rounded-xl bg-[#070a0f] border border-slate-800/80">
+                    {[1, 2, 3, 4].map((j) => (
+                      <div key={j} className="h-8 bg-slate-800/60 rounded" />
+                    ))}
+                  </div>
+                  <div className="h-9 w-full bg-slate-800 rounded-xl" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : filteredListings.length === 0 ? (
-          <div className="p-10 text-center text-xs text-[#8b949e] bg-[#161b22] rounded-2xl border border-[#30363d]">
+          <div className="p-10 text-center text-xs text-slate-400 bg-[#0c1017] rounded-2xl border border-slate-800">
             Bu filtreye uygun ilan bulunamadı.
           </div>
         ) : (
           <>
             {/* ── MASAÜSTÜ PROFESYONEL VERİ TABLOSU (DESKTOP DATA TABLE - md & üstü) ──────────────── */}
-            <div className="hidden md:block w-full overflow-hidden rounded-2xl bg-[#161b22] border border-[#30363d] shadow-2xl">
+            <div className="hidden md:block w-full overflow-hidden rounded-2xl bg-[#0c1017] border border-slate-800 shadow-2xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-[#1a202c] border-b border-[#30363d] text-[11px] font-black uppercase text-[#8b949e] font-heading tracking-wider">
+                    <tr className="bg-[#070a0f] border-b border-slate-800 text-[11px] font-black uppercase text-slate-400 font-heading tracking-wider">
                       <th className="py-3.5 px-4">İlan / Model</th>
                       <th className="py-3.5 px-3">Konum &amp; Bölge</th>
                       <th className="py-3.5 px-3">Rozet &amp; Durum</th>
@@ -1128,7 +1266,7 @@ export default function AdminListingsPage() {
                       <th className="py-3.5 px-4 text-right">Yönetim &amp; Aksiyonlar</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#30363d]/50 text-xs">
+                  <tbody className="divide-y divide-slate-800/50 text-xs">
                     {filteredListings.map((item) => {
                       const remaining = getRemainingTime(item.paketBitisTarihi, item.status);
                       const isPending = item.status === 'onay_bekliyor';
@@ -1147,7 +1285,7 @@ export default function AdminListingsPage() {
                       return (
                         <tr
                           key={item._id}
-                          className={`hover:bg-[#1c232d] transition-colors group ${isPending ? 'bg-amber-500/[0.04]' : ''
+                          className={`hover:bg-slate-900/50 transition-colors group ${isPending ? 'bg-amber-500/[0.04]' : ''
                             }`}
                         >
                           {/* İlan & Thumbnail */}
@@ -1155,7 +1293,7 @@ export default function AdminListingsPage() {
                             <div className="flex items-center gap-3">
                               <div
                                 onClick={() => handleOpenInspect(item)}
-                                className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117] cursor-pointer group/thumb shadow-sm"
+                                className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-700/80 bg-[#070a0f] cursor-pointer group/thumb shadow-sm"
                                 title="Büyük boyutta incele"
                               >
                                 <Image
@@ -1178,7 +1316,7 @@ export default function AdminListingsPage() {
                                 >
                                   {item.baslik}
                                 </span>
-                                <div className="flex items-center gap-1.5 text-[10px] text-[#8b949e] font-mono mt-0.5">
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono mt-0.5">
                                   <span>#{item._id.slice(-6)}</span>
                                   {item.createdAt && (
                                     <>
@@ -1252,14 +1390,14 @@ export default function AdminListingsPage() {
                                   <span>{item.kullaniciAdi}</span>
                                 </span>
                               ) : (
-                                <span className="text-[#8b949e] text-[10px] font-mono">@sahipsiz</span>
+                                <span className="text-slate-400 text-[10px] font-mono">@sahipsiz</span>
                               )}
                               <span className="text-white font-mono font-bold flex items-center gap-1">
                                 <Phone className="w-3 h-3 text-emerald-400" />
                                 <span>{item.whatsappNumara}</span>
                               </span>
                               {item.panelSifresi && (
-                                <span className="px-1.5 py-0.2 rounded bg-[#0d1117] text-amber-300 font-mono font-bold border border-amber-500/30 w-fit text-[10px]">
+                                <span className="px-1.5 py-0.2 rounded bg-[#070a0f] text-amber-300 font-mono font-bold border border-amber-500/30 w-fit text-[10px]">
                                   🔑 {item.panelSifresi}
                                 </span>
                               )}
@@ -1313,7 +1451,7 @@ export default function AdminListingsPage() {
                               ) : (
                                 <button
                                   onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                                  className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 border border-[#30363d] text-xs transition-all"
+                                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border border-slate-800 text-xs transition-all"
                                   title="İlanı Durdur / Beklemeye Al"
                                 >
                                   <Clock className="w-4 h-4" />
@@ -1323,7 +1461,7 @@ export default function AdminListingsPage() {
                               {/* İncele */}
                               <button
                                 onClick={() => handleOpenInspect(item)}
-                                className="p-2 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-[#30363d] transition-all"
+                                className="p-2 rounded-xl bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-slate-800 transition-all"
                                 title="Detaylı Önizleme & İnceleme"
                               >
                                 <Eye className="w-4 h-4" />
@@ -1332,7 +1470,7 @@ export default function AdminListingsPage() {
                               {/* Düzenle */}
                               <button
                                 onClick={() => handleOpenEdit(item)}
-                                className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-300 border border-[#30363d] transition-all"
+                                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800 transition-all"
                                 title="İlanı Düzenle"
                               >
                                 <Edit3 className="w-4 h-4" />
@@ -1360,7 +1498,7 @@ export default function AdminListingsPage() {
                               <Link
                                 href={`/ilan/${item.slug}`}
                                 target="_blank"
-                                className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white border border-[#30363d] transition-all"
+                                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all"
                                 title="Canlı İlan Sayfasını Aç"
                               >
                                 <ExternalLink className="w-4 h-4" />
@@ -1394,9 +1532,9 @@ export default function AdminListingsPage() {
                 return (
                   <div
                     key={item._id}
-                    className={`p-3 sm:p-4 rounded-2xl bg-[#161b22] border transition-all flex flex-col gap-3 shadow-lg ${isPending
+                    className={`p-3 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all flex flex-col gap-3 shadow-lg ${isPending
                         ? 'border-amber-500/60 shadow-amber-500/5 bg-gradient-to-b from-[#1c1811] to-[#161b22]'
-                        : 'border-[#30363d] hover:border-[#3d444d]'
+                        : 'border-slate-800 hover:border-slate-700'
                       }`}
                   >
                     {/* ── KART ÜST BİLGİ ALANI ──────────────── */}
@@ -1404,7 +1542,7 @@ export default function AdminListingsPage() {
                       {/* Thumbnail */}
                       <div
                         onClick={() => handleOpenInspect(item)}
-                        className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-[#363b42] bg-[#0d1117] cursor-pointer group shadow-md"
+                        className="relative w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-slate-700/80 bg-[#070a0f] cursor-pointer group shadow-md"
                         title="Büyük boyutta incele"
                       >
                         <Image
@@ -1448,7 +1586,7 @@ export default function AdminListingsPage() {
                             <MapPin className="w-3 h-3 shrink-0" />
                             <span>{item.ilSlug} / {item.ilceSlug}</span>
                           </span>
-                          <span className="text-[#8b949e]">•</span>
+                          <span className="text-slate-400">•</span>
                           <span className="text-emerald-400 font-mono flex items-center gap-1">
                             <Clock className="w-3 h-3 shrink-0" />
                             <span>{remaining.text}</span>
@@ -1456,7 +1594,7 @@ export default function AdminListingsPage() {
                         </div>
 
                         {/* İletişim, Tarih, Kullanıcı & Şifre Çipleri */}
-                        <div className="flex items-center gap-2 text-[11px] text-[#8b949e] flex-wrap mt-0.5">
+                        <div className="flex items-center gap-2 text-[11px] text-slate-400 flex-wrap mt-0.5">
                           {item.kullaniciAdi && (
                             <span className="px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 font-mono font-bold text-[10px] border border-amber-500/30 flex items-center gap-1">
                               <AtSign className="w-2.5 h-2.5 text-amber-400" />
@@ -1468,13 +1606,13 @@ export default function AdminListingsPage() {
                             <span>{item.whatsappNumara}</span>
                           </span>
                           {item.createdAt && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-slate-300 font-mono text-[10px] border border-[#30363d] flex items-center gap-1">
+                            <span className="px-1.5 py-0.5 rounded-md bg-[#070a0f] text-slate-300 font-mono text-[10px] border border-slate-800 flex items-center gap-1">
                               <Calendar className="w-2.5 h-2.5 text-blue-400" />
                               <span>Ekleme: {new Date(item.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                             </span>
                           )}
                           {item.panelSifresi && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-amber-300 font-mono font-bold border border-amber-500/30 flex items-center gap-1">
+                            <span className="px-1.5 py-0.5 rounded-md bg-[#070a0f] text-amber-300 font-mono font-bold border border-amber-500/30 flex items-center gap-1">
                               <KeyRound className="w-2.5 h-2.5 text-amber-400" />
                               <span>Şifre: {item.panelSifresi}</span>
                             </span>
@@ -1496,9 +1634,9 @@ export default function AdminListingsPage() {
                       const conversion = hits > 0 ? ((clicks / hits) * 100).toFixed(1) : '0.0';
 
                       return (
-                        <div className="grid grid-cols-4 gap-1.5 p-2 rounded-xl bg-[#0d1117] border border-[#30363d]/80 text-center font-mono text-[11px]">
+                        <div className="grid grid-cols-4 gap-1.5 p-2 rounded-xl bg-[#070a0f] border border-slate-800/80 text-center font-mono text-[11px]">
                           <div className="flex flex-col items-center">
-                            <span className="text-[9px] text-[#8b949e] uppercase font-sans font-bold">Hit</span>
+                            <span className="text-[9px] text-slate-400 uppercase font-sans font-bold">Hit</span>
                             <span className="font-bold text-white mt-0.5 flex items-center gap-0.5">
                               <Eye className="w-2.5 h-2.5 text-amber-400" />
                               <span>{hits.toLocaleString('tr-TR')}</span>
@@ -1530,7 +1668,7 @@ export default function AdminListingsPage() {
                     })()}
 
                     {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (2 SATIRLI DÜZEN) ──────────────── */}
-                    <div className="flex flex-col gap-1.5 border-t border-[#30363d]/60 pt-2.5">
+                    <div className="flex flex-col gap-1.5 border-t border-slate-800/60 pt-2.5">
                       {/* Satır 1: Ana Operasyon Butonları */}
                       <div className="flex items-center gap-1.5">
                         {/* Onayla / Beklemeye Al */}
@@ -1545,7 +1683,7 @@ export default function AdminListingsPage() {
                         ) : (
                           <button
                             onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                            className="py-2 px-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-amber-400 font-bold text-xs border border-[#30363d] transition-colors"
+                            className="py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 font-bold text-xs border border-slate-800 transition-colors"
                             title="İlanı beklemeye al"
                           >
                             <span>Durdur</span>
@@ -1556,7 +1694,7 @@ export default function AdminListingsPage() {
                         <button
                           onClick={() => handleOpenInspect(item)}
                           className={`py-2 px-3 rounded-xl text-xs font-heading font-black border flex items-center justify-center gap-1.5 transition-all active:scale-95 ${isPending
-                              ? 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border-[#30363d]'
+                              ? 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-slate-800'
                               : 'flex-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30'
                             }`}
                         >
@@ -1567,7 +1705,7 @@ export default function AdminListingsPage() {
                         {/* Düzenle */}
                         <button
                           onClick={() => handleOpenEdit(item)}
-                          className="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 border border-[#30363d] text-xs font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
+                          className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 text-xs font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">Düzenle</span>
@@ -1609,7 +1747,7 @@ export default function AdminListingsPage() {
                         <Link
                           href={`/ilan/${item.slug}`}
                           target="_blank"
-                          className="py-1.5 px-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-cyan-400 border border-[#30363d] text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          className="py-1.5 px-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-slate-800 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
                           title="Canlı İlan Sayfasını Aç"
                         >
                           <ExternalLink className="w-3 h-3 shrink-0" />
@@ -1619,7 +1757,7 @@ export default function AdminListingsPage() {
                         {/* Sil */}
                         <button
                           onClick={() => handleDelete(item._id)}
-                          className="py-1.5 px-1.5 rounded-xl bg-[#21262d] hover:bg-red-500/20 text-[#8b949e] hover:text-red-400 border border-[#30363d] hover:border-red-500/40 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          className="py-1.5 px-1.5 rounded-xl bg-slate-900 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-500/40 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
                           title="İlanı Sil"
                         >
                           <Trash2 className="w-3 h-3 shrink-0" />
@@ -1638,9 +1776,9 @@ export default function AdminListingsPage() {
       {/* ── 4. FULL EDITING MODAL (MOBİL UYUMLU) ──────────────── */}
       {editingItem && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
-          <div className="w-full max-w-2xl bg-[#161b22] border border-[#30363d] rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[92vh] overflow-y-auto">
+          <div className="w-full max-w-2xl bg-[#0c1017] border border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[92vh] overflow-y-auto">
 
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex flex-col min-w-0">
                 <h2 className="font-heading font-black text-base sm:text-lg text-white flex items-center gap-2 truncate">
                   <Edit3 className="w-4 h-4 text-amber-400 shrink-0" />
@@ -1653,7 +1791,7 @@ export default function AdminListingsPage() {
 
               <button
                 onClick={() => setEditingItem(null)}
-                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0"
+                className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-white shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1662,7 +1800,7 @@ export default function AdminListingsPage() {
             <form onSubmit={handleSaveEdit} className="flex flex-col gap-4">
 
               {/* Photo Management Section */}
-              <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-2.5">
+              <div className="p-3 sm:p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5" />
@@ -1689,7 +1827,7 @@ export default function AdminListingsPage() {
                     return (
                       <div
                         key={idx}
-                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-28 sm:h-32 bg-[#161b22] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-[#30363d]'
+                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-28 sm:h-32 bg-[#0c1017] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/20' : 'border-slate-800'
                           }`}
                       >
                         <img src={url} alt={`Resim ${idx}`} className="absolute inset-0 w-full h-full object-cover z-0" />
@@ -1705,7 +1843,7 @@ export default function AdminListingsPage() {
                             <button
                               type="button"
                               onClick={() => setCoverPhotoIdx(idx)}
-                              className="px-1.5 py-0.5 rounded bg-[#161b22]/90 text-amber-400 font-bold text-[9px] hover:bg-amber-500 hover:text-slate-950"
+                              className="px-1.5 py-0.5 rounded bg-[#0c1017]/90 text-amber-400 font-bold text-[9px] hover:bg-amber-500 hover:text-slate-950"
                             >
                               Kapak Yap
                             </button>
@@ -1728,37 +1866,37 @@ export default function AdminListingsPage() {
 
               {/* Title & Description */}
               <div className="grid grid-cols-1 gap-3">
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   İlan Başlığı *
                   <input
                     type="text"
                     required
                     value={editForm.baslik}
                     onChange={(e) => setEditForm({ ...editForm, baslik: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   Detaylı İlan Açıklaması *
                   <textarea
                     rows={3}
                     required
                     value={editForm.aciklama}
                     onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
               {/* Tier & Status */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   Vitrin Kademe Rozeti *
                   <select
                     value={editForm.rozet}
                     onChange={(e) => setEditForm({ ...editForm, rozet: e.target.value })}
-                    className="px-3 py-2.5 rounded-xl bg-[#21262d] border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2.5 rounded-xl bg-slate-900 border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   >
                     <option value="vip">👑 VIP Vitrin</option>
                     <option value="gold">🥇 Gold Vitrin</option>
@@ -1766,12 +1904,12 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   Yayın Durumu *
                   <select
                     value={editForm.status}
                     onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    className="px-3 py-2.5 rounded-xl bg-[#21262d] border border-emerald-500/50 text-emerald-400 font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2.5 rounded-xl bg-slate-900 border border-emerald-500/50 text-emerald-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   >
                     <option value="yayinda">✅ Yayında</option>
                     <option value="onay_bekliyor">⏳ Onay Bekliyor</option>
@@ -1782,17 +1920,17 @@ export default function AdminListingsPage() {
 
               {/* Panel Şifresi & Kullanıcı Hesabı Eşleştirme */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   Özel Panel Şifresi
                   <input
                     type="text"
                     value={editForm.panelSifresi}
                     onChange={(e) => setEditForm({ ...editForm, panelSifresi: e.target.value })}
-                    className="px-3.5 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-amber-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   Bağlı Kullanıcı Hesabı
                   <select
                     value={editForm.kullaniciId}
@@ -1805,7 +1943,7 @@ export default function AdminListingsPage() {
                         ...(u?.sifreHash ? { panelSifresi: u.sifreHash } : {}),
                       });
                     }}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     <option value="">-- Bağımsız İlan --</option>
                     {systemUsers.map((u) => (
@@ -1818,7 +1956,7 @@ export default function AdminListingsPage() {
               </div>
 
               {/* VIP Model Profil Bilgileri */}
-              <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-amber-500/40 flex flex-col gap-2.5">
+              <div className="p-3 sm:p-4 rounded-xl bg-[#070a0f] border border-amber-500/40 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5">
                     <Crown className="w-3.5 h-3.5" />
@@ -1837,24 +1975,24 @@ export default function AdminListingsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
+                  <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
                     Model Sahne / Tam Adı
                     <input
                       type="text"
                       placeholder="Örn: Merve Özdemir"
                       value={editForm.tamAd}
                       onChange={(e) => setEditForm({ ...editForm, tamAd: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
+                      className="px-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400 font-bold"
                     />
                   </label>
 
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
+                  <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
                     👍 Like Sayısı
                     <input
                       type="number"
                       value={editForm.likeSayisi}
                       onChange={(e) => setEditForm({ ...editForm, likeSayisi: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#161b22] border border-blue-500/40 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
+                      className="px-3 py-2 rounded-xl bg-[#0c1017] border border-blue-500/40 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
                     />
                   </label>
                 </div>
@@ -1862,7 +2000,7 @@ export default function AdminListingsPage() {
 
               {/* Location & WhatsApp */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   İl Seçin *
                   <select
                     value={editForm.ilSlug}
@@ -1875,7 +2013,7 @@ export default function AdminListingsPage() {
                         ilceSlug: prov?.ilceler[0]?.slug || 'merkez',
                       });
                     }}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     {turkeyProvinces.map((p) => (
                       <option key={p.ilSlug} value={p.ilSlug}>{p.il}</option>
@@ -1883,12 +2021,12 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   İlçe Seçin *
                   <select
                     value={editForm.ilceSlug}
                     onChange={(e) => setEditForm({ ...editForm, ilceSlug: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     {selectedProvince.ilceler.map((d) => (
                       <option key={d.slug} value={d.slug}>{d.ad}</option>
@@ -1896,24 +2034,24 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   WhatsApp Numarası *
                   <input
                     type="text"
                     required
                     value={editForm.whatsappNumara}
                     onChange={(e) => setEditForm({ ...editForm, whatsappNumara: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  className="px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white text-xs font-bold"
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold"
                 >
                   İptal
                 </button>
@@ -1949,10 +2087,10 @@ export default function AdminListingsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-4xl bg-[#161b22] border-2 border-amber-500/50 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-4 shadow-2xl max-h-[92vh] overflow-y-auto"
+            className="w-full max-w-4xl bg-[#0c1017] border-2 border-amber-500/50 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-4 shadow-2xl max-h-[92vh] overflow-y-auto"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3 gap-2">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-black shrink-0">
                   <Eye className="w-5 h-5" />
@@ -1967,7 +2105,7 @@ export default function AdminListingsPage() {
                       {inspectItem.status === 'yayinda' ? '🟢 Yayında' : '⏳ Onay Bekliyor'}
                     </span>
                   </div>
-                  <span className="text-[10px] text-[#8b949e] truncate">
+                  <span className="text-[10px] text-slate-400 truncate">
                     📍 {inspectItem.ilSlug} / {inspectItem.ilceSlug} • {new Date(inspectItem.createdAt).toLocaleDateString('tr-TR')}
                   </span>
                 </div>
@@ -1975,7 +2113,7 @@ export default function AdminListingsPage() {
 
               <button
                 onClick={() => setInspectItem(null)}
-                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0"
+                className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-white shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1984,13 +2122,13 @@ export default function AdminListingsPage() {
             {inspectLoading ? (
               <div className="py-12 text-center flex flex-col items-center justify-center gap-2">
                 <Loader2 className="w-7 h-7 text-amber-400 animate-spin" />
-                <span className="text-xs text-[#8b949e]">Yükleniyor...</span>
+                <span className="text-xs text-slate-400">Yükleniyor...</span>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
 
                 {/* 1. Fotoğraf Galerisi & Büyük Önizleme */}
-                <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-2.5">
+                <div className="p-3 sm:p-4 rounded-xl bg-[#070a0f] border border-amber-500/30 flex flex-col gap-2.5">
                   {(() => {
                     const photos = inspectItem.fotograflar && inspectItem.fotograflar.length > 0
                       ? inspectItem.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url))
@@ -1999,7 +2137,7 @@ export default function AdminListingsPage() {
 
                     return (
                       <div className="flex flex-col gap-2.5">
-                        <div className="relative w-full h-56 sm:h-80 rounded-xl overflow-hidden bg-black/80 border border-[#30363d] flex items-center justify-center group">
+                        <div className="relative w-full h-56 sm:h-80 rounded-xl overflow-hidden bg-black/80 border border-slate-800 flex items-center justify-center group">
                           <img
                             src={currentMainUrl}
                             alt="Önizleme"
@@ -2023,7 +2161,7 @@ export default function AdminListingsPage() {
                               <button
                                 key={idx}
                                 onClick={() => setInspectActivePhotoIdx(idx)}
-                                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${idx === inspectActivePhotoIdx ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30' : 'border-[#30363d] opacity-70'
+                                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${idx === inspectActivePhotoIdx ? 'border-amber-400 scale-105 shadow-md shadow-amber-500/30' : 'border-slate-800 opacity-70'
                                   }`}
                               >
                                 <img src={url} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
@@ -2043,14 +2181,14 @@ export default function AdminListingsPage() {
 
                 {/* 2. İletişim, Güvenlik ve Biyografi */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-[#21262d] border border-[#363b42] flex flex-col gap-2">
+                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-700/80 flex flex-col gap-2">
                     <span className="text-[11px] font-black text-amber-400 font-heading uppercase flex items-center gap-1 border-b border-white/10 pb-1.5">
                       <ShieldCheck className="w-3.5 h-3.5" />
                       <span>İletişim &amp; Güvenlik</span>
                     </span>
 
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#161b22] border border-[#30363d]">
-                      <span className="text-[#8b949e]">WhatsApp:</span>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#0c1017] border border-slate-800">
+                      <span className="text-slate-400">WhatsApp:</span>
                       <a
                         href={`https://wa.me/${(inspectItem.whatsappNumara || '').replace(/\D/g, '')}`}
                         target="_blank"
@@ -2062,35 +2200,35 @@ export default function AdminListingsPage() {
                       </a>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#161b22] border border-[#30363d]">
-                      <span className="text-[#8b949e]">Panel Şifresi:</span>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#0c1017] border border-slate-800">
+                      <span className="text-slate-400">Panel Şifresi:</span>
                       <span className="font-mono font-bold text-amber-400">
                         {inspectItem.panelSifresi || 'Tanımlı Değil'}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#161b22] border border-[#30363d]">
-                      <span className="text-[#8b949e]">Kalan Süre:</span>
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-[#0c1017] border border-slate-800">
+                      <span className="text-slate-400">Kalan Süre:</span>
                       <span className="font-mono font-bold text-emerald-400">
                         {getRemainingTime(inspectItem.paketBitisTarihi, inspectItem.status).text}
                       </span>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#21262d] border border-[#363b42] flex flex-col gap-2">
+                  <div className="p-3 rounded-xl bg-slate-900 border border-slate-700/80 flex flex-col gap-2">
                     <span className="text-[11px] font-black text-amber-400 font-heading uppercase flex items-center gap-1 border-b border-white/10 pb-1.5">
                       <Crown className="w-3.5 h-3.5" />
                       <span>Model Detayları</span>
                     </span>
 
                     <div className="flex items-center justify-between">
-                      <span className="text-[#8b949e]">Sahne Adı:</span>
+                      <span className="text-slate-400">Sahne Adı:</span>
                       <span className="font-bold text-white">{inspectItem.tamAd || 'Belirtilmedi'}</span>
                     </div>
 
                     <div className="flex flex-col gap-1 mt-1">
-                      <span className="text-[#8b949e]">Açıklama:</span>
-                      <div className="p-2 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-[11px] leading-relaxed max-h-20 overflow-y-auto whitespace-pre-wrap">
+                      <span className="text-slate-400">Açıklama:</span>
+                      <div className="p-2 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-[11px] leading-relaxed max-h-20 overflow-y-auto whitespace-pre-wrap">
                         {inspectItem.aciklama || 'Açıklama bulunmuyor.'}
                       </div>
                     </div>
@@ -2111,7 +2249,7 @@ export default function AdminListingsPage() {
                     : '5.0';
 
                   return (
-                    <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-3">
+                    <div className="p-3 sm:p-4 rounded-xl bg-[#070a0f] border border-amber-500/30 flex flex-col gap-3">
                       <div className="flex items-center justify-between border-b border-white/10 pb-2">
                         <span className="text-xs font-black text-amber-400 font-heading uppercase flex items-center gap-1.5">
                           <BarChart3 className="w-4 h-4" />
@@ -2123,8 +2261,8 @@ export default function AdminListingsPage() {
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center font-mono">
-                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col items-center">
-                          <span className="text-[10px] text-[#8b949e] uppercase font-sans font-bold flex items-center gap-1">
+                        <div className="p-2.5 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col items-center">
+                          <span className="text-[10px] text-slate-400 uppercase font-sans font-bold flex items-center gap-1">
                             <Eye className="w-3 h-3 text-amber-400" />
                             <span>Görüntülenme</span>
                           </span>
@@ -2133,8 +2271,8 @@ export default function AdminListingsPage() {
                           </span>
                         </div>
 
-                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col items-center">
-                          <span className="text-[10px] text-[#8b949e] uppercase font-sans font-bold flex items-center gap-1">
+                        <div className="p-2.5 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col items-center">
+                          <span className="text-[10px] text-slate-400 uppercase font-sans font-bold flex items-center gap-1">
                             <Users className="w-3 h-3 text-blue-400" />
                             <span>Tekil Ziyaretçi</span>
                           </span>
@@ -2143,7 +2281,7 @@ export default function AdminListingsPage() {
                           </span>
                         </div>
 
-                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col items-center">
+                        <div className="p-2.5 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col items-center">
                           <span className="text-[10px] text-emerald-400 uppercase font-sans font-bold flex items-center gap-1">
                             <Phone className="w-3 h-3" />
                             <span>WP Tıklaması</span>
@@ -2153,7 +2291,7 @@ export default function AdminListingsPage() {
                           </span>
                         </div>
 
-                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col items-center">
+                        <div className="p-2.5 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col items-center">
                           <span className="text-[10px] text-cyan-400 uppercase font-sans font-bold flex items-center gap-1">
                             <TrendingUp className="w-3 h-3" />
                             <span>Dönüşüm Oranı</span>
@@ -2163,7 +2301,7 @@ export default function AdminListingsPage() {
                           </span>
                         </div>
 
-                        <div className="p-2.5 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col items-center col-span-2 sm:col-span-1">
+                        <div className="p-2.5 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col items-center col-span-2 sm:col-span-1">
                           <span className="text-[10px] text-amber-400 uppercase font-sans font-bold flex items-center gap-1">
                             <Star className="w-3 h-3 fill-amber-400" />
                             <span>Yorum &amp; Beğeni</span>
@@ -2178,7 +2316,7 @@ export default function AdminListingsPage() {
                 })()}
 
                 {/* 4. Kullanıcı Yorumları & Moderasyon Masası */}
-                <div className="p-3 sm:p-4 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3">
+                <div className="p-3 sm:p-4 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col gap-3">
                   <div className="flex items-center justify-between border-b border-white/10 pb-2">
                     <div className="flex items-center gap-2">
                       <MessageSquare className="w-4 h-4 text-amber-400" />
@@ -2192,7 +2330,7 @@ export default function AdminListingsPage() {
                   </div>
 
                   {(!inspectItem.anonimYorumlar || inspectItem.anonimYorumlar.length === 0) ? (
-                    <div className="p-4 rounded-xl bg-[#0d1117] border border-[#30363d]/60 text-center text-xs text-[#8b949e]">
+                    <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800/60 text-center text-xs text-slate-400">
                       Bu ilana ait henüz kullanıcı yorumu bulunmuyor.
                     </div>
                   ) : (
@@ -2202,7 +2340,7 @@ export default function AdminListingsPage() {
                         return (
                           <div
                             key={c._id || idx}
-                            className="p-3 rounded-xl bg-[#0d1117] border border-[#30363d]/80 flex flex-col gap-1.5 text-xs shadow-sm group hover:border-amber-500/30 transition-all"
+                            className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col gap-1.5 text-xs shadow-sm group hover:border-amber-500/30 transition-all"
                           >
                             <div className="flex items-center justify-between gap-2 flex-wrap">
                               <div className="flex items-center gap-2">
@@ -2218,14 +2356,14 @@ export default function AdminListingsPage() {
                                   ))}
                                 </div>
                                 {c.userIp && (
-                                  <span className="px-1.5 py-0.2 rounded bg-[#161b22] text-[#8b949e] font-mono text-[9px] border border-[#30363d]" title="Yorum IP Adresi">
+                                  <span className="px-1.5 py-0.2 rounded bg-[#0c1017] text-slate-400 font-mono text-[9px] border border-slate-800" title="Yorum IP Adresi">
                                     🌐 {c.userIp}
                                   </span>
                                 )}
                               </div>
 
                               <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-[#8b949e] font-mono">
+                                <span className="text-[10px] text-slate-400 font-mono">
                                   {c.createdAt ? new Date(c.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Yeni'}
                                 </span>
                                 {c._id && (
@@ -2251,12 +2389,12 @@ export default function AdminListingsPage() {
                 </div>
 
                 {/* 5. Modal Alt Moderasyon Aksiyonları */}
-                <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#30363d] flex-wrap">
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-800 flex-wrap">
                   <div className="flex items-center gap-1.5 flex-1 sm:flex-none">
                     <Link
                       href={`/ilan/${inspectItem.slug}`}
                       target="_blank"
-                      className="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-cyan-300 font-bold text-xs border border-[#363b42] flex items-center gap-1 transition-colors"
+                      className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 font-bold text-xs border border-slate-700/80 flex items-center gap-1 transition-colors"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                       <span>Sitede Gör</span>
@@ -2268,7 +2406,7 @@ export default function AdminListingsPage() {
                         setInspectItem(null);
                         handleOpenEdit(itemToEdit);
                       }}
-                      className="py-2 px-3 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 font-bold text-xs border border-[#363b42] flex items-center gap-1 transition-colors"
+                      className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold text-xs border border-slate-700/80 flex items-center gap-1 transition-colors"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                       <span>Düzenle</span>
@@ -2293,7 +2431,7 @@ export default function AdminListingsPage() {
                           await handleQuickStatusChange(inspectItem._id, 'onay_bekliyor');
                           setInspectItem((prev: any) => prev ? { ...prev, status: 'onay_bekliyor' } : null);
                         }}
-                        className="py-2 px-3 rounded-xl bg-[#21262d] text-[#8b949e] font-bold text-xs border border-[#363b42]"
+                        className="py-2 px-3 rounded-xl bg-slate-900 text-slate-400 font-bold text-xs border border-slate-700/80"
                       >
                         Beklemeye Al
                       </button>
@@ -2301,7 +2439,7 @@ export default function AdminListingsPage() {
 
                     <button
                       onClick={() => setInspectItem(null)}
-                      className="py-2 px-3 rounded-xl bg-[#21262d] text-white font-bold text-xs"
+                      className="py-2 px-3 rounded-xl bg-slate-900 text-white font-bold text-xs"
                     >
                       Kapat
                     </button>
@@ -2322,10 +2460,10 @@ export default function AdminListingsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-[#161b22] border-2 border-amber-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
+            className="w-full max-w-lg bg-[#0c1017] border-2 border-amber-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0">
                   <KeyRound className="w-4 h-4 stroke-[2.5]" />
@@ -2342,7 +2480,7 @@ export default function AdminListingsPage() {
 
               <button
                 onClick={() => setAssignModalItem(null)}
-                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white shrink-0"
+                className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-white shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2350,11 +2488,11 @@ export default function AdminListingsPage() {
 
             {/* Mode Switcher */}
             {!createdCredentials && (
-              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#0d1117] border border-[#30363d] text-xs font-heading">
+              <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#070a0f] border border-slate-800 text-xs font-heading">
                 <button
                   type="button"
                   onClick={() => setAssignMode('select')}
-                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'select' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-[#8b949e] hover:text-white'
+                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'select' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                     }`}
                 >
                   <Users className="w-3.5 h-3.5" />
@@ -2364,7 +2502,7 @@ export default function AdminListingsPage() {
                 <button
                   type="button"
                   onClick={() => setAssignMode('create')}
-                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'create' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-[#8b949e] hover:text-white'
+                  className={`py-2 px-2.5 rounded-lg font-black flex items-center justify-center gap-1.5 transition-all ${assignMode === 'create' ? 'bg-amber-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white'
                     }`}
                 >
                   <UserPlus className="w-3.5 h-3.5" />
@@ -2381,7 +2519,7 @@ export default function AdminListingsPage() {
                   <span>Hesap Başarıyla Oluşturuldu!</span>
                 </div>
 
-                <div className="p-3 rounded-lg bg-[#0d1117] border border-[#30363d] font-mono text-xs text-[#c9d1d9] flex flex-col gap-1 select-all">
+                <div className="p-3 rounded-lg bg-[#070a0f] border border-slate-800 font-mono text-xs text-[#c9d1d9] flex flex-col gap-1 select-all">
                   <div><strong className="text-amber-400 font-heading">Panel:</strong> /panelim</div>
                   <div><strong className="text-amber-400 font-heading">Kullanıcı Adı:</strong> {createdCredentials.username}</div>
                   <div><strong className="text-amber-400 font-heading">Şifre:</strong> {createdCredentials.pass}</div>
@@ -2411,7 +2549,7 @@ export default function AdminListingsPage() {
 
                   <button
                     onClick={() => setAssignModalItem(null)}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] text-white font-bold text-xs font-heading"
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-900 text-white font-bold text-xs font-heading"
                   >
                     Kapat
                   </button>
@@ -2421,24 +2559,24 @@ export default function AdminListingsPage() {
               /* Mevcut Kullanıcı Listesi */
               <div className="flex flex-col gap-2.5 text-xs font-heading">
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                   <input
                     type="text"
                     placeholder="Kullanıcı adı veya telefon ara..."
                     value={userSearchTerm}
                     onChange={(e) => setUserSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto pr-1">
                   {usersLoading ? (
-                    <div className="p-4 text-center text-[#8b949e]">
+                    <div className="p-4 text-center text-slate-400">
                       <Loader2 className="w-4 h-4 text-amber-400 animate-spin mx-auto mb-1" />
                       Yükleniyor...
                     </div>
                   ) : systemUsers.length === 0 ? (
-                    <div className="p-3 text-center text-[#8b949e] bg-[#0d1117] rounded-xl border border-[#30363d]">
+                    <div className="p-3 text-center text-slate-400 bg-[#070a0f] rounded-xl border border-slate-800">
                       Kayıtlı kullanıcı bulunamadı.
                     </div>
                   ) : (
@@ -2457,7 +2595,7 @@ export default function AdminListingsPage() {
                         return (
                           <div
                             key={u._id}
-                            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${isCurrentLinked ? 'bg-emerald-500/10 border-emerald-500/40 text-white' : 'bg-[#0d1117] border-[#30363d] text-white'
+                            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2 transition-all ${isCurrentLinked ? 'bg-emerald-500/10 border-emerald-500/40 text-white' : 'bg-[#070a0f] border-slate-800 text-white'
                               }`}
                           >
                             <div className="flex flex-col min-w-0">
@@ -2469,7 +2607,7 @@ export default function AdminListingsPage() {
                                   </span>
                                 )}
                               </span>
-                              <span className="text-[10px] text-[#8b949e] font-mono truncate">
+                              <span className="text-[10px] text-slate-400 font-mono truncate">
                                 📞 {u.telefon || 'Tel yok'}
                               </span>
                             </div>
@@ -2493,34 +2631,34 @@ export default function AdminListingsPage() {
               /* Yeni Kullanıcı Formu */
               <form onSubmit={handleCreateAndAssignUser} className="flex flex-col gap-3 text-xs font-heading">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[#8b949e] font-bold">Kullanıcı Adı</label>
+                  <label className="text-slate-400 font-bold">Kullanıcı Adı</label>
                   <input
                     type="text"
                     required
                     value={assignForm.kullaniciAdi}
                     onChange={(e) => setAssignForm({ ...assignForm, kullaniciAdi: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono focus:border-amber-400 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[#8b949e] font-bold">Şifre</label>
+                  <label className="text-slate-400 font-bold">Şifre</label>
                   <input
                     type="text"
                     required
                     value={assignForm.sifre}
                     onChange={(e) => setAssignForm({ ...assignForm, sifre: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-amber-400 font-mono font-bold text-xs focus:border-amber-400 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-amber-400 font-mono font-bold text-xs focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[#8b949e] font-bold">Telefon / WhatsApp</label>
+                  <label className="text-slate-400 font-bold">Telefon / WhatsApp</label>
                   <input
                     type="text"
                     value={assignForm.telefon}
                     onChange={(e) => setAssignForm({ ...assignForm, telefon: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
@@ -2556,10 +2694,10 @@ export default function AdminListingsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl bg-[#161b22] border-2 border-amber-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
+            className="w-full max-w-2xl bg-[#0c1017] border-2 border-amber-500/60 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0">
                   <Crown className="w-4 h-4 stroke-[2.5]" />
@@ -2576,7 +2714,7 @@ export default function AdminListingsPage() {
 
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="p-1.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
+                className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -2586,7 +2724,7 @@ export default function AdminListingsPage() {
 
               {/* Başlık & Model Sahne Adı */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   İlan Başlığı *
                   <input
                     type="text"
@@ -2594,11 +2732,11 @@ export default function AdminListingsPage() {
                     placeholder="Örn: Beylikdüzü VIP Merve"
                     value={createForm.baslik}
                     onChange={(e) => setCreateForm({ ...createForm, baslik: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   Model Sahne / Tam Adı *
                   <input
                     type="text"
@@ -2606,19 +2744,19 @@ export default function AdminListingsPage() {
                     placeholder="Örn: Merve Özdemir"
                     value={createForm.tamAd}
                     onChange={(e) => setCreateForm({ ...createForm, tamAd: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#21262d] border border-[#30363d] text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
               {/* Vitrin Paketi & Facebook Like & Şifre */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   Vitrin Rozeti *
                   <select
                     value={createForm.rozet}
                     onChange={(e) => setCreateForm({ ...createForm, rozet: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
                   >
                     <option value="vip">👑 VIP Vitrin</option>
                     <option value="gold">🥇 Gold Vitrin</option>
@@ -2626,30 +2764,30 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   👍 Başlangıç Like
                   <input
                     type="number"
                     value={createForm.likeSayisi}
                     onChange={(e) => setCreateForm({ ...createForm, likeSayisi: Number(e.target.value) })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-blue-500/50 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-blue-500/50 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
                   />
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   Panel Şifresi
                   <input
                     type="text"
                     value={createForm.panelSifresi}
                     onChange={(e) => setCreateForm({ ...createForm, panelSifresi: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-emerald-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-emerald-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
               {/* Konum & WhatsApp */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   İl Seçin *
                   <select
                     value={createForm.ilSlug}
@@ -2662,7 +2800,7 @@ export default function AdminListingsPage() {
                         ilceSlug: prov?.ilceler[0]?.slug || 'merkez',
                       });
                     }}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     {turkeyProvinces.map((p) => (
                       <option key={p.ilSlug} value={p.ilSlug}>{p.il}</option>
@@ -2670,12 +2808,12 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   İlçe Seçin *
                   <select
                     value={createForm.ilceSlug}
                     onChange={(e) => setCreateForm({ ...createForm, ilceSlug: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   >
                     {(turkeyProvinces.find((p) => p.ilSlug === createForm.ilSlug) || turkeyProvinces[0]).ilceler.map((d) => (
                       <option key={d.slug} value={d.slug}>{d.ad}</option>
@@ -2683,38 +2821,38 @@ export default function AdminListingsPage() {
                   </select>
                 </label>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                   WhatsApp Numarası *
                   <input
                     type="text"
                     required
                     value={createForm.whatsappNumara}
                     onChange={(e) => setCreateForm({ ...createForm, whatsappNumara: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                   />
                 </label>
               </div>
 
               {/* Biyografi */}
-              <label className="flex flex-col gap-1 text-xs font-bold text-[#f0f6fc]">
+              <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
                 Açıklama &amp; Biyografi
                 <textarea
                   rows={2}
                   placeholder="Hizmet tarzı, hijyen ve detaylar..."
                   value={createForm.aciklama}
                   onChange={(e) => setCreateForm({ ...createForm, aciklama: e.target.value })}
-                  className="px-3.5 py-2 rounded-xl bg-[#21262d] border border-[#30363d] text-white text-xs focus:outline-none focus:border-amber-400"
+                  className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
                 />
               </label>
 
               {/* Fotoğraf Yükleme Alanı */}
-              <div className="flex flex-col gap-2 p-3 rounded-xl bg-[#0d1117] border border-amber-500/30">
+              <div className="flex flex-col gap-2 p-3 rounded-xl bg-[#070a0f] border border-amber-500/30">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-amber-400 font-heading uppercase flex items-center gap-1">
                     <ImageIcon className="w-3.5 h-3.5" />
                     <span>Fotoğraflar ({createPhotoUrls.length})</span>
                   </span>
-                  <span className="text-[10px] text-[#8b949e]">JPG, PNG, WEBP</span>
+                  <span className="text-[10px] text-slate-400">JPG, PNG, WEBP</span>
                 </div>
 
                 <label className="relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed border-amber-500/40 hover:border-amber-400 bg-amber-500/5 cursor-pointer transition-all text-center gap-1">
@@ -2746,7 +2884,7 @@ export default function AdminListingsPage() {
                       return (
                         <div
                           key={idx}
-                          className={`relative aspect-square rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1 bg-[#161b22] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/30' : 'border-[#30363d]'
+                          className={`relative aspect-square rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1 bg-[#0c1017] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/30' : 'border-slate-800'
                             }`}
                         >
                           <img src={url} alt={`Foto ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover z-0" />
@@ -2762,7 +2900,7 @@ export default function AdminListingsPage() {
                               <button
                                 type="button"
                                 onClick={() => setCreateCoverIdx(idx)}
-                                className="px-1 py-0.2 rounded bg-[#161b22]/90 text-amber-400 font-bold text-[8px] hover:bg-amber-500 hover:text-slate-950"
+                                className="px-1 py-0.2 rounded bg-[#0c1017]/90 text-amber-400 font-bold text-[8px] hover:bg-amber-500 hover:text-slate-950"
                               >
                                 Kapak Yap
                               </button>
@@ -2789,7 +2927,7 @@ export default function AdminListingsPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="w-1/3 py-2.5 px-3 rounded-xl bg-[#21262d] text-white font-bold text-xs border border-[#30363d]"
+                  className="w-1/3 py-2.5 px-3 rounded-xl bg-slate-900 text-white font-bold text-xs border border-slate-800"
                 >
                   İptal
                 </button>
@@ -2818,9 +2956,9 @@ export default function AdminListingsPage() {
       {/* ── KULLANICI BAZLI TOPLU WHATSAPP NUMARASI GÜNCELLEME MODALI ──────────────── */}
       {showBulkPhoneModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-          <div className="w-full max-w-xl bg-[#161b22] border border-[#30363d] rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col gap-4 max-h-[92vh] overflow-y-auto">
+          <div className="w-full max-w-xl bg-[#0c1017] border border-slate-800 rounded-2xl shadow-2xl p-4 sm:p-6 flex flex-col gap-4 max-h-[92vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center shrink-0">
                   <Phone className="w-4 h-4" />
@@ -2829,7 +2967,7 @@ export default function AdminListingsPage() {
                   <h3 className="font-heading font-black text-sm sm:text-base text-white">
                     Toplu WhatsApp Numarası Güncelle
                   </h3>
-                  <span className="text-[10px] text-[#8b949e]">
+                  <span className="text-[10px] text-slate-400">
                     Kullanıcı seçin, o kullanıcının tüm ilanlarının numarasını tek seferde veya havuzdan dağıtın.
                   </span>
                 </div>
@@ -2837,7 +2975,7 @@ export default function AdminListingsPage() {
               <button
                 type="button"
                 onClick={() => setShowBulkPhoneModal(false)}
-                className="p-1.5 rounded-lg text-[#8b949e] hover:text-white hover:bg-[#21262d] transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -2859,7 +2997,7 @@ export default function AdminListingsPage() {
                 {/* Hızlı Seçim Hapları (İlanı Olan Kullanıcılar) */}
                 {userListingStats.length > 0 && (
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] text-[#8b949e]">Kayıtlı İlan Sahiplerinden Hızlı Seç:</span>
+                    <span className="text-[10px] text-slate-400">Kayıtlı İlan Sahiplerinden Hızlı Seç:</span>
                     <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
                       {userListingStats.slice(0, 20).map((stat) => {
                         const isSelected = bulkPhoneUser.toLowerCase() === stat.username.toLowerCase();
@@ -2871,11 +3009,11 @@ export default function AdminListingsPage() {
                             className={`px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0 transition-all flex items-center gap-1 border ${
                               isSelected
                                 ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-sm'
-                                : 'bg-[#0d1117] text-[#8b949e] hover:text-white border-[#30363d]'
+                                : 'bg-[#070a0f] text-slate-400 hover:text-white border-slate-800'
                             }`}
                           >
                             <span>@{stat.username}</span>
-                            <span className={`px-1 py-0.2 rounded-full text-[9px] ${isSelected ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-[#21262d] text-amber-400'}`}>
+                            <span className={`px-1 py-0.2 rounded-full text-[9px] ${isSelected ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-900 text-amber-400'}`}>
                               {stat.count}
                             </span>
                           </button>
@@ -2887,7 +3025,7 @@ export default function AdminListingsPage() {
 
                 {/* Manuel Kullanıcı Adı Girişi */}
                 <div className="relative">
-                  <AtSign className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
+                  <AtSign className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                   <input
                     type="text"
                     placeholder="veya kullanıcı adını elle yazın (örn: esra_vip)..."
@@ -2897,13 +3035,13 @@ export default function AdminListingsPage() {
                       setBulkPhoneUser(val);
                       fetchBulkUserPreview(val);
                     }}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-bold"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none font-bold"
                   />
                 </div>
 
                 {/* Kullanıcı İlan Önizleme Kartı */}
                 {bulkPreviewLoading ? (
-                  <div className="p-3 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center gap-2 text-[#8b949e]">
+                  <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800 flex items-center gap-2 text-slate-400">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-amber-400" />
                     <span>Kullanıcıya ait ilanlar taranıyor...</span>
                   </div>
@@ -2916,7 +3054,7 @@ export default function AdminListingsPage() {
                       </span>
                     </div>
                     {bulkPreviewData.currentNumbers.length > 0 && (
-                      <span className="text-[10px] text-[#8b949e] font-mono truncate">
+                      <span className="text-[10px] text-slate-400 font-mono truncate">
                         Şu Anki Numaralar: {bulkPreviewData.currentNumbers.join(', ')}
                       </span>
                     )}
@@ -2929,7 +3067,7 @@ export default function AdminListingsPage() {
               </div>
 
               {/* 2. NUMARA GİRİŞ MODU (TEKİL / HAVUZ) */}
-              <div className="flex flex-col gap-2 pt-1 border-t border-[#30363d]/60">
+              <div className="flex flex-col gap-2 pt-1 border-t border-slate-800/60">
                 <label className="text-white font-bold">2. Numaralandırma Yöntemi:</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -2938,7 +3076,7 @@ export default function AdminListingsPage() {
                     className={`p-2.5 rounded-xl border flex flex-col gap-0.5 text-left transition-all ${
                       bulkPhoneInputMode === 'single'
                         ? 'bg-amber-500/15 border-amber-500 text-amber-300 shadow-sm'
-                        : 'bg-[#0d1117] border-[#30363d] text-[#8b949e] hover:text-white'
+                        : 'bg-[#070a0f] border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
                     <span className="font-bold text-xs flex items-center gap-1.5">
@@ -2954,7 +3092,7 @@ export default function AdminListingsPage() {
                     className={`p-2.5 rounded-xl border flex flex-col gap-0.5 text-left transition-all ${
                       bulkPhoneInputMode === 'pool'
                         ? 'bg-amber-500/15 border-amber-500 text-amber-300 shadow-sm'
-                        : 'bg-[#0d1117] border-[#30363d] text-[#8b949e] hover:text-white'
+                        : 'bg-[#070a0f] border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
                     <span className="font-bold text-xs flex items-center gap-1.5">
@@ -2969,15 +3107,15 @@ export default function AdminListingsPage() {
               {/* Tek Numara Formu */}
               {bulkPhoneInputMode === 'single' ? (
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[#8b949e] font-bold">Yeni WhatsApp Numarası:</label>
+                  <label className="text-slate-400 font-bold">Yeni WhatsApp Numarası:</label>
                   <div className="relative">
-                    <Phone className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-3" />
+                    <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="text"
                       placeholder="Örn: +90 534 000 0000"
                       value={bulkSingleNumber}
                       onChange={(e) => setBulkSingleNumber(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-mono"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none font-mono"
                     />
                   </div>
                 </div>
@@ -2985,7 +3123,7 @@ export default function AdminListingsPage() {
                 /* Havuz Numaraları Formu */
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-[#8b949e] font-bold">Numara Havuzu (Her satıra bir numara):</label>
+                    <label className="text-slate-400 font-bold">Numara Havuzu (Her satıra bir numara):</label>
                     <span className="text-[10px] text-amber-400 font-mono font-bold">
                       {parsedPoolNumbers.length} Geçerli Numara
                     </span>
@@ -2996,12 +3134,12 @@ export default function AdminListingsPage() {
                     placeholder="+905340000001&#10;+905340000002&#10;+905340000003"
                     value={bulkPoolNumbersText}
                     onChange={(e) => setBulkPoolNumbersText(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-mono leading-relaxed"
+                    className="w-full p-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none font-mono leading-relaxed"
                   />
 
                   {/* Dağıtım Stratejisi */}
                   <div className="flex flex-col gap-1">
-                    <span className="text-[#8b949e] font-bold">Dağıtım Şekli:</span>
+                    <span className="text-slate-400 font-bold">Dağıtım Şekli:</span>
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
@@ -3009,7 +3147,7 @@ export default function AdminListingsPage() {
                         className={`p-2 rounded-lg border text-left text-[11px] font-bold transition-all ${
                           bulkDistributionMode === 'round_robin'
                             ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500'
-                            : 'bg-[#0d1117] text-[#8b949e] border-[#30363d]'
+                            : 'bg-[#070a0f] text-slate-400 border-slate-800'
                         }`}
                       >
                         ⚖️ Eşit / Dengeli Dağıt (Sırayla)
@@ -3021,7 +3159,7 @@ export default function AdminListingsPage() {
                         className={`p-2 rounded-lg border text-left text-[11px] font-bold transition-all ${
                           bulkDistributionMode === 'random'
                             ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500'
-                            : 'bg-[#0d1117] text-[#8b949e] border-[#30363d]'
+                            : 'bg-[#070a0f] text-slate-400 border-slate-800'
                         }`}
                       >
                         🎲 Tamamen Rastgele Dağıt
@@ -3052,11 +3190,11 @@ export default function AdminListingsPage() {
               )}
 
               {/* Submit Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#30363d]">
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowBulkPhoneModal(false)}
-                  className="px-4 py-2 rounded-xl bg-[#21262d] text-white font-bold text-xs hover:bg-[#30363d] transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition-colors"
                 >
                   Kapat
                 </button>

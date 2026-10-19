@@ -162,13 +162,13 @@ export default function AdminSecurityPage() {
                 {bans.length} Engelli
               </span>
             </h1>
-            <p className="text-xs text-[#8b949e]">Ziyaretçileri IP ve Chat üzerinden tek tıkla engelleyin, IP'leri otomatik listeden seçin.</p>
+            <p className="text-xs text-slate-400">Ziyaretçileri IP ve Chat üzerinden tek tıkla engelleyin, IP'leri otomatik listeden seçin.</p>
           </div>
         </div>
 
         <button
           onClick={fetchBans}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#161b22] hover:bg-[#21262d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-lg"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0c1017] hover:bg-slate-900 text-white border border-slate-800 font-bold text-xs transition-colors shadow-lg"
         >
           <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
           <span>Yenile</span>
@@ -185,44 +185,44 @@ export default function AdminSecurityPage() {
       )}
 
       {/* ── 2. MANUEL VEYA OTOMATİK SEÇİMLİ BAN FORMU ──────────────── */}
-      <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border-2 border-red-500/40 shadow-2xl flex flex-col gap-5 max-w-4xl">
-        <div className="flex items-center gap-2.5 border-b border-[#30363d] pb-3">
+      <div className="p-6 sm:p-7 rounded-2xl bg-[#0c1017] border-slate-800/80 border border-red-500/40 shadow-2xl flex flex-col gap-5 max-w-4xl">
+        <div className="flex items-center gap-2.5 border-b border-slate-800 pb-3">
           <Ban className="w-5 h-5 text-red-400" />
           <div className="flex flex-col">
             <h2 className="font-black text-base text-white font-heading">Engelleme Paneli (IP / Kullanıcı)</h2>
-            <span className="text-xs text-[#8b949e]">Aşağıdaki listeden bir ziyaretçiye tıklarsanız IP ve ID bilgileri buraya otomatik dolar.</span>
+            <span className="text-xs text-slate-400">Aşağıdaki listeden bir ziyaretçiye tıklarsanız IP ve ID bilgileri buraya otomatik dolar.</span>
           </div>
         </div>
 
         <form onSubmit={handleAddBan} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5 text-xs">
-            <label className="text-[#8b949e] font-bold">IP Adresi:</label>
+            <label className="text-slate-400 font-bold">IP Adresi:</label>
             <input
               type="text"
               placeholder="Örn: 88.241.12.5"
               value={manualIp}
               onChange={(e) => setManualIp(e.target.value)}
-              className="px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:outline-none focus:border-red-500 font-mono font-bold"
+              className="px-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500 font-mono font-bold"
             />
           </div>
 
           <div className="flex flex-col gap-1.5 text-xs">
-            <label className="text-[#8b949e] font-bold">Chat Thread ID:</label>
+            <label className="text-slate-400 font-bold">Chat Thread ID:</label>
             <input
               type="text"
               placeholder="Örn: 6a8ca3200ab7d66603bba207"
               value={manualThreadId}
               onChange={(e) => setManualThreadId(e.target.value)}
-              className="px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:outline-none focus:border-red-500 font-mono"
+              className="px-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500 font-mono"
             />
           </div>
 
           <div className="flex flex-col gap-1.5 text-xs">
-            <label className="text-[#8b949e] font-bold">Engelleme Türü:</label>
+            <label className="text-slate-400 font-bold">Engelleme Türü:</label>
             <select
               value={manualType}
               onChange={(e: any) => setManualType(e.target.value)}
-              className="px-3.5 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:outline-none focus:border-red-500 font-bold"
+              className="px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500 font-bold"
             >
               <option value="tam_ban">🚫 Tam Siteden Banla (Siteye &amp; Chat'e Hiç Giremez)</option>
               <option value="chat_ban">💬 Sadece Canlı Desteği Engelle</option>
@@ -230,12 +230,12 @@ export default function AdminSecurityPage() {
           </div>
 
           <div className="flex flex-col gap-1.5 text-xs">
-            <label className="text-[#8b949e] font-bold">Ban Sebebi (Kullanıcıya Gösterilir):</label>
+            <label className="text-slate-400 font-bold">Ban Sebebi (Kullanıcıya Gösterilir):</label>
             <input
               type="text"
               value={manualReason}
               onChange={(e) => setManualReason(e.target.value)}
-              className="px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:outline-none focus:border-red-500"
+              className="px-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500"
               required
             />
           </div>
@@ -254,8 +254,8 @@ export default function AdminSecurityPage() {
       </div>
 
       {/* ── 3. CANLI / SON ZİYARETÇİLER VE SOHBETLER LİSTESİ (TEK TIKLA BAN) ──────────────── */}
-      <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-4">
-        <div className="flex items-center justify-between border-b border-[#30363d] pb-3 flex-wrap gap-2">
+      <div className="p-6 sm:p-7 rounded-2xl bg-[#0c1017] border-slate-800/80 border border-slate-800 shadow-2xl flex flex-col gap-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-amber-400" />
             <h2 className="font-black text-base text-white font-heading">
@@ -274,7 +274,7 @@ export default function AdminSecurityPage() {
               className={`p-3.5 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all ${
                 th.isBanned
                   ? 'bg-red-500/10 border-red-500/30'
-                  : 'bg-[#0d1117] border-[#30363d] hover:border-[#484f58]'
+                  : 'bg-[#070a0f] border-slate-800 hover:border-[#484f58]'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -307,33 +307,33 @@ export default function AdminSecurityPage() {
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center justify-between text-[#8b949e] font-mono">
+                  <div className="flex items-center justify-between text-slate-400 font-mono">
                     <span>{th.listingKonum || 'Şehir Yok'}</span>
                     {th.whatsappNumara && <span>📲 {th.whatsappNumara}</span>}
                   </div>
-                  <div className="flex items-center justify-between text-[#8b949e] font-mono pt-1 border-t border-white/5">
+                  <div className="flex items-center justify-between text-slate-400 font-mono pt-1 border-t border-white/5">
                     {th.username && <span className="text-amber-400 font-bold">👤 User: {th.username}</span>}
                     {th.password && <span className="text-emerald-400 font-bold">🔑 Şifre: {th.password}</span>}
                   </div>
                 </div>
               ) : (
-                <div className="px-2 py-1 rounded-lg bg-[#161b22] text-[#8b949e] text-[10px] font-medium border border-white/5">
+                <div className="px-2 py-1 rounded-lg bg-[#0c1017] text-slate-400 text-[10px] font-medium border border-white/5">
                   👤 Genel Canlı Destek Ziyaretçisi (Henüz İlan Vermedi)
                 </div>
               )}
 
               <div className="flex flex-col gap-1 text-[11px]">
-                <div className="flex items-center justify-between text-[#8b949e]">
+                <div className="flex items-center justify-between text-slate-400">
                   <span>IP Adresi:</span>
                   <span className="font-mono text-amber-300 font-bold">{th.ip || '127.0.0.1'}</span>
                 </div>
-                <p className="text-xs text-[#c9d1d9] line-clamp-1 font-medium italic">
+                <p className="text-xs text-slate-300 line-clamp-1 font-medium italic">
                   "{th.sonMesajOzeti || 'Mesaj yok'}"
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-1 border-t border-[#30363d]">
-                <span className="text-[9px] text-[#8b949e]">
+              <div className="flex items-center justify-between pt-1 border-t border-slate-800">
+                <span className="text-[9px] text-slate-400">
                   {new Date(th.updatedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                 </span>
 
@@ -354,8 +354,8 @@ export default function AdminSecurityPage() {
       </div>
 
       {/* ── 4. MEVCUT ENGELLER LİSTESİ ──────────────── */}
-      <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-5">
-        <div className="flex items-center justify-between flex-wrap gap-4 border-b border-[#30363d] pb-4">
+      <div className="p-6 sm:p-7 rounded-2xl bg-[#0c1017] border-slate-800/80 border border-slate-800 shadow-2xl flex flex-col gap-5">
+        <div className="flex items-center justify-between flex-wrap gap-4 border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2">
             <Lock className="w-5 h-5 text-red-400" />
             <h2 className="font-black text-base text-white font-heading">Aktif Engelli Listesi ({bans.length})</h2>
@@ -367,22 +367,31 @@ export default function AdminSecurityPage() {
               placeholder="IP, Thread ID veya sebep ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-red-500 focus:outline-none"
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-[#484f58] focus:border-red-500 focus:outline-none"
             />
-            <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-2.5" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
           </div>
         </div>
 
         {loading ? (
-          <div className="p-12 text-center flex justify-center">
-            <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
+          <div className="space-y-3 p-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-14 rounded-xl bg-slate-900/40 border border-slate-800/50 animate-pulse flex items-center justify-between px-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-slate-800 shrink-0" />
+                  <div className="h-4 w-32 bg-slate-700/60 rounded" />
+                </div>
+                <div className="h-4 w-24 bg-slate-800 rounded hidden sm:block" />
+                <div className="h-6 w-16 bg-slate-800 rounded-lg" />
+              </div>
+            ))}
           </div>
         ) : filteredBans.length > 0 ? (
-          <div className="divide-y divide-[#30363d] border border-[#30363d] rounded-2xl overflow-hidden bg-[#0d1117]">
+          <div className="divide-y divide-[#30363d] border border-slate-800 rounded-2xl overflow-hidden bg-[#070a0f]">
             {filteredBans.map((ban) => (
               <div
                 key={ban._id}
-                className="p-4 sm:p-5 flex items-center justify-between gap-4 flex-wrap hover:bg-[#161b22] transition-colors"
+                className="p-4 sm:p-5 flex items-center justify-between gap-4 flex-wrap hover:bg-[#0c1017] transition-colors"
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div className="w-10 h-10 rounded-2xl bg-red-500/20 text-red-400 border border-red-500/30 flex items-center justify-center font-black shrink-0">
@@ -401,11 +410,11 @@ export default function AdminSecurityPage() {
                       </span>
                     </div>
 
-                    <p className="text-xs text-[#8b949e] font-medium">
+                    <p className="text-xs text-slate-400 font-medium">
                       Sebep: <span className="text-white font-bold">{ban.sebep}</span>
                     </p>
 
-                    <span className="text-[10px] text-[#8b949e]">
+                    <span className="text-[10px] text-slate-400">
                       Tarih: {new Date(ban.createdAt).toLocaleString('tr-TR')}
                     </span>
                   </div>
@@ -414,7 +423,7 @@ export default function AdminSecurityPage() {
                 <button
                   type="button"
                   onClick={() => handleUnban(ban._id)}
-                  className="px-4 py-2 rounded-xl bg-[#21262d] hover:bg-emerald-600 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-md active:scale-95"
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-emerald-600 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-md active:scale-95"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 group-hover:text-white" />
                   <span>Engeli Kaldır (Unban)</span>
@@ -423,7 +432,7 @@ export default function AdminSecurityPage() {
             ))}
           </div>
         ) : (
-          <div className="p-8 text-center text-xs text-[#8b949e]">
+          <div className="p-8 text-center text-xs text-slate-400">
             Engelli kullanıcı veya IP bulunmuyor.
           </div>
         )}

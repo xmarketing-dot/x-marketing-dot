@@ -772,7 +772,7 @@ export default function BmsSecurePortalDashboard() {
     );
   });
 
-  const groupedVisitors = useMemo(() => {
+  const groupedVisitors = (() => {
     const map = new Map<string, { latest: any; totalActions: number; history: any[]; pages: Set<string> }>();
     (filteredVisitors || []).forEach((v: any) => {
       const key = v.visitorId || v.ip || v._id || 'anon';
@@ -798,7 +798,7 @@ export default function BmsSecurePortalDashboard() {
       distinctPagesCount: g.pages.size,
       history: [...g.history].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
     })).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [filteredVisitors]);
+  })();
 
   return (
     <div className="flex flex-col gap-5 w-full max-w-full text-left font-sans text-slate-200 relative">

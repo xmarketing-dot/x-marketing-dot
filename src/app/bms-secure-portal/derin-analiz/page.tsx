@@ -131,12 +131,12 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
     <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full text-left">
         
         {/* ── 1. ÜST KURUMSAL HEADER & KONTROL MASASI (100% RESPONSIVE) ──────────────── */}
-        <div className="flex flex-col gap-4 p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl w-full">
+        <div className="flex flex-col gap-4 p-4 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl w-full">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3 sm:gap-4 min-w-0">
             <Link
               href="/bms-secure-portal"
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-amber-400 hover:text-amber-300 flex items-center justify-center shrink-0 transition-all active:scale-95 shadow-md"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-400 hover:text-amber-300 flex items-center justify-center shrink-0 transition-all active:scale-95 shadow-md"
               title="Ana Yönetim Paneline Dön"
             >
               <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -154,7 +154,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   KURUMSAL RAPORLAMA
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-[#8b949e] truncate mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-400 truncate mt-0.5">
                 Bot filtreleme, kullanıcı sadakat piramidi, müdavimlerin oturum süreleri ve WhatsApp dönüşüm analizi.
               </p>
             </div>
@@ -165,7 +165,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
             <button
               onClick={handleCopySummary}
               disabled={!data || loading}
-              className="flex items-center gap-1.5 px-3.5 py-2 sm:py-2.5 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] hover:text-white border border-[#30363d] font-bold text-xs transition-all active:scale-95 shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-2 sm:py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 font-bold text-xs transition-all active:scale-95 shadow-sm"
               title="Rapor Özetini Kopyala"
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
@@ -198,7 +198,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                   selectedDomain === 'all'
                     ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md'
-                    : 'bg-[#0d1117] text-[#8b949e] border-[#30363d] hover:text-white'
+                    : 'bg-[#070a0f] text-slate-400 border-slate-800 hover:text-white'
                 }`}
               >
                 🌐 Tüm Siteler (Konsolide)
@@ -208,7 +208,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
                   selectedDomain === 'besteskort.online'
                     ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-black shadow-md'
-                    : 'bg-[#0d1117] text-emerald-400 border-emerald-500/30 hover:border-emerald-500/60'
+                    : 'bg-[#070a0f] text-emerald-400 border-emerald-500/30 hover:border-emerald-500/60'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -219,7 +219,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
                   selectedDomain === 'escturkiye.space'
                     ? 'bg-fuchsia-500 text-slate-950 border-fuchsia-400 font-black shadow-md'
-                    : 'bg-[#0d1117] text-fuchsia-400 border-fuchsia-500/30 hover:border-fuchsia-500/60'
+                    : 'bg-[#070a0f] text-fuchsia-400 border-fuchsia-500/30 hover:border-fuchsia-500/60'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse"></span>
@@ -230,7 +230,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
                   selectedDomain === 'escturkiye.space'
                     ? 'bg-pink-500 text-slate-950 border-pink-400 font-black shadow-md'
-                    : 'bg-[#0d1117] text-pink-400 border-pink-500/30 hover:border-pink-500/60'
+                    : 'bg-[#070a0f] text-pink-400 border-pink-500/30 hover:border-pink-500/60'
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-pink-400 animate-pulse"></span>
@@ -241,7 +241,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
 
           {/* Preset Date Buttons & Custom Form */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pt-2 border-t border-[#21262d]">
-            <div className="grid grid-cols-3 sm:grid-cols-6 bg-[#0d1117] p-1 rounded-2xl border border-[#21262d] gap-1 w-full lg:w-auto">
+            <div className="grid grid-cols-3 sm:grid-cols-6 bg-[#070a0f] p-1 rounded-2xl border border-[#21262d] gap-1 w-full lg:w-auto">
               {[
                 { id: 'all', label: 'Tüm Zamanlar' },
                 { id: 'today', label: 'Bugün' },
@@ -256,7 +256,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   className={`py-2 px-3 text-center text-[11px] sm:text-xs font-black rounded-xl transition-all truncate font-heading ${
                     range === r.id
                       ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black scale-[1.02]'
-                      : 'text-[#8b949e] hover:text-white hover:bg-[#161b22]'
+                      : 'text-slate-400 hover:text-white hover:bg-[#0c1017]'
                   }`}
                 >
                   {r.label}
@@ -266,24 +266,24 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
 
             {/* Custom Date Form */}
             {range === 'custom' && (
-              <form onSubmit={handleCustomSubmit} className="flex items-center gap-2 flex-wrap sm:flex-nowrap bg-[#0d1117] p-2 rounded-2xl border border-amber-500/30 animate-fadeIn">
-                <div className="flex items-center gap-1.5 text-xs text-[#8b949e]">
+              <form onSubmit={handleCustomSubmit} className="flex items-center gap-2 flex-wrap sm:flex-nowrap bg-[#070a0f] p-2 rounded-2xl border border-amber-500/30 animate-fadeIn">
+                <div className="flex items-center gap-1.5 text-xs text-slate-400">
                   <span>Başlangıç:</span>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="bg-[#161b22] border border-[#30363d] rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                    className="bg-[#0c1017] border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
                     required
                   />
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-[#8b949e]">
+                <div className="flex items-center gap-1.5 text-xs text-slate-400">
                   <span>Bitiş:</span>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="bg-[#161b22] border border-[#30363d] rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
+                    className="bg-[#0c1017] border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white font-mono focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <button
@@ -300,7 +300,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
       </div>
 
       {loading && !data ? (
-        <div className="min-h-[55vh] flex flex-col items-center justify-center bg-[#161b22] border border-[#30363d] rounded-3xl p-6 sm:p-12 shadow-2xl w-full">
+        <div className="min-h-[55vh] flex flex-col items-center justify-center bg-[#0c1017] border border-slate-800 rounded-3xl p-6 sm:p-12 shadow-2xl w-full">
           <CircularProgress
             size="xl"
             title="Derin Analitik Modelleri Hesaplanıyor..."
@@ -317,8 +317,8 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
         <div className="relative flex flex-col gap-5 sm:gap-6 w-full">
           {/* Recalculating Overlay */}
           {loading && data && (
-            <div className="absolute inset-0 z-30 bg-[#0d1117]/80 backdrop-blur-md rounded-3xl flex items-center justify-center animate-fadeIn">
-              <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl">
+            <div className="absolute inset-0 z-30 bg-[#070a0f]/80 backdrop-blur-md rounded-3xl flex items-center justify-center animate-fadeIn">
+              <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-2xl">
                 <CircularProgress
                   size="md"
                   title="Tarih & Alan Adı Güncelleniyor..."
@@ -333,7 +333,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
 
           {/* ── 1. ÇOKLU ALAN ADI & UYDU SİTELER KARŞILAŞTIRMA KARTI ──────────── */}
           {data?.domainBreakdown && data.domainBreakdown.length > 0 && (
-            <div className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#21262d] pb-3">
                 <div className="flex items-center gap-2">
                   <Globe className="w-5 h-5 text-amber-400" />
@@ -341,7 +341,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                     Çoklu Alan Adı &amp; Uydu Siteler Karşılaştırma Matrisi
                   </h3>
                 </div>
-                <span className="text-[11px] font-mono text-[#8b949e]">
+                <span className="text-[11px] font-mono text-slate-400">
                   Tüm bağlı projelerin gerçek insan ve dönüşüm performansı
                 </span>
               </div>
@@ -359,7 +359,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                           ? 'bg-gradient-to-b from-fuchsia-950/20 to-[#161b22] border-fuchsia-500/30 hover:border-fuchsia-400' 
                           : isBest
                           ? 'bg-gradient-to-b from-emerald-950/20 to-[#161b22] border-emerald-500/30 hover:border-emerald-400'
-                          : 'bg-[#0d1117] border-[#30363d]'
+                          : 'bg-[#070a0f] border-slate-800'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
@@ -368,7 +368,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                             <span className={`w-2 h-2 rounded-full ${isTurkiye ? 'bg-fuchsia-400 animate-pulse' : 'bg-emerald-400 animate-pulse'}`}></span>
                             <span>{db.domain}</span>
                           </span>
-                          <span className="text-[10px] text-[#8b949e] mt-0.5 font-sans">
+                          <span className="text-[10px] text-slate-400 mt-0.5 font-sans">
                             {isTurkiye ? 'Türkiye Geneli İlan Ağı' : isBest ? 'Ana Merkez Vitrin' : 'Bağlı Uydu Gateway'}
                           </span>
                         </div>
@@ -381,11 +381,11 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
 
                       <div className="grid grid-cols-3 gap-2 py-2 border-y border-[#21262d] text-center">
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-[#8b949e]">Tekil İnsan</span>
+                          <span className="text-[10px] text-slate-400">Tekil İnsan</span>
                           <span className="text-sm font-black text-white font-mono">{db.uniqueHumans?.toLocaleString('tr-TR')}</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-[#8b949e]">Temiz Hit</span>
+                          <span className="text-[10px] text-slate-400">Temiz Hit</span>
                           <span className="text-sm font-black text-slate-300 font-mono">{db.humanHits?.toLocaleString('tr-TR')}</span>
                         </div>
                         <div className="flex flex-col">
@@ -394,7 +394,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-[10px] text-[#8b949e] font-mono">
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
                         <span>Mobil Payı: <strong className="text-slate-200">%{db.mobilePercent}</strong></span>
                         <span>Bot Filtresi: <strong className="text-red-400">%{Math.round((db.botHits / ((db.humanHits + db.botHits) || 1)) * 100)}</strong></span>
                       </div>
@@ -409,9 +409,9 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4 w-full">
             
             {/* Toplam Ham Hit vs Temiz Hit */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between shadow-lg relative overflow-hidden group">
+            <div className="p-4 sm:p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col justify-between shadow-lg relative overflow-hidden group">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-heading font-bold text-[#8b949e] uppercase tracking-wider">
+                <span className="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider">
                   Sayfa Görüntüleme
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-bold">
@@ -423,13 +423,13 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   <span className="font-heading font-black text-2xl sm:text-3xl text-emerald-400">
                     {overview.humanPageviews?.toLocaleString('tr-TR') || 0}
                   </span>
-                  <span className="text-xs text-[#8b949e]">Temiz Hit</span>
+                  <span className="text-xs text-slate-400">Temiz Hit</span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] mt-0.5">
+                <span className="text-[11px] text-slate-400 mt-0.5">
                   Ham Toplam: <strong className="text-white font-mono">{overview.rawTotalPageviews?.toLocaleString('tr-TR') || 0}</strong> ({overview.botTotalPageviews?.toLocaleString('tr-TR') || 0} bot elendi)
                 </span>
               </div>
-              <div className="w-full bg-[#0d1117] h-2 rounded-full overflow-hidden flex">
+              <div className="w-full bg-[#070a0f] h-2 rounded-full overflow-hidden flex">
                 <div 
                   className="bg-emerald-400 h-full transition-all duration-1000" 
                   style={{ width: `${overview.humanPercentOfTotal || 90}%` }}
@@ -442,9 +442,9 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
             </div>
 
             {/* Gerçek Tekil Ziyaretçi */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between shadow-lg relative overflow-hidden group">
+            <div className="p-4 sm:p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col justify-between shadow-lg relative overflow-hidden group">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-heading font-bold text-[#8b949e] uppercase tracking-wider">
+                <span className="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider">
                   Gerçek Tekil Kişi
                 </span>
                 <div className="w-7 h-7 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">
@@ -458,20 +458,20 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   </span>
                   <span className="text-xs text-blue-400">Tekil İnsan</span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] mt-0.5">
+                <span className="text-[11px] text-slate-400 mt-0.5">
                   Toplam Oturum: <strong className="text-white font-mono">{overview.humanTotalSessions?.toLocaleString('tr-TR') || 0}</strong>
                 </span>
               </div>
-              <span className="text-[10px] text-[#8b949e] flex items-center gap-1">
+              <span className="text-[10px] text-slate-400 flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-blue-400" />
                 <span>Tekil cihaz &amp; parmak izi filtrelenmiş</span>
               </span>
             </div>
 
             {/* Tekrar Giriş / Sadakat Oranı (Retention) */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between shadow-lg relative overflow-hidden group">
+            <div className="p-4 sm:p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col justify-between shadow-lg relative overflow-hidden group">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-heading font-bold text-[#8b949e] uppercase tracking-wider">
+                <span className="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider">
                   Müdavim &amp; Sadakat
                 </span>
                 <div className="w-7 h-7 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs">
@@ -483,9 +483,9 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   <span className="font-heading font-black text-2xl sm:text-3xl text-amber-400">
                     %{loyalty.repeatRatePercent || 0}
                   </span>
-                  <span className="text-xs text-[#8b949e]">Geri Dönüş</span>
+                  <span className="text-xs text-slate-400">Geri Dönüş</span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] mt-0.5">
+                <span className="text-[11px] text-slate-400 mt-0.5">
                   Çoklu Oturum: <strong className="text-white font-mono">{loyalty.multiSessionUsers?.toLocaleString('tr-TR') || 0}</strong> (%{loyalty.multiSessionRatePercent})
                 </span>
               </div>
@@ -496,9 +496,9 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
             </div>
 
             {/* WhatsApp Randevu Dönüşümü */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between shadow-lg relative overflow-hidden group">
+            <div className="p-4 sm:p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col justify-between shadow-lg relative overflow-hidden group">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-heading font-bold text-[#8b949e] uppercase tracking-wider">
+                <span className="text-xs font-heading font-bold text-slate-400 uppercase tracking-wider">
                   WhatsApp Randevu (CR)
                 </span>
                 <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
@@ -510,13 +510,13 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   <span className="font-heading font-black text-2xl sm:text-3xl text-emerald-400">
                     {conversions.totalWhatsappClicks?.toLocaleString('tr-TR') || 0}
                   </span>
-                  <span className="text-xs text-[#8b949e]">Tıklama</span>
+                  <span className="text-xs text-slate-400">Tıklama</span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] mt-0.5">
+                <span className="text-[11px] text-slate-400 mt-0.5">
                   Dönüşüm Oranı: <strong className="text-emerald-400 font-mono">%{conversions.overallConversionRatePercent || 0}</strong>
                 </span>
               </div>
-              <span className="text-[10px] text-[#8b949e] flex items-center gap-1">
+              <span className="text-[10px] text-slate-400 flex items-center gap-1">
                 <Check className="w-3 h-3 text-emerald-400" />
                 <span>İlan sahibine direkt yazanlar</span>
               </span>
@@ -527,7 +527,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full">
             
             {/* Ziyaretçi Sadakat & Gezinme Derinliği Piramidi (7 Cols) */}
-            <div className="lg:col-span-7 p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
+            <div className="lg:col-span-7 p-4 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col gap-4 shadow-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Layers className="w-4 h-4 text-amber-400" />
@@ -535,7 +535,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                     Ziyaretçi Gezinme &amp; Sadakat Dağılımı
                   </h2>
                 </div>
-                <span className="text-xs text-[#8b949e] font-mono">
+                <span className="text-xs text-slate-400 font-mono">
                   {loyalty.totalUniqueHumans?.toLocaleString('tr-TR')} Tekil Kullanıcı
                 </span>
               </div>
@@ -580,7 +580,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                 ].map((item, idx) => {
                   const percent = Math.round(((item.count / (loyalty.totalUniqueHumans || 1)) * 100));
                   return (
-                    <div key={idx} className="flex flex-col gap-1 p-3 rounded-2xl bg-[#0d1117] border border-[#21262d]">
+                    <div key={idx} className="flex flex-col gap-1 p-3 rounded-2xl bg-[#070a0f] border border-[#21262d]">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-heading font-bold text-white flex items-center gap-1.5">
                           <span>{item.label}</span>
@@ -590,10 +590,10 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                           <span className={`font-mono text-[11px] font-bold ${item.textColor}`}>%{percent}</span>
                         </div>
                       </div>
-                      <div className="w-full bg-[#161b22] h-2 rounded-full overflow-hidden">
+                      <div className="w-full bg-[#0c1017] h-2 rounded-full overflow-hidden">
                         <div className={`h-full ${item.color} rounded-full`} style={{ width: `${percent}%` }} />
                       </div>
-                      <span className="text-[10px] text-[#8b949e]">{item.desc}</span>
+                      <span className="text-[10px] text-slate-400">{item.desc}</span>
                     </div>
                   );
                 })}
@@ -601,7 +601,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
             </div>
 
             {/* Elenen Botlar & Güvenlik Özeti (5 Cols) */}
-            <div className="lg:col-span-5 p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl">
+            <div className="lg:col-span-5 p-4 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col gap-4 shadow-xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -615,7 +615,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col justify-between gap-2">
+                <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex flex-col justify-between gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-heading font-bold text-blue-400">Arama Motorları</span>
                     <Globe className="w-4 h-4 text-blue-400" />
@@ -623,10 +623,10 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   <span className="text-2xl font-mono font-black text-white">
                     {overview.botBreakdown?.search_engine?.toLocaleString('tr-TR') || 0}
                   </span>
-                  <span className="text-[10px] text-[#8b949e]">Googlebot, YandexBot, Bing</span>
+                  <span className="text-[10px] text-slate-400">Googlebot, YandexBot, Bing</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col justify-between gap-2">
+                <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex flex-col justify-between gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-heading font-bold text-purple-400">Veri Merkezi IP</span>
                     <ShieldAlert className="w-4 h-4 text-purple-400" />
@@ -634,10 +634,10 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   <span className="text-2xl font-mono font-black text-white">
                     {overview.botBreakdown?.datacenter_bot?.toLocaleString('tr-TR') || 0}
                   </span>
-                  <span className="text-[10px] text-[#8b949e]">Hetzner, OVH, AWS IPleri</span>
+                  <span className="text-[10px] text-slate-400">Hetzner, OVH, AWS IPleri</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col justify-between gap-2">
+                <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex flex-col justify-between gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-heading font-bold text-amber-400">Otomasyon Bot</span>
                     <Bot className="w-4 h-4 text-amber-400" />
@@ -645,10 +645,10 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   <span className="text-2xl font-mono font-black text-white">
                     {overview.botBreakdown?.automation_scraper?.toLocaleString('tr-TR') || 0}
                   </span>
-                  <span className="text-[10px] text-[#8b949e]">Puppeteer, Scrapy, Headless</span>
+                  <span className="text-[10px] text-slate-400">Puppeteer, Scrapy, Headless</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col justify-between gap-2">
+                <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex flex-col justify-between gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-heading font-bold text-emerald-400">Atak / Tarama</span>
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -656,7 +656,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   <span className="text-2xl font-mono font-black text-white">
                     {overview.botBreakdown?.scanner_attack?.toLocaleString('tr-TR') || 0}
                   </span>
-                  <span className="text-[10px] text-[#8b949e]">.env, wp-admin taramaları</span>
+                  <span className="text-[10px] text-slate-400">.env, wp-admin taramaları</span>
                 </div>
               </div>
 
@@ -670,7 +670,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
           </div>
 
           {/* ── 4. 👑 EN ÇOK GİREN MÜDAVİM KULLANICILAR TABLOSU (WIDE VIEW) ──────────────── */}
-          <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-4 shadow-xl w-full">
+          <div className="p-4 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col gap-4 shadow-xl w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-base">
@@ -680,7 +680,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   <h2 className="font-heading font-black text-sm sm:text-base text-white">
                     En Aktif Müdavim Ziyaretçiler (Top Loyal Visitors)
                   </h2>
-                  <p className="text-[11px] text-[#8b949e]">
+                  <p className="text-[11px] text-slate-400">
                     Sitede en çok sayfa gezen, en çok oturum açan ve en uzun süre kalan gerçek ziyaretçiler.
                   </p>
                 </div>
@@ -688,13 +688,13 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
 
               {/* Kullanıcı Arama Inputu */}
               <div className="relative">
-                <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="Şehir, cihaz, IP veya ID ara..."
                   value={userSearchTerm}
                   onChange={(e) => setUserSearchTerm(e.target.value)}
-                  className="bg-[#0d1117] border border-[#30363d] rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 w-full sm:w-72"
+                  className="bg-[#070a0f] border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400 w-full sm:w-72"
                 />
               </div>
             </div>
@@ -702,7 +702,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
             <div className="overflow-x-auto rounded-2xl border border-[#21262d] w-full">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#0d1117] text-[#8b949e] border-b border-[#21262d]">
+                  <tr className="bg-[#070a0f] text-slate-400 border-b border-[#21262d]">
                     <th className="p-3.5 font-heading font-bold">Ziyaretçi ID</th>
                     <th className="p-3.5 font-heading font-bold">Şehir / Konum</th>
                     <th className="p-3.5 font-heading font-bold">Cihaz &amp; OS</th>
@@ -716,7 +716,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                 <tbody className="divide-y divide-[#21262d]">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="p-8 text-center text-[#8b949e]">
+                      <td colSpan={8} className="p-8 text-center text-slate-400">
                         Aramaya uygun müdavim ziyaretçi bulunamadı.
                       </td>
                     </tr>
@@ -728,7 +728,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                       return (
                         <tr key={idx} className="hover:bg-[#1f242c] transition-colors">
                           <td className="p-3.5 font-mono font-bold text-white flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-md bg-[#21262d] text-[#8b949e] text-[10px] flex items-center justify-center font-bold">
+                            <span className="w-6 h-6 rounded-md bg-slate-900 text-slate-400 text-[10px] flex items-center justify-center font-bold">
                               {idx + 1}
                             </span>
                             <span className="truncate max-w-[140px]">{u.visitorId}</span>
@@ -749,7 +749,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                               <span className="text-white font-medium capitalize">
                                 {u.device === 'desktop' ? '💻 Masaüstü' : '📱 Mobil'}
                               </span>
-                              <span className="text-[10px] text-[#8b949e]">{u.os} {u.browser !== 'Unknown' ? `(${u.browser})` : ''}</span>
+                              <span className="text-[10px] text-slate-400">{u.os} {u.browser !== 'Unknown' ? `(${u.browser})` : ''}</span>
                             </div>
                           </td>
                           <td className="p-3.5 text-center">
@@ -758,7 +758,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                             </span>
                           </td>
                           <td className="p-3.5 text-center">
-                            <span className={`px-2.5 py-0.5 rounded-lg font-mono font-bold ${isMulti ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'text-[#8b949e]'}`}>
+                            <span className={`px-2.5 py-0.5 rounded-lg font-mono font-bold ${isMulti ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'text-slate-400'}`}>
                               {u.sessionsCount}
                             </span>
                           </td>
@@ -769,7 +769,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                             {u.totalDurationMinutes > 0 ? `${u.totalDurationMinutes} dk` : `${u.totalDurationSeconds}s`}
                           </td>
                           <td className="p-3.5">
-                            <div className="flex flex-col text-[10px] text-[#8b949e] font-mono">
+                            <div className="flex flex-col text-[10px] text-slate-400 font-mono">
                               <span>İlk: {new Date(u.firstSeen).toLocaleDateString('tr-TR')} {new Date(u.firstSeen).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
                               <span className="text-slate-300">Son: {new Date(u.lastSeen).toLocaleDateString('tr-TR')} {new Date(u.lastSeen).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
@@ -787,7 +787,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
             
             {/* Trafik Kaynakları */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl">
+            <div className="p-4 sm:p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col gap-3 shadow-xl">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-black text-sm text-white flex items-center gap-2">
                   <Compass className="w-4 h-4 text-amber-400" />
@@ -800,12 +800,12 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
                   .map(([src, count]: any, idx: number) => {
                     const percent = Math.round((count / sourceTotal) * 100);
                     return (
-                      <div key={idx} className="flex flex-col gap-1 p-2.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
+                      <div key={idx} className="flex flex-col gap-1 p-2.5 rounded-xl bg-[#070a0f] border border-[#21262d]">
                         <div className="flex items-center justify-between text-xs">
                           <span className="font-bold text-white capitalize">{src}</span>
                           <span className="font-mono text-amber-400">{count?.toLocaleString('tr-TR')} (%{percent})</span>
                         </div>
-                        <div className="w-full bg-[#161b22] h-1.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-[#0c1017] h-1.5 rounded-full overflow-hidden">
                           <div className="bg-amber-400 h-full rounded-full" style={{ width: `${percent}%` }} />
                         </div>
                       </div>
@@ -815,7 +815,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
             </div>
 
             {/* En Çok Trafik Gelen Şehirler */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl">
+            <div className="p-4 sm:p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col gap-3 shadow-xl">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-black text-sm text-white flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-emerald-400" />
@@ -824,9 +824,9 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
               </div>
               <div className="flex flex-col gap-1.5 max-h-[340px] overflow-y-auto pr-1">
                 {(breakdowns.topCities || []).map(([city, count]: any, idx: number) => (
-                  <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-[#0d1117] border border-[#21262d] text-xs">
+                  <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-[#070a0f] border border-[#21262d] text-xs">
                     <span className="font-heading font-bold text-white flex items-center gap-1.5">
-                      <span className="text-[#8b949e] font-mono text-[10px]">#{idx + 1}</span>
+                      <span className="text-slate-400 font-mono text-[10px]">#{idx + 1}</span>
                       <span>{city}</span>
                     </span>
                     <span className="font-mono font-bold text-emerald-400">{count?.toLocaleString('tr-TR')} Hit</span>
@@ -836,7 +836,7 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
             </div>
 
             {/* En Çok WhatsApp Tıklaması Alan İlanlar */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-3 shadow-xl">
+            <div className="p-4 sm:p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col gap-3 shadow-xl">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-black text-sm text-white flex items-center gap-2">
                   <OfficialWhatsAppIcon className="w-4 h-4 fill-current text-emerald-400" />
@@ -845,9 +845,9 @@ Oluşturulma Zamanı: ${new Date().toLocaleString('tr-TR')}`;
               </div>
               <div className="flex flex-col gap-1.5 max-h-[340px] overflow-y-auto pr-1">
                 {(conversions.topWhatsappListings || []).map(([title, count]: any, idx: number) => (
-                  <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-[#0d1117] border border-[#21262d] text-xs">
+                  <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-[#070a0f] border border-[#21262d] text-xs">
                     <span className="font-heading font-bold text-white truncate max-w-[200px] flex items-center gap-1.5">
-                      <span className="text-[#8b949e] font-mono text-[10px]">#{idx + 1}</span>
+                      <span className="text-slate-400 font-mono text-[10px]">#{idx + 1}</span>
                       <span className="truncate">{title}</span>
                     </span>
                     <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 font-mono font-black shrink-0">

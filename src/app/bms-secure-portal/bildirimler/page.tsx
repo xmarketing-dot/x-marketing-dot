@@ -282,7 +282,7 @@ export default function UnifiedNotificationsManagementPage() {
     <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto selection:bg-amber-500 selection:text-slate-950 font-sans">
       
       {/* ── 1. HEADER & CANLI YENİLE ────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#30363d]/80 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20">
@@ -295,7 +295,7 @@ export default function UnifiedNotificationsManagementPage() {
                   CANLI MERKEZ
                 </span>
               </h1>
-              <span className="text-xs text-[#8b949e]">
+              <span className="text-xs text-slate-400">
                 Tek formdan hem sitedeki çan bildirimlerini hem de telefon kilit ekranı Web Push bildirimlerini yönetin.
               </span>
             </div>
@@ -306,7 +306,7 @@ export default function UnifiedNotificationsManagementPage() {
           <button
             onClick={fetchAllData}
             disabled={loading}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] text-xs font-heading font-bold border border-[#30363d] transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-heading font-bold border border-slate-800 transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
             <span>Yenile</span>
@@ -318,9 +318,9 @@ export default function UnifiedNotificationsManagementPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         
         {/* Kilit Ekranı Push Aboneleri */}
-        <div className="bg-[#161b22] border border-[#30363d] p-4 rounded-2xl shadow-md flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-[#0c1017] border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col gap-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider font-heading">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-heading">
               Kilit Ekranı Push
             </span>
             <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
@@ -333,7 +333,7 @@ export default function UnifiedNotificationsManagementPage() {
             </span>
             <span className="text-[11px] text-emerald-400 font-mono font-bold">Aktif Cihaz</span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-[#8b949e] font-mono border-t border-[#30363d]/50 pt-2">
+          <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono border-t border-slate-800/50 pt-2">
             <span>📱 Android: {stats.androidSubscribers}</span>
             <span>•</span>
             <span>💻 Masaüstü: {stats.desktopSubscribers}</span>
@@ -341,9 +341,9 @@ export default function UnifiedNotificationsManagementPage() {
         </div>
 
         {/* Net PWA Kurulumları */}
-        <div className="bg-[#161b22] border border-[#30363d] p-4 rounded-2xl shadow-md flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-[#0c1017] border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col gap-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider font-heading">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-heading">
               Net PWA Kurulum
             </span>
             <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
@@ -356,7 +356,7 @@ export default function UnifiedNotificationsManagementPage() {
             </span>
             <span className="text-[11px] text-emerald-400 font-mono font-bold">Uygulama</span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-[#8b949e] font-mono border-t border-[#30363d]/50 pt-2">
+          <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono border-t border-slate-800/50 pt-2">
             <span className="text-emerald-400">+{stats.pwaInstalls} Kuruldu</span>
             <span>•</span>
             <span className="text-rose-400">-{stats.pwaUninstalls} Silindi</span>
@@ -364,9 +364,9 @@ export default function UnifiedNotificationsManagementPage() {
         </div>
 
         {/* Site İçi Çan Bildirimleri */}
-        <div className="bg-[#161b22] border border-[#30363d] p-4 rounded-2xl shadow-md flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-[#0c1017] border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col gap-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider font-heading">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-heading">
               Site Çan Bildirimleri
             </span>
             <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
@@ -379,15 +379,15 @@ export default function UnifiedNotificationsManagementPage() {
             </span>
             <span className="text-[11px] text-blue-400 font-mono font-bold">Yayında</span>
           </div>
-          <div className="text-[10px] text-[#8b949e] font-mono border-t border-[#30363d]/50 pt-2">
+          <div className="text-[10px] text-slate-400 font-mono border-t border-slate-800/50 pt-2">
             <span>Toplam {notifications.length} bildirim kaydı</span>
           </div>
         </div>
 
         {/* Kampanya Gönderimleri */}
-        <div className="bg-[#161b22] border border-[#30363d] p-4 rounded-2xl shadow-md flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-[#0c1017] border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col gap-2 relative overflow-hidden">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-[#8b949e] uppercase tracking-wider font-heading">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-heading">
               Push Kampanyaları
             </span>
             <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
@@ -400,7 +400,7 @@ export default function UnifiedNotificationsManagementPage() {
             </span>
             <span className="text-[11px] text-purple-400 font-mono font-bold">Sefer Yapıldı</span>
           </div>
-          <div className="text-[10px] text-emerald-400 font-mono border-t border-[#30363d]/50 pt-2">
+          <div className="text-[10px] text-emerald-400 font-mono border-t border-slate-800/50 pt-2">
             <span>%100 Güvenli İletim Oranı</span>
           </div>
         </div>
@@ -408,13 +408,13 @@ export default function UnifiedNotificationsManagementPage() {
       </div>
 
       {/* ── 3. ANA SEKME SEÇİCİ ──────────────────────────────────────────────── */}
-      <div className="flex items-center gap-1.5 p-1 bg-[#161b22] border border-[#30363d] rounded-2xl overflow-x-auto">
+      <div className="flex items-center gap-1.5 p-1 bg-[#0c1017] border border-slate-800 rounded-2xl overflow-x-auto">
         <button
           onClick={() => setActiveTab('send')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-xs font-black transition-all shrink-0 ${
             activeTab === 'send'
               ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 shadow-md'
-              : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
           <Send className="w-3.5 h-3.5" />
@@ -425,8 +425,8 @@ export default function UnifiedNotificationsManagementPage() {
           onClick={() => setActiveTab('notifications')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-xs font-black transition-all shrink-0 ${
             activeTab === 'notifications'
-              ? 'bg-[#21262d] text-white border border-[#30363d] shadow-sm'
-              : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              ? 'bg-slate-900 text-white border border-slate-800 shadow-sm'
+              : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
           <Bell className="w-3.5 h-3.5 text-amber-400" />
@@ -437,8 +437,8 @@ export default function UnifiedNotificationsManagementPage() {
           onClick={() => setActiveTab('campaigns')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-xs font-black transition-all shrink-0 ${
             activeTab === 'campaigns'
-              ? 'bg-[#21262d] text-white border border-[#30363d] shadow-sm'
-              : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              ? 'bg-slate-900 text-white border border-slate-800 shadow-sm'
+              : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
           <Clock className="w-3.5 h-3.5 text-purple-400" />
@@ -449,8 +449,8 @@ export default function UnifiedNotificationsManagementPage() {
           onClick={() => setActiveTab('devices')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-heading text-xs font-black transition-all shrink-0 ${
             activeTab === 'devices'
-              ? 'bg-[#21262d] text-white border border-[#30363d] shadow-sm'
-              : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+              ? 'bg-slate-900 text-white border border-slate-800 shadow-sm'
+              : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
           <Radio className="w-3.5 h-3.5 text-emerald-400" />
@@ -463,15 +463,15 @@ export default function UnifiedNotificationsManagementPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
           {/* Sol Kolon: Birleşik Form (7 Kolon) */}
-          <div className="lg:col-span-7 bg-[#161b22] border border-[#30363d] p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-5">
-            <div className="flex flex-col gap-1 border-b border-[#30363d]/60 pb-4">
+          <div className="lg:col-span-7 bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-5">
+            <div className="flex flex-col gap-1 border-b border-slate-800/60 pb-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
                 <h2 className="font-heading font-black text-base sm:text-lg text-white">
                   Tek Formdan Çift Kanallı Bildirim Ateşle
                 </h2>
               </div>
-              <p className="text-xs text-[#8b949e]">
+              <p className="text-xs text-slate-400">
                 Aşağıdaki formu doldurup gönderdiğinizde, seçtiğiniz kanallara (kilit ekranı push ve site çan bildirimi) sıfır gecikmeyle anında iletilir.
               </p>
             </div>
@@ -480,7 +480,7 @@ export default function UnifiedNotificationsManagementPage() {
               
               {/* Hedef Kanallar (Toggle Kutuları) */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
+                <label className="text-xs font-black uppercase text-slate-400 tracking-wider">
                   Hedef Gönderim Kanalları
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -490,7 +490,7 @@ export default function UnifiedNotificationsManagementPage() {
                     className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-start gap-3 ${
                       sendWebPush
                         ? 'bg-amber-500/10 border-amber-500/50 shadow-md shadow-amber-500/5'
-                        : 'bg-[#0d1117] border-[#30363d] opacity-60 hover:opacity-100'
+                        : 'bg-[#070a0f] border-slate-800 opacity-60 hover:opacity-100'
                     }`}
                   >
                     <input
@@ -504,7 +504,7 @@ export default function UnifiedNotificationsManagementPage() {
                         <Smartphone className="w-4 h-4 text-amber-400" />
                         <span className="font-black text-xs text-white">Telefon Kilit Ekranı (Push)</span>
                       </div>
-                      <span className="text-[11px] text-[#8b949e] mt-0.5">
+                      <span className="text-[11px] text-slate-400 mt-0.5">
                         {stats.totalSubscribers} abonenin telefonunu titretir
                       </span>
                     </div>
@@ -515,7 +515,7 @@ export default function UnifiedNotificationsManagementPage() {
                     className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex items-start gap-3 ${
                       sendSiteNotification
                         ? 'bg-blue-500/10 border-blue-500/50 shadow-md shadow-blue-500/5'
-                        : 'bg-[#0d1117] border-[#30363d] opacity-60 hover:opacity-100'
+                        : 'bg-[#070a0f] border-slate-800 opacity-60 hover:opacity-100'
                     }`}
                   >
                     <input
@@ -529,7 +529,7 @@ export default function UnifiedNotificationsManagementPage() {
                         <Bell className="w-4 h-4 text-blue-400" />
                         <span className="font-black text-xs text-white">Site Çan &amp; /bildirimler</span>
                       </div>
-                      <span className="text-[11px] text-[#8b949e] mt-0.5">
+                      <span className="text-[11px] text-slate-400 mt-0.5">
                         Sitedeki tüm ziyaretçilerin çanına eklenir
                       </span>
                     </div>
@@ -540,7 +540,7 @@ export default function UnifiedNotificationsManagementPage() {
 
               {/* Bildirim Başlığı */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider flex items-center justify-between">
+                <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center justify-between">
                   <span>Bildirim Başlığı</span>
                   <span className="text-[11px] font-mono text-amber-400/80 font-normal">{title.length}/60</span>
                 </label>
@@ -551,13 +551,13 @@ export default function UnifiedNotificationsManagementPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Örn: 🔥 İstanbul Yeni İlanlar Yayında!"
-                  className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
                 />
               </div>
 
               {/* Bildirim Mesajı */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider flex items-center justify-between">
+                <label className="text-xs font-black uppercase text-slate-400 tracking-wider flex items-center justify-between">
                   <span>Mesaj İçeriği</span>
                   <span className="text-[11px] font-mono text-amber-400/80 font-normal">{message.length}/160</span>
                 </label>
@@ -568,14 +568,14 @@ export default function UnifiedNotificationsManagementPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Örn: Günün en popüler VIP ilanları eklendi. Hemen tıkla ve güncel profilleri incele."
-                  className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors resize-none"
                 />
               </div>
 
               {/* Tıklanınca Açılacak Hedef Link & Rozet */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
+                  <label className="text-xs font-black uppercase text-slate-400 tracking-wider">
                     Tıklanınca Açılacak Sayfa (URL)
                   </label>
                   <input
@@ -583,12 +583,12 @@ export default function UnifiedNotificationsManagementPage() {
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     placeholder="Örn: / veya /ilan/buca-izmir-197my"
-                    className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
+                  <label className="text-xs font-black uppercase text-slate-400 tracking-wider">
                     Site Çan Rozeti Metni
                   </label>
                   <input
@@ -596,7 +596,7 @@ export default function UnifiedNotificationsManagementPage() {
                     value={badge}
                     onChange={(e) => setBadge(e.target.value)}
                     placeholder="Örn: VIP İLAN, YÖNETİCİ, DUYURU"
-                    className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
                   />
                 </div>
               </div>
@@ -604,7 +604,7 @@ export default function UnifiedNotificationsManagementPage() {
               {/* Görsel URL & Hedef Cihaz */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
+                  <label className="text-xs font-black uppercase text-slate-400 tracking-wider">
                     Görsel / Resim URL (İsteğe Bağlı)
                   </label>
                   <input
@@ -612,19 +612,19 @@ export default function UnifiedNotificationsManagementPage() {
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
                     placeholder="https://... (boş bırakılabilir)"
-                    className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400 transition-colors"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-black uppercase text-[#8b949e] tracking-wider">
+                  <label className="text-xs font-black uppercase text-slate-400 tracking-wider">
                     Push Hedef Cihaz
                   </label>
                   <select
                     disabled={!sendWebPush}
                     value={pushPlatform}
                     onChange={(e: any) => setPushPlatform(e.target.value)}
-                    className="w-full px-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono focus:outline-none focus:border-amber-400 transition-colors disabled:opacity-40"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono focus:outline-none focus:border-amber-400 transition-colors disabled:opacity-40"
                   >
                     <option value="all">🌐 Tüm Cihazlar ({stats.totalSubscribers} Cihaz)</option>
                     <option value="android">📱 Yalnızca Android ({stats.androidSubscribers} Cihaz)</option>
@@ -682,8 +682,8 @@ export default function UnifiedNotificationsManagementPage() {
           {/* Sağ Kolon: Canlı Çift Önizleme (5 Kolon) */}
           <div className="lg:col-span-5 flex flex-col gap-4">
             
-            <div className="flex items-center justify-between bg-[#161b22] border border-[#30363d] p-1.5 rounded-2xl">
-              <span className="text-xs font-black uppercase text-[#8b949e] px-2 font-heading">
+            <div className="flex items-center justify-between bg-[#0c1017] border border-slate-800 p-1.5 rounded-2xl">
+              <span className="text-xs font-black uppercase text-slate-400 px-2 font-heading">
                 Canlı Görünüm Simülatörü
               </span>
               <div className="flex items-center gap-1">
@@ -693,7 +693,7 @@ export default function UnifiedNotificationsManagementPage() {
                   className={`px-3 py-1.5 rounded-xl text-xs font-heading font-black transition-all ${
                     previewMode === 'push'
                       ? 'bg-amber-500 text-slate-950 shadow-sm'
-                      : 'text-[#8b949e] hover:text-white'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   📱 Telefon Kilit Ekranı
@@ -704,7 +704,7 @@ export default function UnifiedNotificationsManagementPage() {
                   className={`px-3 py-1.5 rounded-xl text-xs font-heading font-black transition-all ${
                     previewMode === 'site'
                       ? 'bg-blue-500 text-white shadow-sm'
-                      : 'text-[#8b949e] hover:text-white'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   🔔 Site Çan Kartı
@@ -714,8 +714,8 @@ export default function UnifiedNotificationsManagementPage() {
 
             {/* Önizleme 1: Telefon Kilit Ekranı (Push) */}
             {previewMode === 'push' && (
-              <div className="bg-[#0d1117] border-2 border-amber-500/30 rounded-[36px] p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden">
-                <div className="flex items-center justify-between text-[11px] text-[#8b949e] font-mono border-b border-[#30363d]/50 pb-2">
+              <div className="bg-[#070a0f] border-2 border-amber-500/30 rounded-[36px] p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+                <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono border-b border-slate-800/50 pb-2">
                   <div className="flex items-center gap-1.5">
                     <Smartphone className="w-3.5 h-3.5 text-amber-400" />
                     <span>Android / iOS Kilit Ekranı</span>
@@ -726,11 +726,11 @@ export default function UnifiedNotificationsManagementPage() {
                 {/* Telefon Ekranı Simülasyonu */}
                 <div className="flex flex-col items-center gap-2 py-4">
                   <span className="text-4xl font-black text-white/90 font-mono tracking-tight">14:52</span>
-                  <span className="text-xs text-[#8b949e] font-mono">Çarşamba, Bugün</span>
+                  <span className="text-xs text-slate-400 font-mono">Çarşamba, Bugün</span>
                 </div>
 
                 {/* Kilit Ekranı Bildirim Kartı */}
-                <div className="p-4 rounded-2xl bg-[#161b22]/90 backdrop-blur border border-[#30363d] shadow-2xl flex flex-col gap-2.5">
+                <div className="p-4 rounded-2xl bg-[#0c1017]/90 backdrop-blur border border-slate-800 shadow-2xl flex flex-col gap-2.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-5 h-5 rounded-md bg-amber-500 flex items-center justify-center text-slate-950 font-black text-[10px]">
@@ -738,20 +738,20 @@ export default function UnifiedNotificationsManagementPage() {
                       </div>
                       <span className="text-[11px] font-bold text-white font-heading">Best Eskort</span>
                     </div>
-                    <span className="text-[10px] text-[#8b949e] font-mono">Şimdi</span>
+                    <span className="text-[10px] text-slate-400 font-mono">Şimdi</span>
                   </div>
 
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-black text-white font-heading leading-snug">
                       {title || 'Bildirim Başlığı'}
                     </span>
-                    <span className="text-[11px] text-[#c9d1d9] font-sans leading-relaxed">
+                    <span className="text-[11px] text-slate-300 font-sans leading-relaxed">
                       {message || 'Bildirim mesaj içeriği burada görünecektir.'}
                     </span>
                   </div>
 
                   {imageUrl && (
-                    <div className="relative w-full h-32 rounded-xl overflow-hidden mt-1 border border-[#30363d]">
+                    <div className="relative w-full h-32 rounded-xl overflow-hidden mt-1 border border-slate-800">
                       <Image
                         src={imageUrl}
                         alt="Önizleme"
@@ -762,13 +762,13 @@ export default function UnifiedNotificationsManagementPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between border-t border-[#30363d]/60 pt-2 mt-1 text-[10px] text-[#8b949e] font-mono">
+                  <div className="flex items-center justify-between border-t border-slate-800/60 pt-2 mt-1 text-[10px] text-slate-400 font-mono">
                     <span>Dokunarak Aç</span>
                     <span className="text-amber-400 font-bold">{url}</span>
                   </div>
                 </div>
 
-                <div className="text-center text-[10px] text-[#8b949e] font-mono">
+                <div className="text-center text-[10px] text-slate-400 font-mono">
                   ● Kilit ekranı bildirimleri ekran kapalıyken bile ses ve titreşimle belirir.
                 </div>
               </div>
@@ -776,8 +776,8 @@ export default function UnifiedNotificationsManagementPage() {
 
             {/* Önizleme 2: Site Çan / Bildirim Kartı */}
             {previewMode === 'site' && (
-              <div className="bg-[#0d1117] border-2 border-blue-500/30 rounded-[36px] p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden">
-                <div className="flex items-center justify-between text-[11px] text-[#8b949e] font-mono border-b border-[#30363d]/50 pb-2">
+              <div className="bg-[#070a0f] border-2 border-blue-500/30 rounded-[36px] p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+                <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono border-b border-slate-800/50 pb-2">
                   <div className="flex items-center gap-1.5">
                     <Bell className="w-3.5 h-3.5 text-blue-400" />
                     <span>Sitedeki /bildirimler Kartı</span>
@@ -785,25 +785,25 @@ export default function UnifiedNotificationsManagementPage() {
                   <span className="text-blue-400 font-bold">Aktif Rozet: +1</span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col gap-2.5">
+                <div className="p-4 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-lg flex flex-col gap-2.5">
                   <div className="flex items-center justify-between">
                     <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider font-mono">
                       {badge || 'YÖNETİCİ'}
                     </span>
-                    <span className="text-[10px] text-[#8b949e] font-mono">1 dk önce</span>
+                    <span className="text-[10px] text-slate-400 font-mono">1 dk önce</span>
                   </div>
 
                   <div className="flex flex-col gap-1">
                     <span className="text-xs sm:text-sm font-black text-white font-heading">
                       {title || 'Bildirim Başlığı'}
                     </span>
-                    <span className="text-xs text-[#8b949e] leading-relaxed">
+                    <span className="text-xs text-slate-400 leading-relaxed">
                       {message || 'Mesaj metni burada görünecektir.'}
                     </span>
                   </div>
 
                   {imageUrl && (
-                    <div className="relative w-full h-28 rounded-xl overflow-hidden mt-1 border border-[#30363d]">
+                    <div className="relative w-full h-28 rounded-xl overflow-hidden mt-1 border border-slate-800">
                       <Image
                         src={imageUrl}
                         alt="Önizleme"
@@ -814,13 +814,13 @@ export default function UnifiedNotificationsManagementPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between pt-2 border-t border-[#30363d]/60 text-xs font-heading font-bold text-amber-400">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs font-heading font-bold text-amber-400">
                     <span>Hemen İncele</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
 
-                <div className="text-center text-[10px] text-[#8b949e] font-mono">
+                <div className="text-center text-[10px] text-slate-400 font-mono">
                   ● Kullanıcı sitede gezinirken sağ üstteki kırmızı çan rozetine tıklandığında bu kart gösterilir.
                 </div>
               </div>
@@ -833,7 +833,7 @@ export default function UnifiedNotificationsManagementPage() {
 
       {/* ── 5. SEKME 2: SİTE BİLDİRİMLERİ GEÇMİŞİ ───────────────────────────── */}
       {activeTab === 'notifications' && (
-        <div className="bg-[#161b22] border border-[#30363d] p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
+        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Bell className="w-4 h-4 text-amber-400" />
@@ -848,14 +848,14 @@ export default function UnifiedNotificationsManagementPage() {
                 placeholder="Başlık veya mesaj ara..."
                 value={notifSearch}
                 onChange={(e) => setNotifSearch(e.target.value)}
-                className="pl-8 pr-3 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400"
+                className="pl-8 pr-3 py-1.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400"
               />
-              <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-2.5 top-2.5" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
             </div>
           </div>
 
           {filteredNotifications.length === 0 ? (
-            <div className="py-12 text-center text-xs text-[#8b949e] border border-dashed border-[#30363d] rounded-2xl flex flex-col items-center gap-2">
+            <div className="py-12 text-center text-xs text-slate-400 border border-dashed border-slate-800 rounded-2xl flex flex-col items-center gap-2">
               <Bell className="w-8 h-8 text-[#30363d]" />
               <span>Henüz bir site içi bildirim bulunmuyor.</span>
             </div>
@@ -863,7 +863,7 @@ export default function UnifiedNotificationsManagementPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#30363d] text-[#8b949e] font-heading uppercase text-[10px] tracking-wider">
+                  <tr className="border-b border-slate-800 text-slate-400 font-heading uppercase text-[10px] tracking-wider">
                     <th className="py-2.5 px-3">Tarih</th>
                     <th className="py-2.5 px-3">Rozet</th>
                     <th className="py-2.5 px-3">Başlık &amp; Mesaj</th>
@@ -874,8 +874,8 @@ export default function UnifiedNotificationsManagementPage() {
                 </thead>
                 <tbody className="divide-y divide-[#21262d] font-mono">
                   {filteredNotifications.map((n) => (
-                    <tr key={n._id} className="hover:bg-[#0d1117]/50 transition-colors">
-                      <td className="py-3 px-3 text-[#8b949e] whitespace-nowrap">
+                    <tr key={n._id} className="hover:bg-[#070a0f]/50 transition-colors">
+                      <td className="py-3 px-3 text-slate-400 whitespace-nowrap">
                         {new Date(n.createdAt).toLocaleString('tr-TR')}
                       </td>
                       <td className="py-3 px-3 whitespace-nowrap">
@@ -885,7 +885,7 @@ export default function UnifiedNotificationsManagementPage() {
                       </td>
                       <td className="py-3 px-3">
                         <div className="font-heading font-black text-white text-xs">{n.title}</div>
-                        <div className="text-[11px] text-[#8b949e] truncate max-w-sm font-sans">{n.message}</div>
+                        <div className="text-[11px] text-slate-400 truncate max-w-sm font-sans">{n.message}</div>
                       </td>
                       <td className="py-3 px-3 text-amber-400 font-mono text-[11px]">
                         {n.url}
@@ -915,7 +915,7 @@ export default function UnifiedNotificationsManagementPage() {
 
       {/* ── 6. SEKME 3: PUSH KAMPANYALARI GEÇMİŞİ ───────────────────────────── */}
       {activeTab === 'campaigns' && (
-        <div className="bg-[#161b22] border border-[#30363d] p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
+        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-purple-400" />
@@ -926,7 +926,7 @@ export default function UnifiedNotificationsManagementPage() {
           </div>
 
           {campaigns.length === 0 ? (
-            <div className="py-12 text-center text-xs text-[#8b949e] border border-dashed border-[#30363d] rounded-2xl flex flex-col items-center gap-2">
+            <div className="py-12 text-center text-xs text-slate-400 border border-dashed border-slate-800 rounded-2xl flex flex-col items-center gap-2">
               <Smartphone className="w-8 h-8 text-[#30363d]" />
               <span>Henüz bir push kampanyası fırlatılmadı.</span>
             </div>
@@ -934,7 +934,7 @@ export default function UnifiedNotificationsManagementPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#30363d] text-[#8b949e] font-heading uppercase text-[10px] tracking-wider">
+                  <tr className="border-b border-slate-800 text-slate-400 font-heading uppercase text-[10px] tracking-wider">
                     <th className="py-2.5 px-3">Tarih</th>
                     <th className="py-2.5 px-3">Başlık &amp; Mesaj</th>
                     <th className="py-2.5 px-3">Hedef Link</th>
@@ -944,13 +944,13 @@ export default function UnifiedNotificationsManagementPage() {
                 </thead>
                 <tbody className="divide-y divide-[#21262d] font-mono">
                   {campaigns.map((c) => (
-                    <tr key={c._id} className="hover:bg-[#0d1117]/50 transition-colors">
-                      <td className="py-3 px-3 text-[#8b949e] whitespace-nowrap">
+                    <tr key={c._id} className="hover:bg-[#070a0f]/50 transition-colors">
+                      <td className="py-3 px-3 text-slate-400 whitespace-nowrap">
                         {new Date(c.createdAt).toLocaleString('tr-TR')}
                       </td>
                       <td className="py-3 px-3">
                         <div className="font-heading font-black text-white text-xs">{c.title}</div>
-                        <div className="text-[11px] text-[#8b949e] truncate max-w-sm font-sans">{c.body}</div>
+                        <div className="text-[11px] text-slate-400 truncate max-w-sm font-sans">{c.body}</div>
                       </td>
                       <td className="py-3 px-3 text-amber-400 font-mono text-[11px]">
                         {c.url}
@@ -976,7 +976,7 @@ export default function UnifiedNotificationsManagementPage() {
 
       {/* ── 7. SEKME 4: CİHAZLAR & KURULUM AKIŞI (PWA & ABONE) ───────────────── */}
       {activeTab === 'devices' && (
-        <div className="bg-[#161b22] border border-[#30363d] p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
+        <div className="bg-[#0c1017] border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl flex flex-col gap-4">
           
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
@@ -993,16 +993,16 @@ export default function UnifiedNotificationsManagementPage() {
                   placeholder="IP, Cihaz, ID, Şehir..."
                   value={deviceSearch}
                   onChange={(e) => setDeviceSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400"
+                  className="pl-8 pr-3 py-1.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder-[#484f58] focus:outline-none focus:border-amber-400"
                 />
-                <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-2.5 top-2.5" />
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
               </div>
 
-              <div className="flex items-center gap-1 bg-[#0d1117] p-1 rounded-xl border border-[#30363d]">
+              <div className="flex items-center gap-1 bg-[#070a0f] p-1 rounded-xl border border-slate-800">
                 <button
                   onClick={() => setDeviceFilter('all')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-heading font-bold transition-all ${
-                    deviceFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-[#8b949e] hover:text-white'
+                    deviceFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Tümü
@@ -1010,7 +1010,7 @@ export default function UnifiedNotificationsManagementPage() {
                 <button
                   onClick={() => setDeviceFilter('installs')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-heading font-bold transition-all ${
-                    deviceFilter === 'installs' ? 'bg-emerald-500 text-slate-950' : 'text-[#8b949e] hover:text-white'
+                    deviceFilter === 'installs' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Kurulumlar
@@ -1018,7 +1018,7 @@ export default function UnifiedNotificationsManagementPage() {
                 <button
                   onClick={() => setDeviceFilter('uninstalls')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-heading font-bold transition-all ${
-                    deviceFilter === 'uninstalls' ? 'bg-rose-500 text-white' : 'text-[#8b949e] hover:text-white'
+                    deviceFilter === 'uninstalls' ? 'bg-rose-500 text-white' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Kaldırılanlar
@@ -1026,7 +1026,7 @@ export default function UnifiedNotificationsManagementPage() {
                 <button
                   onClick={() => setDeviceFilter('subscribers')}
                   className={`px-2.5 py-1 rounded-lg text-[11px] font-heading font-bold transition-all ${
-                    deviceFilter === 'subscribers' ? 'bg-amber-500 text-slate-950' : 'text-[#8b949e] hover:text-white'
+                    deviceFilter === 'subscribers' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   Push Aboneleri
@@ -1036,7 +1036,7 @@ export default function UnifiedNotificationsManagementPage() {
           </div>
 
           {filteredEvents.length === 0 ? (
-            <div className="py-12 text-center text-xs text-[#8b949e] border border-dashed border-[#30363d] rounded-2xl flex flex-col items-center gap-2">
+            <div className="py-12 text-center text-xs text-slate-400 border border-dashed border-slate-800 rounded-2xl flex flex-col items-center gap-2">
               <Smartphone className="w-8 h-8 text-[#30363d]" />
               <span>Henüz bu filtreye uyan bir cihaz kaydı bulunamadı.</span>
             </div>
@@ -1051,12 +1051,12 @@ export default function UnifiedNotificationsManagementPage() {
                 return (
                   <div
                     key={item._id || idx}
-                    className={`p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${
+                    className={`p-3.5 sm:p-4 rounded-2xl bg-[#070a0f] border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${
                       isUninstall
                         ? 'border-rose-500/30 hover:border-rose-400'
                         : isSub
                         ? 'border-amber-500/30 hover:border-amber-400'
-                        : 'border-[#30363d] hover:border-emerald-500/40'
+                        : 'border-slate-800 hover:border-emerald-500/40'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -1132,7 +1132,7 @@ export default function UnifiedNotificationsManagementPage() {
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3 text-[11px] text-[#8b949e] mt-1 font-mono flex-wrap">
+                        <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-1 font-mono flex-wrap">
                           <span className="text-white font-bold">📍 {item.targetCity && item.targetCity !== 'Türkiye' ? item.targetCity : (item.city || 'İstanbul')}</span>
                           {item.ip && <span>🌐 {item.ip}</span>}
                           {item.searchKeyword && <span className="text-amber-400">🔍 {item.searchKeyword}</span>}

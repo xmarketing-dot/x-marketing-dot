@@ -147,7 +147,7 @@ export default function AdminUsersPage() {
     <div className="flex flex-col gap-6 sm:gap-8 w-full max-w-full text-left">
       
       {/* ── HEADER BAR ────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#161b22] p-5 sm:p-6 rounded-3xl border border-[#30363d] shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#0c1017] p-5 sm:p-6 rounded-2xl border border-slate-800/80 shadow-2xl">
         <div className="flex items-center gap-3.5">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 shrink-0">
             <Users className="w-6 h-6" />
@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
                 {totalUsersCount} Hesap
               </span>
             </div>
-            <p className="text-xs text-[#8b949e] mt-0.5">Tüm kullanıcı hesapları, bağlı ilan sayıları ve panel şifreleri.</p>
+            <p className="text-xs text-slate-400 mt-0.5">Tüm kullanıcı hesapları, bağlı ilan sayıları ve panel şifreleri.</p>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export default function AdminUsersPage() {
           <button
             type="button"
             onClick={fetchUsers}
-            className="p-3 sm:px-4 sm:py-3 rounded-2xl bg-[#0d1117] hover:bg-[#21262d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-md flex items-center justify-center gap-2 shrink-0"
+            className="p-3 sm:px-4 sm:py-3 rounded-2xl bg-[#070a0f] hover:bg-slate-900 text-white border border-slate-800 font-bold text-xs transition-colors shadow-md flex items-center justify-center gap-2 shrink-0"
             title="Listeyi Yenile"
           >
             <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
@@ -190,42 +190,42 @@ export default function AdminUsersPage() {
 
       {/* ── TOP STATS PILLS ────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-3.5 shadow-lg">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 hover:border-slate-700 transition-colors flex items-center gap-3.5 shadow-lg">
           <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center font-bold shrink-0">
             <Users className="w-5 h-5" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-[#8b949e] font-bold uppercase tracking-wider">Kayıtlı Kullanıcı</span>
+            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Kayıtlı Kullanıcı</span>
             <span className="font-black text-lg sm:text-xl text-white font-heading truncate">{totalUsersCount} Kişi</span>
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-3.5 shadow-lg">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 hover:border-slate-700 transition-colors flex items-center gap-3.5 shadow-lg">
           <div className="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center font-bold shrink-0">
             <Layers className="w-5 h-5" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-[#8b949e] font-bold uppercase tracking-wider">Toplam İlan</span>
+            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Toplam İlan</span>
             <span className="font-black text-lg sm:text-xl text-blue-400 font-heading truncate">{totalListingsCount} Adet</span>
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-3.5 shadow-lg">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 hover:border-slate-700 transition-colors flex items-center gap-3.5 shadow-lg">
           <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold shrink-0">
             <Crown className="w-5 h-5" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-[#8b949e] font-bold uppercase tracking-wider">Yayındaki İlan</span>
+            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Yayındaki İlan</span>
             <span className="font-black text-lg sm:text-xl text-emerald-400 font-heading truncate">{totalActiveListingsCount} Yayında</span>
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-[#161b22] border border-[#30363d] flex items-center gap-3.5 shadow-lg">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 hover:border-slate-700 transition-colors flex items-center gap-3.5 shadow-lg">
           <div className="w-10 h-10 rounded-xl bg-green-500/15 text-[#25D366] flex items-center justify-center font-bold shrink-0">
             <OfficialWhatsAppIcon className="w-5 h-5 fill-[#25D366]" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] text-[#8b949e] font-bold uppercase tracking-wider">WhatsApp Hit</span>
+            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">WhatsApp Hit</span>
             <span className="font-black text-lg sm:text-xl text-[#25D366] font-heading truncate">{totalWhatsappClicksCount.toLocaleString()}</span>
           </div>
         </div>
@@ -235,7 +235,7 @@ export default function AdminUsersPage() {
       <div className="w-full flex flex-col gap-4">
         
         {/* Arama & Filtre Çubuğu */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-amber-400 shrink-0" />
             <h2 className="font-extrabold text-sm sm:text-base text-white font-heading">
@@ -249,30 +249,77 @@ export default function AdminUsersPage() {
               placeholder="Kullanıcı adı, şifre, tel veya ilan ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none"
             />
-            <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           </div>
         </div>
 
         {/* Kullanıcı Listesi: Masaüstü Tablo + Mobil Kartlar */}
         {loading ? (
-          <div className="p-16 text-center flex flex-col items-center justify-center gap-3 bg-[#161b22] rounded-3xl border border-[#30363d]">
-            <Loader2 className="w-8 h-8 text-amber-400 animate-spin" />
-            <span className="text-xs text-[#8b949e] font-heading">Kullanıcı verileri yükleniyor...</span>
+          <div className="flex flex-col gap-4">
+            {/* Desktop Table Skeleton */}
+            <div className="hidden md:block rounded-2xl bg-[#0c1017] border border-slate-800/80 overflow-hidden shadow-xl">
+              <div className="p-4 bg-[#070a0f] border-b border-slate-800 flex items-center justify-between">
+                <div className="h-4 w-36 bg-slate-800 rounded animate-pulse" />
+                <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
+              </div>
+              <div className="p-4 space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-16 rounded-xl bg-slate-900/40 border border-slate-800/50 animate-pulse flex items-center justify-between px-4 gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-800 shrink-0" />
+                      <div className="space-y-1.5">
+                        <div className="h-4 w-32 bg-slate-700/60 rounded" />
+                        <div className="h-3 w-20 bg-slate-800 rounded" />
+                      </div>
+                    </div>
+                    <div className="h-4 w-28 bg-slate-800 rounded" />
+                    <div className="h-6 w-20 bg-slate-800 rounded-xl" />
+                    <div className="h-5 w-24 bg-slate-800 rounded-full" />
+                    <div className="h-5 w-28 bg-slate-800 rounded" />
+                    <div className="flex gap-2">
+                      <div className="w-24 h-8 rounded-xl bg-slate-800" />
+                      <div className="w-8 h-8 rounded-xl bg-slate-800" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Cards Skeleton */}
+            <div className="md:hidden flex flex-col gap-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="p-5 rounded-3xl bg-[#0c1017] border border-slate-800/80 animate-pulse flex flex-col gap-4 shadow-xl">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-800 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-2/3 bg-slate-700/60 rounded" />
+                      <div className="h-3 w-1/2 bg-slate-800 rounded" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800/60">
+                    {[1, 2, 3, 4].map((j) => (
+                      <div key={j} className="h-12 bg-[#070a0f] rounded-2xl border border-slate-800/80" />
+                    ))}
+                  </div>
+                  <div className="h-10 w-full bg-slate-800 rounded-2xl" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : filteredUsers.length === 0 ? (
-          <div className="p-12 text-center text-xs text-[#8b949e] bg-[#161b22] rounded-3xl border border-[#30363d]">
+          <div className="p-12 text-center text-xs text-slate-400 bg-[#0c1017] rounded-3xl border border-slate-800">
             Arama kriterlerine uygun kullanıcı bulunamadı.
           </div>
         ) : (
           <>
             {/* ── MASAÜSTÜ KULLANICI TABLOSU (DESKTOP DATA TABLE - md & üstü) ──────────────── */}
-            <div className="hidden md:block w-full overflow-hidden rounded-2xl bg-[#161b22] border border-[#30363d] shadow-2xl">
+            <div className="hidden md:block w-full overflow-hidden rounded-2xl bg-[#0c1017] border border-slate-800 shadow-2xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-[#1a202c] border-b border-[#30363d] text-[11px] font-black uppercase text-[#8b949e] font-heading tracking-wider">
+                    <tr className="bg-[#070a0f] border-b border-slate-800 text-[11px] font-black uppercase text-slate-400 font-heading tracking-wider">
                       <th className="py-3.5 px-4">Kullanıcı &amp; Bağlı İlan</th>
                       <th className="py-3.5 px-4">İletişim &amp; WhatsApp</th>
                       <th className="py-3.5 px-4">Panel Şifresi</th>
@@ -282,7 +329,7 @@ export default function AdminUsersPage() {
                       <th className="py-3.5 px-4 text-right">İşlemler</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#30363d]/50 text-xs">
+                  <tbody className="divide-y divide-slate-800/50 text-xs">
                     {filteredUsers.map((u) => {
                       const isExpanded = expandedUserId === u._id;
                       const stats = u.stats || { totalListings: 0, activeListings: 0, pendingListings: 0, totalViews: 0, totalWhatsapp: 0 };
@@ -299,7 +346,7 @@ export default function AdminUsersPage() {
 
                       return (
                         <React.Fragment key={u._id}>
-                          <tr className="hover:bg-[#1c232d] transition-colors group">
+                          <tr className="hover:bg-slate-900/50 transition-colors group">
                             {/* Kullanıcı */}
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-3">
@@ -319,7 +366,7 @@ export default function AdminUsersPage() {
                                       👑 {listings[0].baslik}
                                     </span>
                                   ) : (
-                                    <span className="text-[10px] text-[#8b949e] font-mono mt-0.5">
+                                    <span className="text-[10px] text-slate-400 font-mono mt-0.5">
                                       {u.ad && u.ad !== u.kullaniciAdi ? u.ad : 'İlan henüz yok'}
                                     </span>
                                   )}
@@ -340,7 +387,7 @@ export default function AdminUsersPage() {
                                   <span>{u.telefon}</span>
                                 </a>
                               ) : (
-                                <span className="text-[#8b949e] font-mono">Belirtilmedi</span>
+                                <span className="text-slate-400 font-mono">Belirtilmedi</span>
                               )}
                             </td>
 
@@ -349,12 +396,12 @@ export default function AdminUsersPage() {
                               <button
                                 type="button"
                                 onClick={() => handleCopyPassword(u.sifreHash || '', u._id)}
-                                className="inline-flex items-center gap-1.5 text-amber-300 font-mono font-bold bg-[#0d1117] hover:bg-[#21262d] px-2.5 py-1 rounded-xl text-xs border border-[#30363d] transition-colors"
+                                className="inline-flex items-center gap-1.5 text-amber-300 font-mono font-bold bg-[#070a0f] hover:bg-slate-900 px-2.5 py-1 rounded-xl text-xs border border-slate-800 transition-colors"
                                 title="Şifreyi Kopyala"
                               >
                                 <Lock className="w-3 h-3 text-amber-400" />
                                 <span>{u.sifreHash || '—'}</span>
-                                {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-[#8b949e]" />}
+                                {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
                               </button>
                             </td>
 
@@ -381,7 +428,7 @@ export default function AdminUsersPage() {
                                     <span className="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
                                     Çevrimdışı
                                   </span>
-                                  <span className="text-[#8b949e]">
+                                  <span className="text-slate-400">
                                     Giriş: {entryTimeStr || '—'}
                                   </span>
                                   <span className="text-slate-500">
@@ -389,7 +436,7 @@ export default function AdminUsersPage() {
                                   </span>
                                 </div>
                               ) : (
-                                <span className="text-[10px] text-[#8b949e] font-mono">
+                                <span className="text-[10px] text-slate-400 font-mono">
                                   Kayıt: {new Date(u.createdAt).toLocaleDateString('tr-TR')}
                                 </span>
                               )}
@@ -410,7 +457,7 @@ export default function AdminUsersPage() {
                             {/* Hit & WhatsApp */}
                             <td className="py-3.5 px-4 text-center">
                               <div className="inline-flex items-center gap-3 font-mono text-xs">
-                                <span className="text-[#8b949e]" title="Görüntülenme">
+                                <span className="text-slate-400" title="Görüntülenme">
                                   👁️ {stats.totalViews.toLocaleString()}
                                 </span>
                                 <span className="text-emerald-400 font-bold" title="WhatsApp Tıklaması">
@@ -428,7 +475,7 @@ export default function AdminUsersPage() {
                                   className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all font-heading ${
                                     isExpanded
                                       ? 'bg-amber-500 text-slate-950 border-amber-400'
-                                      : 'bg-[#0d1117] hover:bg-[#21262d] text-white border-[#30363d]'
+                                      : 'bg-[#070a0f] hover:bg-slate-900 text-white border-slate-800'
                                   }`}
                                 >
                                   <Layers className="w-3.5 h-3.5" />
@@ -450,8 +497,8 @@ export default function AdminUsersPage() {
 
                           {/* Genişletilmiş İlanlar Satırı (Table Expand Row) */}
                           {isExpanded && (
-                            <tr className="bg-[#0d1117]/80">
-                              <td colSpan={6} className="p-4 sm:p-5 border-b border-[#30363d]">
+                            <tr className="bg-[#070a0f]/80">
+                              <td colSpan={6} className="p-4 sm:p-5 border-b border-slate-800">
                                 <div className="flex flex-col gap-3">
                                   <div className="flex items-center justify-between">
                                     <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
@@ -461,7 +508,7 @@ export default function AdminUsersPage() {
                                   </div>
 
                                   {listings.length === 0 ? (
-                                    <div className="p-4 text-center text-xs text-[#8b949e] bg-[#161b22] rounded-xl border border-[#30363d]">
+                                    <div className="p-4 text-center text-xs text-slate-400 bg-[#0c1017] rounded-xl border border-slate-800">
                                       Bu kullanıcıya ait henüz bir ilan bulunmamaktadır.
                                     </div>
                                   ) : (
@@ -469,10 +516,10 @@ export default function AdminUsersPage() {
                                       {listings.map((item: any) => (
                                         <div 
                                           key={item._id}
-                                          className="p-3 rounded-2xl bg-[#161b22] border border-[#30363d] hover:border-amber-500/40 flex items-center gap-3 justify-between transition-all"
+                                          className="p-3 rounded-2xl bg-[#0c1017] border border-slate-800 hover:border-amber-500/40 flex items-center gap-3 justify-between transition-all"
                                         >
                                           <div className="flex items-center gap-3 min-w-0">
-                                            <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-[#0d1117] border border-[#30363d] shrink-0">
+                                            <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-[#070a0f] border border-slate-800 shrink-0">
                                               <Image
                                                 src={item.anaFotograf || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
                                                 alt={item.baslik}
@@ -503,7 +550,7 @@ export default function AdminUsersPage() {
                                           <Link
                                             href={`/ilan/${item.slug}`}
                                             target="_blank"
-                                            className="p-2 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition-colors shrink-0 flex items-center justify-center shadow-md"
+                                            className="p-2 rounded-xl bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition-colors shrink-0 flex items-center justify-center shadow-md"
                                             title="İlanı Sitede Gör"
                                           >
                                             <ExternalLink className="w-3.5 h-3.5" />
@@ -543,7 +590,7 @@ export default function AdminUsersPage() {
                 return (
                   <div 
                     key={u._id} 
-                    className="p-5 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] hover:border-amber-500/50 transition-all flex flex-col gap-4 shadow-xl"
+                    className="p-5 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 hover:border-amber-500/50 transition-all flex flex-col gap-4 shadow-xl"
                   >
                     
                     {/* User Header Info & Controls */}
@@ -568,11 +615,11 @@ export default function AdminUsersPage() {
                             <button
                               type="button"
                               onClick={() => handleCopyPassword(u.sifreHash || '', u._id)}
-                              className="text-amber-300 font-mono font-bold bg-[#0d1117] hover:bg-[#21262d] px-2.5 py-1 rounded-xl text-xs border border-[#30363d] flex items-center gap-1.5 transition-colors cursor-pointer"
+                              className="text-amber-300 font-mono font-bold bg-[#070a0f] hover:bg-slate-900 px-2.5 py-1 rounded-xl text-xs border border-slate-800 flex items-center gap-1.5 transition-colors cursor-pointer"
                               title="Şifreyi Kopyala"
                             >
                               <span>Şifre: {u.sifreHash || '—'}</span>
-                              {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-[#8b949e]" />}
+                              {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
                             </button>
                           </div>
 
@@ -582,14 +629,14 @@ export default function AdminUsersPage() {
                             </div>
                           )}
 
-                          <div className="flex flex-wrap items-center gap-2 text-xs mt-1.5 text-[#8b949e]">
+                          <div className="flex flex-wrap items-center gap-2 text-xs mt-1.5 text-slate-400">
                             {u.telefon ? (
                               <span className="flex items-center gap-1 text-emerald-400 font-mono font-bold">
                                 <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
                                 <span>{u.telefon}</span>
                               </span>
                             ) : (
-                              <span className="text-[#8b949e]">Tel: Belirtilmedi</span>
+                              <span className="text-slate-400">Tel: Belirtilmedi</span>
                             )}
                             <span className="text-[#30363d]">●</span>
                             {isActuallyOnline ? (
@@ -601,7 +648,7 @@ export default function AdminUsersPage() {
                                 Son Çıkış: {lastLogoutStr || '—'} ({new Date(u.lastActiveAt).toLocaleDateString('tr-TR')})
                               </span>
                             ) : (
-                              <span className="text-[11px] text-[#8b949e]">
+                              <span className="text-[11px] text-slate-400">
                                 Kayıt: {new Date(u.createdAt).toLocaleDateString('tr-TR')}
                               </span>
                             )}
@@ -610,14 +657,14 @@ export default function AdminUsersPage() {
                       </div>
 
                       {/* Expand & Delete Actions */}
-                      <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-[#30363d]/60">
+                      <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
                         <button
                           type="button"
                           onClick={() => toggleExpand(u._id)}
                           className={`flex-1 sm:flex-initial px-4 py-2 rounded-2xl text-xs font-bold border flex items-center justify-center gap-2 transition-all font-heading ${
                             isExpanded
                               ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
-                              : 'bg-[#0d1117] hover:bg-[#21262d] text-white border-[#30363d]'
+                              : 'bg-[#070a0f] hover:bg-slate-900 text-white border-slate-800'
                           }`}
                         >
                           <Layers className="w-3.5 h-3.5" />
@@ -637,23 +684,23 @@ export default function AdminUsersPage() {
                     </div>
 
                     {/* Quick Stats Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-[#30363d]/60 text-center font-heading">
-                      <div className="p-2.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col">
-                        <span className="text-[10px] text-[#8b949e] uppercase font-bold">Toplam İlan</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-800/60 text-center font-heading">
+                      <div className="p-2.5 rounded-2xl bg-[#070a0f] border border-slate-800 flex flex-col">
+                        <span className="text-[10px] text-slate-400 uppercase font-bold">Toplam İlan</span>
                         <span className="font-black text-sm text-white">{stats.totalListings} Adet</span>
                       </div>
 
-                      <div className="p-2.5 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col">
+                      <div className="p-2.5 rounded-2xl bg-[#070a0f] border border-emerald-500/30 flex flex-col">
                         <span className="text-[10px] text-emerald-400 uppercase font-bold">Yayındaki İlan</span>
                         <span className="font-black text-sm text-emerald-400">{stats.activeListings} Yayında</span>
                       </div>
 
-                      <div className="p-2.5 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col">
+                      <div className="p-2.5 rounded-2xl bg-[#070a0f] border border-blue-500/30 flex flex-col">
                         <span className="text-[10px] text-blue-400 uppercase font-bold">Görüntülenme</span>
                         <span className="font-black text-sm text-blue-400">{stats.totalViews.toLocaleString()}</span>
                       </div>
 
-                      <div className="p-2.5 rounded-2xl bg-[#0d1117] border border-green-500/30 flex flex-col">
+                      <div className="p-2.5 rounded-2xl bg-[#070a0f] border border-green-500/30 flex flex-col">
                         <span className="text-[10px] text-[#25D366] uppercase font-bold">WhatsApp Hit</span>
                         <span className="font-black text-sm text-[#25D366]">{stats.totalWhatsapp.toLocaleString()}</span>
                       </div>
@@ -661,19 +708,19 @@ export default function AdminUsersPage() {
 
                     {/* Expandable Listings Section */}
                     {isExpanded && (
-                      <div className="p-4 sm:p-5 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-3 animate-in fade-in duration-200">
-                        <div className="flex items-center justify-between border-b border-[#30363d] pb-2.5">
+                      <div className="p-4 sm:p-5 rounded-2xl bg-[#070a0f] border border-amber-500/30 flex flex-col gap-3 animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                           <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
                             <Layers className="w-3.5 h-3.5" />
                             <span>Kullanıcıya Bağlı İlanlar</span>
                           </span>
-                          <span className="text-[11px] text-[#8b949e]">
+                          <span className="text-[11px] text-slate-400">
                             {listings.length} ilan listelendi
                           </span>
                         </div>
 
                         {listings.length === 0 ? (
-                          <div className="p-6 text-center text-xs text-[#8b949e]">
+                          <div className="p-6 text-center text-xs text-slate-400">
                             Bu kullanıcıya ait henüz bir ilan bulunmamaktadır.
                           </div>
                         ) : (
@@ -681,10 +728,10 @@ export default function AdminUsersPage() {
                             {listings.map((item: any) => (
                               <div 
                                 key={item._id}
-                                className="p-3.5 rounded-2xl bg-[#161b22] border border-[#30363d] hover:border-amber-500/40 flex items-center gap-3 justify-between transition-all"
+                                className="p-3.5 rounded-2xl bg-[#0c1017] border border-slate-800 hover:border-amber-500/40 flex items-center gap-3 justify-between transition-all"
                               >
                                 <div className="flex items-center gap-3 min-w-0">
-                                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[#0d1117] border border-[#30363d] shrink-0">
+                                  <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-[#070a0f] border border-slate-800 shrink-0">
                                     <Image
                                       src={item.anaFotograf || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
                                       alt={item.baslik}
@@ -709,7 +756,7 @@ export default function AdminUsersPage() {
                                         {item.status === 'yayinda' ? 'YAYINDA' : item.status}
                                       </span>
                                       {item.createdAt && (
-                                        <span className="text-[9px] text-[#8b949e] font-mono">
+                                        <span className="text-[9px] text-slate-400 font-mono">
                                           • {new Date(item.createdAt).toLocaleDateString('tr-TR')}
                                         </span>
                                       )}
@@ -720,7 +767,7 @@ export default function AdminUsersPage() {
                                 <Link
                                   href={`/ilan/${item.slug}`}
                                   target="_blank"
-                                  className="p-2.5 rounded-xl bg-[#21262d] hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition-colors shrink-0 flex items-center justify-center shadow-md"
+                                  className="p-2.5 rounded-xl bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-400 transition-colors shrink-0 flex items-center justify-center shadow-md"
                                   title="İlanı Sitede Gör"
                                 >
                                   <ExternalLink className="w-4 h-4" />
@@ -749,11 +796,11 @@ export default function AdminUsersPage() {
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md bg-[#161b22] border-2 border-amber-500/60 rounded-[32px] p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left animate-in zoom-in-95 duration-200"
+            className="w-full max-w-md bg-[#0c1017] border border-slate-800 rounded-3xl shadow-2xl p-6 sm:p-7 shadow-2xl flex flex-col gap-5 text-left animate-in zoom-in-95 duration-200"
           >
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black">
                   <UserPlus className="w-5 h-5 stroke-[2.5]" />
@@ -762,7 +809,7 @@ export default function AdminUsersPage() {
                   <h3 className="font-black text-lg text-white font-heading">
                     Yeni Kullanıcı Hesabı Aç
                   </h3>
-                  <span className="text-xs text-[#8b949e]">
+                  <span className="text-xs text-slate-400">
                     Müşteri için giriş bilgilerini tanımlayın.
                   </span>
                 </div>
@@ -771,7 +818,7 @@ export default function AdminUsersPage() {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white transition-colors"
+                className="p-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
@@ -791,7 +838,7 @@ export default function AdminUsersPage() {
             <form onSubmit={handleCreateUser} className="flex flex-col gap-4">
               
               {/* Kullanıcı Adı */}
-              <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
+              <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
                 <span>Kullanıcı Adı <span className="text-amber-400">*</span></span>
                 <div className="relative">
                   <input
@@ -800,14 +847,14 @@ export default function AdminUsersPage() {
                     placeholder="Örn: ahmetyilmaz"
                     value={kullaniciAdi}
                     onChange={(e) => setKullaniciAdi(e.target.value.toLowerCase().replace(/\s+/g, ''))}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#0d1117] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 font-mono font-medium shadow-inner"
+                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#070a0f] border border-slate-700/80 text-white text-xs focus:outline-none focus:border-amber-400 font-mono font-medium shadow-inner"
                   />
                   <AtSign className="w-4 h-4 text-amber-400 absolute left-3.5 top-3.5" />
                 </div>
               </label>
 
               {/* Şifre */}
-              <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
+              <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
                 <span>Giriş Şifresi <span className="text-amber-400">*</span></span>
                 <div className="relative">
                   <input
@@ -816,14 +863,14 @@ export default function AdminUsersPage() {
                     placeholder="Örn: 123456"
                     value={sifre}
                     onChange={(e) => setSifre(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#0d1117] border border-[#363b42] text-amber-300 text-xs focus:outline-none focus:border-amber-400 font-mono font-bold shadow-inner"
+                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#070a0f] border border-slate-700/80 text-amber-300 text-xs focus:outline-none focus:border-amber-400 font-mono font-bold shadow-inner"
                   />
                   <Lock className="w-4 h-4 text-amber-400 absolute left-3.5 top-3.5" />
                 </div>
               </label>
 
               {/* İsteğe Bağlı Telefon Numarası */}
-              <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
+              <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
                 <span>WhatsApp / Telefon Numarası (Opsiyonel)</span>
                 <div className="relative">
                   <input
@@ -831,9 +878,9 @@ export default function AdminUsersPage() {
                     placeholder="Örn: 0542 000 00 00"
                     value={telefon}
                     onChange={(e) => setTelefon(e.target.value)}
-                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#0d1117] border border-[#363b42] text-white text-xs focus:outline-none focus:border-amber-400 font-medium shadow-inner"
+                    className="w-full pl-10 pr-3.5 py-3 rounded-2xl bg-[#070a0f] border border-slate-700/80 text-white text-xs focus:outline-none focus:border-amber-400 font-medium shadow-inner"
                   />
-                  <Phone className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3.5" />
+                  <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                 </div>
               </label>
 
@@ -841,7 +888,7 @@ export default function AdminUsersPage() {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 px-4 rounded-2xl bg-[#21262d] hover:bg-[#30363d] text-white font-bold text-xs transition-colors"
+                  className="flex-1 py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors"
                 >
                   İptal
                 </button>

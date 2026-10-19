@@ -993,7 +993,7 @@ export default function AdminHomepageConfigPage() {
     <div className="flex flex-col gap-6 w-full max-w-full text-left pb-16">
 
       {/* ── ÜST DASHBOARD HEADER & CANLI METRİKLER ──────────────── */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#161b22] via-[#12161c] to-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-5">
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#161b22] via-[#12161c] to-[#161b22] border border-slate-800 shadow-2xl flex flex-col gap-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 shrink-0">
@@ -1008,7 +1008,7 @@ export default function AdminHomepageConfigPage() {
                   SaaS Control
                 </span>
               </div>
-              <p className="text-xs text-[#8b949e] mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5">
                 Vitrin onay masası, üst slider rotasyonu, sponsorlu popup reklamları ve 81 il hedefleme matrisi.
               </p>
             </div>
@@ -1018,7 +1018,7 @@ export default function AdminHomepageConfigPage() {
             <button
               type="button"
               onClick={() => fetchConfig(false)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white border border-[#30363d] font-bold text-xs transition-colors shadow-md"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white border border-slate-800 font-bold text-xs transition-colors shadow-md"
             >
               <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
               <span>Yenile</span>
@@ -1039,12 +1039,12 @@ export default function AdminHomepageConfigPage() {
         {/* Canlı Durum Kartları / Sayaçlar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-white/5 text-xs">
           {/* 1. Vitrinde Yayında */}
-          <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-black shrink-0">
               <Crown className="w-5 h-5" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[10px] uppercase font-bold text-[#8b949e]">Vitrinde Yayında</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400">Vitrinde Yayında</span>
               <span className="text-sm sm:text-base font-black text-white font-mono">{selectedListingIds.length} İlan</span>
             </div>
           </div>
@@ -1052,13 +1052,13 @@ export default function AdminHomepageConfigPage() {
           {/* 2. Onay Bekleyen Vitrinler */}
           <div className={`p-3.5 rounded-2xl border flex items-center gap-3 ${vitrinRequests.length > 0
               ? 'bg-amber-500/10 border-amber-500/40 animate-pulse'
-              : 'bg-[#0d1117] border-[#21262d]'
+              : 'bg-[#070a0f] border-[#21262d]'
             }`}>
             <div className="w-9 h-9 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center font-black shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[10px] uppercase font-bold text-[#8b949e]">Vitrin Talepleri</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400">Vitrin Talepleri</span>
               <span className="text-sm sm:text-base font-black text-amber-300 font-mono">
                 {vitrinRequests.length} Talep
               </span>
@@ -1066,12 +1066,12 @@ export default function AdminHomepageConfigPage() {
           </div>
 
           {/* 3. Aktif Popup Reklamlar */}
-          <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-black shrink-0">
               <Tv className="w-5 h-5" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[10px] uppercase font-bold text-[#8b949e]">Popup Reklamları</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400">Popup Reklamları</span>
               <span className="text-sm sm:text-base font-black text-emerald-400 font-mono">
                 {ozelIlanReklamlar.filter((a) => a.aktif).length} Aktif
               </span>
@@ -1079,13 +1079,13 @@ export default function AdminHomepageConfigPage() {
           </div>
 
           {/* 4. Canlı Anasayfa Durumu */}
-          <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex items-center gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black shrink-0 ${selectedListingIds.length > 0 ? 'bg-amber-500/15 text-amber-400' : 'bg-purple-500/15 text-purple-400'
               }`}>
               <Radio className="w-5 h-5" />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[10px] uppercase font-bold text-[#8b949e]">Anasayfa Üst Modu</span>
+              <span className="text-[10px] uppercase font-bold text-slate-400">Anasayfa Üst Modu</span>
               <span className={`text-xs font-black truncate font-heading ${selectedListingIds.length > 0 ? 'text-amber-400' : 'text-purple-300'
                 }`}>
                 {selectedListingIds.length > 0 ? '👑 İlan Vitrini' : '📢 VIP Reklam Alanı'}
@@ -1112,15 +1112,15 @@ export default function AdminHomepageConfigPage() {
                   <span>CANLIDA AKTİF</span>
                 </span>
               </div>
-              <p className="text-[11px] text-[#8b949e]">
+              <p className="text-[11px] text-slate-400">
                 Numaranız engellendiğinde/patladığında yeni numarayı buraya girip kaydedin. Deploy gerekmeden tüm sitede anında aktif olur.
               </p>
             </div>
           </div>
 
           {/* Aktif Numara Önizleme Rozeti */}
-          <div className="flex items-center gap-2 bg-[#0d1117] border border-[#30363d] px-3 py-1.5 rounded-xl text-xs font-mono self-start lg:self-auto">
-            <span className="text-[#8b949e] text-[10px]">Aktif Hat:</span>
+          <div className="flex items-center gap-2 bg-[#070a0f] border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-mono self-start lg:self-auto">
+            <span className="text-slate-400 text-[10px]">Aktif Hat:</span>
             <span className="text-emerald-400 font-black">
               {parsePhoneNumber(adminWhatsApp).formatted || 'Tanımlanmadı'}
             </span>
@@ -1138,7 +1138,7 @@ export default function AdminHomepageConfigPage() {
               value={adminWhatsApp}
               onChange={(e) => setAdminWhatsApp(e.target.value)}
               placeholder="Yeni WhatsApp Numarası (Örn: +905xxxxxxxxx veya 0532...)"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white font-mono text-xs sm:text-sm focus:border-emerald-500 focus:outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white font-mono text-xs sm:text-sm focus:border-emerald-500 focus:outline-none transition-colors"
             />
           </div>
 
@@ -1148,7 +1148,7 @@ export default function AdminHomepageConfigPage() {
               href={`https://wa.me/${parsePhoneNumber(adminWhatsApp).raw}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-emerald-400 border border-emerald-500/30 text-xs font-bold font-heading flex items-center justify-center gap-1.5 transition-colors shadow-md"
+              className="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold font-heading flex items-center justify-center gap-1.5 transition-colors shadow-md"
               title="Numaranın WhatsApp hesabının açık olduğunu test et"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -1200,10 +1200,10 @@ export default function AdminHomepageConfigPage() {
         <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
 
           {/* ── 1. VİTRİN TALEPLERİ & ONAY MASASI (BEKLEYENLER) ──────────────── */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border-2 border-amber-500/50 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border-2 border-amber-500/50 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-md">
                   <Crown className="w-5 h-5" />
@@ -1217,20 +1217,20 @@ export default function AdminHomepageConfigPage() {
                       {displayedOnayListings.length} İlan Listeleniyor
                     </span>
                   </div>
-                  <p className="text-xs text-[#8b949e]">
+                  <p className="text-xs text-slate-400">
                     Vitrin paketi talep edenleri veya tüm VIP profilleri buradan tek tıkla inceleyip anasayfa vitrinine ekleyebilirsiniz.
                   </p>
                 </div>
               </div>
 
               {/* Filtre Tabları */}
-              <div className="flex items-center gap-1.5 bg-[#0d1117] p-1 rounded-xl border border-[#30363d] self-start sm:self-center flex-wrap">
+              <div className="flex items-center gap-1.5 bg-[#070a0f] p-1 rounded-xl border border-slate-800 self-start sm:self-center flex-wrap">
                 <button
                   type="button"
                   onClick={() => setOnayMasasiTab('talepler')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${onayMasasiTab === 'talepler'
                       ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
-                      : 'text-[#8b949e] hover:text-white'
+                      : 'text-slate-400 hover:text-white'
                     }`}
                 >
                   🔥 Vitrin Talepleri ({vitrinRequests.length})
@@ -1250,7 +1250,7 @@ export default function AdminHomepageConfigPage() {
                   onClick={() => setOnayMasasiTab('vip')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${onayMasasiTab === 'vip'
                       ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
-                      : 'text-[#8b949e] hover:text-white'
+                      : 'text-slate-400 hover:text-white'
                     }`}
                 >
                   👑 VIP İlanlar ({vipListings.length})
@@ -1260,7 +1260,7 @@ export default function AdminHomepageConfigPage() {
                   onClick={() => setOnayMasasiTab('tumu')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${onayMasasiTab === 'tumu'
                       ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
-                      : 'text-[#8b949e] hover:text-white'
+                      : 'text-slate-400 hover:text-white'
                     }`}
                 >
                   Tümü ({allListings.length})
@@ -1270,10 +1270,10 @@ export default function AdminHomepageConfigPage() {
 
             {/* Vitrin İstek Listesi */}
             {displayedOnayListings.length === 0 ? (
-              <div className="p-8 rounded-2xl bg-[#0d1117] border border-[#30363d] text-center flex flex-col items-center justify-center gap-3">
+              <div className="p-8 rounded-2xl bg-[#070a0f] border border-slate-800 text-center flex flex-col items-center justify-center gap-3">
                 <CheckCircle2 className="w-9 h-9 text-emerald-400/80" />
                 <span className="font-bold text-sm text-white">Şu anda onay bekleyen yeni vitrin talebi bulunmuyor.</span>
-                <p className="text-xs text-[#8b949e] max-w-md">
+                <p className="text-xs text-slate-400 max-w-md">
                   Kullanıcılar ilan verirken vitrin talep ettiğinde veya panelimden satın aldığında burada anında listelenir. Dilerseniz mevcut VIP ilanları doğrudan vitrine ekleyebilirsiniz:
                 </p>
                 <button
@@ -1295,13 +1295,13 @@ export default function AdminHomepageConfigPage() {
                     <div
                       key={reqListing._id}
                       className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${isAlreadyInVitrin
-                          ? 'bg-[#0d1117] border-emerald-500/40 shadow-sm'
-                          : 'bg-[#0d1117] border-amber-500/60 shadow-lg shadow-amber-500/5'
+                          ? 'bg-[#070a0f] border-emerald-500/40 shadow-sm'
+                          : 'bg-[#070a0f] border-amber-500/60 shadow-lg shadow-amber-500/5'
                         }`}
                     >
                       {/* İlan Bilgisi */}
                       <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                        <div className="relative w-14 h-16 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                        <div className="relative w-14 h-16 rounded-xl overflow-hidden bg-[#0c1017] border border-slate-800 shrink-0">
                           <Image
                             src={reqListing.anaFotograf?.url || reqListing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
                             alt={reqListing.baslik}
@@ -1341,14 +1341,14 @@ export default function AdminHomepageConfigPage() {
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2.5 text-[11px] text-[#8b949e] mt-1.5 flex-wrap">
+                          <div className="flex items-center gap-2.5 text-[11px] text-slate-400 mt-1.5 flex-wrap">
                             {reqListing.kullaniciAdi ? (
                               <span className="flex items-center gap-1 text-amber-300 font-mono font-bold bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/25" title="Kullanıcı Adı">
                                 <AtSign className="w-3 h-3 text-amber-400" />
                                 <span>{reqListing.kullaniciAdi}</span>
                               </span>
                             ) : (
-                              <span className="text-[#8b949e] text-[10px] font-mono">@sahipsiz</span>
+                              <span className="text-slate-400 text-[10px] font-mono">@sahipsiz</span>
                             )}
                             <span className="flex items-center gap-1 text-white/80">
                               <MapPin className="w-3 h-3 text-amber-400" />
@@ -1361,7 +1361,7 @@ export default function AdminHomepageConfigPage() {
                               </span>
                             )}
                             {reqListing.panelSifresi && (
-                              <span className="px-1.5 py-0.5 rounded-md bg-[#0d1117] text-amber-300 font-mono font-bold border border-amber-500/30 text-[10px] flex items-center gap-1">
+                              <span className="px-1.5 py-0.5 rounded-md bg-[#070a0f] text-amber-300 font-mono font-bold border border-amber-500/30 text-[10px] flex items-center gap-1">
                                 <KeyRound className="w-2.5 h-2.5 text-amber-400" />
                                 <span>Şifre: {reqListing.panelSifresi}</span>
                               </span>
@@ -1389,11 +1389,11 @@ export default function AdminHomepageConfigPage() {
                       </div>
 
                       {/* Aksiyon Butonları */}
-                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#30363d] flex-wrap">
+                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800 flex-wrap">
                         <Link
                           href={`/ilan/${reqListing.slug}`}
                           target="_blank"
-                          className="p-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white transition-colors"
+                          className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
                           title="İlanı Görüntüle"
                         >
                           <Eye className="w-4 h-4" />
@@ -1446,7 +1446,7 @@ export default function AdminHomepageConfigPage() {
                                   type="button"
                                   onClick={() => handleApprovePopupWithDuration(reqListing._id.toString(), 3, reqListing.popupHedefSehir || reqListing.ilSlug || 'tum_turkiye')}
                                   disabled={isLoadingAction}
-                                  className="px-2.5 py-2 rounded-xl bg-[#21262d] hover:bg-purple-600 text-purple-300 hover:text-white font-bold text-xs border border-[#30363d]"
+                                  className="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-purple-600 text-purple-300 hover:text-white font-bold text-xs border border-slate-800"
                                 >
                                   3 Gün (3.000 ₺)
                                 </button>
@@ -1454,7 +1454,7 @@ export default function AdminHomepageConfigPage() {
                                   type="button"
                                   onClick={() => handleApprovePopupWithDuration(reqListing._id.toString(), 7, reqListing.popupHedefSehir || reqListing.ilSlug || 'tum_turkiye')}
                                   disabled={isLoadingAction}
-                                  className="px-2.5 py-2 rounded-xl bg-[#21262d] hover:bg-purple-600 text-purple-300 hover:text-white font-bold text-xs border border-[#30363d]"
+                                  className="px-2.5 py-2 rounded-xl bg-slate-900 hover:bg-purple-600 text-purple-300 hover:text-white font-bold text-xs border border-slate-800"
                                 >
                                   7 Gün (7.000 ₺)
                                 </button>
@@ -1504,7 +1504,7 @@ export default function AdminHomepageConfigPage() {
                                 disabled={isLoadingAction}
                                 className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase font-heading transition-all shadow-md active:scale-95 flex items-center gap-1.5 ${reqListing.vitrinPaketi === 'gunluk'
                                     ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 text-slate-950 ring-2 ring-amber-300 shadow-amber-500/30 scale-105'
-                                    : 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border border-[#30363d]'
+                                    : 'bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800'
                                   }`}
                               >
                                 {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -1518,7 +1518,7 @@ export default function AdminHomepageConfigPage() {
                                 disabled={isLoadingAction}
                                 className={`px-3.5 py-2.5 rounded-xl text-xs font-black uppercase font-heading transition-all shadow-md active:scale-95 flex items-center gap-1.5 ${reqListing.vitrinPaketi === 'haftalik'
                                     ? 'bg-gradient-to-r from-purple-600 via-pink-600 to-amber-400 text-white ring-2 ring-purple-300 shadow-purple-500/30 scale-105'
-                                    : 'bg-[#21262d] hover:bg-[#30363d] text-purple-300 border border-[#30363d]'
+                                    : 'bg-slate-900 hover:bg-slate-800 text-purple-300 border border-slate-800'
                                   }`}
                               >
                                 {isLoadingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Crown className="w-3.5 h-3.5" />}
@@ -1529,7 +1529,7 @@ export default function AdminHomepageConfigPage() {
                                 type="button"
                                 onClick={() => handleRemoveFromVitrin(reqListing._id.toString())}
                                 disabled={isLoadingAction}
-                                className="p-2.5 rounded-xl bg-[#21262d] hover:bg-red-500/20 text-[#8b949e] hover:text-red-400 border border-[#30363d] transition-colors"
+                                className="p-2.5 rounded-xl bg-slate-900 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-800 transition-colors"
                                 title="Talebi Reddet"
                               >
                                 <X className="w-4 h-4" />
@@ -1546,11 +1546,11 @@ export default function AdminHomepageConfigPage() {
           </div>
 
           {/* ── 2. VİTRİN BOŞKEN DÖNECEK VIP GIF & REKLAM HAVUZU YÖNETİMİ ──────────────── */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border-2 border-purple-500/40 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border-2 border-purple-500/40 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
 
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-500 text-white flex items-center justify-center font-black shadow-md">
                   <Film className="w-5 h-5" />
@@ -1564,7 +1564,7 @@ export default function AdminHomepageConfigPage() {
                       {bosVitrinSliderlar.filter(s => s.aktif).length} / {bosVitrinSliderlar.length} Aktif
                     </span>
                   </div>
-                  <p className="text-xs text-[#8b949e]">
+                  <p className="text-xs text-slate-400">
                     Vitrinde canlı ilan yokken anasayfanın tepesinde dönecek hareketli GIF&apos;leri, profesyonel sloganları ve rozetleri yönetin. İstediğiniz GIF URL&apos;sini ekleyin, düzenleyin veya silin.
                   </p>
                 </div>
@@ -1582,20 +1582,20 @@ export default function AdminHomepageConfigPage() {
             </div>
 
             {/* Yeni GIF Ekleme Kartı */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#0d1117] border border-purple-500/30 flex flex-col gap-3.5 shadow-inner">
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#070a0f] border border-purple-500/30 flex flex-col gap-3.5 shadow-inner">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-black text-purple-300 uppercase tracking-wider font-heading flex items-center gap-1.5">
                   <Plus className="w-4 h-4 text-purple-400" />
                   <span>Yeni GIF &amp; Vitrin Reklamı Ekle</span>
                 </span>
-                <span className="text-[10px] text-[#8b949e] font-mono">Tenor / Giphy / Tumblr / Görsel Linki Desteklenir</span>
+                <span className="text-[10px] text-slate-400 font-mono">Tenor / Giphy / Tumblr / Görsel Linki Desteklenir</span>
               </div>
 
               {/* Form Alanları */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                 {/* Sol: URL ve Canlı Önizleme */}
                 <div className="md:col-span-6 flex flex-col gap-2">
-                  <label className="text-[11px] font-bold text-[#8b949e] flex items-center justify-between">
+                  <label className="text-[11px] font-bold text-slate-400 flex items-center justify-between">
                     <span>GIF Resim URL Adresi *</span>
                     {newGifUrl && <span className="text-emerald-400 text-[10px]">✓ Önizleme aktif</span>}
                   </label>
@@ -1605,9 +1605,9 @@ export default function AdminHomepageConfigPage() {
                       value={newGifUrl}
                       onChange={(e) => setNewGifUrl(e.target.value)}
                       placeholder="https://media.tenor.com/.../example.gif"
-                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
                     />
-                    <Link2 className="w-3.5 h-3.5 text-[#8b949e] absolute left-2.5 top-2.5" />
+                    <Link2 className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
                   </div>
 
                   {/* Canlı GIF Önizleme Mini Kutusu */}
@@ -1630,47 +1630,47 @@ export default function AdminHomepageConfigPage() {
                 {/* Sağ: Rozetler ve Başlık */}
                 <div className="md:col-span-6 flex flex-col gap-2">
                   <div className="grid grid-cols-2 gap-2">
-                    <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
+                    <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
                       Üst Rozet
                       <input
                         type="text"
                         value={newGifTopBadge}
                         onChange={(e) => setNewGifTopBadge(e.target.value)}
                         placeholder="🔥 VİTRİNDE YERİNİZİ ALIN"
-                        className="px-3 py-1.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-purple-400 focus:outline-none"
+                        className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
                       />
                     </label>
-                    <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
+                    <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
                       Trafik Rozeti
                       <input
                         type="text"
                         value={newGifTrafficBadge}
                         onChange={(e) => setNewGifTrafficBadge(e.target.value)}
                         placeholder="Günde 50.000+ Canlı Müşteri"
-                        className="px-3 py-1.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-purple-400 focus:outline-none"
+                        className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
                       />
                     </label>
                   </div>
 
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
+                  <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
                     Ana Slogan / Başlık
                     <input
                       type="text"
                       value={newGifTitle}
                       onChange={(e) => setNewGifTitle(e.target.value)}
                       placeholder="İlanınız Bu Vitrinde Dönsün, Telefonunuz Susmasın!"
-                      className="px-3 py-1.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-purple-400 focus:outline-none"
+                      className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
                     />
                   </label>
 
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-[#8b949e]">
+                  <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
                     Alt Açıklama Spotu
                     <input
                       type="text"
                       value={newGifSpot}
                       onChange={(e) => setNewGifSpot(e.target.value)}
                       placeholder="Best Eskort VIP Vitrini İle Kazancınızı Katlayın!"
-                      className="px-3 py-1.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-purple-400 focus:outline-none"
+                      className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
                     />
                   </label>
                 </div>
@@ -1679,13 +1679,13 @@ export default function AdminHomepageConfigPage() {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
                 {/* Tek Tıkla Hazır Önerilen GIF'leri Ekleme */}
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] text-[#8b949e] font-bold uppercase">Hızlı Ekle:</span>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Hızlı Ekle:</span>
                   {PRESET_GIF_SUGGESTIONS.map((preset, pIdx) => (
                     <button
                       key={pIdx}
                       type="button"
                       onClick={() => handleAddPresetGif(preset)}
-                      className="px-2 py-1 rounded-lg bg-[#161b22] hover:bg-purple-950/60 border border-[#30363d] hover:border-purple-400 text-[#c9d1d9] hover:text-purple-300 text-[10px] font-medium transition-all"
+                      className="px-2 py-1 rounded-lg bg-[#0c1017] hover:bg-purple-950/60 border border-slate-800 hover:border-purple-400 text-slate-300 hover:text-purple-300 text-[10px] font-medium transition-all"
                       title={preset.url}
                     >
                       + {preset.name}
@@ -1728,7 +1728,7 @@ export default function AdminHomepageConfigPage() {
                   <button
                     type="button"
                     onClick={() => handleToggleAllGifs(false)}
-                    className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-orange-500/20 text-[#8b949e] hover:text-orange-300 text-[10px] font-bold uppercase transition-all border border-[#30363d]"
+                    className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-orange-500/20 text-slate-400 hover:text-orange-300 text-[10px] font-bold uppercase transition-all border border-slate-800"
                   >
                     ○ Tümünü Pasif Yap
                   </button>
@@ -1736,7 +1736,7 @@ export default function AdminHomepageConfigPage() {
               </div>
 
               {bosVitrinSliderlar.length === 0 ? (
-                <div className="p-6 rounded-2xl bg-[#0d1117] border border-[#30363d] text-center text-xs text-[#8b949e]">
+                <div className="p-6 rounded-2xl bg-[#070a0f] border border-slate-800 text-center text-xs text-slate-400">
                   Henüz GIF slider bulunmuyor. Yukarıdan yeni bir GIF URL&apos;si ekleyebilirsiniz.
                 </div>
               ) : (
@@ -1747,14 +1747,14 @@ export default function AdminHomepageConfigPage() {
                       <div
                         key={slide._id || idx}
                         className={`p-4 rounded-2xl border transition-all flex flex-col gap-3 ${isActive
-                            ? 'bg-[#0d1117] border-emerald-500/40 shadow-md shadow-emerald-500/5'
-                            : 'bg-[#0d1117]/60 border-[#30363d] opacity-60'
+                            ? 'bg-[#070a0f] border-emerald-500/40 shadow-md shadow-emerald-500/5'
+                            : 'bg-[#070a0f]/60 border-slate-800 opacity-60'
                           }`}
                       >
                         {/* Üst Bar: GIF Thumbnail + Rozetler + Aksiyonlar */}
                         <div className="flex items-start gap-3">
                           {/* Canlı GIF Görseli */}
-                          <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-black border border-[#30363d] shrink-0">
+                          <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-black border border-slate-800 shrink-0">
                             <Image
                               src={slide.gifUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=200'}
                               alt={slide.title || 'GIF'}
@@ -1780,7 +1780,7 @@ export default function AdminHomepageConfigPage() {
                                   onClick={() => handleToggleGifActive(idx)}
                                   className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95 flex items-center gap-1 ${isActive
                                       ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 ring-2 ring-emerald-400/30'
-                                      : 'bg-[#21262d] hover:bg-[#30363d] text-[#8b949e]'
+                                      : 'bg-slate-900 hover:bg-slate-800 text-slate-400'
                                     }`}
                                   title={isActive ? "GIF'i gizle (pasif yap)" : "GIF'i yayına al (aktif yap)"}
                                 >
@@ -1802,7 +1802,7 @@ export default function AdminHomepageConfigPage() {
                               {slide.title}
                             </span>
 
-                            <span className="text-[11px] text-[#8b949e] line-clamp-1">
+                            <span className="text-[11px] text-slate-400 line-clamp-1">
                               {slide.spot}
                             </span>
                           </div>
@@ -1811,7 +1811,7 @@ export default function AdminHomepageConfigPage() {
                         {/* Düzenlenebilir Input Alanları */}
                         <div className="flex flex-col gap-2 pt-1 border-t border-white/5 text-xs">
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-[#8b949e] flex items-center justify-between">
+                            <label className="text-[10px] font-bold text-slate-400 flex items-center justify-between">
                               <span>GIF URL</span>
                               <a
                                 href={slide.gifUrl}
@@ -1827,48 +1827,48 @@ export default function AdminHomepageConfigPage() {
                               type="text"
                               value={slide.gifUrl}
                               onChange={(e) => handleUpdateGifSlide(idx, 'gifUrl', e.target.value)}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
                             />
                           </div>
 
                           <div className="grid grid-cols-2 gap-2">
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-bold text-[#8b949e]">Üst Rozet</label>
+                              <label className="text-[10px] font-bold text-slate-400">Üst Rozet</label>
                               <input
                                 type="text"
                                 value={slide.topBadge}
                                 onChange={(e) => handleUpdateGifSlide(idx, 'topBadge', e.target.value)}
-                                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-purple-400 focus:outline-none"
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-bold text-[#8b949e]">Trafik Rozeti</label>
+                              <label className="text-[10px] font-bold text-slate-400">Trafik Rozeti</label>
                               <input
                                 type="text"
                                 value={slide.trafficBadge}
                                 onChange={(e) => handleUpdateGifSlide(idx, 'trafficBadge', e.target.value)}
-                                className="w-full px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-purple-400 focus:outline-none"
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
                               />
                             </div>
                           </div>
 
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-[#8b949e]">Slogan / Başlık</label>
+                            <label className="text-[10px] font-bold text-slate-400">Slogan / Başlık</label>
                             <input
                               type="text"
                               value={slide.title}
                               onChange={(e) => handleUpdateGifSlide(idx, 'title', e.target.value)}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-purple-400 focus:outline-none"
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
                             />
                           </div>
 
                           <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-[#8b949e]">Spot Açıklama</label>
+                            <label className="text-[10px] font-bold text-slate-400">Spot Açıklama</label>
                             <input
                               type="text"
                               value={slide.spot}
                               onChange={(e) => handleUpdateGifSlide(idx, 'spot', e.target.value)}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-purple-400 focus:outline-none"
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
                             />
                           </div>
                         </div>
@@ -1881,8 +1881,8 @@ export default function AdminHomepageConfigPage() {
           </div>
 
           {/* ── 3. ANASAYFA ÜST VİTRİN SLIDER HAVUZU & İLAN SEÇİCİ ──────────────── */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-4">
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
                   <Layers className="w-5 h-5" />
@@ -1891,7 +1891,7 @@ export default function AdminHomepageConfigPage() {
                   <h2 className="font-black text-base text-white font-heading">
                     Anasayfa 5'li Vitrin Slider Havuzu (Maks. 5 İlan)
                   </h2>
-                  <p className="text-xs text-[#8b949e]">
+                  <p className="text-xs text-slate-400">
                     Toplam 5 vitrin slotu bulunur. Seçilen ilanlar döner, <b>kalan boş slotlarda ise otomatik Boş Vitrin Reklamı gösterilir.</b>
                   </p>
                 </div>
@@ -1926,7 +1926,7 @@ export default function AdminHomepageConfigPage() {
             </div>
 
             {/* Seçili İlanların Yatay Çubuğu */}
-            <div className="p-3.5 rounded-2xl bg-[#0d1117] border border-[#21262d] flex flex-col gap-2">
+            <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-white flex items-center gap-1.5">
                   <Crown className="w-4 h-4 text-amber-400" />
@@ -1953,7 +1953,7 @@ export default function AdminHomepageConfigPage() {
                     return (
                       <div
                         key={id}
-                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#161b22] border border-amber-500/40 text-xs text-white shrink-0 group shadow-md"
+                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0c1017] border border-amber-500/40 text-xs text-white shrink-0 group shadow-md"
                       >
                         <div className="relative w-7 h-7 rounded-lg overflow-hidden shrink-0">
                           <Image
@@ -1992,7 +1992,7 @@ export default function AdminHomepageConfigPage() {
                         <button
                           type="button"
                           onClick={() => handleRemoveShowcaseItem(id)}
-                          className="p-1 rounded hover:bg-red-500 text-[#8b949e] hover:text-white transition-colors ml-1"
+                          className="p-1 rounded hover:bg-red-500 text-slate-400 hover:text-white transition-colors ml-1"
                           title="Vitrinden Çıkar ve Kaydet"
                         >
                           <X className="w-3.5 h-3.5" />
@@ -2002,7 +2002,7 @@ export default function AdminHomepageConfigPage() {
                   })}
                 </div>
               ) : (
-                <span className="text-xs text-[#8b949e]">
+                <span className="text-xs text-slate-400">
                   Vitrinde gösterilmek üzere henüz ilan seçilmedi. Vitrin boş olduğunda anasayfada otomatik olarak VIP GIF reklam havuzu gösterilir.
                 </span>
               )}
@@ -2016,16 +2016,16 @@ export default function AdminHomepageConfigPage() {
                   placeholder="İlan başlığı, il veya ilçe adı yazarak ara..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none"
                 />
-                <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-3" />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
 
               <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
                 <button
                   type="button"
                   onClick={() => setListingFilter('all')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${listingFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'bg-[#21262d] text-[#8b949e]'
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${listingFilter === 'all' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-400'
                     }`}
                 >
                   Tümü ({allListings.length})
@@ -2033,7 +2033,7 @@ export default function AdminHomepageConfigPage() {
                 <button
                   type="button"
                   onClick={() => setListingFilter('vip')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${listingFilter === 'vip' ? 'bg-amber-500 text-slate-950' : 'bg-[#21262d] text-[#8b949e]'
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${listingFilter === 'vip' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-400'
                     }`}
                 >
                   VIP ({allListings.filter(l => l.rozet === 'vip' || l.rozet === 'ultravip').length})
@@ -2041,7 +2041,7 @@ export default function AdminHomepageConfigPage() {
                 <button
                   type="button"
                   onClick={() => setListingFilter('gold')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${listingFilter === 'gold' ? 'bg-amber-500 text-slate-950' : 'bg-[#21262d] text-[#8b949e]'
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${listingFilter === 'gold' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-400'
                     }`}
                 >
                   Gold ({allListings.filter(l => l.rozet === 'gold').length})
@@ -2049,7 +2049,7 @@ export default function AdminHomepageConfigPage() {
                 <button
                   type="button"
                   onClick={() => setListingFilter('selected')}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${listingFilter === 'selected' ? 'bg-amber-500 text-slate-950' : 'bg-[#21262d] text-[#8b949e]'
+                  className={`px-3 py-2 rounded-xl text-xs font-bold transition-all shrink-0 ${listingFilter === 'selected' ? 'bg-amber-500 text-slate-950' : 'bg-slate-900 text-slate-400'
                     }`}
                 >
                   Seçili ({selectedListingIds.length})
@@ -2069,10 +2069,10 @@ export default function AdminHomepageConfigPage() {
                     onClick={() => handleToggleListing(listing._id.toString())}
                     className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 select-none ${isSelected
                         ? 'bg-amber-500/15 border-amber-500/80 shadow-md'
-                        : 'bg-[#21262d] border-[#363b42] hover:border-amber-500/40'
+                        : 'bg-slate-900 border-[#363b42] hover:border-amber-500/40'
                       }`}
                   >
-                    <div className="relative w-12 h-14 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                    <div className="relative w-12 h-14 rounded-xl overflow-hidden bg-[#0c1017] border border-slate-800 shrink-0">
                       <Image
                         src={listing.anaFotograf?.url || listing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
                         alt={listing.baslik}
@@ -2090,7 +2090,7 @@ export default function AdminHomepageConfigPage() {
                         {listing.ilSlug} / {listing.ilceSlug}
                       </span>
                       <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                        <span className="text-[9px] uppercase font-bold text-[#8b949e] px-1.5 py-0.2 rounded bg-black/40">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 px-1.5 py-0.2 rounded bg-black/40">
                           {listing.rozet || 'STANDART'}
                         </span>
                         {listing.vitrinBitisTarihi && (
@@ -2106,7 +2106,7 @@ export default function AdminHomepageConfigPage() {
                       </div>
                     </div>
 
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-amber-500 text-slate-950 font-black' : 'border border-[#30363d] text-transparent'
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? 'bg-amber-500 text-slate-950 font-black' : 'border border-slate-800 text-transparent'
                       }`}>
                       <Check className="w-3.5 h-3.5 stroke-[3]" />
                     </div>
@@ -2117,8 +2117,8 @@ export default function AdminHomepageConfigPage() {
           </div>
 
           {/* ── 3. HERO & METİN KARŞILAMA AYARLARI ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-[#30363d] pb-3">
+          <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
               <Sparkles className="w-5 h-5 text-amber-400" />
               <h2 className="font-black text-base text-white font-heading">Anasayfa Hero &amp; Karşılama Metinleri</h2>
             </div>
@@ -2131,7 +2131,7 @@ export default function AdminHomepageConfigPage() {
                   value={heroBaslik}
                   onChange={(e) => setHeroBaslik(e.target.value)}
                   placeholder="Örn: Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
                 />
               </label>
 
@@ -2142,7 +2142,7 @@ export default function AdminHomepageConfigPage() {
                   value={heroAltBaslik}
                   onChange={(e) => setHeroAltBaslik(e.target.value)}
                   placeholder="Örn: 81 il ve tüm ilçelerde doğrulanmış eskort ilanları..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#21262d] border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
                 />
               </label>
             </div>
@@ -2156,8 +2156,8 @@ export default function AdminHomepageConfigPage() {
         <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
 
           {/* ── 4. ÇOKLU SPONSORLU POPUP REKLAMLARI (KONUM HEDEFLİ) ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-5">
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+          <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-amber-400" />
                 <h2 className="font-black text-base text-white font-heading">
@@ -2176,7 +2176,7 @@ export default function AdminHomepageConfigPage() {
             </div>
 
             {/* Yeni Reklam Ekleme */}
-            <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-3">
+            <div className="p-4 rounded-2xl bg-[#070a0f] border border-amber-500/30 flex flex-col gap-3">
               <span className="text-xs font-black text-amber-400 uppercase tracking-wider font-heading flex items-center gap-1.5">
                 <Plus className="w-4 h-4" />
                 <span>Yeni Popup Reklamı Oluştur</span>
@@ -2184,7 +2184,7 @@ export default function AdminHomepageConfigPage() {
 
               {/* İlan Seçimi */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-bold text-[#8b949e]">Yayınlanacak İlan *</label>
+                <label className="text-[11px] font-bold text-slate-400">Yayınlanacak İlan *</label>
                 <select
                   value={newAdIlanId}
                   onChange={(e) => {
@@ -2203,7 +2203,7 @@ export default function AdminHomepageConfigPage() {
                       }
                     }
                   }}
-                  className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none"
                 >
                   <option value="">-- Listeden Bir İlan Seçin --</option>
                   {allListings.map((l) => (
@@ -2216,11 +2216,11 @@ export default function AdminHomepageConfigPage() {
 
               {/* Hedef İl & İlçe */}
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-bold text-[#8b949e]">Hedef Gösterim Konumu</label>
+                <label className="text-[11px] font-bold text-slate-400">Hedef Gösterim Konumu</label>
                 <select
                   value={newAdHedefIl}
                   onChange={(e) => setNewAdHedefIl(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none font-medium"
+                  className="w-full px-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none font-medium"
                 >
                   <option value="tum_turkiye">🇹🇷 TÜRKİYE GENELİ (Tüm Şehirler &amp; Anasayfa)</option>
 
@@ -2269,25 +2269,25 @@ export default function AdminHomepageConfigPage() {
               {/* Rozet & Gecikme */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-bold text-[#8b949e]">Rozet Metni</label>
+                  <label className="text-[11px] font-bold text-slate-400">Rozet Metni</label>
                   <input
                     type="text"
                     value={newAdRozet}
                     onChange={(e) => setNewAdRozet(e.target.value)}
                     placeholder="🔥 VIP İLAN"
-                    className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none"
                   />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-bold text-[#8b949e]">Gecikme (Sn)</label>
+                  <label className="text-[11px] font-bold text-slate-400">Gecikme (Sn)</label>
                   <input
                     type="number"
                     min={1}
                     max={30}
                     value={newAdGecikme}
                     onChange={(e) => setNewAdGecikme(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs font-mono text-center"
+                    className="w-full px-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs font-mono text-center"
                   />
                 </div>
               </div>
@@ -2313,20 +2313,20 @@ export default function AdminHomepageConfigPage() {
                   <span className="font-mono text-emerald-400">CTR: %{totalPopupStats.ctr}</span>
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                  <div className="p-2 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col">
-                    <span className="text-[9px] text-[#8b949e]">Gösterim</span>
+                  <div className="p-2 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col">
+                    <span className="text-[9px] text-slate-400">Gösterim</span>
                     <span className="font-black text-white font-mono text-xs sm:text-sm">{totalPopupStats.impressions}</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col">
-                    <span className="text-[9px] text-[#8b949e]">Tekil Kişi</span>
+                  <div className="p-2 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col">
+                    <span className="text-[9px] text-slate-400">Tekil Kişi</span>
                     <span className="font-black text-amber-300 font-mono text-xs sm:text-sm">{totalPopupStats.uniqueVisitors}</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col">
-                    <span className="text-[9px] text-[#8b949e]">Profil Tık</span>
+                  <div className="p-2 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col">
+                    <span className="text-[9px] text-slate-400">Profil Tık</span>
                     <span className="font-black text-cyan-400 font-mono text-xs sm:text-sm">{totalPopupStats.clicks}</span>
                   </div>
-                  <div className="p-2 rounded-xl bg-[#161b22] border border-[#30363d] flex flex-col">
-                    <span className="text-[9px] text-[#8b949e]">WhatsApp</span>
+                  <div className="p-2 rounded-xl bg-[#0c1017] border border-slate-800 flex flex-col">
+                    <span className="text-[9px] text-slate-400">WhatsApp</span>
                     <span className="font-black text-emerald-400 font-mono text-xs sm:text-sm">{totalPopupStats.whatsappClicks}</span>
                   </div>
                 </div>
@@ -2337,11 +2337,11 @@ export default function AdminHomepageConfigPage() {
             <div className="flex flex-col gap-3 max-h-96 overflow-y-auto pr-1">
               <span className="text-xs font-black text-white uppercase tracking-wider font-heading flex items-center justify-between">
                 <span>Aktif Reklam Havuzu ({ozelIlanReklamlar.length})</span>
-                <span className="text-[10px] text-[#8b949e] font-normal lowercase">Ayrı Ayrı İstatistikler</span>
+                <span className="text-[10px] text-slate-400 font-normal lowercase">Ayrı Ayrı İstatistikler</span>
               </span>
 
               {ozelIlanReklamlar.length === 0 ? (
-                <div className="p-4 text-center text-xs text-[#8b949e] bg-[#0d1117] rounded-xl border border-[#30363d]">
+                <div className="p-4 text-center text-xs text-slate-400 bg-[#070a0f] rounded-xl border border-slate-800">
                   Henüz özel popup reklamı eklenmedi.
                 </div>
               ) : (
@@ -2362,9 +2362,9 @@ export default function AdminHomepageConfigPage() {
                     return (
                       <div
                         key={ad._id || idx}
-                        className="p-4 rounded-2xl border-2 border-amber-500 bg-[#161b22] shadow-2xl flex flex-col gap-3.5 transition-all text-left"
+                        className="p-4 rounded-2xl border-2 border-amber-500 bg-[#0c1017] shadow-2xl flex flex-col gap-3.5 transition-all text-left"
                       >
-                        <div className="flex items-center justify-between border-b border-[#30363d] pb-2.5">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
                               <Edit3 className="w-3.5 h-3.5" />
@@ -2387,7 +2387,7 @@ export default function AdminHomepageConfigPage() {
                           <select
                             value={editingAdData.hedefIlSlug}
                             onChange={(e) => setEditingAdData({ ...editingAdData, hedefIlSlug: e.target.value })}
-                            className="w-full px-3 py-2.5 rounded-xl bg-[#0d1117] border border-amber-500/50 text-white text-xs font-semibold focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 shadow-inner"
+                            className="w-full px-3 py-2.5 rounded-xl bg-[#070a0f] border border-amber-500/50 text-white text-xs font-semibold focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400 shadow-inner"
                           >
                             <option value="tum_turkiye">🇹🇷 TÜRKİYE GENELİ (Tüm Şehirler &amp; Anasayfa)</option>
 
@@ -2439,36 +2439,36 @@ export default function AdminHomepageConfigPage() {
                         {/* Rozet Metni & Gecikme */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] font-bold text-[#8b949e]">Rozet Metni</label>
+                            <label className="text-[11px] font-bold text-slate-400">Rozet Metni</label>
                             <input
                               type="text"
                               value={editingAdData.rozet}
                               onChange={(e) => setEditingAdData({ ...editingAdData, rozet: e.target.value })}
                               placeholder="👑 VIP VİTRİN İLANI"
-                              className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs focus:border-amber-400 focus:outline-none"
+                              className="w-full px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:border-amber-400 focus:outline-none"
                             />
                           </div>
 
                           <div className="flex flex-col gap-1">
-                            <label className="text-[11px] font-bold text-[#8b949e]">Gecikme (Saniye)</label>
+                            <label className="text-[11px] font-bold text-slate-400">Gecikme (Saniye)</label>
                             <input
                               type="number"
                               min={1}
                               max={30}
                               value={editingAdData.gecikmeSaniye}
                               onChange={(e) => setEditingAdData({ ...editingAdData, gecikmeSaniye: Number(e.target.value) })}
-                              className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs font-mono text-center"
+                              className="w-full px-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono text-center"
                             />
                           </div>
                         </div>
 
                         {/* Durum & Aksiyon Butonları */}
-                        <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-[#30363d]">
+                        <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-800">
                           <button
                             type="button"
                             onClick={() => setEditingAdData({ ...editingAdData, aktif: !editingAdData.aktif })}
                             className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
-                              editingAdData.aktif ? 'bg-emerald-500 text-slate-950 shadow-md font-black' : 'bg-[#21262d] text-[#8b949e]'
+                              editingAdData.aktif ? 'bg-emerald-500 text-slate-950 shadow-md font-black' : 'bg-slate-900 text-slate-400'
                             }`}
                           >
                             {editingAdData.aktif ? '● AKTİF' : '○ PASİF'}
@@ -2478,7 +2478,7 @@ export default function AdminHomepageConfigPage() {
                             <button
                               type="button"
                               onClick={handleCancelEditAd}
-                              className="px-3 py-1.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white font-bold text-xs transition-all flex items-center gap-1 active:scale-95"
+                              className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-xs transition-all flex items-center gap-1 active:scale-95"
                             >
                               <X className="w-3.5 h-3.5" />
                               <span>İptal</span>
@@ -2503,8 +2503,8 @@ export default function AdminHomepageConfigPage() {
                     <div
                       key={ad._id || idx}
                       className={`p-3.5 rounded-2xl border transition-all flex flex-col gap-2.5 text-left ${ad.aktif
-                          ? 'bg-[#0d1117] border-amber-500/50 shadow-md'
-                          : 'bg-[#0d1117]/60 border-[#30363d] opacity-60'
+                          ? 'bg-[#070a0f] border-amber-500/50 shadow-md'
+                          : 'bg-[#070a0f]/60 border-slate-800 opacity-60'
                         }`}
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -2512,7 +2512,7 @@ export default function AdminHomepageConfigPage() {
                           <span className="text-[10px] text-amber-300 font-bold uppercase bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 truncate">
                             {ad.rozet}
                           </span>
-                          <span className="text-[10px] text-slate-400 font-mono px-1.5 py-0.5 rounded bg-[#161b22] border border-[#30363d]">
+                          <span className="text-[10px] text-slate-400 font-mono px-1.5 py-0.5 rounded bg-[#0c1017] border border-slate-800">
                             #{idx + 1}
                           </span>
                         </div>
@@ -2531,7 +2531,7 @@ export default function AdminHomepageConfigPage() {
                           <button
                             type="button"
                             onClick={() => handleToggleAdActive(idx)}
-                            className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${ad.aktif ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-[#21262d] text-[#8b949e]'
+                            className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase transition-all ${ad.aktif ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'
                               }`}
                           >
                             {ad.aktif ? '● AKTİF' : '○ PASİF'}
@@ -2572,7 +2572,7 @@ export default function AdminHomepageConfigPage() {
                       {/* ── BU POPUP REKLAMINA ÖZEL AYRI İSTATİSTİKLER ── */}
                       <div className="pt-2 border-t border-white/5 flex flex-col gap-1.5">
                         <div className="flex items-center justify-between text-[10px]">
-                          <span className="font-bold text-[#8b949e] uppercase tracking-wider flex items-center gap-1">
+                          <span className="font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                             📊 Bu Reklamın İstatistikleri:
                           </span>
                           <span className="font-mono font-black text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
@@ -2580,21 +2580,21 @@ export default function AdminHomepageConfigPage() {
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-1.5 bg-[#161b22] p-2 rounded-xl border border-[#21262d] text-center">
+                        <div className="grid grid-cols-4 gap-1.5 bg-[#0c1017] p-2 rounded-xl border border-[#21262d] text-center">
                           <div className="flex flex-col">
-                            <span className="text-[9px] text-[#8b949e]">Gösterim</span>
+                            <span className="text-[9px] text-slate-400">Gösterim</span>
                             <span className="font-mono text-xs font-black text-white">{stats.impressions}</span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] text-[#8b949e]">Tekil Kişi</span>
+                            <span className="text-[9px] text-slate-400">Tekil Kişi</span>
                             <span className="font-mono text-xs font-black text-amber-300">{stats.uniqueVisitors}</span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] text-[#8b949e]">Profil Tık</span>
+                            <span className="text-[9px] text-slate-400">Profil Tık</span>
                             <span className="font-mono text-xs font-black text-cyan-400">{stats.clicks}</span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] text-[#8b949e]">WhatsApp</span>
+                            <span className="text-[9px] text-slate-400">WhatsApp</span>
                             <span className="font-mono text-xs font-black text-emerald-400">{stats.whatsappClicks}</span>
                           </div>
                         </div>
@@ -2608,8 +2608,8 @@ export default function AdminHomepageConfigPage() {
           </div>
 
           {/* ── 5. KAYAN DUYURU ŞERİDİ (TICKER) ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-            <div className="flex flex-wrap items-center justify-between border-b border-[#30363d] pb-3 gap-2">
+          <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+            <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-2">
               <div className="flex items-center gap-2">
                 <Megaphone className="w-5 h-5 text-amber-400" />
                 <h2 className="font-black text-base text-white font-heading">Kayan Duyuru Şeridi</h2>
@@ -2637,7 +2637,7 @@ export default function AdminHomepageConfigPage() {
                 <button
                   type="button"
                   onClick={() => handleAddAnnouncement()}
-                  className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1 active:scale-95 border border-[#30363d]"
+                  className="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center gap-1 active:scale-95 border border-slate-800"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Ekle</span>
@@ -2656,21 +2656,21 @@ export default function AdminHomepageConfigPage() {
 
             <div className="flex flex-col gap-2.5 max-h-72 overflow-y-auto pr-1">
               {duyurular.map((item, idx) => (
-                <div key={idx} className="p-3 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-2 hover:border-amber-500/40 transition-colors">
+                <div key={idx} className="p-3 rounded-2xl bg-[#070a0f] border border-slate-800 flex flex-col gap-2 hover:border-amber-500/40 transition-colors">
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
                       value={item.badge}
                       onChange={(e) => handleUpdateAnnouncement(idx, 'badge', e.target.value)}
                       placeholder="🎁 ÜCRETSİZ İLAN"
-                      className="w-36 px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-amber-300 font-bold text-xs"
+                      className="w-36 px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-amber-300 font-bold text-xs"
                     />
                     <input
                       type="text"
                       value={item.link}
                       onChange={(e) => handleUpdateAnnouncement(idx, 'link', e.target.value)}
                       placeholder="/ilan-ver"
-                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-[#8b949e] text-xs font-mono"
+                      className="flex-1 px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-slate-400 text-xs font-mono"
                     />
                     <button
                       type="button"
@@ -2686,7 +2686,7 @@ export default function AdminHomepageConfigPage() {
                     value={item.text}
                     onChange={(e) => handleUpdateAnnouncement(idx, 'text', e.target.value)}
                     placeholder="HEMEN ÜCRETSİZ İLAN VERİN, BİNLERCE MÜŞTERİYE ANINDA ULAŞIN!"
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-[#161b22] border border-[#30363d] text-white text-xs"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs"
                   />
                 </div>
               ))}
