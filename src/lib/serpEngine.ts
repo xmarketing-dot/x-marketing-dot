@@ -353,11 +353,7 @@ export async function scrapeYandexSerp(
 
               seenDomains.add(hostname);
 
-              const isOurSite =
-                rawHref.includes('besteskort') ||
-                rawHref.includes('bestescort') ||
-                rawHref.includes('devs.surf') ||
-                isOurSiteDomain(hostname, targetDomain);
+              const isOurSite = isOurSiteDomain(hostname, targetDomain);
 
               if (isOurSite) {
                 if (foundPosition === 0) {
