@@ -174,8 +174,14 @@ export default async function ListingDetailPage({ params }: Props) {
     const u = typeof item === 'string' ? item : item.url;
     if (typeof u === 'string') {
       const trimmed = u.trim();
-      if (trimmed && !trimmed.includes('photo-1569263979104') && !cleanImageList.some((x) => x.url === trimmed)) {
-        cleanImageList.push({ url: trimmed });
+      if (trimmed && !trimmed.includes('photo-1569263979104')) {
+        let finalUrl = trimmed;
+        if (finalUrl.startsWith('/api/img/') && !finalUrl.includes('w=')) {
+          finalUrl = `${finalUrl}${finalUrl.includes('?') ? '&' : '?'}w=900`;
+        }
+        if (!cleanImageList.some((x) => x.url === finalUrl)) {
+          cleanImageList.push({ url: finalUrl });
+        }
       }
     }
   };
@@ -292,6 +298,10 @@ export default async function ListingDetailPage({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6 pb-28 w-full max-w-6xl mx-auto px-1 sm:px-4">
+      {/* ⚡ Tarayıcı HTML'i indirirken görseli ANINDA en yüksek öncelikle çekmeye başlar */}
+      {allImages[0]?.url && (
+        <link rel="preload" as="image" href={allImages[0].url} fetchPriority="high" />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -308,6 +318,7 @@ export default async function ListingDetailPage({ params }: Props) {
             aspectRatio="aspect-[3/4] sm:aspect-[4/5] min-h-[480px] h-[68vh] max-h-[640px]"
             badge={isPassive ? null : `${rozet.toUpperCase()} VİTRİN`}
             isPassive={isPassive}
+            priority={true}
           />
         </div>
 

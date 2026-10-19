@@ -278,7 +278,15 @@ export async function getListings({
   return cleanFinal;
 }
 
+const listingSlugCache = new Map<string, { data: any; time: number }>();
+
 export const getListingBySlug = cache(async (slug: string) => {
+  const nowMs = Date.now();
+  const cached = listingSlugCache.get(slug);
+  if (cached && nowMs - cached.time < 60000) {
+    return cached.data;
+  }
+
   await connectToDatabase();
 
   const now = new Date();
@@ -314,6 +322,11 @@ export const getListingBySlug = cache(async (slug: string) => {
     cleanListing.fotograflar = cleanListing.fotograflar
       .map((f: any) => ({ url: sanitizeImgUrl(f) }))
       .filter((f: any) => f.url && f.url.trim() !== '');
+  }
+
+  listingSlugCache.set(slug, { data: cleanListing, time: nowMs });
+  if (listingSlugCache.size > 500) {
+    listingSlugCache.clear();
   }
 
   return cleanListing;

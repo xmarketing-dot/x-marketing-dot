@@ -26,7 +26,8 @@ export async function GET(
     }
 
     const rawW = req.nextUrl.searchParams.get('w');
-    const targetWidth = rawW ? Math.min(1200, Math.max(80, parseInt(rawW, 10) || 0)) : 0;
+    const isRaw = rawW === 'raw' || rawW === 'orig';
+    const targetWidth = isRaw ? 0 : (rawW ? Math.min(1200, Math.max(80, parseInt(rawW, 10) || 0)) : 1080);
     const cacheKey = targetWidth > 0 ? `${id}_w${targetWidth}` : id;
 
     // 1. Sıcak bellek kontrolü (0ms, 0 db bağlantısı)

@@ -207,6 +207,8 @@ export async function getNearbyCityListings({
  * 3. Komşu illerdeki ilanlar
  * 4. Düşük görüntülenme (Fair-exposure: her modele eşit trafik) + Rozet ağırlığı ile sıralama
  */
+const recommendedCache = new Map<string, { data: any[]; time: number }>();
+
 export async function getSmartRecommendedListings({
   currentListingId,
   currentSlug,
@@ -220,10 +222,17 @@ export async function getSmartRecommendedListings({
   ilceSlug?: string;
   limit?: number;
 }) {
-  await connectToDatabase();
-  const nowDate = new Date();
   const cleanIl = (ilSlug || '').toLowerCase().trim();
   const cleanIlce = (ilceSlug || '').toLowerCase().trim();
+  const cacheKey = `${currentSlug || ''}_${cleanIl}_${cleanIlce}_${limit}`;
+  const nowMs = Date.now();
+  const cached = recommendedCache.get(cacheKey);
+  if (cached && nowMs - cached.time < 60000) {
+    return cached.data;
+  }
+
+  await connectToDatabase();
+  const nowDate = new Date();
 
   const baseQuery: any = {
     status: 'yayinda',
@@ -312,5 +321,10 @@ export async function getSmartRecommendedListings({
   scoredListings.sort((a, b) => b.score - a.score);
 
   const finalResults = scoredListings.slice(0, limit).map((s) => s.item);
-  return JSON.parse(JSON.stringify(finalResults));
+  const cleanFinal = JSON.parse(JSON.stringify(finalResults));
+  recommendedCache.set(cacheKey, { data: cleanFinal, time: nowMs });
+  if (recommendedCache.size > 200) {
+    recommendedCache.clear();
+  }
+  return cleanFinal;
 }

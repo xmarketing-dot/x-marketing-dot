@@ -108,24 +108,36 @@ export default function ImageSlider({
     setIsFullscreen(true);
   };
 
+  const activeImgUrl = safeImages[currentIndex]?.url || safeImages[0]?.url || '';
+  const instantThumbnail = activeImgUrl.includes('/api/img/')
+    ? (activeImgUrl.includes('w=') ? activeImgUrl.replace(/w=\d+/, 'w=480') : `${activeImgUrl}${activeImgUrl.includes('?') ? '&' : '?'}w=480`)
+    : activeImgUrl;
+
   return (
     <div>
       {/* Slider Main Viewport with Mobile Touch Gestures */}
       <div 
         className={`relative w-full ${aspectRatio} bg-slate-950 overflow-hidden select-none group ${className}`}
+        style={instantThumbnail ? {
+          backgroundImage: `url(${instantThumbnail})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'top center',
+        } : undefined}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         {/* Active Image */}
         <Image
-          src={safeImages[currentIndex]?.url || safeImages[0].url}
+          src={activeImgUrl}
           alt={`${alt} - ${currentIndex + 1}`}
           fill
           unoptimized
-          loading="lazy"
+          priority={priority}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : 'auto'}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 60vw, 800px"
-          className={`object-cover transition-all duration-700 ease-out group-hover:scale-105 cursor-pointer ${
+          className={`object-cover object-top transition-all duration-700 ease-out group-hover:scale-105 cursor-pointer ${
             isPassive ? 'grayscale contrast-125 brightness-90' : ''
           }`}
           onClick={openFullscreen}

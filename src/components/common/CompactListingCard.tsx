@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { MapPin, ShieldCheck, Crown, Award, Medal } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
@@ -104,6 +105,25 @@ export default function CompactListingCard({ listing, priority = false }: Compac
   const [isLoaded, setIsLoaded] = useState(priority);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const touchStartXRef = useRef<number | null>(null);
+  const router = useRouter();
+  const prefetchedRef = useRef(false);
+
+  const prefetchDetailPage = () => {
+    if (prefetchedRef.current || !listing?.slug) return;
+    prefetchedRef.current = true;
+    try {
+      router.prefetch(`/ilan/${listing.slug}`);
+      if (typeof window !== 'undefined' && allImages[0]) {
+        const heroUrl = getThumbnailUrl(allImages[0], 900);
+        if (heroUrl) {
+          const img = new window.Image();
+          img.src = heroUrl;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   // 1000px önceden tek seferlik ön yükleme tetikleyicisi (Görünür olunca hemen unobserve olur, CPU maliyeti 0'a iner)
   useEffect(() => {
@@ -228,11 +248,20 @@ export default function CompactListingCard({ listing, priority = false }: Compac
           ? 'border-yellow-500/60 shadow-yellow-500/10 ring-1 ring-yellow-500/15'
           : 'border-slate-600/50 shadow-slate-500/5 ring-1 ring-slate-400/10'
       }`}
-      onTouchStart={handleTouchStart}
+      onTouchStart={(e) => {
+        prefetchDetailPage();
+        handleTouchStart(e);
+      }}
+      onMouseEnter={prefetchDetailPage}
       onTouchEnd={handleTouchEnd}
     >
       {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar) ── */}
-      <Link href={`/ilan/${listing.slug}`} prefetch={false} className="absolute inset-0 block w-full h-full z-0 overflow-hidden">
+      <Link
+        href={`/ilan/${listing.slug}`}
+        prefetch={false}
+        onMouseEnter={prefetchDetailPage}
+        className="absolute inset-0 block w-full h-full z-0 overflow-hidden"
+      >
         <div className="relative w-full h-full bg-[#161b22]/40">
           {isLoaded ? (
             <img
