@@ -71,7 +71,7 @@ export default function CompactListingCard({ listing, priority = false }: Compac
   const isGold = !isPassive && rozet === 'gold';
   const isSilver = !isPassive && (rozet === 'silver' || rozet === 'standart');
 
-  // Extract all unique images with robust string/object format support (Duplicate temizliği)
+  // Extract all unique images with robust string/object format support (Duplicate & boat photo temizliği)
   const allImages = React.useMemo(() => {
     const list: string[] = [];
     const pushImg = (val: any) => {
@@ -79,7 +79,8 @@ export default function CompactListingCard({ listing, priority = false }: Compac
       const url = typeof val === 'string' ? val : val?.url;
       if (typeof url === 'string') {
         const cleanUrl = url.trim();
-        if (cleanUrl && !list.includes(cleanUrl)) {
+        // Gemi veya harici bozuk placeholder'ları kesinlikle dahil etme
+        if (cleanUrl && !cleanUrl.includes('photo-1569263979104') && !list.includes(cleanUrl)) {
           list.push(cleanUrl);
         }
       }
@@ -88,9 +89,6 @@ export default function CompactListingCard({ listing, priority = false }: Compac
     pushImg(listing.anaFotograf);
     if (Array.isArray(listing.fotograflar)) {
       listing.fotograflar.forEach(pushImg);
-    }
-    if (list.length === 0) {
-      list.push('https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=600');
     }
     return list;
   }, [listing.anaFotograf, listing.fotograflar]);
@@ -166,7 +164,10 @@ export default function CompactListingCard({ listing, priority = false }: Compac
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartXRef.current === null) return;
+    if (touchStartXRef.current === null || allImages.length <= 1) {
+      touchStartXRef.current = null;
+      return;
+    }
     const touchEndX = e.changedTouches[0].clientX;
     const distance = touchStartXRef.current - touchEndX;
     const minSwipeDistance = 45;

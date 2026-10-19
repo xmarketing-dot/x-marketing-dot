@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     const slug = generateSlug(ilSlug, ilceSlug, baslik, tamAd);
     const imageUrl = anaFotografUrl && anaFotografUrl.trim() !== ''
       ? anaFotografUrl
-      : 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800';
+      : '/placeholder-avatar.webp';
 
     const photoList = fotograflar && Array.isArray(fotograflar) && fotograflar.length > 0
       ? fotograflar

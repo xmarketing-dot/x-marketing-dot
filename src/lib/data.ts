@@ -150,6 +150,15 @@ export async function getHomepageConfig() {
   return JSON.parse(JSON.stringify(config));
 }
 
+const sanitizeImgUrl = (val: any) => {
+  if (!val) return '';
+  const u = typeof val === 'string' ? val : val?.url;
+  if (typeof u === 'string' && (u.startsWith('data:image') || u.includes('photo-1569263979104'))) {
+    return '';
+  }
+  return typeof val === 'string' ? val : (val?.url || '');
+};
+
 const listingsMemoryCache = new Map<string, { data: any[]; time: number }>();
 
 export async function getListings({
@@ -209,14 +218,7 @@ export async function getListings({
     .limit(limit ? Math.max(limit * 2, 250) : 500)
     .lean();
 
-  const sanitizeImgUrl = (val: any) => {
-    if (!val) return '';
-    const u = typeof val === 'string' ? val : val?.url;
-    if (typeof u === 'string' && u.startsWith('data:image')) {
-      return 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=600';
-    }
-    return typeof val === 'string' ? val : (val?.url || '');
-  };
+
 
   const cleanedListings = (listings as any[]).map((l: any) => {
     const isPassive =
@@ -224,9 +226,12 @@ export async function getListings({
       l.status === 'pasif' ||
       (l.paketBitisTarihi ? new Date(l.paketBitisTarihi) <= nowDate : false);
 
-    const cleanAnaFoto = l.anaFotograf ? { url: sanitizeImgUrl(l.anaFotograf) } : undefined;
+    const cleanAnaFotoUrl = sanitizeImgUrl(l.anaFotograf);
+    const cleanAnaFoto = cleanAnaFotoUrl ? { url: cleanAnaFotoUrl } : undefined;
     const cleanFotos = Array.isArray(l.fotograflar)
-      ? l.fotograflar.slice(0, 4).map((f: any) => ({ url: sanitizeImgUrl(f) }))
+      ? l.fotograflar
+          .map((f: any) => ({ url: sanitizeImgUrl(f) }))
+          .filter((f: any) => f.url && f.url.trim() !== '')
       : [];
 
     return {
@@ -300,6 +305,15 @@ export const getListingBySlug = cache(async (slug: string) => {
   if (isPassive) {
     cleanListing.whatsappNumara = '';
     cleanListing.whatsappOzelMesaj = '';
+  }
+
+  // Fotoğrafları temizle: bozuk/gemi resimlerini ayıkla
+  const cleanAnaUrl = sanitizeImgUrl(cleanListing.anaFotograf);
+  cleanListing.anaFotograf = cleanAnaUrl ? { url: cleanAnaUrl } : undefined;
+  if (Array.isArray(cleanListing.fotograflar)) {
+    cleanListing.fotograflar = cleanListing.fotograflar
+      .map((f: any) => ({ url: sanitizeImgUrl(f) }))
+      .filter((f: any) => f.url && f.url.trim() !== '');
   }
 
   return cleanListing;

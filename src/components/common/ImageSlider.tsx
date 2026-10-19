@@ -49,11 +49,15 @@ export default function ImageSlider({
     };
   }, [isFullscreen]);
 
-  const safeImages = images && images.length > 0 ? images : [
-    { url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=1000&auto=format&fit=crop&q=80' },
+  const filteredImages = (images || []).filter(
+    (img) => img && typeof img.url === 'string' && img.url.trim() !== '' && !img.url.includes('photo-1569263979104')
+  );
+  const safeImages = filteredImages.length > 0 ? filteredImages : [
+    { url: '/placeholder-avatar.webp' },
   ];
 
   const prevSlide = (e?: React.MouseEvent) => {
+    if (safeImages.length <= 1) return;
     if (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -62,6 +66,7 @@ export default function ImageSlider({
   };
 
   const nextSlide = (e?: React.MouseEvent) => {
+    if (safeImages.length <= 1) return;
     if (e) {
       e.stopPropagation();
       e.preventDefault();
@@ -79,7 +84,11 @@ export default function ImageSlider({
   };
 
   const handleTouchEnd = () => {
-    if (touchStartXRef.current === null || touchEndXRef.current === null) return;
+    if (touchStartXRef.current === null || touchEndXRef.current === null || safeImages.length <= 1) {
+      touchStartXRef.current = null;
+      touchEndXRef.current = null;
+      return;
+    }
     const distance = touchStartXRef.current - touchEndXRef.current;
     const minSwipeDistance = 35;
 

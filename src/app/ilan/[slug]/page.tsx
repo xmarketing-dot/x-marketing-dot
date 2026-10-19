@@ -167,9 +167,27 @@ export default async function ListingDetailPage({ params }: Props) {
     limit: 6,
   });
 
-  const allImages = listing.fotograflar && listing.fotograflar.length > 0
-    ? listing.fotograflar
-    : [listing.anaFotograf || { url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=1000' }];
+  // Tüm fotoğrafları tekilleştir ve gemi gibi alakasız dış resimleri temizle
+  const cleanImageList: { url: string; publicId?: string }[] = [];
+  const appendImage = (item: any) => {
+    if (!item) return;
+    const u = typeof item === 'string' ? item : item.url;
+    if (typeof u === 'string') {
+      const trimmed = u.trim();
+      if (trimmed && !trimmed.includes('photo-1569263979104') && !cleanImageList.some((x) => x.url === trimmed)) {
+        cleanImageList.push({ url: trimmed });
+      }
+    }
+  };
+
+  appendImage(listing.anaFotograf);
+  if (Array.isArray(listing.fotograflar)) {
+    listing.fotograflar.forEach(appendImage);
+  }
+
+  const allImages = cleanImageList.length > 0
+    ? cleanImageList
+    : [{ url: '/placeholder-avatar.webp' }];
 
   const rozet = listing.rozet || 'ultravip';
   const isUltraVip = rozet === 'ultravip';

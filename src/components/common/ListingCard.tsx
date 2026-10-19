@@ -43,9 +43,22 @@ export default function ListingCard({ listing }: ListingCardProps) {
     }
   }, [listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
 
-  const allImages = listing.fotograflar && listing.fotograflar.length > 0
-    ? listing.fotograflar
-    : [listing.anaFotograf || { url: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800' }];
+  const cleanList: { url: string }[] = [];
+  const addCardImg = (item: any) => {
+    if (!item) return;
+    const u = typeof item === 'string' ? item : item.url;
+    if (typeof u === 'string') {
+      const trimmed = u.trim();
+      if (trimmed && !trimmed.includes('photo-1569263979104') && !cleanList.some((x) => x.url === trimmed)) {
+        cleanList.push({ url: trimmed });
+      }
+    }
+  };
+  addCardImg(listing.anaFotograf);
+  if (Array.isArray(listing.fotograflar)) {
+    listing.fotograflar.forEach(addCardImg);
+  }
+  const allImages = cleanList.length > 0 ? cleanList : [{ url: '/placeholder-avatar.webp' }];
 
   const badgeText = isPassive
     ? '🔴 Pasif İlan'

@@ -798,7 +798,7 @@ export default function PanelimPage() {
                   const liveTime = calculateLiveCountdown(item.paketBitisTarihi, item.status);
                   const isVitrinActive = item.isVitrin || (item.vitrinBitisTarihi && new Date(item.vitrinBitisTarihi).getTime() > currentTime);
                   const vitrinCd = calculateVitrinCountdown(item.vitrinBitisTarihi, item.isVitrin);
-                  const coverUrl = item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=400';
+                  const coverUrl = item.anaFotograf?.url || item.fotograflar?.[0]?.url || '/placeholder-avatar.webp';
                   const isExpanded = !!expandedInsights[item._id];
 
                   return (
@@ -1049,7 +1049,7 @@ export default function PanelimPage() {
                         <div className="flex items-center gap-2.5 min-w-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=100'}
+                            src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || '/placeholder-avatar.webp'}
                             alt=""
                             className="w-10 h-10 rounded-xl object-cover shrink-0"
                           />
@@ -1523,7 +1523,7 @@ export default function PanelimPage() {
                 <div className="flex items-center gap-3 p-3 bg-black/40 rounded-2xl border border-white/5">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={selectedVitrinListing.anaFotograf?.url || selectedVitrinListing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=200'}
+                    src={selectedVitrinListing.anaFotograf?.url || selectedVitrinListing.fotograflar?.[0]?.url || '/placeholder-avatar.webp'}
                     alt=""
                     className="w-12 h-12 rounded-xl object-cover"
                   />
@@ -1658,7 +1658,7 @@ export default function PanelimPage() {
                 <div className="flex items-center gap-4 p-4 bg-black/60 rounded-2xl border border-white/10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={selectedPopupListing.anaFotograf?.url || selectedPopupListing.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=200'}
+                    src={selectedPopupListing.anaFotograf?.url || selectedPopupListing.fotograflar?.[0]?.url || '/placeholder-avatar.webp'}
                     alt=""
                     className="w-16 h-16 rounded-2xl object-cover shrink-0 border border-purple-500/30"
                   />

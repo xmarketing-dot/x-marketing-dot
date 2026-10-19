@@ -451,7 +451,7 @@ export default function AdminListingsPage() {
 
     const photos = item.fotograflar && item.fotograflar.length > 0
       ? item.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url))
-      : [item.anaFotograf?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800'];
+      : [item.anaFotograf?.url || '/placeholder-avatar.webp'];
 
     setPhotoUrls(photos);
 
@@ -1390,7 +1390,7 @@ export default function AdminListingsPage() {
                                 title="Büyük boyutta incele"
                               >
                                 <Image
-                                  src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=150'}
+                                  src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || '/placeholder-avatar.webp'}
                                   alt={item.baslik}
                                   fill
                                   sizes="50px"
@@ -1649,7 +1649,7 @@ export default function AdminListingsPage() {
                         title="Büyük boyutta incele"
                       >
                         <Image
-                          src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=200'}
+                          src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || '/placeholder-avatar.webp'}
                           alt={item.baslik}
                           fill
                           sizes="80px"
@@ -2240,7 +2240,7 @@ export default function AdminListingsPage() {
                   {(() => {
                     const photos = inspectItem.fotograflar && inspectItem.fotograflar.length > 0
                       ? inspectItem.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url))
-                      : [inspectItem.anaFotograf?.url || 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?w=800'];
+                      : [inspectItem.anaFotograf?.url || '/placeholder-avatar.webp'];
                     const currentMainUrl = photos[inspectActivePhotoIdx] || photos[0];
 
                     return (
