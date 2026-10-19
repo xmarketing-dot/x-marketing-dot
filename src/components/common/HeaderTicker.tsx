@@ -100,6 +100,7 @@ export default function HeaderTicker() {
     <div className="w-full bg-gradient-to-r from-amber-500/20 via-[#161b22] to-amber-500/20 border-b border-amber-500/40 px-3 py-2 flex items-center justify-between shadow-md relative overflow-hidden font-heading">
       <Link
         href={current.link}
+        prefetch={false}
         className="w-full flex items-center justify-between gap-2 transition-all duration-500 ease-in-out"
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">

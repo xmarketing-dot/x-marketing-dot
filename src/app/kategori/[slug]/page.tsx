@@ -286,6 +286,7 @@ export default async function CategoryDetailPage({ params }: Props) {
               <p className="text-xs text-[#8b949e]">İlk ilanı siz ekleyerek bu vitrinde en üst sırada yer alabilirsiniz.</p>
               <Link
                 href="/ilan-ver"
+                prefetch={false}
                 className="mt-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg"
               >
                 Hemen İlan Ver

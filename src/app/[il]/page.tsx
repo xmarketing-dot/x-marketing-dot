@@ -362,6 +362,7 @@ export default async function CityPage({ params }: Props) {
 
               <Link
                 href="/ilan-ver"
+                prefetch={false}
                 className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-md active:scale-95 transition-all shrink-0 text-center"
               >
                 + {location.il} İlk İlanı Ver
@@ -382,6 +383,7 @@ export default async function CityPage({ params }: Props) {
                 </p>
                 <Link
                   href="/ilan-ver"
+                  prefetch={false}
                   className="mt-2 px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-xl active:scale-95 transition-all"
                 >
                   Hemen İlk İlanı Ver

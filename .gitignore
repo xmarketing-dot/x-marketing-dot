@@ -49,4 +49,10 @@ next-env.d.ts
 *.tmp
 env
 Trace-*.json
+check_*.js
+find_*.js
+test_*.js
+inspect_*.js
+extract_*.js
+*.scratch.js
 

@@ -24,6 +24,7 @@ export default function Header() {
       {/* Action Button */}
       <Link
         href="/ilan-ver"
+        prefetch={false}
         className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 font-heading uppercase tracking-wider"
       >
         <Plus className="w-4 h-4 stroke-[3]" />
