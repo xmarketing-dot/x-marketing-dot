@@ -46,6 +46,45 @@ import {
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
 
+function MetricCircle({ percent, color, size = 42, strokeWidth = 3.5 }: { percent: number; color: string; size?: number; strokeWidth?: number }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
+  const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  return (
+    <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          className="text-slate-800"
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[10px] font-mono font-black text-white">
+        %{Math.round(safePercent)}
+      </span>
+    </div>
+  );
+}
+
+
 export default function AdminListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -933,136 +972,107 @@ export default function AdminListingsPage() {
           </div>
         </div>
 
-        {/* Executive 4-KPI Metric Strip */}
+        {/* Executive 4-KPI Metric Strip with Circular Progress (Filter Selectors) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+          {/* Card 1: Toplam İlan */}
           <div 
             onClick={() => setFilter('all')} 
-            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg ${
-              filter === 'all' ? 'border-amber-500/50 ring-1 ring-amber-500/20' : 'border-slate-800/80'
+            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
+              filter === 'all' ? 'border-amber-500 ring-2 ring-amber-500/30 bg-gradient-to-br from-amber-950/20 to-[#0c1017]' : 'border-slate-800/80'
             }`}
           >
-            <div className="flex flex-col min-w-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-heading">Toplam İlan</span>
+            <div className="flex flex-col min-w-0 z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 font-heading">Tüm İlanlar</span>
+                {filter === 'all' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                )}
+              </div>
               <span className="font-black text-xl sm:text-2xl text-white font-heading mt-0.5">{listings.length}</span>
               <span className="text-[10px] text-slate-500">Tüm havuz</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-              <List className="w-5 h-5" />
+            <div className="flex items-center gap-2 z-10">
+              <MetricCircle percent={100} color="#f59e0b" size={42} />
             </div>
           </div>
 
+          {/* Card 2: Onay Bekleyen */}
           <div 
             onClick={() => setFilter('onay_bekliyor')} 
-            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg ${
-              filter === 'onay_bekliyor' ? 'border-rose-500/50 ring-1 ring-rose-500/20' : 'border-slate-800/80'
-            } ${pendingCount > 0 ? 'bg-gradient-to-br from-rose-950/20 to-[#0c1017]' : ''}`}
+            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
+              filter === 'onay_bekliyor' ? 'border-rose-500 ring-2 ring-rose-500/30 bg-gradient-to-br from-rose-950/30 to-[#0c1017]' : 'border-slate-800/80'
+            } ${pendingCount > 0 ? 'bg-gradient-to-br from-rose-950/15 to-[#0c1017]' : ''}`}
           >
-            <div className="flex flex-col min-w-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-rose-300 font-heading flex items-center gap-1.5">
+            <div className="flex flex-col min-w-0 z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-rose-300 font-heading">Onay Bekleyen</span>
                 {pendingCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />}
-                Onay Bekleyen
-              </span>
+              </div>
               <span className="font-black text-xl sm:text-2xl text-rose-400 font-heading mt-0.5">{pendingCount}</span>
               <span className="text-[10px] text-slate-500">Kuyrukta moderasyon</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5" />
+            <div className="flex items-center gap-2 z-10">
+              <MetricCircle 
+                percent={listings.length > 0 ? (pendingCount / listings.length) * 100 : 0} 
+                color="#f43f5e" 
+                size={42} 
+              />
             </div>
           </div>
 
+          {/* Card 3: Yayındaki İlan */}
           <div 
             onClick={() => setFilter('yayinda')} 
-            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg ${
-              filter === 'yayinda' ? 'border-emerald-500/50 ring-1 ring-emerald-500/20' : 'border-slate-800/80'
+            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
+              filter === 'yayinda' ? 'border-emerald-500 ring-2 ring-emerald-500/30 bg-gradient-to-br from-emerald-950/20 to-[#0c1017]' : 'border-slate-800/80'
             }`}
           >
-            <div className="flex flex-col min-w-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 font-heading flex items-center gap-1.5">
+            <div className="flex flex-col min-w-0 z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 font-heading">Yayında</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                Yayındaki İlan
-              </span>
+              </div>
               <span className="font-black text-xl sm:text-2xl text-emerald-400 font-heading mt-0.5">{liveCount}</span>
-              <span className="text-[10px] text-slate-500">Canlı &amp; aktif vitrinde</span>
+              <span className="text-[10px] text-slate-500">Canlı vitrinde aktif</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-              <Crown className="w-5 h-5" />
+            <div className="flex items-center gap-2 z-10">
+              <MetricCircle 
+                percent={listings.length > 0 ? (liveCount / listings.length) * 100 : 0} 
+                color="#10b981" 
+                size={42} 
+              />
             </div>
           </div>
 
+          {/* Card 4: Süresi Dolan */}
           <div 
             onClick={() => setFilter('suresi_doldu')} 
-            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg ${
-              filter === 'suresi_doldu' ? 'border-amber-500/50 ring-1 ring-amber-500/20' : 'border-slate-800/80'
+            className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
+              filter === 'suresi_doldu' ? 'border-amber-500 ring-2 ring-amber-500/30 bg-gradient-to-br from-amber-950/20 to-[#0c1017]' : 'border-slate-800/80'
             }`}
           >
-            <div className="flex flex-col min-w-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 font-heading">Süresi Dolan</span>
+            <div className="flex flex-col min-w-0 z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 font-heading">Süresi Dolan</span>
+                {expiredCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
+              </div>
               <span className="font-black text-xl sm:text-2xl text-amber-400 font-heading mt-0.5">{expiredCount}</span>
-              <span className="text-[10px] text-slate-500">Yenileme bekleyen</span>
+              <span className="text-[10px] text-slate-500">Süre yenileme bekleyen</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5" />
+            <div className="flex items-center gap-2 z-10">
+              <MetricCircle 
+                percent={listings.length > 0 ? (expiredCount / listings.length) * 100 : 0} 
+                color="#f59e0b" 
+                size={42} 
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── 2. FILTER TABS & SEARCH & SORT CONTROLS ──────────────── */}
-      <div className="flex flex-col gap-2.5 p-3 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-lg">
-        {/* Filter Tabs */}
-        <div className="p-1 rounded-xl bg-[#070a0f] border border-slate-800/60 flex items-center gap-1 overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'all' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
-          >
-            <span>Tüm İlanlar</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'all' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0c1017] text-amber-400'}`}>
-              {listings.length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setFilter('onay_bekliyor')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'onay_bekliyor' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
-          >
-            <span>⏳ Onay Bekleyenler</span>
-            {pendingCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[10px] font-black animate-pulse">
-                {pendingCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => setFilter('yayinda')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'yayinda' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
-          >
-            <span>🟢 Yayındakiler</span>
-            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'yayinda' ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0c1017] text-emerald-400'}`}>
-              {listings.filter((l) => l.status === 'yayinda' && (!l.paketBitisTarihi || new Date(l.paketBitisTarihi).getTime() >= Date.now())).length}
-            </span>
-          </button>
-
-          <button
-            onClick={() => setFilter('suresi_doldu')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 ${filter === 'suresi_doldu' ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-900'
-              }`}
-          >
-            <span>⏰ Süresi Dolanlar</span>
-            {expiredCount > 0 && (
-              <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${filter === 'suresi_doldu' ? 'bg-slate-950/30 text-slate-950' : 'bg-amber-500/20 text-amber-400 border border-amber-500/40'}`}>
-                {expiredCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* Search Bar & Sorting Toolbar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1">
-          {/* Arama Kutusu */}
+      {/* ── 2. UNIFIED SEARCH & SORT TOOLBAR (REDUNDANT TABS REMOVED) ──────────────── */}
+      <div className="p-3 sm:p-3.5 rounded-2xl bg-[#0c1017] border border-slate-800/80 shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        {/* Arama Kutusu */}
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
@@ -1175,7 +1185,7 @@ export default function AdminListingsPage() {
             </div>
           </div>
         </div>
-      </div>
+      
 
       {/* ── 3. LISTINGS DISPLAY (MASAÜSTÜ İÇİN TABLO & MOBİL İÇİN NATIVE KARTLAR) ──────────────── */}
       <div>
@@ -1775,10 +1785,11 @@ export default function AdminListingsPage() {
 
       {/* ── 4. FULL EDITING MODAL (MOBİL UYUMLU) ──────────────── */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
-          <div className="w-full max-w-2xl bg-[#0c1017] border border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-4 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[92vh] overflow-y-auto">
-
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-3xl bg-[#0c1017] border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+            
+            {/* Sticky Header */}
+            <div className="px-5 py-3.5 sm:px-6 sm:py-4 bg-[#0c1017]/95 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between shrink-0">
               <div className="flex flex-col min-w-0">
                 <h2 className="font-heading font-black text-base sm:text-lg text-white flex items-center gap-2 truncate">
                   <Edit3 className="w-4 h-4 text-amber-400 shrink-0" />
@@ -1797,7 +1808,7 @@ export default function AdminListingsPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="flex flex-col gap-4">
+            <form onSubmit={handleSaveEdit} className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-800">
 
               {/* Photo Management Section */}
               <div className="p-3 sm:p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-2.5">
@@ -2047,7 +2058,7 @@ export default function AdminListingsPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="px-5 py-3.5 sm:px-6 sm:py-4 bg-[#0c1017]/95 backdrop-blur-md border-t border-slate-800/80 flex items-center justify-end gap-2.5 shrink-0">
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
@@ -2083,14 +2094,14 @@ export default function AdminListingsPage() {
       {inspectItem && (
         <div
           onClick={() => setInspectItem(null)}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xl flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-4xl bg-[#0c1017] border-2 border-amber-500/50 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 flex flex-col gap-4 shadow-2xl max-h-[92vh] overflow-y-auto"
+            className="w-full max-w-4xl bg-[#0c1017] border border-slate-700/80 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3 gap-2">
+            <div className="px-5 py-3.5 sm:px-6 sm:py-4 bg-[#0c1017]/95 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between shrink-0 gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center font-black shrink-0">
                   <Eye className="w-5 h-5" />
@@ -2124,8 +2135,7 @@ export default function AdminListingsPage() {
                 <Loader2 className="w-7 h-7 text-amber-400 animate-spin" />
                 <span className="text-xs text-slate-400">Yükleniyor...</span>
               </div>
-            ) : (
-              <div className="flex flex-col gap-4">
+            ) : (<div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-800">
 
                 {/* 1. Fotoğraf Galerisi & Büyük Önizleme */}
                 <div className="p-3 sm:p-4 rounded-xl bg-[#070a0f] border border-amber-500/30 flex flex-col gap-2.5">

@@ -13,7 +13,8 @@ import {
   Loader2, 
   RefreshCw, 
   AtSign, 
-  Trash2, 
+  Trash2,
+  Edit3, 
   ChevronDown, 
   ChevronUp, 
   Search, 
@@ -27,6 +28,45 @@ import {
   Plus
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+
+function MetricCircle({ percent, color, size = 42, strokeWidth = 3.5 }: { percent: number; color: string; size?: number; strokeWidth?: number }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
+  const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  return (
+    <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          className="text-slate-800"
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[10px] font-mono font-black text-white">
+        %{Math.round(safePercent)}
+      </span>
+    </div>
+  );
+}
+
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -43,6 +83,57 @@ export default function AdminUsersPage() {
   const [sifre, setSifre] = useState('');
   const [telefon, setTelefon] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  
+  // Edit User states
+  const [editingUser, setEditingUser] = useState<any | null>(null);
+  const [editUsername, setEditUsername] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editMsg, setEditMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleOpenEditUser = (u: any) => {
+    setEditingUser(u);
+    setEditUsername(u.kullaniciAdi || '');
+    setEditPassword(u.sifreHash || '');
+    setEditPhone(u.telefon || '');
+    setEditMsg(null);
+  };
+
+  const handleSaveUserEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setEditLoading(true);
+    setEditMsg(null);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingUser._id,
+          kullaniciAdi: editUsername,
+          sifre: editPassword,
+          telefon: editPhone
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEditMsg({ type: 'success', text: 'Kullanıcı hesabı başarıyla güncellendi!' });
+        fetchUsers();
+        setTimeout(() => {
+          setEditingUser(null);
+          setEditMsg(null);
+        }, 1000);
+      } else {
+        setEditMsg({ type: 'error', text: data.error || 'Güncelleme başarısız.' });
+      }
+    } catch (err: any) {
+      setEditMsg({ type: 'error', text: 'Bağlantı hatası oluştu.' });
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const [modalMessage, setModalMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {

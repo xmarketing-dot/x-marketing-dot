@@ -20,6 +20,44 @@ import {
   Info
 } from 'lucide-react';
 
+
+function MetricCircle({ percent, color = '#3b82f6', size = 42, strokeWidth = 3.5 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
+  const safePercent = Math.min(Math.max(percent || 0, 0), 100);
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  return (
+    <div className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#1e293b"
+          strokeWidth={strokeWidth}
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[10px] font-mono font-black text-white">
+        %{Math.round(safePercent)}
+      </span>
+    </div>
+  );
+}
+
 export default function BacklinkManagementPage() {
   const [backlinks, setBacklinks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,13 +154,13 @@ export default function BacklinkManagementPage() {
   const totalClicks = backlinks.reduce((acc, b) => acc + (b.tiklamaSayisi || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] p-4 sm:p-8 flex flex-col gap-6 max-w-7xl mx-auto text-left">
+    <div className="min-h-screen bg-[#070a0f] text-[#f0f6fc] p-4 sm:p-8 flex flex-col gap-6 max-w-7xl mx-auto text-left">
       {/* ── ÜST BAŞLIK VE NAVİGASYON ──────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div className="flex items-center gap-4">
           <Link
             href="/bms-secure-portal"
-            className="p-3 rounded-2xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-amber-400 hover:text-amber-300 transition-colors shrink-0 shadow-lg"
+            className="p-3 rounded-2xl bg-[#0c1017] hover:bg-[#070a0f] border border-slate-800 text-amber-400 hover:text-amber-300 transition-colors shrink-0 shadow-lg"
             title="Ana Yönetim Paneline Dön"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -136,7 +174,7 @@ export default function BacklinkManagementPage() {
                 %100 AKTİF &amp; DOFOLLOW
               </span>
             </div>
-            <p className="text-xs sm:text-sm text-[#8b949e] mt-0.5">
+            <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
               Kendi sitelerinizi veya arkadaşlarınızın sitelerini ekleyin. Google ve Yandex botları tarafından doğrudan taranıp indekslenir.
             </p>
           </div>
@@ -153,7 +191,7 @@ export default function BacklinkManagementPage() {
           <button
             onClick={fetchBacklinks}
             disabled={loading}
-            className="p-2.5 rounded-2xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-amber-400 transition-colors"
+            className="p-2.5 rounded-2xl bg-[#0c1017] hover:bg-[#070a0f] border border-slate-800 text-amber-400 transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -162,18 +200,18 @@ export default function BacklinkManagementPage() {
 
       {/* ── İSTATİSTİK KARTLARI ──────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-1 shadow-xl">
-          <div className="flex items-center justify-between text-[#8b949e]">
+        <div className="p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col gap-1 shadow-xl">
+          <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-heading font-black uppercase">Toplam Backlink</span>
             <Globe className="w-4 h-4 text-blue-400" />
           </div>
           <span className="font-heading font-black text-3xl text-white mt-2">
             {backlinks.length}
           </span>
-          <span className="text-[11px] text-[#8b949e]">Sistemde kayıtlı partner siteler</span>
+          <span className="text-[11px] text-slate-400">Sistemde kayıtlı partner siteler</span>
         </div>
 
-        <div className="p-5 rounded-3xl bg-[#161b22] border border-emerald-500/30 flex flex-col gap-1 shadow-xl">
+        <div className="p-5 rounded-3xl bg-[#0c1017] border border-emerald-500/30 flex flex-col gap-1 shadow-xl">
           <div className="flex items-center justify-between text-emerald-400">
             <span className="text-xs font-heading font-black uppercase">Aktif Yayında</span>
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -184,7 +222,7 @@ export default function BacklinkManagementPage() {
           <span className="text-[11px] text-emerald-300">Botlar ve kullanıcılar tarafından görülen</span>
         </div>
 
-        <div className="p-5 rounded-3xl bg-[#161b22] border border-amber-500/30 flex flex-col gap-1 shadow-xl">
+        <div className="p-5 rounded-3xl bg-[#0c1017] border border-amber-500/30 flex flex-col gap-1 shadow-xl">
           <div className="flex items-center justify-between text-amber-400">
             <span className="text-xs font-heading font-black uppercase">DoFollow (SEO Gücü)</span>
             <Sparkles className="w-4 h-4 text-amber-400" />
@@ -195,15 +233,15 @@ export default function BacklinkManagementPage() {
           <span className="text-[11px] text-amber-300">Google PageRank aktaran güçlü linkler</span>
         </div>
 
-        <div className="p-5 rounded-3xl bg-[#161b22] border border-[#30363d] flex flex-col gap-1 shadow-xl">
-          <div className="flex items-center justify-between text-[#8b949e]">
+        <div className="p-5 rounded-3xl bg-[#0c1017] border border-slate-800 flex flex-col gap-1 shadow-xl">
+          <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-heading font-black uppercase">Toplam Tıklama</span>
             <MousePointerClick className="w-4 h-4 text-purple-400" />
           </div>
           <span className="font-heading font-black text-3xl text-purple-400 mt-2">
             {totalClicks.toLocaleString('tr-TR')}
           </span>
-          <span className="text-[11px] text-[#8b949e]">Dış sitelere yönlendirilen kullanıcılar</span>
+          <span className="text-[11px] text-slate-400">Dış sitelere yönlendirilen kullanıcılar</span>
         </div>
       </div>
 
@@ -211,9 +249,9 @@ export default function BacklinkManagementPage() {
       {showAddForm && (
         <form
           onSubmit={handleAddBacklink}
-          className="p-6 rounded-3xl bg-[#161b22] border border-blue-500/50 shadow-2xl flex flex-col gap-4 animate-fadeIn"
+          className="p-6 rounded-3xl bg-[#0c1017] border border-blue-500/50 shadow-2xl flex flex-col gap-4 animate-fadeIn"
         >
-          <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <h2 className="font-heading font-black text-base text-white flex items-center gap-2">
               <Plus className="w-4 h-4 text-blue-400" />
               <span>Yeni Backlink &amp; Partner Sitesi Tanımla</span>
@@ -221,7 +259,7 @@ export default function BacklinkManagementPage() {
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="text-xs text-[#8b949e] hover:text-white"
+              className="text-xs text-slate-400 hover:text-white"
             >
               Kapat ✕
             </button>
@@ -236,7 +274,7 @@ export default function BacklinkManagementPage() {
                 onChange={(e) => setBaslik(e.target.value)}
                 placeholder="Örn: Kadıköy VIP Rehberi"
                 required
-                className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-blue-500"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs outline-none focus:border-blue-500"
               />
             </div>
 
@@ -248,7 +286,7 @@ export default function BacklinkManagementPage() {
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://orneksite.com"
                 required
-                className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-blue-500 font-mono"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs outline-none focus:border-blue-500 font-mono"
               />
             </div>
           </div>
@@ -261,7 +299,7 @@ export default function BacklinkManagementPage() {
                 value={anchorText}
                 onChange={(e) => setAnchorText(e.target.value)}
                 placeholder="Boş bırakılırsa Site Adı kullanılır"
-                className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-blue-500"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs outline-none focus:border-blue-500"
               />
             </div>
 
@@ -270,7 +308,7 @@ export default function BacklinkManagementPage() {
               <select
                 value={nofollow ? 'nofollow' : 'dofollow'}
                 onChange={(e) => setNofollow(e.target.value === 'nofollow')}
-                className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs outline-none"
               >
                 <option value="dofollow">DoFollow (Önerilen — Google Bot Gücü ve Sıralama Aktarır) 🔥</option>
                 <option value="nofollow">NoFollow (Sadece Yönlendirme, SEO suyu aktarmaz)</option>
@@ -278,11 +316,11 @@ export default function BacklinkManagementPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#30363d]">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
-              className="px-4 py-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white text-xs font-bold"
+              className="px-4 py-2 rounded-xl bg-[#070a0f] text-slate-400 hover:text-white text-xs font-bold"
             >
               İptal
             </button>
@@ -298,21 +336,21 @@ export default function BacklinkManagementPage() {
       )}
 
       {/* ── BACKLİNK LİSTESİ TABLOSU ──────────────── */}
-      <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-        <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
+      <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2">
             <Link2 className="w-5 h-5 text-blue-400" />
             <h2 className="font-heading font-black text-base text-white">
               Kayıtlı Backlink Bağlantıları ({backlinks.length})
             </h2>
           </div>
-          <span className="text-xs text-[#8b949e]">
+          <span className="text-xs text-slate-400">
             Sitenin en altındaki (Footer) partner alanında tüm 81 il ve ilçede otomatik yayınlanır.
           </span>
         </div>
 
         {backlinks.length === 0 ? (
-          <div className="p-12 text-center text-xs text-[#8b949e] bg-[#0d1117] rounded-2xl border border-[#30363d]">
+          <div className="p-12 text-center text-xs text-slate-400 bg-[#070a0f] rounded-2xl border border-slate-800">
             Henüz eklenmiş bir backlink bulunmuyor. "Yeni Backlink Ekle" butonuna basarak ilk sitenizi ekleyin.
           </div>
         ) : (
@@ -320,8 +358,8 @@ export default function BacklinkManagementPage() {
             {backlinks.map((b) => (
               <div
                 key={b._id}
-                className={`p-4 rounded-2xl bg-[#0d1117] border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-                  b.aktif ? 'border-[#30363d] hover:border-blue-500/50' : 'border-red-500/30 opacity-60'
+                className={`p-4 rounded-2xl bg-[#070a0f] border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                  b.aktif ? 'border-slate-800 hover:border-blue-500/50' : 'border-red-500/30 opacity-60'
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -359,9 +397,9 @@ export default function BacklinkManagementPage() {
                 </div>
 
                 {/* İstatistik & Aksiyonlar */}
-                <div className="flex items-center gap-4 shrink-0 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-[#30363d]/60 pt-2 sm:pt-0">
+                <div className="flex items-center gap-4 shrink-0 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-800/60 pt-2 sm:pt-0">
                   <div className="flex flex-col text-right">
-                    <span className="text-[10px] text-[#8b949e]">Tıklama</span>
+                    <span className="text-[10px] text-slate-400">Tıklama</span>
                     <span className="font-mono font-black text-xs text-purple-400">{b.tiklamaSayisi || 0}</span>
                   </div>
 
@@ -377,7 +415,7 @@ export default function BacklinkManagementPage() {
 
                     <button
                       onClick={() => handleDelete(b._id)}
-                      className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                      className="p-2 rounded-xl bg-[#070a0f] text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
                       title="Sil"
                     >
                       <Trash2 className="w-4 h-4" />

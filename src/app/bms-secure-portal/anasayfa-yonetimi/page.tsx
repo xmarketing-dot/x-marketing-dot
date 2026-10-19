@@ -122,6 +122,44 @@ const POPULAR_CITIES = [
   })),
 ];
 
+
+function MetricCircle({ percent, color = '#f59e0b', size = 42, strokeWidth = 3.5 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
+  const safePercent = Math.min(Math.max(percent || 0, 0), 100);
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  return (
+    <div className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#1e293b"
+          strokeWidth={strokeWidth}
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[10px] font-mono font-black text-white">
+        %{Math.round(safePercent)}
+      </span>
+    </div>
+  );
+}
+
 export default function AdminHomepageConfigPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -195,6 +233,7 @@ export default function AdminHomepageConfigPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [listingFilter, setListingFilter] = useState<'all' | 'vip' | 'gold' | 'selected'>('all');
   const [onayMasasiTab, setOnayMasasiTab] = useState<'talepler' | 'popup' | 'vip' | 'tumu'>('talepler');
+  const [activeMainTab, setActiveMainTab] = useState<'vitrin' | 'popup' | 'gif' | 'duyuru' | 'whatsapp'>('vitrin');
 
   const selectedListingForAd = allListings.find((l) => l._id === newAdIlanId);
 
@@ -992,20 +1031,20 @@ export default function AdminHomepageConfigPage() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-full text-left pb-16">
 
-      {/* ── ÜST DASHBOARD HEADER & CANLI METRİKLER ──────────────── */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#161b22] via-[#12161c] to-[#161b22] border border-slate-800 shadow-2xl flex flex-col gap-5">
+      {/* ── ÜST DASHBOARD HEADER & CANLI METRİKLER (OBSIDIAN EXECUTIVE) ──────────────── */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-2xl flex flex-col gap-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 shrink-0">
-              <Sliders className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-black shadow-lg shadow-amber-500/10 shrink-0">
+              <Sliders className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col text-left">
               <div className="flex items-center gap-2">
                 <h1 className="font-black text-xl sm:text-2xl text-white font-heading">
                   Anasayfa, Vitrin &amp; Reklam Yönetim Merkezi
                 </h1>
-                <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-400 font-mono text-[10px] font-bold">
-                  SaaS Control
+                <span className="hidden sm:inline-flex px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 font-mono text-[10px] font-bold">
+                  Obsidian Control
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
@@ -1014,11 +1053,11 @@ export default function AdminHomepageConfigPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 self-start lg:self-auto shrink-0">
+          <div className="flex items-center gap-2.5 self-start lg:self-auto shrink-0">
             <button
               type="button"
               onClick={() => fetchConfig(false)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white border border-slate-800 font-bold text-xs transition-colors shadow-md"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#070a0f] hover:bg-slate-900 text-white border border-slate-800 font-bold text-xs transition-colors shadow-md"
             >
               <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
               <span>Yenile</span>
@@ -1036,149 +1075,166 @@ export default function AdminHomepageConfigPage() {
           </div>
         </div>
 
-        {/* Canlı Durum Kartları / Sayaçlar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-white/5 text-xs">
+        {/* Canlı Durum Kartları / Sayaçlar with MetricCircle */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-4 border-t border-slate-800 text-xs">
           {/* 1. Vitrinde Yayında */}
-          <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-black shrink-0">
-              <Crown className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col min-w-0">
+          <div 
+            onClick={() => setActiveMainTab('vitrin')}
+            className={`p-4 rounded-2xl bg-[#070a0f] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
+              activeMainTab === 'vitrin' ? 'border-amber-500 ring-2 ring-amber-500/30' : 'border-slate-800/80'
+            }`}
+          >
+            <div className="flex flex-col min-w-0 z-10">
               <span className="text-[10px] uppercase font-bold text-slate-400">Vitrinde Yayında</span>
-              <span className="text-sm sm:text-base font-black text-white font-mono">{selectedListingIds.length} İlan</span>
+              <span className="text-xl sm:text-2xl font-black text-white font-mono mt-0.5">{selectedListingIds.length} / 5</span>
+              <span className="text-[10px] text-slate-500">Maksimum 5 slot</span>
+            </div>
+            <div className="flex items-center gap-2 z-10">
+              <MetricCircle percent={(selectedListingIds.length / 5) * 100} color="#f59e0b" size={42} />
             </div>
           </div>
 
           {/* 2. Onay Bekleyen Vitrinler */}
-          <div className={`p-3.5 rounded-2xl border flex items-center gap-3 ${vitrinRequests.length > 0
-              ? 'bg-amber-500/10 border-amber-500/40 animate-pulse'
-              : 'bg-[#070a0f] border-[#21262d]'
-            }`}>
-            <div className="w-9 h-9 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center font-black shrink-0">
-              <Sparkles className="w-5 h-5" />
+          <div 
+            onClick={() => setActiveMainTab('vitrin')}
+            className={`p-4 rounded-2xl bg-[#070a0f] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
+              vitrinRequests.length > 0 ? 'border-amber-500/60 ring-2 ring-amber-500/20' : 'border-slate-800/80'
+            }`}
+          >
+            <div className="flex flex-col min-w-0 z-10">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400">Vitrin Talepleri</span>
+                {vitrinRequests.length > 0 && <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />}
+              </div>
+              <span className="text-xl sm:text-2xl font-black text-amber-300 font-mono mt-0.5">{vitrinRequests.length} Talep</span>
+              <span className="text-[10px] text-slate-500">Onay bekleyen ilan</span>
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Vitrin Talepleri</span>
-              <span className="text-sm sm:text-base font-black text-amber-300 font-mono">
-                {vitrinRequests.length} Talep
-              </span>
+            <div className="flex items-center gap-2 z-10">
+              <MetricCircle percent={allListings.length > 0 ? (vitrinRequests.length / allListings.length) * 100 : 0} color="#fbbf24" size={42} />
             </div>
           </div>
 
           {/* 3. Aktif Popup Reklamlar */}
-          <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-black shrink-0">
-              <Tv className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col min-w-0">
+          <div 
+            onClick={() => setActiveMainTab('popup')}
+            className={`p-4 rounded-2xl bg-[#070a0f] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
+              activeMainTab === 'popup' ? 'border-emerald-500 ring-2 ring-emerald-500/30' : 'border-slate-800/80'
+            }`}
+          >
+            <div className="flex flex-col min-w-0 z-10">
               <span className="text-[10px] uppercase font-bold text-slate-400">Popup Reklamları</span>
-              <span className="text-sm sm:text-base font-black text-emerald-400 font-mono">
+              <span className="text-xl sm:text-2xl font-black text-emerald-400 font-mono mt-0.5">
                 {ozelIlanReklamlar.filter((a) => a.aktif).length} Aktif
               </span>
+              <span className="text-[10px] text-slate-500">İl hedefli popup</span>
+            </div>
+            <div className="flex items-center gap-2 z-10">
+              <MetricCircle 
+                percent={ozelIlanReklamlar.length > 0 ? (ozelIlanReklamlar.filter((a) => a.aktif).length / ozelIlanReklamlar.length) * 100 : 0} 
+                color="#10b981" 
+                size={42} 
+              />
             </div>
           </div>
 
-          {/* 4. Canlı Anasayfa Durumu */}
-          <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-black shrink-0 ${selectedListingIds.length > 0 ? 'bg-amber-500/15 text-amber-400' : 'bg-purple-500/15 text-purple-400'
-              }`}>
-              <Radio className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Anasayfa Üst Modu</span>
-              <span className={`text-xs font-black truncate font-heading ${selectedListingIds.length > 0 ? 'text-amber-400' : 'text-purple-300'
-                }`}>
-                {selectedListingIds.length > 0 ? '👑 İlan Vitrini' : '📢 VIP Reklam Alanı'}
+          {/* 4. Boş Vitrin GIF Havuzu */}
+          <div 
+            onClick={() => setActiveMainTab('gif')}
+            className={`p-4 rounded-2xl bg-[#070a0f] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
+              activeMainTab === 'gif' ? 'border-purple-500 ring-2 ring-purple-500/30' : 'border-slate-800/80'
+            }`}
+          >
+            <div className="flex flex-col min-w-0 z-10">
+              <span className="text-[10px] uppercase font-bold text-slate-400">Boş Vitrin GIF Havuzu</span>
+              <span className="text-xl sm:text-2xl font-black text-purple-300 font-mono mt-0.5">
+                {bosVitrinSliderlar.length} GIF
               </span>
+              <span className="text-[10px] text-slate-500">Otomatik rotasyon</span>
+            </div>
+            <div className="flex items-center gap-2 z-10">
+              <MetricCircle percent={100} color="#a855f7" size={42} />
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ── CANLI ADMİN WHATSAPP DESTEK HATTI YÖNETİM PANELİ (ANINDA CANLIYA AL) ──────────────── */}
-      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#111a14] via-[#161b22] to-[#121c16] border border-emerald-500/40 shadow-2xl flex flex-col gap-3.5">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
-              <OfficialWhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6 fill-[#25D366]" />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <h2 className="font-black text-sm sm:text-base text-white font-heading">
-                  Canlı Admin WhatsApp Destek Hattı
-                </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono text-[9px] font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>CANLIDA AKTİF</span>
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400">
-                Numaranız engellendiğinde/patladığında yeni numarayı buraya girip kaydedin. Deploy gerekmeden tüm sitede anında aktif olur.
-              </p>
-            </div>
-          </div>
+        {/* ── SENIOR OBSIDIAN TAB CONTROLLER BAR ──────────────── */}
+        <div className="pt-3 border-t border-slate-800/80 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('vitrin')}
+            className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              activeMainTab === 'vitrin'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Crown className="w-4 h-4" />
+            <span>Vitrin &amp; Slider Masası</span>
+            {vitrinRequests.length > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full bg-red-600 text-white text-[9px] font-black animate-pulse">
+                {vitrinRequests.length}
+              </span>
+            )}
+          </button>
 
-          {/* Aktif Numara Önizleme Rozeti */}
-          <div className="flex items-center gap-2 bg-[#070a0f] border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-mono self-start lg:self-auto">
-            <span className="text-slate-400 text-[10px]">Aktif Hat:</span>
-            <span className="text-emerald-400 font-black">
-              {parsePhoneNumber(adminWhatsApp).formatted || 'Tanımlanmadı'}
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('popup')}
+            className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              activeMainTab === 'popup'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Tv className="w-4 h-4" />
+            <span>Sponsorlu Popup Reklamları</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-[#0c1017] text-emerald-400 border border-emerald-500/30 text-[9px] font-mono font-bold">
+              {ozelIlanReklamlar.filter((a) => a.aktif).length} Aktif
             </span>
-          </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('gif')}
+            className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              activeMainTab === 'gif'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Film className="w-4 h-4" />
+            <span>Boş Vitrin GIF Havuzu</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-[#0c1017] text-purple-300 border border-purple-500/30 text-[9px] font-mono font-bold">
+              {bosVitrinSliderlar.length} GIF
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('duyuru')}
+            className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              activeMainTab === 'duyuru'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <Megaphone className="w-4 h-4" />
+            <span>Kayan Duyuru &amp; Hero Metinleri</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveMainTab('whatsapp')}
+            className={`px-4 py-2.5 rounded-xl font-heading font-black text-xs uppercase tracking-wider flex items-center gap-2 transition-all shrink-0 cursor-pointer ${
+              activeMainTab === 'whatsapp'
+                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                : 'bg-[#070a0f] text-slate-400 hover:text-white border border-slate-800'
+            }`}
+          >
+            <OfficialWhatsAppIcon className="w-4 h-4 text-emerald-400" />
+            <span>VIP WhatsApp Hattı</span>
+          </button>
         </div>
-
-        {/* Input & Aksiyon Butonları */}
-        <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
-          <div className="relative flex-1 w-full">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#25D366]">
-              <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
-            </div>
-            <input
-              type="text"
-              value={adminWhatsApp}
-              onChange={(e) => setAdminWhatsApp(e.target.value)}
-              placeholder="Yeni WhatsApp Numarası (Örn: +905xxxxxxxxx veya 0532...)"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white font-mono text-xs sm:text-sm focus:border-emerald-500 focus:outline-none transition-colors"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-            {/* WhatsApp Test Et Butonu */}
-            <a
-              href={`https://wa.me/${parsePhoneNumber(adminWhatsApp).raw}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold font-heading flex items-center justify-center gap-1.5 transition-colors shadow-md"
-              title="Numaranın WhatsApp hesabının açık olduğunu test et"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span>Test Et</span>
-            </a>
-
-            {/* Hızlı Kaydet Butonu */}
-            <button
-              type="button"
-              onClick={handleQuickSaveWhatsApp}
-              disabled={savingAdminWa}
-              className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 font-black text-xs uppercase font-heading flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50"
-            >
-              {savingAdminWa ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Check className="w-3.5 h-3.5 stroke-[3]" />
-              )}
-              <span>{savingAdminWa ? 'Kaydediliyor...' : 'Numarayı Kaydet & Yayına Al'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Başarı Bildirimi Toast */}
-        {adminWaSuccess && (
-          <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>✅ Yeni WhatsApp numarası kaydedildi! Sitedeki tüm butonlar ve paket mesajları anında bu numaraya bağlandı.</span>
-          </div>
-        )}
       </div>
 
       {message && (
@@ -1191,15 +1247,11 @@ export default function AdminHomepageConfigPage() {
         </div>
       )}
 
-      {/* ── 2 SÜTUNLU GENİŞ WEB DASHBOARD DÜZENİ ──────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-        {/* ══════════════════════════════════════════════════════════════
-            SOL SÜTUN (KOLON 7-8): VİTRİN ONAY MASASI & SLIDER HAVUZU & HERO
-           ══════════════════════════════════════════════════════════════ */}
-        <div className="lg:col-span-7 xl:col-span-8 flex flex-col gap-6">
-
-          {/* ── 1. VİTRİN TALEPLERİ & ONAY MASASI (BEKLEYENLER) ──────────────── */}
+      {/* ── TAB 1: VİTRİN & SLIDER MASASI ──────────────── */}
+      {activeMainTab === 'vitrin' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-7 flex flex-col gap-6">
+            {/* ── 1. VİTRİN TALEPLERİ & ONAY MASASI (BEKLEYENLER) ──────────────── */}
           <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border-2 border-amber-500/50 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -1544,343 +1596,9 @@ export default function AdminHomepageConfigPage() {
               </div>
             )}
           </div>
-
-          {/* ── 2. VİTRİN BOŞKEN DÖNECEK VIP GIF & REKLAM HAVUZU YÖNETİMİ ──────────────── */}
-          <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border-2 border-purple-500/40 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-500 text-white flex items-center justify-center font-black shadow-md">
-                  <Film className="w-5 h-5" />
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-black text-lg text-white font-heading">
-                      Vitrin Boşken Dönecek VIP GIF &amp; Reklam Havuzu
-                    </h2>
-                    <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-black text-[10px] uppercase font-mono border border-purple-500/30">
-                      {bosVitrinSliderlar.filter(s => s.aktif).length} / {bosVitrinSliderlar.length} Aktif
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-400">
-                    Vitrinde canlı ilan yokken anasayfanın tepesinde dönecek hareketli GIF&apos;leri, profesyonel sloganları ve rozetleri yönetin. İstediğiniz GIF URL&apos;sini ekleyin, düzenleyin veya silin.
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleSaveGifsOnly}
-                disabled={savingGifs}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase font-heading transition-all shadow-md active:scale-95 disabled:opacity-50 shrink-0"
-              >
-                {savingGifs ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5 stroke-[2.5]" />}
-                <span>{savingGifs ? 'Kaydediliyor...' : 'GIF Havuzunu Kaydet'}</span>
-              </button>
-            </div>
-
-            {/* Yeni GIF Ekleme Kartı */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-[#070a0f] border border-purple-500/30 flex flex-col gap-3.5 shadow-inner">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-purple-300 uppercase tracking-wider font-heading flex items-center gap-1.5">
-                  <Plus className="w-4 h-4 text-purple-400" />
-                  <span>Yeni GIF &amp; Vitrin Reklamı Ekle</span>
-                </span>
-                <span className="text-[10px] text-slate-400 font-mono">Tenor / Giphy / Tumblr / Görsel Linki Desteklenir</span>
-              </div>
-
-              {/* Form Alanları */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
-                {/* Sol: URL ve Canlı Önizleme */}
-                <div className="md:col-span-6 flex flex-col gap-2">
-                  <label className="text-[11px] font-bold text-slate-400 flex items-center justify-between">
-                    <span>GIF Resim URL Adresi *</span>
-                    {newGifUrl && <span className="text-emerald-400 text-[10px]">✓ Önizleme aktif</span>}
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={newGifUrl}
-                      onChange={(e) => setNewGifUrl(e.target.value)}
-                      placeholder="https://media.tenor.com/.../example.gif"
-                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
-                    />
-                    <Link2 className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-                  </div>
-
-                  {/* Canlı GIF Önizleme Mini Kutusu */}
-                  {newGifUrl && (
-                    <div className="relative w-full h-28 rounded-xl overflow-hidden bg-black border border-purple-500/40 mt-1">
-                      <Image
-                        src={newGifUrl}
-                        alt="Yeni GIF Önizleme"
-                        fill
-                        unoptimized
-                        className="object-cover object-center"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
-                        <span className="text-[10px] text-white font-bold truncate">Canlı Önizleme</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Sağ: Rozetler ve Başlık */}
-                <div className="md:col-span-6 flex flex-col gap-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
-                      Üst Rozet
-                      <input
-                        type="text"
-                        value={newGifTopBadge}
-                        onChange={(e) => setNewGifTopBadge(e.target.value)}
-                        placeholder="🔥 VİTRİNDE YERİNİZİ ALIN"
-                        className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
-                      />
-                    </label>
-                    <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
-                      Trafik Rozeti
-                      <input
-                        type="text"
-                        value={newGifTrafficBadge}
-                        onChange={(e) => setNewGifTrafficBadge(e.target.value)}
-                        placeholder="Günde 50.000+ Canlı Müşteri"
-                        className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
-                      />
-                    </label>
-                  </div>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
-                    Ana Slogan / Başlık
-                    <input
-                      type="text"
-                      value={newGifTitle}
-                      onChange={(e) => setNewGifTitle(e.target.value)}
-                      placeholder="İlanınız Bu Vitrinde Dönsün, Telefonunuz Susmasın!"
-                      className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
-                    />
-                  </label>
-
-                  <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
-                    Alt Açıklama Spotu
-                    <input
-                      type="text"
-                      value={newGifSpot}
-                      onChange={(e) => setNewGifSpot(e.target.value)}
-                      placeholder="Best Eskort VIP Vitrini İle Kazancınızı Katlayın!"
-                      className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
-                    />
-                  </label>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-                {/* Tek Tıkla Hazır Önerilen GIF'leri Ekleme */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] text-slate-400 font-bold uppercase">Hızlı Ekle:</span>
-                  {PRESET_GIF_SUGGESTIONS.map((preset, pIdx) => (
-                    <button
-                      key={pIdx}
-                      type="button"
-                      onClick={() => handleAddPresetGif(preset)}
-                      className="px-2 py-1 rounded-lg bg-[#0c1017] hover:bg-purple-950/60 border border-slate-800 hover:border-purple-400 text-slate-300 hover:text-purple-300 text-[10px] font-medium transition-all"
-                      title={preset.url}
-                    >
-                      + {preset.name}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleAddNewGifSlide}
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-black text-xs uppercase font-heading flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition-all shrink-0"
-                >
-                  <Plus className="w-4 h-4 stroke-[3]" />
-                  <span>GIF&apos;i Havuza Ekle</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Mevcut GIF Havuzu Listesi */}
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-white uppercase tracking-wider font-heading">
-                    Tanımlı GIF Slider Listesi ({bosVitrinSliderlar.length})
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
-                    {bosVitrinSliderlar.filter(s => s.aktif !== false).length} Yayında
-                  </span>
-                </div>
-
-                {/* Hızlı Toplu Kontrol */}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleToggleAllGifs(true)}
-                    className="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 text-[10px] font-black uppercase transition-all border border-emerald-500/30"
-                  >
-                    ✓ Tümünü Aktif Et
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleToggleAllGifs(false)}
-                    className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-orange-500/20 text-slate-400 hover:text-orange-300 text-[10px] font-bold uppercase transition-all border border-slate-800"
-                  >
-                    ○ Tümünü Pasif Yap
-                  </button>
-                </div>
-              </div>
-
-              {bosVitrinSliderlar.length === 0 ? (
-                <div className="p-6 rounded-2xl bg-[#070a0f] border border-slate-800 text-center text-xs text-slate-400">
-                  Henüz GIF slider bulunmuyor. Yukarıdan yeni bir GIF URL&apos;si ekleyebilirsiniz.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  {bosVitrinSliderlar.map((slide, idx) => {
-                    const isActive = slide.aktif !== false;
-                    return (
-                      <div
-                        key={slide._id || idx}
-                        className={`p-4 rounded-2xl border transition-all flex flex-col gap-3 ${isActive
-                            ? 'bg-[#070a0f] border-emerald-500/40 shadow-md shadow-emerald-500/5'
-                            : 'bg-[#070a0f]/60 border-slate-800 opacity-60'
-                          }`}
-                      >
-                        {/* Üst Bar: GIF Thumbnail + Rozetler + Aksiyonlar */}
-                        <div className="flex items-start gap-3">
-                          {/* Canlı GIF Görseli */}
-                          <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-black border border-slate-800 shrink-0">
-                            <Image
-                              src={slide.gifUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=200'}
-                              alt={slide.title || 'GIF'}
-                              fill
-                              unoptimized
-                              className="object-cover object-center"
-                            />
-                            <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-mono text-purple-300 font-bold">
-                              #{idx + 1}
-                            </div>
-                          </div>
-
-                          {/* Sağ Üst Başlık & Butonlar */}
-                          <div className="flex flex-col min-w-0 flex-1 gap-1.5">
-                            <div className="flex items-center justify-between gap-1">
-                              <span className="text-[10px] text-purple-300 font-bold uppercase truncate max-w-[150px]">
-                                {slide.topBadge}
-                              </span>
-
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => handleToggleGifActive(idx)}
-                                  className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95 flex items-center gap-1 ${isActive
-                                      ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 ring-2 ring-emerald-400/30'
-                                      : 'bg-slate-900 hover:bg-slate-800 text-slate-400'
-                                    }`}
-                                  title={isActive ? "GIF'i gizle (pasif yap)" : "GIF'i yayına al (aktif yap)"}
-                                >
-                                  <span>{isActive ? '● AKTİF (YAYINDA)' : '○ PASİF (GİZLİ)'}</span>
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveGifSlide(idx)}
-                                  className="p-1.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
-                                  title="GIF'i Sil"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </div>
-
-                            <span className="font-bold text-xs text-white line-clamp-1 font-heading">
-                              {slide.title}
-                            </span>
-
-                            <span className="text-[11px] text-slate-400 line-clamp-1">
-                              {slide.spot}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Düzenlenebilir Input Alanları */}
-                        <div className="flex flex-col gap-2 pt-1 border-t border-white/5 text-xs">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400 flex items-center justify-between">
-                              <span>GIF URL</span>
-                              <a
-                                href={slide.gifUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-purple-400 hover:underline flex items-center gap-0.5 text-[10px]"
-                              >
-                                <span>Bağlantıyı Aç</span>
-                                <ExternalLink className="w-2.5 h-2.5" />
-                              </a>
-                            </label>
-                            <input
-                              type="text"
-                              value={slide.gifUrl}
-                              onChange={(e) => handleUpdateGifSlide(idx, 'gifUrl', e.target.value)}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-bold text-slate-400">Üst Rozet</label>
-                              <input
-                                type="text"
-                                value={slide.topBadge}
-                                onChange={(e) => handleUpdateGifSlide(idx, 'topBadge', e.target.value)}
-                                className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-[10px] font-bold text-slate-400">Trafik Rozeti</label>
-                              <input
-                                type="text"
-                                value={slide.trafficBadge}
-                                onChange={(e) => handleUpdateGifSlide(idx, 'trafficBadge', e.target.value)}
-                                className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400">Slogan / Başlık</label>
-                            <input
-                              type="text"
-                              value={slide.title}
-                              onChange={(e) => handleUpdateGifSlide(idx, 'title', e.target.value)}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
-                            />
-                          </div>
-
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400">Spot Açıklama</label>
-                            <input
-                              type="text"
-                              value={slide.spot}
-                              onChange={(e) => handleUpdateGifSlide(idx, 'spot', e.target.value)}
-                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
           </div>
-
-          {/* ── 3. ANASAYFA ÜST VİTRİN SLIDER HAVUZU & İLAN SEÇİCİ ──────────────── */}
+          <div className="lg:col-span-5 flex flex-col gap-6">
+            {/* ── 3. ANASAYFA ÜST VİTRİN SLIDER HAVUZU & İLAN SEÇİCİ ──────────────── */}
           <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
@@ -1926,7 +1644,7 @@ export default function AdminHomepageConfigPage() {
             </div>
 
             {/* Seçili İlanların Yatay Çubuğu */}
-            <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] flex flex-col gap-2">
+            <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-slate-800 flex flex-col gap-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-white flex items-center gap-1.5">
                   <Crown className="w-4 h-4 text-amber-400" />
@@ -2115,46 +1833,13 @@ export default function AdminHomepageConfigPage() {
               })}
             </div>
           </div>
-
-          {/* ── 3. HERO & METİN KARŞILAMA AYARLARI ──────────────── */}
-          <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              <h2 className="font-black text-base text-white font-heading">Anasayfa Hero &amp; Karşılama Metinleri</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
-                Ana Başlık (H1)
-                <input
-                  type="text"
-                  value={heroBaslik}
-                  onChange={(e) => setHeroBaslik(e.target.value)}
-                  placeholder="Örn: Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
-                />
-              </label>
-
-              <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
-                Alt Açıklama Spotu
-                <input
-                  type="text"
-                  value={heroAltBaslik}
-                  onChange={(e) => setHeroAltBaslik(e.target.value)}
-                  placeholder="Örn: 81 il ve tüm ilçelerde doğrulanmış eskort ilanları..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
-                />
-              </label>
-            </div>
           </div>
-
         </div>
+      )}
 
-        {/* ══════════════════════════════════════════════════════════════
-            SAĞ SÜTUN (KOLON 5-4): ÇOKLU POPUP REKLAMLARI & TICKER & DURUM
-           ══════════════════════════════════════════════════════════════ */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
-
+      {/* ── TAB 2: SPONSORLU POPUP REKLAMLARI ──────────────── */}
+      {activeMainTab === 'popup' && (
+        <div className="w-full flex flex-col gap-6">
           {/* ── 4. ÇOKLU SPONSORLU POPUP REKLAMLARI (KONUM HEDEFLİ) ──────────────── */}
           <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-5">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -2580,7 +2265,7 @@ export default function AdminHomepageConfigPage() {
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-1.5 bg-[#0c1017] p-2 rounded-xl border border-[#21262d] text-center">
+                        <div className="grid grid-cols-4 gap-1.5 bg-[#0c1017] p-2 rounded-xl border border-slate-800 text-center">
                           <div className="flex flex-col">
                             <span className="text-[9px] text-slate-400">Gösterim</span>
                             <span className="font-mono text-xs font-black text-white">{stats.impressions}</span>
@@ -2606,8 +2291,394 @@ export default function AdminHomepageConfigPage() {
               )}
             </div>
           </div>
+        </div>
+      )}
 
-          {/* ── 5. KAYAN DUYURU ŞERİDİ (TICKER) ──────────────── */}
+      {/* ── TAB 3: BOŞ VİTRİN GIF HAVUZU ──────────────── */}
+      {activeMainTab === 'gif' && (
+        <div className="w-full flex flex-col gap-6">
+          {/* ── 2. VİTRİN BOŞKEN DÖNECEK VIP GIF & REKLAM HAVUZU YÖNETİMİ ──────────────── */}
+          <div className="p-6 sm:p-7 rounded-3xl bg-[#0c1017] border-2 border-purple-500/40 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-500 to-pink-500 text-white flex items-center justify-center font-black shadow-md">
+                  <Film className="w-5 h-5" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-black text-lg text-white font-heading">
+                      Vitrin Boşken Dönecek VIP GIF &amp; Reklam Havuzu
+                    </h2>
+                    <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-black text-[10px] uppercase font-mono border border-purple-500/30">
+                      {bosVitrinSliderlar.filter(s => s.aktif).length} / {bosVitrinSliderlar.length} Aktif
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    Vitrinde canlı ilan yokken anasayfanın tepesinde dönecek hareketli GIF&apos;leri, profesyonel sloganları ve rozetleri yönetin. İstediğiniz GIF URL&apos;sini ekleyin, düzenleyin veya silin.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveGifsOnly}
+                disabled={savingGifs}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs uppercase font-heading transition-all shadow-md active:scale-95 disabled:opacity-50 shrink-0"
+              >
+                {savingGifs ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5 stroke-[2.5]" />}
+                <span>{savingGifs ? 'Kaydediliyor...' : 'GIF Havuzunu Kaydet'}</span>
+              </button>
+            </div>
+
+            {/* Yeni GIF Ekleme Kartı */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#070a0f] border border-purple-500/30 flex flex-col gap-3.5 shadow-inner">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-purple-300 uppercase tracking-wider font-heading flex items-center gap-1.5">
+                  <Plus className="w-4 h-4 text-purple-400" />
+                  <span>Yeni GIF &amp; Vitrin Reklamı Ekle</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">Tenor / Giphy / Tumblr / Görsel Linki Desteklenir</span>
+              </div>
+
+              {/* Form Alanları */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+                {/* Sol: URL ve Canlı Önizleme */}
+                <div className="md:col-span-6 flex flex-col gap-2">
+                  <label className="text-[11px] font-bold text-slate-400 flex items-center justify-between">
+                    <span>GIF Resim URL Adresi *</span>
+                    {newGifUrl && <span className="text-emerald-400 text-[10px]">✓ Önizleme aktif</span>}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={newGifUrl}
+                      onChange={(e) => setNewGifUrl(e.target.value)}
+                      placeholder="https://media.tenor.com/.../example.gif"
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
+                    />
+                    <Link2 className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                  </div>
+
+                  {/* Canlı GIF Önizleme Mini Kutusu */}
+                  {newGifUrl && (
+                    <div className="relative w-full h-28 rounded-xl overflow-hidden bg-black border border-purple-500/40 mt-1">
+                      <Image
+                        src={newGifUrl}
+                        alt="Yeni GIF Önizleme"
+                        fill
+                        unoptimized
+                        className="object-cover object-center"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-2">
+                        <span className="text-[10px] text-white font-bold truncate">Canlı Önizleme</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sağ: Rozetler ve Başlık */}
+                <div className="md:col-span-6 flex flex-col gap-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
+                      Üst Rozet
+                      <input
+                        type="text"
+                        value={newGifTopBadge}
+                        onChange={(e) => setNewGifTopBadge(e.target.value)}
+                        placeholder="🔥 VİTRİNDE YERİNİZİ ALIN"
+                        className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
+                      Trafik Rozeti
+                      <input
+                        type="text"
+                        value={newGifTrafficBadge}
+                        onChange={(e) => setNewGifTrafficBadge(e.target.value)}
+                        placeholder="Günde 50.000+ Canlı Müşteri"
+                        className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
+                    Ana Slogan / Başlık
+                    <input
+                      type="text"
+                      value={newGifTitle}
+                      onChange={(e) => setNewGifTitle(e.target.value)}
+                      placeholder="İlanınız Bu Vitrinde Dönsün, Telefonunuz Susmasın!"
+                      className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1 text-[11px] font-bold text-slate-400">
+                    Alt Açıklama Spotu
+                    <input
+                      type="text"
+                      value={newGifSpot}
+                      onChange={(e) => setNewGifSpot(e.target.value)}
+                      placeholder="Best Eskort VIP Vitrini İle Kazancınızı Katlayın!"
+                      className="px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
+                {/* Tek Tıkla Hazır Önerilen GIF'leri Ekleme */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Hızlı Ekle:</span>
+                  {PRESET_GIF_SUGGESTIONS.map((preset, pIdx) => (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      onClick={() => handleAddPresetGif(preset)}
+                      className="px-2 py-1 rounded-lg bg-[#0c1017] hover:bg-purple-950/60 border border-slate-800 hover:border-purple-400 text-slate-300 hover:text-purple-300 text-[10px] font-medium transition-all"
+                      title={preset.url}
+                    >
+                      + {preset.name}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAddNewGifSlide}
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-black text-xs uppercase font-heading flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition-all shrink-0"
+                >
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <span>GIF&apos;i Havuza Ekle</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Mevcut GIF Havuzu Listesi */}
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-white uppercase tracking-wider font-heading">
+                    Tanımlı GIF Slider Listesi ({bosVitrinSliderlar.length})
+                  </span>
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
+                    {bosVitrinSliderlar.filter(s => s.aktif !== false).length} Yayında
+                  </span>
+                </div>
+
+                {/* Hızlı Toplu Kontrol */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleToggleAllGifs(true)}
+                    className="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 text-[10px] font-black uppercase transition-all border border-emerald-500/30"
+                  >
+                    ✓ Tümünü Aktif Et
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleAllGifs(false)}
+                    className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-orange-500/20 text-slate-400 hover:text-orange-300 text-[10px] font-bold uppercase transition-all border border-slate-800"
+                  >
+                    ○ Tümünü Pasif Yap
+                  </button>
+                </div>
+              </div>
+
+              {bosVitrinSliderlar.length === 0 ? (
+                <div className="p-6 rounded-2xl bg-[#070a0f] border border-slate-800 text-center text-xs text-slate-400">
+                  Henüz GIF slider bulunmuyor. Yukarıdan yeni bir GIF URL&apos;si ekleyebilirsiniz.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {bosVitrinSliderlar.map((slide, idx) => {
+                    const isActive = slide.aktif !== false;
+                    return (
+                      <div
+                        key={slide._id || idx}
+                        className={`p-4 rounded-2xl border transition-all flex flex-col gap-3 ${isActive
+                            ? 'bg-[#070a0f] border-emerald-500/40 shadow-md shadow-emerald-500/5'
+                            : 'bg-[#070a0f]/60 border-slate-800 opacity-60'
+                          }`}
+                      >
+                        {/* Üst Bar: GIF Thumbnail + Rozetler + Aksiyonlar */}
+                        <div className="flex items-start gap-3">
+                          {/* Canlı GIF Görseli */}
+                          <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-black border border-slate-800 shrink-0">
+                            <Image
+                              src={slide.gifUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=200'}
+                              alt={slide.title || 'GIF'}
+                              fill
+                              unoptimized
+                              className="object-cover object-center"
+                            />
+                            <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/70 text-[9px] font-mono text-purple-300 font-bold">
+                              #{idx + 1}
+                            </div>
+                          </div>
+
+                          {/* Sağ Üst Başlık & Butonlar */}
+                          <div className="flex flex-col min-w-0 flex-1 gap-1.5">
+                            <div className="flex items-center justify-between gap-1">
+                              <span className="text-[10px] text-purple-300 font-bold uppercase truncate max-w-[150px]">
+                                {slide.topBadge}
+                              </span>
+
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleGifActive(idx)}
+                                  className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all shadow-sm active:scale-95 flex items-center gap-1 ${isActive
+                                      ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 ring-2 ring-emerald-400/30'
+                                      : 'bg-slate-900 hover:bg-slate-800 text-slate-400'
+                                    }`}
+                                  title={isActive ? "GIF'i gizle (pasif yap)" : "GIF'i yayına al (aktif yap)"}
+                                >
+                                  <span>{isActive ? '● AKTİF (YAYINDA)' : '○ PASİF (GİZLİ)'}</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveGifSlide(idx)}
+                                  className="p-1.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                                  title="GIF'i Sil"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            <span className="font-bold text-xs text-white line-clamp-1 font-heading">
+                              {slide.title}
+                            </span>
+
+                            <span className="text-[11px] text-slate-400 line-clamp-1">
+                              {slide.spot}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Düzenlenebilir Input Alanları */}
+                        <div className="flex flex-col gap-2 pt-1 border-t border-white/5 text-xs">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 flex items-center justify-between">
+                              <span>GIF URL</span>
+                              <a
+                                href={slide.gifUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-400 hover:underline flex items-center gap-0.5 text-[10px]"
+                              >
+                                <span>Bağlantıyı Aç</span>
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            </label>
+                            <input
+                              type="text"
+                              value={slide.gifUrl}
+                              onChange={(e) => handleUpdateGifSlide(idx, 'gifUrl', e.target.value)}
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs font-mono focus:border-purple-400 focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] font-bold text-slate-400">Üst Rozet</label>
+                              <input
+                                type="text"
+                                value={slide.topBadge}
+                                onChange={(e) => handleUpdateGifSlide(idx, 'topBadge', e.target.value)}
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[10px] font-bold text-slate-400">Trafik Rozeti</label>
+                              <input
+                                type="text"
+                                value={slide.trafficBadge}
+                                onChange={(e) => handleUpdateGifSlide(idx, 'trafficBadge', e.target.value)}
+                                className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400">Slogan / Başlık</label>
+                            <input
+                              type="text"
+                              value={slide.title}
+                              onChange={(e) => handleUpdateGifSlide(idx, 'title', e.target.value)}
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
+                            />
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400">Spot Açıklama</label>
+                            <input
+                              type="text"
+                              value={slide.spot}
+                              onChange={(e) => handleUpdateGifSlide(idx, 'spot', e.target.value)}
+                              className="w-full px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-slate-800 text-white text-xs focus:border-purple-400 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── TAB 4: KAYAN DUYURU & HERO METİNLERİ ──────────────── */}
+      {activeMainTab === 'duyuru' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="flex flex-col gap-6">
+            {/* ── 3. HERO & METİN KARŞILAMA AYARLARI ──────────────── */}
+          <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+            <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+              <h2 className="font-black text-base text-white font-heading">Anasayfa Hero &amp; Karşılama Metinleri</h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
+                Ana Başlık (H1)
+                <input
+                  type="text"
+                  value={heroBaslik}
+                  onChange={(e) => setHeroBaslik(e.target.value)}
+                  placeholder="Örn: Türkiye'nin En Güvenilir VIP Eskort İlan Platformu"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5 text-xs font-bold text-[#f0f6fc]">
+                Alt Açıklama Spotu
+                <input
+                  type="text"
+                  value={heroAltBaslik}
+                  onChange={(e) => setHeroAltBaslik(e.target.value)}
+                  placeholder="Örn: 81 il ve tüm ilçelerde doğrulanmış eskort ilanları..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-[#363b42] text-white text-xs focus:border-amber-400 focus:outline-none"
+                />
+              </label>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════════
+            SAĞ SÜTUN (KOLON 5-4): ÇOKLU POPUP REKLAMLARI & TICKER & DURUM
+           ══════════════════════════════════════════════════════════════ */}
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6">
+          </div>
+          <div className="flex flex-col gap-6">
+            {/* ── 5. KAYAN DUYURU ŞERİDİ (TICKER) ──────────────── */}
           <div className="p-6 rounded-3xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 gap-2">
               <div className="flex items-center gap-2">
@@ -2692,10 +2763,99 @@ export default function AdminHomepageConfigPage() {
               ))}
             </div>
           </div>
+          </div>
+        </div>
+      )}
 
+      {/* ── TAB 5: CANLI ADMİN WHATSAPP DESTEK HATTI ──────────────── */}
+      {activeMainTab === 'whatsapp' && (
+        <div className="w-full flex flex-col gap-6">
+          {/* ── CANLI ADMİN WHATSAPP DESTEK HATTI YÖNETİM PANELİ (ANINDA CANLIYA AL) ──────────────── */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#111a14] via-[#161b22] to-[#121c16] border border-emerald-500/40 shadow-2xl flex flex-col gap-3.5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/20 text-[#25D366] flex items-center justify-center font-black shadow-lg shadow-emerald-500/20 shrink-0">
+              <OfficialWhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6 fill-[#25D366]" />
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <h2 className="font-black text-sm sm:text-base text-white font-heading">
+                  Canlı Admin WhatsApp Destek Hattı
+                </h2>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono text-[9px] font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>CANLIDA AKTİF</span>
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Numaranız engellendiğinde/patladığında yeni numarayı buraya girip kaydedin. Deploy gerekmeden tüm sitede anında aktif olur.
+              </p>
+            </div>
+          </div>
+
+          {/* Aktif Numara Önizleme Rozeti */}
+          <div className="flex items-center gap-2 bg-[#070a0f] border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-mono self-start lg:self-auto">
+            <span className="text-slate-400 text-[10px]">Aktif Hat:</span>
+            <span className="text-emerald-400 font-black">
+              {parsePhoneNumber(adminWhatsApp).formatted || 'Tanımlanmadı'}
+            </span>
+          </div>
         </div>
 
+        {/* Input & Aksiyon Butonları */}
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-1">
+          <div className="relative flex-1 w-full">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#25D366]">
+              <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
+            </div>
+            <input
+              type="text"
+              value={adminWhatsApp}
+              onChange={(e) => setAdminWhatsApp(e.target.value)}
+              placeholder="Yeni WhatsApp Numarası (Örn: +905xxxxxxxxx veya 0532...)"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white font-mono text-xs sm:text-sm focus:border-emerald-500 focus:outline-none transition-colors"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            {/* WhatsApp Test Et Butonu */}
+            <a
+              href={`https://wa.me/${parsePhoneNumber(adminWhatsApp).raw}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 sm:flex-none px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold font-heading flex items-center justify-center gap-1.5 transition-colors shadow-md"
+              title="Numaranın WhatsApp hesabının açık olduğunu test et"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Test Et</span>
+            </a>
+
+            {/* Hızlı Kaydet Butonu */}
+            <button
+              type="button"
+              onClick={handleQuickSaveWhatsApp}
+              disabled={savingAdminWa}
+              className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 font-black text-xs uppercase font-heading flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50"
+            >
+              {savingAdminWa ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Check className="w-3.5 h-3.5 stroke-[3]" />
+              )}
+              <span>{savingAdminWa ? 'Kaydediliyor...' : 'Numarayı Kaydet & Yayına Al'}</span>
+            </button>
+          </div>
+        </div>
+        {/* Başarı Bildirimi Toast */}
+        {adminWaSuccess && (
+          <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>✅ Yeni WhatsApp numarası kaydedildi! Sitedeki tüm butonlar ve paket mesajları anında bu numaraya bağlandı.</span>
+          </div>
+        )}
       </div>
+        </div>
+      )}
 
       {/* ── SAYFA ALTI SABİT KAYDET BUTONU ──────────────── */}
       <div className="flex justify-end pt-4">

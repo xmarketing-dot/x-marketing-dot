@@ -192,3 +192,52 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: error.message || 'Silme hatası' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const { id, kullaniciAdi, sifre, telefon } = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: 'Kullanıcı ID zorunludur.' }, { status: 400 });
+    }
+
+    await connectToDatabase();
+    const user = await UserModel.findById(id);
+
+    if (!user) {
+      return NextResponse.json({ error: 'Kullanıcı bulunamadı.' }, { status: 404 });
+    }
+
+    if (kullaniciAdi) {
+      const cleanUsername = kullaniciAdi.trim().toLowerCase().replace(/\s+/g, '');
+      const existingUser = await UserModel.findOne({ kullaniciAdi: cleanUsername, _id: { $ne: id } });
+      if (existingUser) {
+        return NextResponse.json({ error: 'Bu kullanıcı adı başka bir kullanıcı tarafından kullanılıyor.' }, { status: 400 });
+      }
+      user.kullaniciAdi = cleanUsername;
+      user.ad = cleanUsername;
+    }
+
+    if (sifre) {
+      user.sifreHash = sifre.trim();
+    }
+
+    if (telefon !== undefined) {
+      user.telefon = telefon ? telefon.trim() : '';
+    }
+
+    await user.save();
+
+    // Also cascade update panel password in user's listings if password was changed
+    if (sifre) {
+      await ListingModel.updateMany(
+        { $or: [{ kullaniciId: user._id }, { kullaniciId: user._id.toString() }] },
+        { $set: { panelSifresi: sifre.trim() } }
+      );
+    }
+
+    return NextResponse.json({ success: true, user });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Güncelleme hatası' }, { status: 500 });
+  }
+}

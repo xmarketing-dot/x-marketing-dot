@@ -61,36 +61,45 @@ export async function GET(req: Request) {
       }
     }
 
-    // Parallel fetch
+    // Parallel fetch with smart limit for unbounded 'all' range to maintain sub-second response
+    const visitorQuery = AnalyticsVisitorModel.find(dateQuery, {
+      visitorId: 1,
+      sessionId: 1,
+      ip: 1,
+      city: 1,
+      device: 1,
+      os: 1,
+      browser: 1,
+      path: 1,
+      referer: 1,
+      refererSource: 1,
+      searchKeyword: 1,
+      duration: 1,
+      userAgent: 1,
+      hostname: 1,
+      createdAt: 1,
+    });
+
+    const eventQuery = AnalyticsEventModel.find(dateQuery, {
+      eventType: 1,
+      visitorId: 1,
+      sessionId: 1,
+      listingId: 1,
+      city: 1,
+      district: 1,
+      hostname: 1,
+      meta: 1,
+      createdAt: 1,
+    });
+
+    if (range === 'all') {
+      visitorQuery.sort({ createdAt: -1 }).limit(10000);
+      eventQuery.sort({ createdAt: -1 }).limit(10000);
+    }
+
     const [visitors, events, listings] = await Promise.all([
-      AnalyticsVisitorModel.find(dateQuery, {
-        visitorId: 1,
-        sessionId: 1,
-        ip: 1,
-        city: 1,
-        device: 1,
-        os: 1,
-        browser: 1,
-        path: 1,
-        referer: 1,
-        refererSource: 1,
-        searchKeyword: 1,
-        duration: 1,
-        userAgent: 1,
-        hostname: 1,
-        createdAt: 1,
-      }).lean(),
-      AnalyticsEventModel.find(dateQuery, {
-        eventType: 1,
-        visitorId: 1,
-        sessionId: 1,
-        listingId: 1,
-        city: 1,
-        district: 1,
-        hostname: 1,
-        meta: 1,
-        createdAt: 1,
-      }).lean(),
+      visitorQuery.lean(),
+      eventQuery.lean(),
       ListingModel.find({}, {
         _id: 1,
         baslik: 1,

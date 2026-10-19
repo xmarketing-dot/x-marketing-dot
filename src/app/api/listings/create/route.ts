@@ -307,7 +307,7 @@ export async function POST(req: NextRequest) {
         `📱 <b>WhatsApp:</b> <code>${whatsappNumara}</code>`,
         `🔑 <b>İlan Düzenleme Şifresi:</b> <code>${generatedPassword}</code>`,
         `━━━━━━━━━━━━━━━━━━`,
-        `👉 <a href="${getSiteUrl()}/bms-secure-portal${isPromo ? '/ucretsizler' : ''}">Yönetici Panelinden İncele & Onayla</a>`,
+        `👉 <a href="${getSiteUrl()}/bms-secure-portal">Yönetici Panelinden İncele & Onayla</a>`,
       ].join('\n');
       sendTelegramNotification(notif).catch(() => {});
     } catch (e) {

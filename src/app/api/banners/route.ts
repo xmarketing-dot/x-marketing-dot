@@ -161,7 +161,7 @@ export async function POST(req: NextRequest) {
       `🔑 <b>Panel Şifresi:</b> <code>${resolvedPassword}</code>`,
       `🔗 <b>Hedef Link:</b> ${hedefUrl.trim()}`,
       `━━━━━━━━━━━━━━━━━━`,
-      `👑 <a href="${getSiteUrl()}/bms-secure-portal${isPromo ? '/ucretsizler' : ''}">Yönetici Panelinden Onayla</a>`,
+      `👑 <a href="${getSiteUrl()}/bms-secure-portal">Yönetici Panelinden Onayla</a>`,
     ].join('\n');
 
     sendTelegramNotification(notifText).catch(() => {});

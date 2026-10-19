@@ -75,6 +75,44 @@ interface AnnouncementState {
   recentLogs: LogItem[];
 }
 
+
+function MetricCircle({ percent, color = '#f59e0b', size = 38, strokeWidth = 3 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
+  const safePercent = Math.min(Math.max(percent || 0, 0), 100);
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  return (
+    <div className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#1e293b"
+          strokeWidth={strokeWidth}
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[9px] font-mono font-black text-white">
+        %{Math.round(safePercent)}
+      </span>
+    </div>
+  );
+}
+
 function SiteYonetimiContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -412,8 +450,8 @@ function SiteYonetimiContent() {
   const renderPreviewBox = () => {
     if (displayType === 'drawer') {
       return (
-        <div className="p-3 sm:p-5 rounded-2xl bg-[#0B0E14] border border-[#252B3B] flex justify-center items-center w-full">
-          <div className="w-full max-w-sm bg-[#141824]/95 border border-amber-500/40 rounded-2xl sm:rounded-3xl shadow-2xl p-3.5 sm:p-5 flex flex-col justify-between items-center text-center space-y-2.5 sm:space-y-3">
+        <div className="p-3 sm:p-5 rounded-2xl bg-[#070a0f] border border-slate-800 flex justify-center items-center w-full">
+          <div className="w-full max-w-sm bg-[#0c1017]/95 border border-amber-500/40 rounded-2xl sm:rounded-3xl shadow-2xl p-3.5 sm:p-5 flex flex-col justify-between items-center text-center space-y-2.5 sm:space-y-3">
             <div className="w-10 sm:w-12 h-1.5 rounded-full bg-white/25 mx-auto -mt-0.5" />
 
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/50 shadow-inner">
@@ -424,7 +462,7 @@ function SiteYonetimiContent() {
             </div>
 
             {mediaUrl && (
-              <div className="relative w-full h-32 sm:h-44 rounded-xl sm:rounded-2xl overflow-hidden border border-[#252B3B] bg-black/90 shadow-xl flex items-center justify-center p-1">
+              <div className="relative w-full h-32 sm:h-44 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-800 bg-black/90 shadow-xl flex items-center justify-center p-1">
                 <img
                   src={mediaUrl}
                   alt="Önizleme"
@@ -438,7 +476,7 @@ function SiteYonetimiContent() {
                 {duyuruTitle || 'Türkiyenin en büyük eskort sitesi açıldı !'}
               </h3>
               {duyuruDescription && (
-                <p className="text-[11px] text-[#9AA3B2] font-medium leading-relaxed line-clamp-2 break-words">
+                <p className="text-[11px] text-slate-400 font-medium leading-relaxed line-clamp-2 break-words">
                   {duyuruDescription}
                 </p>
               )}
@@ -449,7 +487,7 @@ function SiteYonetimiContent() {
                 <span>{duyuruButtonText || 'Hemen İncele'}</span>
                 <ExternalLink className="w-3.5 h-3.5 stroke-[3] shrink-0" />
               </div>
-              <div className="text-[10px] text-[#9AA3B2] font-medium">
+              <div className="text-[10px] text-slate-400 font-medium">
                 Daha sonra hatırlat veya kapat
               </div>
             </div>
@@ -459,7 +497,7 @@ function SiteYonetimiContent() {
     }
 
     return (
-      <div className="p-1 rounded-2xl bg-[#070a0f] border border-[#21262d] overflow-hidden w-full">
+      <div className="p-1 rounded-2xl bg-[#070a0f] border border-slate-800 overflow-hidden w-full">
         <div className={`w-full bg-gradient-to-r ${presetClasses[stylePreset]} px-3 py-2 rounded-xl shadow-lg flex items-center justify-between text-xs`}>
           <div className="flex items-center gap-2 truncate">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/30 font-black text-[10px] text-white shrink-0">
@@ -750,7 +788,7 @@ function SiteYonetimiContent() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-[#21262d]">
+                <div className="flex flex-col gap-2 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-slate-800">
                   <div className="flex items-center justify-between">
                     <span className="font-heading font-black text-xs sm:text-sm text-white">
                       IndexNow &amp; Google / Yandex Ping
@@ -795,19 +833,19 @@ function SiteYonetimiContent() {
 
                     {pingResult.pingResult?.endpoints && (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                        <div className="p-2 rounded-lg bg-[#0c1017] border border-[#21262d] text-center">
+                        <div className="p-2 rounded-lg bg-[#0c1017] border border-slate-800 text-center">
                           <span className="text-[9px] text-slate-400 uppercase block font-bold">Yandex IndexNow</span>
                           <span className="text-xs font-bold text-white">
                             {pingResult.pingResult.endpoints.yandex ? '✅ İletildi' : '⚠️ Başarısız'}
                           </span>
                         </div>
-                        <div className="p-2 rounded-lg bg-[#0c1017] border border-[#21262d] text-center">
+                        <div className="p-2 rounded-lg bg-[#0c1017] border border-slate-800 text-center">
                           <span className="text-[9px] text-slate-400 uppercase block font-bold">Bing IndexNow</span>
                           <span className="text-xs font-bold text-white">
                             {pingResult.pingResult.endpoints.bing ? '✅ İletildi' : '⚠️ Başarısız'}
                           </span>
                         </div>
-                        <div className="p-2 rounded-lg bg-[#0c1017] border border-[#21262d] text-center">
+                        <div className="p-2 rounded-lg bg-[#0c1017] border border-slate-800 text-center">
                           <span className="text-[9px] text-slate-400 uppercase block font-bold">Google Indexing API</span>
                           <span className="text-xs font-bold text-white">
                             {pingResult.googleIndexingResult?.successCount > 0
@@ -815,7 +853,7 @@ function SiteYonetimiContent() {
                               : (pingResult.googleIndexingResult ? '⚠️ Kota/Hata' : 'ℹ️ Sinyal Gönderildi')}
                           </span>
                         </div>
-                        <div className="p-2 rounded-lg bg-[#0c1017] border border-[#21262d] text-center">
+                        <div className="p-2 rounded-lg bg-[#0c1017] border border-slate-800 text-center">
                           <span className="text-[9px] text-slate-400 uppercase block font-bold">Sitemap Ping</span>
                           <span className="text-xs font-bold text-white">
                             {pingResult.pingResult.endpoints.googleSitemapPing ? '✅ İletildi' : '⚠️ Başarısız'}
@@ -994,7 +1032,7 @@ function SiteYonetimiContent() {
               <button
                 type="button"
                 onClick={() => setShowMobilePreview(!showMobilePreview)}
-                className="px-2.5 py-1 rounded-lg bg-slate-900 text-amber-300 text-xs font-bold flex items-center gap-1 border border-[#363b42] cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 text-amber-300 text-xs font-bold flex items-center gap-1 border border-slate-800 cursor-pointer"
               >
                 <span>{showMobilePreview ? 'Gizle' : 'Önizle'}</span>
                 {showMobilePreview ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -1018,7 +1056,7 @@ function SiteYonetimiContent() {
               </h2>
 
               {/* Format ve Gecikme */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-[#21262d]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-slate-800">
                 <div className="space-y-1.5">
                   <label className="text-[11px] sm:text-xs font-bold text-slate-400 flex items-center gap-1.5">
                     <LayoutTemplate className="w-3.5 h-3.5 text-amber-400" />
@@ -1072,7 +1110,7 @@ function SiteYonetimiContent() {
               </div>
 
               {/* Medya / GIF Yükleyici */}
-              <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-[#21262d] space-y-2">
+              <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-[11px] sm:text-xs font-bold text-slate-400 flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5 text-amber-400" />
@@ -1193,7 +1231,7 @@ function SiteYonetimiContent() {
               </div>
 
               {/* Tema Seçici */}
-              <div className="space-y-2 pt-2 border-t border-[#21262d]">
+              <div className="space-y-2 pt-2 border-t border-slate-800">
                 <label className="text-[11px] sm:text-xs font-bold text-slate-400">
                   Renk Teması
                 </label>
@@ -1222,7 +1260,7 @@ function SiteYonetimiContent() {
               </div>
 
               {/* Alt Butonlar */}
-              <div className="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-[#21262d]">
+              <div className="pt-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-slate-800">
                 <label className="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -1270,7 +1308,7 @@ function SiteYonetimiContent() {
                     <span>Tekrar Gösterim &amp; Sıfırlama</span>
                   </h3>
 
-                  <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-[#21262d] space-y-2 text-xs text-slate-400">
+                  <div className="p-3.5 rounded-2xl bg-[#070a0f] border border-slate-800 space-y-2 text-xs text-slate-400">
                     <div className="font-bold text-white flex items-center gap-1.5">
                       <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                       <span>Tek Seferlik Gösterim:</span>
@@ -1278,7 +1316,7 @@ function SiteYonetimiContent() {
                     <p>
                       Ziyaretçi bildirimi görüp kapattığında tarayıcısına token atılır ve bir daha rahatsız edilmez.
                     </p>
-                    <p className="pt-1.5 border-t border-[#21262d]">
+                    <p className="pt-1.5 border-t border-slate-800">
                       Kampanya ID: <span className="font-mono text-amber-300 font-bold">{announcementData?.campaignId || 'camp_v1'}</span>
                     </p>
                   </div>
@@ -1315,13 +1353,13 @@ function SiteYonetimiContent() {
                   Duyuru &amp; Çekmece ile etkileşime geçen ziyaretçilerin anlık kayıtları
                 </p>
               </div>
-              <span className="text-[11px] sm:text-xs font-mono px-2.5 py-1 rounded-lg bg-[#070a0f] border border-[#21262d] text-slate-400 self-start sm:self-auto">
+              <span className="text-[11px] sm:text-xs font-mono px-2.5 py-1 rounded-lg bg-[#070a0f] border border-slate-800 text-slate-400 self-start sm:self-auto">
                 Kayıt: <span className="text-white font-bold">{announcementData?.recentLogs?.length || 0}</span>
               </span>
             </div>
 
             {/* Arama ve Filtre */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-[#21262d] w-full">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#070a0f] border border-slate-800 w-full">
               <div className="relative flex-1">
                 <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
@@ -1383,7 +1421,7 @@ function SiteYonetimiContent() {
 
               if (displayed.length === 0) {
                 return (
-                  <div className="p-6 text-center text-slate-400 text-xs italic bg-[#070a0f] rounded-xl sm:rounded-2xl border border-[#21262d] w-full">
+                  <div className="p-6 text-center text-slate-400 text-xs italic bg-[#070a0f] rounded-xl sm:rounded-2xl border border-slate-800 w-full">
                     Kayıt bulunamadı.
                   </div>
                 );
@@ -1394,7 +1432,7 @@ function SiteYonetimiContent() {
                   {/* MOBİL GÖRÜNÜM: DOKUNMATİK UYUMLU KART AKIŞI (SIKIŞMA VE YATAY SCROLL YOK) */}
                   <div className="md:hidden flex flex-col gap-2 w-full">
                     {displayed.map((log, i) => (
-                      <div key={i} className="p-3 rounded-xl bg-[#070a0f] border border-[#21262d] flex flex-col gap-1.5">
+                      <div key={i} className="p-3 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-1.5">
                         <div className="flex items-center justify-between">
                           {log.eventType === 'click' && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-bold">
@@ -1416,7 +1454,7 @@ function SiteYonetimiContent() {
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs text-slate-300 pt-1 border-t border-[#21262d]/60">
+                        <div className="flex items-center justify-between text-xs text-slate-300 pt-1 border-t border-slate-800/60">
                           <span className="font-bold text-white text-[11px]">
                             📍 {log.city || 'Bilinmiyor'}
                           </span>
@@ -1433,9 +1471,9 @@ function SiteYonetimiContent() {
                   </div>
 
                   {/* DESKTOP GÖRÜNÜM: ZENGİN MASAÜSTÜ TABLOSU */}
-                  <div className="hidden md:block rounded-2xl border border-[#21262d] overflow-x-auto max-h-[500px] overflow-y-auto w-full">
+                  <div className="hidden md:block rounded-2xl border border-slate-800 overflow-x-auto max-h-[500px] overflow-y-auto w-full">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-[#070a0f] text-slate-400 uppercase font-mono font-bold text-[10px] border-b border-[#21262d] sticky top-0 z-10">
+                      <thead className="bg-[#070a0f] text-slate-400 uppercase font-mono font-bold text-[10px] border-b border-slate-800 sticky top-0 z-10">
                         <tr>
                           <th className="p-3">Etkinlik</th>
                           <th className="p-3">IP Adresi</th>
@@ -1500,7 +1538,7 @@ function SiteYonetimiContent() {
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
-                        <span className="px-2 py-1 rounded-lg bg-[#070a0f] border border-[#21262d] font-mono text-white text-[11px]">
+                        <span className="px-2 py-1 rounded-lg bg-[#070a0f] border border-slate-800 font-mono text-white text-[11px]">
                           {currentPage} / {totalPages}
                         </span>
                         <button

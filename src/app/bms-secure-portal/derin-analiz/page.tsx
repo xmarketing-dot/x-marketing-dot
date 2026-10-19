@@ -32,10 +32,49 @@ import {
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import CircularProgress from '@/components/common/CircularProgress';
 
+function MetricCircle({ percent, color, size = 44, strokeWidth = 3.5 }: { percent: number; color: string; size?: number; strokeWidth?: number }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
+  const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  return (
+    <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          className="text-slate-800"
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[10px] font-mono font-black text-white">
+        %{Math.round(safePercent)}
+      </span>
+    </div>
+  );
+}
+
+
 export default function DeepAnalyticsPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [range, setRange] = useState<string>('all'); // all, today, yesterday, week, month, custom
+  const [range, setRange] = useState<string>('month'); // all, today, yesterday, week, month, custom
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -69,7 +108,7 @@ export default function DeepAnalyticsPage() {
   };
 
   useEffect(() => {
-    fetchDeepAnalytics('all', 'all');
+    fetchDeepAnalytics('month', 'all');
   }, []);
 
   const handleRangeChange = (newRange: string) => {

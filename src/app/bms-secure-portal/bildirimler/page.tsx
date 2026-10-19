@@ -37,6 +37,45 @@ import {
   Info
 } from 'lucide-react';
 
+
+function MetricCircle({ percent, color, size = 42, strokeWidth = 3.5 }: { percent: number; color: string; size?: number; strokeWidth?: number }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
+  const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  return (
+    <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          className="text-slate-800"
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[10px] font-mono font-black text-white">
+        %{Math.round(safePercent)}
+      </span>
+    </div>
+  );
+}
+
 interface NotificationItem {
   _id: string;
   title: string;
@@ -279,7 +318,7 @@ export default function UnifiedNotificationsManagementPage() {
   }, [notifications, notifSearch]);
 
   return (
-    <div className="flex flex-col gap-6 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto selection:bg-amber-500 selection:text-slate-950 font-sans">
+    <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full text-left font-sans selection:bg-amber-500 selection:text-slate-950">
       
       {/* ── 1. HEADER & CANLI YENİLE ────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">

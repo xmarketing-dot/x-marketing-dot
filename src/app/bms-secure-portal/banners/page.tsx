@@ -35,6 +35,44 @@ import {
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 
+
+function MetricCircle({ percent, color = '#f59e0b', size = 42, strokeWidth = 3.5 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
+  const safePercent = Math.min(Math.max(percent || 0, 0), 100);
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  return (
+    <div className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#1e293b"
+          strokeWidth={strokeWidth}
+          fill="transparent"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          fill="transparent"
+          className="transition-all duration-700 ease-out"
+        />
+      </svg>
+      <span className="absolute text-[10px] font-mono font-black text-white">
+        %{Math.round(safePercent)}
+      </span>
+    </div>
+  );
+}
+
 export default function AdminBannerManagementPage() {
   const [banners, setBanners] = useState<any[]>([]);
   const [emptyClicks, setEmptyClicks] = useState<number>(0);
@@ -139,15 +177,15 @@ export default function AdminBannerManagementPage() {
   const averageCtr = totalViews > 0 ? ((totalClicks / totalViews) * 100).toFixed(1) : '0.0';
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] px-2 py-3 sm:p-4 lg:p-6 flex flex-col gap-3 sm:gap-5 max-w-7xl mx-auto text-left pb-24 sm:pb-8 w-full">
+    <div className="flex flex-col gap-5 w-full max-w-full text-left pb-16 text-[#f0f6fc]">
       
       {/* ── 1. ÜST HEADER KONTROL KARTI ──────────────── */}
-      <div className="flex flex-col gap-3 p-3 sm:p-5 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-xl">
+      <div className="flex flex-col gap-3 p-3 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <Link
               href="/bms-secure-portal"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-amber-400 hover:text-amber-300 flex items-center justify-center shrink-0 transition-all active:scale-95 shadow-md"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#070a0f] hover:bg-[#30363d] border border-slate-800 text-amber-400 hover:text-amber-300 flex items-center justify-center shrink-0 transition-all active:scale-95 shadow-md"
               title="Ana Yönetim Paneline Dön"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -161,7 +199,7 @@ export default function AdminBannerManagementPage() {
                   CANLI
                 </span>
               </div>
-              <p className="text-[11px] text-[#8b949e] truncate hidden sm:block">
+              <p className="text-[11px] text-slate-400 truncate hidden sm:block">
                 Sponsor banner yayın süreleri, tıklama oranları ve rezervasyon yönetimi
               </p>
             </div>
@@ -180,7 +218,7 @@ export default function AdminBannerManagementPage() {
             <button
               onClick={fetchBanners}
               disabled={loading}
-              className="p-2 sm:p-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-amber-400 hover:text-white transition-all active:scale-95"
+              className="p-2 sm:p-2.5 rounded-xl bg-[#070a0f] hover:bg-[#30363d] border border-slate-800 text-amber-400 hover:text-white transition-all active:scale-95"
               title="Verileri Yenile"
             >
               <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -192,8 +230,8 @@ export default function AdminBannerManagementPage() {
       {/* ── 2. İSTATİSTİK KARTLARI (2x2 + ÖZEL KART) ──────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3">
         {/* 1. Yayındakiler */}
-        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#161b22] border border-emerald-500/30 flex flex-col justify-between gap-1 shadow-md hover:border-emerald-500/50 transition-colors">
-          <div className="flex items-center justify-between text-[#8b949e]">
+        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0c1017] border border-emerald-500/30 flex flex-col justify-between gap-1 shadow-md hover:border-emerald-500/50 transition-colors">
+          <div className="flex items-center justify-between text-slate-400">
             <span className="text-[10px] sm:text-xs font-heading font-black uppercase text-emerald-400">Yayında</span>
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
               <Crown className="w-3.5 h-3.5" />
@@ -202,11 +240,11 @@ export default function AdminBannerManagementPage() {
           <span className="font-heading font-black text-xl sm:text-3xl text-emerald-400 mt-0.5">
             {banners.filter((b) => b.durum === 'yayinda').length}
           </span>
-          <span className="text-[10px] text-[#8b949e] truncate">Aktif sponsor</span>
+          <span className="text-[10px] text-slate-400 truncate">Aktif sponsor</span>
         </div>
 
         {/* 2. Onay Bekleyenler */}
-        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#161b22] border border-amber-500/40 flex flex-col justify-between gap-1 shadow-md shadow-amber-500/5 hover:border-amber-400 transition-colors">
+        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0c1017] border border-amber-500/40 flex flex-col justify-between gap-1 shadow-md shadow-amber-500/5 hover:border-amber-400 transition-colors">
           <div className="flex items-center justify-between text-amber-400">
             <span className="text-[10px] sm:text-xs font-heading font-black uppercase">Onay Bekleyen</span>
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
@@ -220,8 +258,8 @@ export default function AdminBannerManagementPage() {
         </div>
 
         {/* 3. Toplam Gösterim */}
-        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-1 shadow-md hover:border-blue-500/40 transition-colors">
-          <div className="flex items-center justify-between text-[#8b949e]">
+        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0c1017] border border-slate-800 flex flex-col justify-between gap-1 shadow-md hover:border-blue-500/40 transition-colors">
+          <div className="flex items-center justify-between text-slate-400">
             <span className="text-[10px] sm:text-xs font-heading font-black uppercase">Gösterim</span>
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
               <Eye className="w-3.5 h-3.5" />
@@ -230,12 +268,12 @@ export default function AdminBannerManagementPage() {
           <span className="font-heading font-black text-xl sm:text-3xl text-white mt-0.5">
             {totalViews.toLocaleString('tr-TR')}
           </span>
-          <span className="text-[10px] text-[#8b949e] truncate">Kullanıcı gösterimi</span>
+          <span className="text-[10px] text-slate-400 truncate">Kullanıcı gösterimi</span>
         </div>
 
         {/* 4. Sponsor Tıklama */}
-        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#161b22] border border-[#30363d] flex flex-col justify-between gap-1 shadow-md hover:border-emerald-500/40 transition-colors">
-          <div className="flex items-center justify-between text-[#8b949e]">
+        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0c1017] border border-slate-800 flex flex-col justify-between gap-1 shadow-md hover:border-emerald-500/40 transition-colors">
+          <div className="flex items-center justify-between text-slate-400">
             <span className="text-[10px] sm:text-xs font-heading font-black uppercase">Tıklama</span>
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
               <MousePointerClick className="w-3.5 h-3.5" />
@@ -247,7 +285,7 @@ export default function AdminBannerManagementPage() {
             </span>
             <span className="text-[9px] sm:text-xs font-mono font-bold text-amber-400">%{averageCtr}</span>
           </div>
-          <span className="text-[10px] text-[#8b949e] truncate">Hedef link tıklandı</span>
+          <span className="text-[10px] text-slate-400 truncate">Hedef link tıklandı</span>
         </div>
 
         {/* 5. Boşken Tıklama (Mobilde 2 sütun) */}
@@ -266,7 +304,7 @@ export default function AdminBannerManagementPage() {
       </div>
 
       {/* ── 3. MODERN TOGGLE / SEGMENTED FİLTRE ÇUBUĞU ──────────────── */}
-      <div className="p-1 rounded-xl bg-[#161b22] border border-[#30363d] flex items-center gap-1 overflow-x-auto no-scrollbar shadow-md">
+      <div className="p-1 rounded-xl bg-[#0c1017] border border-slate-800 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-md">
         {[
           { id: 'all', label: 'Tüm Bannerlar', count: banners.length },
           { id: 'onay_bekliyor', label: 'Onay Bekleyen', count: banners.filter((b) => b.durum === 'onay_bekliyor').length },
@@ -280,12 +318,12 @@ export default function AdminBannerManagementPage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-heading font-black transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
               statusFilter === tab.id
                 ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
-                : 'text-[#8b949e] hover:text-white hover:bg-[#21262d]'
+                : 'text-slate-400 hover:text-white hover:bg-[#070a0f]'
             }`}
           >
             <span>{tab.label}</span>
             <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
-              statusFilter === tab.id ? 'bg-slate-950/30 text-slate-950' : 'bg-[#0d1117] text-amber-400'
+              statusFilter === tab.id ? 'bg-slate-950/30 text-slate-950' : 'bg-[#070a0f] text-amber-400'
             }`}>
               {tab.count}
             </span>
@@ -295,10 +333,10 @@ export default function AdminBannerManagementPage() {
 
       {/* ── 4. BANNER LİSTESİ (TAM BOY PREVIEW & ALT KONTROL MASASI) ──────────────── */}
       {filteredBanners.length === 0 ? (
-        <div className="p-8 sm:p-14 text-center text-xs text-[#8b949e] bg-[#161b22] rounded-2xl border border-[#30363d] flex flex-col items-center gap-2.5 shadow-xl">
-          <Megaphone className="w-8 h-8 text-[#8b949e]/40" />
+        <div className="p-8 sm:p-14 text-center text-xs text-slate-400 bg-[#0c1017] rounded-2xl border border-slate-800 flex flex-col items-center gap-2.5 shadow-xl">
+          <Megaphone className="w-8 h-8 text-slate-400/40" />
           <span className="font-heading font-bold text-sm text-white">Bu filtrede kayıtlı banner bulunamadı.</span>
-          <p className="text-[11px] text-[#8b949e]">Yeni bir sponsor banner ekleyebilir veya diğer sekmeleri kontrol edebilirsiniz.</p>
+          <p className="text-[11px] text-slate-400">Yeni bir sponsor banner ekleyebilir veya diğer sekmeleri kontrol edebilirsiniz.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-3.5 sm:gap-4">
@@ -314,11 +352,11 @@ export default function AdminBannerManagementPage() {
                     ? 'border-emerald-500/40 hover:border-emerald-500/70 shadow-emerald-500/5'
                     : b.durum === 'onay_bekliyor'
                     ? 'border-amber-500/50 hover:border-amber-400 shadow-amber-500/5'
-                    : 'border-[#30363d] opacity-90'
+                    : 'border-slate-800 opacity-90'
                 }`}
               >
                 {/* ── 1. ÜSTTE TAM GENİŞLİK BANNER GÖRSELİ (PREVIEW) ──────────────── */}
-                <div className="relative w-full aspect-[21/9] sm:aspect-[3.5/1] max-h-52 rounded-xl overflow-hidden bg-[#0d1117] border border-[#30363d] shrink-0 group shadow-inner">
+                <div className="relative w-full aspect-[21/9] sm:aspect-[3.5/1] max-h-52 rounded-xl overflow-hidden bg-[#070a0f] border border-slate-800 shrink-0 group shadow-inner">
                   <Image src={b.gorselUrl} alt={b.baslik} fill className="object-cover" />
                   
                   {/* Karartma degrade */}
@@ -361,18 +399,18 @@ export default function AdminBannerManagementPage() {
                 </div>
 
                 {/* ── 2. BAŞLIK VE FİYAT SATIRI ──────────────── */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-[#30363d]/60 pb-2.5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-800/60 pb-2.5">
                   <div className="flex flex-col min-w-0">
                     <h3 className="font-heading font-black text-base sm:text-lg text-white truncate">
                       {b.baslik}
                     </h3>
-                    <span className="text-[10px] text-[#8b949e]">Sponsor Kaydı #{b._id.slice(-6)}</span>
+                    <span className="text-[10px] text-slate-400">Sponsor Kaydı #{b._id.slice(-6)}</span>
                   </div>
 
                   <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
                     <span className="text-xs sm:text-sm font-black text-amber-400 font-mono bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30 flex items-center gap-1.5">
                       <span>{b.fiyatTL?.toLocaleString('tr-TR')} ₺</span>
-                      <span className="text-[10px] text-[#8b949e] font-sans">({b.sureGun} Günlük)</span>
+                      <span className="text-[10px] text-slate-400 font-sans">({b.sureGun} Günlük)</span>
                     </span>
                   </div>
                 </div>
@@ -380,13 +418,13 @@ export default function AdminBannerManagementPage() {
                 {/* ── 3. DETAYLI MÜŞTERİ & HEDEF BİLGİ KARTLARI ──────────────── */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                   {/* Müşteri İletişim */}
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070a0f] border border-slate-800">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                         <Phone className="w-3.5 h-3.5" />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-[#8b949e]">Giriş / Telefon:</span>
+                        <span className="text-[10px] text-slate-400">Giriş / Telefon:</span>
                         <strong className="text-emerald-300 font-mono truncate">{b.musteriIletisim}</strong>
                       </div>
                     </div>
@@ -394,7 +432,7 @@ export default function AdminBannerManagementPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(b.musteriIletisim, `${b._id}_phone`)}
-                        className="p-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white text-[11px] font-bold transition-colors"
+                        className="p-1 rounded-lg bg-[#070a0f] hover:bg-[#30363d] text-slate-400 hover:text-white text-[11px] font-bold transition-colors"
                         title="Telefonu Kopyala"
                       >
                         {copiedId === `${b._id}_phone` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
@@ -412,20 +450,20 @@ export default function AdminBannerManagementPage() {
                   </div>
 
                   {/* Panel Giriş Şifresi */}
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070a0f] border border-slate-800">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
                         <KeyRound className="w-3.5 h-3.5" />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-[#8b949e]">Panel Şifresi:</span>
+                        <span className="text-[10px] text-slate-400">Panel Şifresi:</span>
                         <strong className="text-amber-400 font-mono text-xs">{b.panelSifresi || '123456'}</strong>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => copyToClipboard(b.panelSifresi || '123456', `${b._id}_pass`)}
-                      className="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors shrink-0"
+                      className="px-2 py-1 rounded-lg bg-[#070a0f] hover:bg-[#30363d] text-slate-400 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors shrink-0"
                       title="Şifreyi Kopyala"
                     >
                       {copiedId === `${b._id}_pass` ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
@@ -434,19 +472,19 @@ export default function AdminBannerManagementPage() {
                   </div>
 
                   {/* Hedef URL */}
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#0d1117] border border-[#21262d]">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#070a0f] border border-slate-800">
                     <div className="flex items-center gap-2 min-w-0">
                       <div className="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
                         <ExternalLink className="w-3.5 h-3.5" />
                       </div>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-[#8b949e]">Hedef Link:</span>
+                        <span className="text-[10px] text-slate-400">Hedef Link:</span>
                         <span className="text-blue-300 font-mono truncate max-w-[120px] sm:max-w-[140px]">{b.hedefUrl}</span>
                       </div>
                     </div>
                     <button
                       onClick={() => copyToClipboard(b.hedefUrl, b._id)}
-                      className="px-2 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors shrink-0"
+                      className="px-2 py-1 rounded-lg bg-[#070a0f] hover:bg-[#30363d] text-slate-400 hover:text-white text-[11px] font-bold flex items-center gap-1 transition-colors shrink-0"
                       title="Linki Kopyala"
                     >
                       <Copy className="w-3 h-3" />
@@ -457,7 +495,7 @@ export default function AdminBannerManagementPage() {
 
                 {/* Başlangıç ve Bitiş Tarihleri */}
                 {b.baslangicTarihi && b.bitisTarihi && (
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-[#0d1117] border border-[#21262d] text-[11px] sm:text-xs text-[#8b949e] font-mono">
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-[#070a0f] border border-slate-800 text-[11px] sm:text-xs text-slate-400 font-mono">
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                       <span>Başlangıç: <strong className="text-white">{new Date(b.baslangicTarihi).toLocaleDateString('tr-TR')}</strong></span>
@@ -469,12 +507,12 @@ export default function AdminBannerManagementPage() {
                 )}
 
                 {/* ── 4. 3'LÜ PERFORMANS İSTATİSTİK SAYACI ──────────────── */}
-                <div className="grid grid-cols-3 gap-1.5 bg-[#0d1117] p-2.5 rounded-xl border border-[#30363d] text-center">
+                <div className="grid grid-cols-3 gap-1.5 bg-[#070a0f] p-2.5 rounded-xl border border-slate-800 text-center">
                   <div className="flex flex-col">
-                    <span className="text-[9px] sm:text-[10px] text-[#8b949e] uppercase font-bold">Gösterim</span>
+                    <span className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-bold">Gösterim</span>
                     <span className="font-mono font-black text-sm sm:text-base text-white mt-0.5">{(b.goruntulenmeSayisi || 0).toLocaleString()}</span>
                   </div>
-                  <div className="flex flex-col border-x border-[#30363d] px-1">
+                  <div className="flex flex-col border-x border-slate-800 px-1">
                     <span className="text-[9px] sm:text-[10px] text-emerald-400 uppercase font-bold">Tıklama</span>
                     <span className="font-mono font-black text-sm sm:text-base text-emerald-400 mt-0.5">{(b.tiklamaSayisi || 0).toLocaleString()}</span>
                   </div>
@@ -486,16 +524,16 @@ export default function AdminBannerManagementPage() {
 
                 {/* ── 5. DİNAMİK KALAN SÜRE PROGRESS BAR ──────────────── */}
                 {timeInfo && (
-                  <div className="p-2.5 sm:p-3 rounded-xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-1.5">
+                  <div className="p-2.5 sm:p-3 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-1.5">
                     <div className="flex items-center justify-between text-xs font-heading font-black">
                       <span className="flex items-center gap-1.5 text-amber-400 text-[11px] sm:text-xs">
                         <Timer className="w-3.5 h-3.5" />
                         <span>Kalan Süre: {timeInfo.text}</span>
                       </span>
-                      <span className="text-[#8b949e] font-mono text-[10px] sm:text-[11px]">%{timeInfo.progress} Doldu</span>
+                      <span className="text-slate-400 font-mono text-[10px] sm:text-[11px]">%{timeInfo.progress} Doldu</span>
                     </div>
                     {/* Progress Bar */}
-                    <div className="w-full h-1.5 sm:h-2 rounded-full bg-[#161b22] overflow-hidden border border-white/5">
+                    <div className="w-full h-1.5 sm:h-2 rounded-full bg-[#0c1017] overflow-hidden border border-white/5">
                       <div
                         className={`h-full transition-all duration-500 rounded-full ${
                           timeInfo.progress > 85
@@ -511,7 +549,7 @@ export default function AdminBannerManagementPage() {
                 )}
 
                 {/* ── 6. DÜZENLENMİŞ VE MOBİL UYUMLU AKSİYON BUTONLARI ──────────────── */}
-                <div className="flex flex-col gap-2 border-t border-[#30363d]/60 pt-2.5">
+                <div className="flex flex-col gap-2 border-t border-slate-800/60 pt-2.5">
                   <div className="flex items-stretch gap-2 flex-wrap sm:flex-nowrap">
                     {/* Süreyi Uzat / Düzenle Butonu (Geniş / Esnek) */}
                     <button
@@ -519,7 +557,7 @@ export default function AdminBannerManagementPage() {
                       className={`flex-1 min-w-[140px] py-2.5 px-3 rounded-xl text-xs font-heading font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 border ${
                         editingBanner?._id === b._id
                           ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md shadow-amber-500/20'
-                          : 'bg-[#21262d] hover:bg-[#30363d] text-amber-300 border-[#30363d]'
+                          : 'bg-[#070a0f] hover:bg-[#30363d] text-amber-300 border-slate-800'
                       }`}
                     >
                       <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
@@ -580,7 +618,7 @@ export default function AdminBannerManagementPage() {
                           handleAction(b._id, 'delete');
                         }
                       }}
-                      className="py-2.5 px-2.5 sm:px-3 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-red-400 hover:bg-red-500/10 border border-[#30363d] hover:border-red-500/30 transition-all flex items-center justify-center gap-1 shrink-0"
+                      className="py-2.5 px-2.5 sm:px-3 rounded-xl bg-[#070a0f] text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-slate-800 hover:border-red-500/30 transition-all flex items-center justify-center gap-1 shrink-0"
                       title="Bannerı Sil"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -591,8 +629,8 @@ export default function AdminBannerManagementPage() {
 
                 {/* ── 7. AÇILIR SÜRE UZATMA PANELİ (TOUCH SEGMENTED) ──────────────── */}
                 {editingBanner?._id === b._id && (
-                  <div className="p-3 sm:p-4 rounded-xl bg-[#0d1117] border-2 border-amber-500/50 flex flex-col gap-3 animate-fadeIn shadow-2xl">
-                    <div className="flex items-center justify-between gap-2 border-b border-[#21262d] pb-2">
+                  <div className="p-3 sm:p-4 rounded-xl bg-[#070a0f] border-2 border-amber-500/50 flex flex-col gap-3 animate-fadeIn shadow-2xl">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
                       <span className="text-xs font-heading font-black text-white flex items-center gap-1.5">
                         <SlidersHorizontal className="w-3.5 h-3.5 text-amber-400" />
                         Yayın Süresini Uzat:
@@ -611,7 +649,7 @@ export default function AdminBannerManagementPage() {
                           className={`py-2 rounded-lg sm:rounded-xl text-xs font-mono font-bold transition-all border ${
                             editSureGun === gun
                               ? 'bg-amber-500 text-slate-950 border-amber-400 font-black shadow-md shadow-amber-500/20 scale-[1.02]'
-                              : 'bg-[#161b22] text-[#8b949e] border-[#30363d] hover:text-white'
+                              : 'bg-[#0c1017] text-slate-400 border-slate-800 hover:text-white'
                           }`}
                         >
                           +{gun} Gün

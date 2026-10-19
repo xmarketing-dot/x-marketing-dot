@@ -28,7 +28,6 @@ import {
   X,
   Megaphone,
   Link2,
-  Gift,
   Activity,
   Smartphone,
   Bell,
@@ -86,7 +85,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     bannersBadge: number;
     guvenlikBadge: number;
     kullanicilarBadge: number;
-    ucretsizlerBadge: number;
   }>({
     pendingListings: 0,
     expiredListings: 0,
@@ -102,7 +100,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
     bannersBadge: 0,
     guvenlikBadge: 0,
     kullanicilarBadge: 0,
-    ucretsizlerBadge: 0,
   });
 
   const pathname = usePathname();
@@ -572,32 +569,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               </Link>
 
               <Link
-                href="/bms-secure-portal/ucretsizler"
-                prefetch={false}
-                title="Ücretsiz Kampanyalar"
-                className={`${getNavClass('/bms-secure-portal/ucretsizler')} ${isSidebarCollapsed ? '' : 'justify-between'}`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0 relative">
-                  <Gift className="w-4 h-4 text-orange-400 shrink-0" />
-                  {!isSidebarCollapsed && <span className="truncate">Ücretsiz Kampanyalar</span>}
-                  {isSidebarCollapsed && badgeCounts.ucretsizlerBadge > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-orange-500" />
-                  )}
-                </div>
-                {!isSidebarCollapsed && (
-                  badgeCounts.ucretsizlerBadge > 0 ? (
-                    <span className="px-2 py-0.2 text-[10px] font-bold rounded-full bg-orange-500 text-white shadow-sm shrink-0 whitespace-nowrap">
-                      +{badgeCounts.ucretsizlerBadge}
-                    </span>
-                  ) : (
-                    <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded-md bg-slate-800 text-slate-400 shrink-0 whitespace-nowrap">
-                      24S
-                    </span>
-                  )
-                )}
-              </Link>
-
-              <Link
                 href="/bms-secure-portal/banners"
                 prefetch={false}
                 title="Banner Reklam Masası"
@@ -951,22 +922,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                       )}
                     </div>
                     <span>Banner Masası</span>
-                  </Link>
-
-                  <Link
-                    href="/bms-secure-portal/ucretsizler"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-3 rounded-xl bg-[#070a0f] hover:bg-slate-900 text-white flex flex-col gap-1 border border-slate-800 relative"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Gift className="w-5 h-5 text-orange-400" />
-                      {badgeCounts.ucretsizlerBadge > 0 && (
-                        <span className="px-1.5 py-0.5 rounded-full bg-orange-500 text-white text-[9px] font-bold animate-pulse">
-                          +{badgeCounts.ucretsizlerBadge}
-                        </span>
-                      )}
-                    </div>
-                    <span>Ücretsizler (24S)</span>
                   </Link>
 
                   <Link

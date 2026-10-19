@@ -40,8 +40,6 @@ export async function GET() {
       }).catch(() => 0),
     ]);
 
-    const ucretsizlerBadge = pendingPromoListings + pendingPromoBanners;
-
     return NextResponse.json({
       success: true,
       counts: {
@@ -60,7 +58,6 @@ export async function GET() {
         bannersBadge: pendingBanners,
         guvenlikBadge: 0,
         kullanicilarBadge: 0,
-        ucretsizlerBadge,
       },
       timestamp: new Date().toISOString(),
     });
