@@ -427,7 +427,7 @@ export default function AdminChatPage() {
   }, [threads]);
 
   return (
-    <div className="w-full h-[calc(100dvh-54px-4rem)] md:h-full flex flex-col bg-[#090c12] overflow-hidden max-w-full">
+    <div className="w-full h-[calc(100dvh-54px-4rem)] md:h-full min-h-0 flex-1 flex flex-col bg-[#090c12] overflow-hidden max-w-full md:rounded-2xl md:border md:border-[#232936] md:shadow-2xl">
       
       <div className="flex-1 min-h-0 flex w-full h-full relative overflow-hidden">
         
@@ -562,7 +562,7 @@ export default function AdminChatPage() {
           </div>
 
           {/* Kaydırılabilir Sohbet Listesi */}
-          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#1e2433] no-scrollbar">
+          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#1e2433] max-md:no-scrollbar md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:w-1.5 md:[&::-webkit-scrollbar-thumb]:bg-[#232936] md:[&::-webkit-scrollbar-thumb]:rounded-full hover:md:[&::-webkit-scrollbar-thumb]:bg-[#343e52]">
             {loading ? (
               <div className="p-10 text-center flex flex-col items-center justify-center gap-2.5">
                 <Loader2 className="w-6 h-6 text-amber-400 animate-spin" />
@@ -855,7 +855,7 @@ export default function AdminChatPage() {
                 <div 
                   ref={scrollContainerRef}
                   onScroll={handleScroll}
-                  className="flex-1 min-h-0 overflow-y-auto p-3.5 sm:p-5 flex flex-col gap-3.5 no-scrollbar relative"
+                  className="flex-1 min-h-0 overflow-y-auto p-3.5 sm:p-5 flex flex-col gap-3.5 relative max-md:no-scrollbar md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:w-2 md:[&::-webkit-scrollbar-thumb]:bg-[#232936] md:[&::-webkit-scrollbar-thumb]:rounded-full hover:md:[&::-webkit-scrollbar-thumb]:bg-[#3b475e] md:[&::-webkit-scrollbar-track]:bg-transparent"
                 >
                   {selectedThread.isBanned && (
                     <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center gap-2.5 text-red-300 text-xs font-bold shrink-0">

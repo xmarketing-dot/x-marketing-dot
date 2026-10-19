@@ -295,7 +295,9 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
   // 3. AUTHENTICATED: Render Full Admin Portal Layout
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative">
+    <div className={`min-h-screen bg-[#0d1117] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative ${
+      pathname === '/bms-secure-portal/chat' ? 'md:h-screen md:max-h-screen md:overflow-hidden' : ''
+    }`}>
       
       {/* Mobile Top Header */}
       <div className="md:hidden flex items-center justify-between bg-[#161b22] border-b border-[#30363d] px-4 py-3 sticky top-0 z-30 shadow-md">
@@ -587,9 +589,9 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       </aside>
 
       {/* Secret Admin Content Viewport */}
-      <main className={`flex-1 w-full max-w-full ${
+      <main className={`flex-1 w-full max-w-full min-w-0 ${
         pathname === '/bms-secure-portal/chat' 
-          ? 'p-0 pb-16 md:p-6 md:pb-8 overflow-hidden' 
+          ? 'p-0 pb-16 md:p-3 xl:p-4 md:pb-3 xl:pb-4 md:h-screen md:max-h-screen min-h-0 flex flex-col overflow-hidden' 
           : 'p-3 sm:p-6 md:p-8 pb-24 md:pb-8 overflow-y-auto'
       }`}>
         {children}
