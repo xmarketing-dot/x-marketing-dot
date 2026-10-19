@@ -721,49 +721,61 @@ export default function BmsSecurePortalDashboard() {
     <div className="flex flex-col gap-5 w-full max-w-full text-left font-sans text-slate-200">
       
       {/* ── 1. UNIFIED EXECUTIVE COMMAND BAR ──────────────────────────────── */}
-      <div className="bg-[#0c1017] border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+      <div className="bg-[#0c1017] border border-slate-800/80 rounded-2xl p-3 sm:p-5 shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
         {/* Sol: Başlık + Canlı Ziyaretçi & Müşteri Durumu */}
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
-            <BarChart3 className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">
-                Trafik &amp; İstihbarat Portalı
-              </h1>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 text-[11px] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                Canlı Veri Akışı
-              </span>
+        <div className="flex items-center justify-between xl:justify-start gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
+              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-              <button 
-                onClick={() => setShowActiveVisitorsModal(true)} 
-                className="hover:text-emerald-400 transition-colors flex items-center gap-1"
-                title="Canlı gezinmeleri incele"
-              >
-                <span className="font-semibold text-white">{activeUsers}</span> Ziyaretçi Aktif
-              </button>
-              <span className="text-slate-600">•</span>
-              <button 
-                onClick={() => setShowOnlineUsersModal(true)}
-                className="hover:text-amber-400 transition-colors flex items-center gap-1"
-                title="Sistemde oturum açmış müşteriler"
-              >
-                <span className="font-semibold text-white">{onlineUsers.length}</span> Müşteri Online
-              </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base sm:text-xl font-bold text-white tracking-tight truncate">
+                  Trafik &amp; İstihbarat Portalı
+                </h1>
+                <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 text-[10px] font-semibold shrink-0">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Canlı
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                <button 
+                  onClick={() => setShowActiveVisitorsModal(true)} 
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-1"
+                  title="Canlı gezinmeleri incele"
+                >
+                  <span className="font-semibold text-white">{activeUsers}</span> Ziyaretçi Aktif
+                </button>
+                <span className="text-slate-600">•</span>
+                <button 
+                  onClick={() => setShowOnlineUsersModal(true)}
+                  className="hover:text-amber-400 transition-colors flex items-center gap-1"
+                  title="Sistemde oturum açmış müşteriler"
+                >
+                  <span className="font-semibold text-white">{onlineUsers.length}</span> Müşteri Online
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* Mobilde Hızlı Yenile İkonu */}
+          <button
+            onClick={fetchAnalytics}
+            disabled={loading}
+            className="p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors xl:hidden shrink-0"
+            title="Verileri Yenile"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
+          </button>
         </div>
 
         {/* Sağ: Alan Adı Seçici + Tarih Seçici + Hızlı Araçlar */}
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar w-full xl:w-auto pb-0.5 xl:pb-0">
           {/* Domain Segmented Control */}
-          <div className="flex items-center bg-[#06090e] p-1 rounded-xl border border-slate-800 text-xs">
+          <div className="flex items-center bg-[#06090e] p-0.5 sm:p-1 rounded-xl border border-slate-800 text-[11px] sm:text-xs shrink-0">
             <button
               onClick={() => setSelectedDomain('all')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
                 selectedDomain === 'all'
                   ? 'bg-slate-800 text-white shadow-sm font-semibold'
                   : 'text-slate-400 hover:text-white'
@@ -773,7 +785,7 @@ export default function BmsSecurePortalDashboard() {
             </button>
             <button
               onClick={() => setSelectedDomain('besteskort.online')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
                 selectedDomain === 'besteskort.online'
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold'
                   : 'text-slate-400 hover:text-white'
@@ -783,7 +795,7 @@ export default function BmsSecurePortalDashboard() {
             </button>
             <button
               onClick={() => setSelectedDomain('escturkiye.space')}
-              className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
                 selectedDomain === 'escturkiye.space'
                   ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold'
                   : 'text-slate-400 hover:text-white'
@@ -794,7 +806,7 @@ export default function BmsSecurePortalDashboard() {
           </div>
 
           {/* Tarih Filtresi */}
-          <div className="flex items-center bg-[#06090e] p-1 rounded-xl border border-slate-800 text-xs">
+          <div className="flex items-center bg-[#06090e] p-0.5 sm:p-1 rounded-xl border border-slate-800 text-[11px] sm:text-xs shrink-0">
             {[
               { id: 'today', label: 'Bugün' },
               { id: 'yesterday', label: 'Dün' },
@@ -805,7 +817,7 @@ export default function BmsSecurePortalDashboard() {
               <button
                 key={r.id}
                 onClick={() => setRange(r.id)}
-                className={`px-2.5 py-1.5 rounded-lg font-medium transition-all ${
+                className={`px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
                   range === r.id
                     ? 'bg-slate-800 text-white shadow-sm font-semibold'
                     : 'text-slate-400 hover:text-white'
@@ -820,16 +832,16 @@ export default function BmsSecurePortalDashboard() {
           <Link
             href="/bms-secure-portal/derin-analiz"
             title="Derin Ağ Analizi"
-            className="p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors"
+            className="p-1.5 sm:p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0"
           >
-            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
           </Link>
 
-          {/* Yenile Butonu */}
+          {/* Masaüstü Yenile Butonu */}
           <button
             onClick={fetchAnalytics}
             disabled={loading}
-            className="p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors"
+            className="hidden xl:flex p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0"
             title="Verileri Yenile"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
@@ -886,8 +898,75 @@ export default function BmsSecurePortalDashboard() {
       {activeTab === 'overview' && (
         <div className="flex flex-col gap-5 animate-fadeIn">
 
-          {/* ── 4'LÜ HERO KPI KARTLARI (EXECUTIVE KPI STRIP) ──────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {/* ── 4'LÜ HERO KPI KARTLARI (MOBİLDE NATIVE COMPACT 2x2 / MASAÜSTÜNDE 4'LÜ STRIP) ──── */}
+          
+          {/* 1. MOBİL ÖZEL: Native 2x2 Kompakt ve Ortalanmış Kartlar (Revolut / Apple Health Havası) */}
+          <div className="grid grid-cols-2 gap-2 sm:hidden">
+            {/* Mobil Kart 1: Tekil Ziyaret */}
+            <div className="p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm">
+              <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <Globe className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xl font-bold font-mono text-white tracking-tight leading-tight mt-0.5">
+                {uniqueVisitors.toLocaleString()}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-tight">Tekil Ziyaret</span>
+              <span className="text-[9px] text-slate-500 font-mono truncate max-w-full">
+                {totalPageviews.toLocaleString()} Hit • {uniqueVisitors > 0 ? (totalPageviews / uniqueVisitors).toFixed(1) : '1.0'} s/k
+              </span>
+            </div>
+
+            {/* Mobil Kart 2: WhatsApp Randevu */}
+            <div 
+              onClick={() => setActiveTab('whatsapp_leads')}
+              className="p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+            >
+              <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
+              </div>
+              <span className="text-xl font-bold font-mono text-emerald-400 tracking-tight leading-tight mt-0.5">
+                {eventCounts.whatsappClicks.toLocaleString()}
+              </span>
+              <span className="text-[10px] font-semibold text-emerald-300 uppercase tracking-tight">WhatsApp Hit</span>
+              <span className="text-[9px] text-emerald-400/80 font-mono truncate max-w-full">
+                %CTR: {uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'} →
+              </span>
+            </div>
+
+            {/* Mobil Kart 3: Organik Arama */}
+            <div className="p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm">
+              <div className="w-6 h-6 rounded-md bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                <Search className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xl font-bold font-mono text-white tracking-tight leading-tight mt-0.5">
+                {((sources.yandex || 0) + (sources.google || 0)).toLocaleString()}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-tight">Organik Arama</span>
+              <span className="text-[9px] text-slate-500 font-mono truncate max-w-full">
+                {sources.yandex || 0} Yandex • {sources.google || 0} Google
+              </span>
+            </div>
+
+            {/* Mobil Kart 4: Mobil Cihaz & PWA */}
+            <div 
+              onClick={() => setActiveTab('pwa_installs')}
+              className="p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+            >
+              <div className="w-6 h-6 rounded-md bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                <Smartphone className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xl font-bold font-mono text-white tracking-tight leading-tight mt-0.5">
+                %{mobilePercentage}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-tight">Mobil Cihaz</span>
+              <span className="text-[9px] text-slate-500 font-mono truncate max-w-full">
+                {mobileCount.toLocaleString()} Hit • {pwaInstalls || recentPwaInstalls?.length || 0} PWA
+              </span>
+            </div>
+          </div>
+
+          {/* 2. MASAÜSTÜ ÖZEL: Geniş 4'lü Executive Hero Strip */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {/* 1. Tekil Ziyaret & Sayfa Hit */}
             <div className="bg-[#0e131f] border border-slate-800/90 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-md hover:border-slate-700 transition-colors">
               <div className="flex items-center justify-between">
@@ -1331,149 +1410,171 @@ export default function BmsSecurePortalDashboard() {
       {activeTab === 'whatsapp_leads' && (
         <div className="flex flex-col gap-6 animate-fadeIn">
           
-          {/* ── ENTERPRISE LEAD COMMAND CENTER BANNER & METRICS ── */}
-          <div className="p-6 sm:p-8 rounded-[36px] bg-gradient-to-br from-[#161b22] via-[#0b1d16] to-[#161b22] border-2 border-emerald-500/40 shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col gap-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20"></div>
-
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-b border-[#30363d]/80 pb-6 relative z-10">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-[#25D366] text-slate-950 flex items-center justify-center font-black shadow-xl shadow-emerald-500/30">
-                    <OfficialWhatsAppIcon className="w-8 h-8 fill-slate-950" />
-                  </div>
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-[#161b22]"></span>
-                  </span>
+          {/* ── EXECUTIVE LEAD COMMAND CENTER BANNER & METRICS ── */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3.5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                  <OfficialWhatsAppIcon className="w-5 h-5 fill-emerald-400" />
                 </div>
-
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h2 className="font-black text-xl sm:text-2xl text-white font-heading tracking-tight">
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-bold text-sm sm:text-base text-white tracking-tight">
                       WhatsApp Randevu &amp; Lead İstihbarat Merkezi
                     </h2>
-                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-black flex items-center gap-1.5 shadow-sm">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                      GERÇEK ZAMANLI SSE AKTİF
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Canlı SSE Aktif
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-[#8b949e] mt-1">
-                    İlanların WhatsApp butonuna basan tüm müşterilerin şehri, arama motoru terimi, cihazı, IP&apos;si ve hedef ilanı anlık olarak işlenir.
+                  <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+                    İlanların WhatsApp butonuna basan ziyaretçilerin konumu, arama terimi, cihazı ve hedef ilanı anlık işlenir.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 shrink-0">
-                <div className="px-4 py-2.5 rounded-2xl bg-[#0d1117] border border-[#30363d] flex items-center gap-3">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-[#8b949e] uppercase font-bold tracking-wider">Kayıtlı Lead Sayısı</span>
-                    <span className="text-base font-black text-emerald-400 font-mono">
-                      {(recentWhatsappClicks as any[] || []).length} Tıklama
-                    </span>
-                  </div>
+              <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+                <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2">
+                  <span className="text-[10px] text-slate-400 font-medium">Toplam Lead:</span>
+                  <span className="text-xs font-bold font-mono text-emerald-400">
+                    {(recentWhatsappClicks as any[] || []).length} Tık
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* 4 KPI Enterprise Metrik Kartı */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
-              <div className="p-5 rounded-3xl bg-[#0d1117]/90 border border-emerald-500/30 flex flex-col justify-between gap-3 shadow-lg hover:border-emerald-400 transition-colors">
+            {/* 1. MOBİL: NATIVE APP 2x2 ORTALANMIŞ GRID (sm:hidden) */}
+            <div className="grid grid-cols-2 gap-2 sm:hidden">
+              <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Randevu Hit</span>
+                <span className="text-lg font-bold font-mono text-emerald-400 mt-0.5">{eventCounts.whatsappClicks}</span>
+                <span className="text-[9px] text-slate-500 font-mono">Dönüşüm</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center min-w-0">
+                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Lider İlan</span>
+                <span className="text-xs font-bold text-amber-300 truncate max-w-full mt-0.5">
+                  {topContactedListings[0]?._id || 'Kayıt Yok'}
+                </span>
+                <span className="text-[9px] text-amber-400/80 font-mono">
+                  {topContactedListings[0]?.whatsappClicks || 0} Randevu
+                </span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Lider Şehir</span>
+                <span className="text-xs font-bold text-blue-400 truncate max-w-full mt-0.5">
+                  {topCities[0]?._id ? `📍 ${topCities[0]._id}` : 'Türkiye'}
+                </span>
+                <span className="text-[9px] text-slate-500 font-mono">En Yoğun Konum</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Dönüşüm (CTR)</span>
+                <span className="text-lg font-bold font-mono text-purple-300 mt-0.5">
+                  %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
+                </span>
+                <span className="text-[9px] text-slate-500 font-mono">Ziyaretçi Başına</span>
+              </div>
+            </div>
+
+            {/* 2. MASAÜSTÜ: 4 SÜTUNLU KURUMSAL KARTLAR (hidden sm:grid) */}
+            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-2 hover:border-emerald-500/40 transition-colors">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#8b949e] font-bold uppercase tracking-wider font-heading">Toplam Randevu Hit</span>
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                    <OfficialWhatsAppIcon className="w-4 h-4 fill-emerald-400" />
+                  <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Toplam Randevu Hit</span>
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-black text-3xl text-white font-heading">{eventCounts.whatsappClicks}</span>
-                  <span className="text-xs text-emerald-400 font-bold">Dönüşüm</span>
+                  <span className="font-bold font-mono text-2xl text-white">{eventCounts.whatsappClicks}</span>
+                  <span className="text-[11px] text-emerald-400 font-medium">Dönüşüm</span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                <span className="text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5">
                   Seçili dönemde doğrudan WhatsApp&apos;a basanlar
                 </span>
               </div>
 
-              <div className="p-5 rounded-3xl bg-[#0d1117]/90 border border-amber-500/30 flex flex-col justify-between gap-3 shadow-lg hover:border-amber-400 transition-colors">
+              <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-2 hover:border-amber-500/40 transition-colors">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#8b949e] font-bold uppercase tracking-wider font-heading">En Çok Talep Alan İlan</span>
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                    <Crown className="w-4 h-4 text-amber-400" />
+                  <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">En Çok Talep Alan İlan</span>
+                  <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                    <Crown className="w-3.5 h-3.5 text-amber-400" />
                   </div>
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-black text-base text-amber-300 font-heading truncate">
+                  <span className="font-bold text-xs text-amber-300 truncate">
                     {topContactedListings[0]?._id || 'Kayıt Bekleniyor'}
                   </span>
-                  <span className="text-xs font-black text-amber-400 font-mono mt-0.5">
+                  <span className="text-[11px] font-semibold text-amber-400 font-mono mt-0.5">
                     {topContactedListings[0]?.whatsappClicks || 0} Randevu Tıklaması
                   </span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                <span className="text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5">
                   Vitrin lideri dönüşüm şampiyonu
                 </span>
               </div>
 
-              <div className="p-5 rounded-3xl bg-[#0d1117]/90 border border-blue-500/30 flex flex-col justify-between gap-3 shadow-lg hover:border-blue-400 transition-colors">
+              <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-2 hover:border-blue-500/40 transition-colors">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#8b949e] font-bold uppercase tracking-wider font-heading">En Çok Lead Veren Şehir</span>
-                  <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-blue-400" />
+                  <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Lider Şehir</span>
+                  <div className="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                    <MapPin className="w-3.5 h-3.5 text-blue-400" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-black text-2xl text-blue-400 font-heading">
+                  <span className="font-bold text-base text-blue-400">
                     {topCities[0]?._id ? `📍 ${topCities[0]._id}` : 'Türkiye'}
                   </span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                <span className="text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5">
                   En yüksek müşteri yoğunluğu
                 </span>
               </div>
 
-              <div className="p-5 rounded-3xl bg-[#0d1117]/90 border border-purple-500/30 flex flex-col justify-between gap-3 shadow-lg hover:border-purple-400 transition-colors">
+              <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-2 hover:border-purple-500/40 transition-colors">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#8b949e] font-bold uppercase tracking-wider font-heading">Lead Dönüşüm (CTR)</span>
-                  <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-purple-400" />
+                  <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Lead Dönüşüm (CTR)</span>
+                  <div className="w-6 h-6 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                    <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-black text-3xl text-purple-300 font-heading">
+                  <span className="font-bold font-mono text-2xl text-purple-300">
                     %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
                   </span>
-                  <span className="text-xs text-purple-400 font-bold">Ziyaretçi Başına</span>
+                  <span className="text-[11px] text-purple-400 font-medium">Ziyaretçi Başına</span>
                 </div>
-                <span className="text-[11px] text-[#8b949e] border-t border-[#21262d] pt-2">
+                <span className="text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5">
                   Organik ziyaretçi randevu verimliliği
                 </span>
               </div>
             </div>
 
             {/* Arama, Filtreleme ve Tablo Araç Çubuğu */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 relative z-10 pt-2">
-              <div className="relative w-full sm:w-96">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-1 border-t border-slate-800/70">
+              <div className="relative w-full sm:w-80">
                 <input
                   type="text"
                   placeholder="İlan, telefon, şehir, IP, kelime ara..."
                   value={whatsappLeadSearchTerm}
                   onChange={(e) => setWhatsappLeadSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-emerald-400 focus:outline-none transition-colors shadow-inner"
+                  className="w-full pl-9 pr-8 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:border-emerald-500/60 focus:outline-none transition-colors"
                 />
-                <Search className="w-4 h-4 text-[#8b949e] absolute left-3.5 top-3.5" />
+                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
                 {whatsappLeadSearchTerm && (
                   <button
                     onClick={() => setWhatsappLeadSearchTerm('')}
-                    className="absolute right-3.5 top-3 text-xs text-[#8b949e] hover:text-white"
+                    className="absolute right-2.5 top-2 text-[11px] text-slate-400 hover:text-white"
                   >
-                    ✕ Temizle
+                    ✕
                   </button>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                <span className="text-xs text-[#8b949e] font-mono">
-                  Otomatik SSE Live Sync
-                </span>
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end text-[11px] text-slate-500 font-mono">
+                <span>Otomatik SSE Canlı Eşzamanlama</span>
               </div>
             </div>
           </div>
@@ -1515,20 +1616,20 @@ export default function BmsSecurePortalDashboard() {
               <div className="flex flex-col gap-4">
                 
                 {/* 1. MASAÜSTÜ KURUMSAL DATA TABLE (hidden sm:block / lg:table) */}
-                <div className="hidden lg:block rounded-[32px] bg-[#161b22] border border-[#30363d] overflow-hidden shadow-2xl">
+                <div className="hidden lg:block rounded-2xl bg-[#0c1017] border border-slate-800 overflow-hidden shadow-2xl">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-[#30363d] bg-[#0d1117]/80 text-[#8b949e] text-[11px] font-mono font-bold uppercase tracking-wider">
-                          <th className="py-4 px-5">Zaman Damgası</th>
-                          <th className="py-4 px-5">Hedef İlan &amp; Telefon</th>
-                          <th className="py-4 px-5">Ziyaretçi Konumu &amp; IP</th>
-                          <th className="py-4 px-5">Geliş Kaynağı &amp; Kelime</th>
-                          <th className="py-4 px-5">Cihaz &amp; Tarayıcı</th>
-                          <th className="py-4 px-5 text-right">Aksiyonlar</th>
+                        <tr className="border-b border-slate-800 bg-[#070a0f] text-slate-400 text-[11px] font-mono font-bold uppercase tracking-wider">
+                          <th className="py-3 px-4">Zaman Damgası</th>
+                          <th className="py-3 px-4">Hedef İlan &amp; Telefon</th>
+                          <th className="py-3 px-4">Ziyaretçi Konumu &amp; IP</th>
+                          <th className="py-3 px-4">Geliş Kaynağı &amp; Kelime</th>
+                          <th className="py-3 px-4">Cihaz &amp; Tarayıcı</th>
+                          <th className="py-3 px-4 text-right">Aksiyonlar</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#21262d] text-xs">
+                      <tbody className="divide-y divide-slate-800/70 text-xs">
                         {leads.map((lead: any, idx: number) => {
                           const m = lead.metadata || {};
                           const isMobile = m.device === 'mobile';
@@ -1742,10 +1843,10 @@ export default function BmsSecurePortalDashboard() {
                     return (
                       <div
                         key={lead._id || idx}
-                        className={`p-4 rounded-3xl border transition-all flex flex-col gap-3 shadow-lg ${
+                        className={`p-3.5 rounded-xl border transition-all flex flex-col gap-2.5 shadow-sm ${
                           isNew 
-                            ? 'bg-gradient-to-r from-emerald-950/80 via-[#102a1e] to-emerald-950/80 border-2 border-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.3)] animate-pulse' 
-                            : 'bg-[#161b22] border-[#30363d]'
+                            ? 'bg-gradient-to-r from-emerald-950/80 via-[#0b1d16] to-emerald-950/80 border border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)] animate-pulse' 
+                            : 'bg-[#0c1017] border-slate-800'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2 border-b border-[#21262d] pb-2.5">
@@ -1839,57 +1940,86 @@ export default function BmsSecurePortalDashboard() {
             return (
               <>
                 {/* ── KAMPANYA BİLGİ & DUYURU KARTI ── */}
-                <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-500/15 via-[#161b22] to-emerald-500/15 border-2 border-amber-500/40 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black shrink-0 shadow-lg">
-                      <Sparkles className="w-7 h-7 animate-pulse text-amber-300" />
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-5 h-5 animate-pulse text-amber-300" />
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-black text-base sm:text-xl text-white font-heading tracking-tight">
-                          🎁 24 Saatlik (1 Gün) Ücretsiz Promosyon Kampanyası
+                        <h2 className="font-bold text-sm sm:text-base text-white tracking-tight">
+                          🎁 24 Saatlik Ücretsiz Promosyon Kampanyası
                         </h2>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black font-heading shrink-0">
-                          ÖZEL VİTRİN KURALI AKTİF (4. SIRADAN BAŞLAR)
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-semibold shrink-0">
+                          4. SIRADAN BAŞLAR
                         </span>
                       </div>
-                      <p className="text-xs text-[#8b949e] mt-1 leading-relaxed">
-                        Ücretsiz başvuru yapan modeller &amp; reklam verenler burada toplanır. 24 saat (1 gün) sonunda sistem otomatik süre bitirir ve tek tıkla WhatsApp üzerinden haftalık VIP paket teklifi gönderebilirsiniz.
+                      <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+                        Ücretsiz başvuru yapan modeller &amp; reklam verenler burada toplanır. Süre bitince WhatsApp&apos;tan VIP paket teklifi gönderebilirsiniz.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
                     <Link
                       href="/ucretsiz-ilan"
                       target="_blank"
-                      className="px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-amber-400 text-xs font-bold font-heading border border-[#30363d] flex items-center gap-1.5 transition-all shadow-md"
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 text-xs font-semibold border border-slate-800 flex items-center gap-1.5 transition-all"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span>İlan Başvuru Sayfası</span>
+                      <span>İlan Başvuru</span>
                     </Link>
                     <Link
                       href="/ucretsiz-reklam"
                       target="_blank"
-                      className="px-3.5 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-emerald-400 text-xs font-bold font-heading border border-[#30363d] flex items-center gap-1.5 transition-all shadow-md"
+                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold border border-slate-800 flex items-center gap-1.5 transition-all"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Reklam Başvuru Sayfası</span>
+                      <span>Reklam Başvuru</span>
                     </Link>
                   </div>
                 </div>
 
-                {/* ── 4 KPI İSTATİSTİK KARTI ── */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {/* ── 1. MOBİL: NATIVE 2x2 ORTALANMIŞ GRID (sm:hidden) ── */}
+                <div className="grid grid-cols-2 gap-2 sm:hidden">
+                  <div className="p-3 rounded-xl bg-[#0c1017] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Toplam 24S</span>
+                    <span className="text-xl font-bold font-mono text-white mt-0.5">{grandTotal}</span>
+                    <span className="text-[9px] text-slate-500 font-mono">{rawListings.length} İlan • {rawBanners.length} Banner</span>
+                  </div>
+
+                  <div className={`p-3 rounded-xl border flex flex-col items-center justify-center text-center ${
+                    totalPending > 0 ? 'bg-amber-950/20 border-amber-500/40' : 'bg-[#0c1017] border-slate-800/80'
+                  }`}>
+                    <span className="text-[10px] text-amber-400 font-medium uppercase tracking-wider">Onay Bekleyen</span>
+                    <span className="text-xl font-bold font-mono text-amber-400 mt-0.5">{totalPending}</span>
+                    <span className="text-[9px] text-amber-400/80 font-mono">{pendingListingsCount} İlan • {pendingBannersCount} Ban</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-[#0c1017] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Aktif Yayında</span>
+                    <span className="text-xl font-bold font-mono text-emerald-400 mt-0.5">{totalActive}</span>
+                    <span className="text-[9px] text-emerald-400/80 font-mono">{activeListingsCount} İlan • {activeBannersCount} Ban</span>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-[#0c1017] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Süresi Biten</span>
+                    <span className="text-xl font-bold font-mono text-rose-400 mt-0.5">{totalExpired}</span>
+                    <span className="text-[9px] text-rose-400/80 font-mono">{expiredListingsCount} İlan • {expiredBannersCount} Ban</span>
+                  </div>
+                </div>
+
+                {/* ── 2. MASAÜSTÜ: 4 SÜTUNLU KURUMSAL KARTLAR (hidden sm:grid) ── */}
+                <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
                   {/* Toplam Başvuru */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-[#30363d] shadow-lg flex flex-col justify-between">
-                    <div className="flex items-center justify-between text-[#8b949e] text-xs font-heading font-black">
+                  <div className="p-3.5 rounded-xl bg-[#0c1017] border border-slate-800/80 shadow-sm flex flex-col justify-between gap-2">
+                    <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
                       <span>TOPLAM 24S PROMO</span>
-                      <Tag className="w-4 h-4 text-amber-400" />
+                      <Tag className="w-3.5 h-3.5 text-amber-400" />
                     </div>
-                    <div className="mt-3">
-                      <span className="font-black text-2xl sm:text-3xl text-white font-mono">{grandTotal}</span>
-                      <div className="flex items-center gap-2 mt-1 text-[11px] text-[#8b949e]">
+                    <div>
+                      <span className="font-bold text-2xl text-white font-mono">{grandTotal}</span>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
                         <span>{rawListings.length} İlan</span>
                         <span>•</span>
                         <span>{rawBanners.length} Banner</span>
@@ -1898,16 +2028,16 @@ export default function BmsSecurePortalDashboard() {
                   </div>
 
                   {/* Onay Bekleyenler */}
-                  <div className={`p-4 sm:p-5 rounded-2xl bg-[#161b22] border shadow-lg flex flex-col justify-between ${
-                    totalPending > 0 ? 'border-amber-500/50 bg-amber-950/10' : 'border-[#30363d]'
+                  <div className={`p-3.5 rounded-xl border shadow-sm flex flex-col justify-between gap-2 ${
+                    totalPending > 0 ? 'border-amber-500/50 bg-amber-950/15' : 'bg-[#0c1017] border-slate-800/80'
                   }`}>
-                    <div className="flex items-center justify-between text-amber-400 text-xs font-heading font-black">
+                    <div className="flex items-center justify-between text-amber-400 text-xs font-semibold">
                       <span>ONAY BEKLEYEN</span>
-                      <Clock className="w-4 h-4 text-amber-400" />
+                      <Clock className="w-3.5 h-3.5 text-amber-400" />
                     </div>
-                    <div className="mt-3">
-                      <span className="font-black text-2xl sm:text-3xl text-amber-400 font-mono">{totalPending}</span>
-                      <div className="flex items-center gap-2 mt-1 text-[11px] text-amber-400/80">
+                    <div>
+                      <span className="font-bold text-2xl text-amber-400 font-mono">{totalPending}</span>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-amber-400/80">
                         <span>{pendingListingsCount} İlan</span>
                         <span>•</span>
                         <span>{pendingBannersCount} Banner</span>
@@ -1916,14 +2046,14 @@ export default function BmsSecurePortalDashboard() {
                   </div>
 
                   {/* Aktif Yayındakiler */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-emerald-500/30 shadow-lg flex flex-col justify-between">
-                    <div className="flex items-center justify-between text-emerald-400 text-xs font-heading font-black">
+                  <div className="p-3.5 rounded-xl bg-[#0c1017] border border-slate-800/80 hover:border-emerald-500/40 shadow-sm flex flex-col justify-between gap-2 transition-colors">
+                    <div className="flex items-center justify-between text-emerald-400 text-xs font-semibold">
                       <span>AKTİF YAYINDA (24S)</span>
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                     </div>
-                    <div className="mt-3">
-                      <span className="font-black text-2xl sm:text-3xl text-emerald-400 font-mono">{totalActive}</span>
-                      <div className="flex items-center gap-2 mt-1 text-[11px] text-emerald-400/80">
+                    <div>
+                      <span className="font-bold text-2xl text-emerald-400 font-mono">{totalActive}</span>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-emerald-400/80">
                         <span>{activeListingsCount} İlan</span>
                         <span>•</span>
                         <span>{activeBannersCount} Banner</span>
@@ -1932,14 +2062,14 @@ export default function BmsSecurePortalDashboard() {
                   </div>
 
                   {/* Süresi Dolanlar / Satış Fırsatları */}
-                  <div className="p-4 sm:p-5 rounded-2xl bg-[#161b22] border border-rose-500/30 shadow-lg flex flex-col justify-between">
-                    <div className="flex items-center justify-between text-rose-400 text-xs font-heading font-black">
+                  <div className="p-3.5 rounded-xl bg-[#0c1017] border border-slate-800/80 hover:border-rose-500/40 shadow-sm flex flex-col justify-between gap-2 transition-colors">
+                    <div className="flex items-center justify-between text-rose-400 text-xs font-semibold">
                       <span>SÜRESİ BİTEN (SATIŞ)</span>
-                      <Megaphone className="w-4 h-4 text-rose-400" />
+                      <Megaphone className="w-3.5 h-3.5 text-rose-400" />
                     </div>
-                    <div className="mt-3">
-                      <span className="font-black text-2xl sm:text-3xl text-rose-400 font-mono">{totalExpired}</span>
-                      <div className="flex items-center gap-2 mt-1 text-[11px] text-rose-400/80">
+                    <div>
+                      <span className="font-bold text-2xl text-rose-400 font-mono">{totalExpired}</span>
+                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-rose-400/80">
                         <span>{expiredListingsCount} İlan</span>
                         <span>•</span>
                         <span>{expiredBannersCount} Banner</span>
@@ -2362,72 +2492,107 @@ export default function BmsSecurePortalDashboard() {
       {activeTab === 'seo_rankings' && (
         <div className="flex flex-col gap-6 animate-fadeIn">
           {/* ── BÖLÜM 1: GOOGLE & YANDEX WHATSAPP DÖNÜŞÜM ANALİTİĞİ ────────────────── */}
-          <div className="p-6 rounded-3xl bg-gradient-to-br from-[#161b22] via-[#1c1917] to-[#161b22] border-2 border-amber-500/40 shadow-2xl flex flex-col gap-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3.5">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-black">
-                  <Target className="w-6 h-6" />
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <Target className="w-5 h-5" />
                 </div>
-                <div>
-                  <h2 className="font-black text-lg sm:text-xl text-white font-heading">
-                    Google &amp; Yandex Organik Arama &amp; WhatsApp Dönüşüm Analizi
-                  </h2>
-                  <p className="text-xs text-[#8b949e]">
-                    Arama motorlarından (Google &amp; Yandex) gelen ziyaretçilerin doğrudan WhatsApp randevularına dönüşme performansı.
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-bold text-sm sm:text-base text-white tracking-tight">
+                      Google &amp; Yandex Organik Arama &amp; WhatsApp Dönüşüm Analizi
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-semibold">
+                      CR: %{googleConversionStats.googleConversionRate}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+                    Arama motorlarından gelen organik ziyaretçilerin doğrudan WhatsApp randevularına dönüşme performansı.
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-bold font-mono">
-                  Dönüşüm Oranı: %{googleConversionStats.googleConversionRate}
+            </div>
+
+            {/* 1. MOBİL: NATIVE 2x2 ORTALANMIŞ GRID (sm:hidden) */}
+            <div className="grid grid-cols-2 gap-2 sm:hidden">
+              <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-blue-400 font-medium uppercase tracking-wider">Google Organik</span>
+                <span className="text-xl font-bold font-mono text-white mt-0.5">
+                  {sources.google || googleConversionStats.googleVisitors || 0}
                 </span>
+                <span className="text-[9px] text-slate-500 font-mono">Google TR Tekil</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-amber-400 font-medium uppercase tracking-wider">Yandex Organik</span>
+                <span className="text-xl font-bold font-mono text-white mt-0.5">
+                  {sources.yandex || 0}
+                </span>
+                <span className="text-[9px] text-slate-500 font-mono">Yandex TR Tekil</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-emerald-400 font-medium uppercase tracking-wider">Arama WhatsApp</span>
+                <span className="text-xl font-bold font-mono text-emerald-400 mt-0.5">
+                  {googleConversionStats.googleWhatsappClicks}
+                </span>
+                <span className="text-[9px] text-emerald-400/80 font-mono">Dönüşüm Tık</span>
+              </div>
+
+              <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] text-purple-400 font-medium uppercase tracking-wider">Net Dönüşüm (CR)</span>
+                <span className="text-xl font-bold font-mono text-purple-300 mt-0.5">
+                  %{googleConversionStats.googleConversionRate}
+                </span>
+                <span className="text-[9px] text-slate-500 font-mono">100 Kişi Başına</span>
               </div>
             </div>
 
-            {/* 4 KPI Kartı (Google + Yandex Organik Trafik) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-1">
-                <span className="text-xs text-blue-400 font-bold flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-blue-400" />
+            {/* 2. MASAÜSTÜ: 4 SÜTUNLU KURUMSAL KARTLAR (hidden sm:grid) */}
+            <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 hover:border-blue-500/40 shadow-sm flex flex-col gap-1 transition-colors">
+                <span className="text-xs text-blue-400 font-semibold flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-blue-400" />
                   Google Organik Ziyaretçi
                 </span>
-                <span className="font-black text-2xl text-white font-heading">
+                <span className="font-bold text-2xl text-white font-mono mt-1">
                   {sources.google || googleConversionStats.googleVisitors || 0}
                 </span>
-                <span className="text-[10px] text-[#8b949e]">Google TR'den gelen tekil kişiler</span>
+                <span className="text-[10px] text-slate-500">Google TR&apos;den gelen tekil kişiler</span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-1">
-                <span className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
-                  <Globe className="w-4 h-4 text-amber-400" />
+              <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 hover:border-amber-500/40 shadow-sm flex flex-col gap-1 transition-colors">
+                <span className="text-xs text-amber-400 font-semibold flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-amber-400" />
                   Yandex Organik Ziyaretçi
                 </span>
-                <span className="font-black text-2xl text-white font-heading">
+                <span className="font-bold text-2xl text-white font-mono mt-1">
                   {sources.yandex || 0}
                 </span>
-                <span className="text-[10px] text-[#8b949e]">Yandex TR'den gelen tekil kişiler</span>
+                <span className="text-[10px] text-slate-500">Yandex TR&apos;den gelen tekil kişiler</span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col gap-1">
-                <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
-                  <MessageSquare className="w-4 h-4 text-emerald-400" />
+              <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 hover:border-emerald-500/40 shadow-sm flex flex-col gap-1 transition-colors">
+                <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
                   Arama WhatsApp Tıklamaları
                 </span>
-                <span className="font-black text-2xl text-emerald-400 font-heading">
+                <span className="font-bold text-2xl text-emerald-400 font-mono mt-1">
                   {googleConversionStats.googleWhatsappClicks}
                 </span>
-                <span className="text-[10px] text-[#8b949e]">Aramadan gelip WhatsApp'a basanlar</span>
+                <span className="text-[10px] text-slate-500">Aramadan gelip WhatsApp&apos;a basanlar</span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-amber-500/30 flex flex-col gap-1">
-                <span className="text-xs text-amber-400 font-bold flex items-center gap-1.5">
-                  <TrendingUp className="w-4 h-4 text-amber-400" />
+              <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 hover:border-purple-500/40 shadow-sm flex flex-col gap-1 transition-colors">
+                <span className="text-xs text-purple-400 font-semibold flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
                   Net Dönüşüm Oranı (CR)
                 </span>
-                <span className="font-black text-2xl text-amber-400 font-heading">
+                <span className="font-bold text-2xl text-purple-300 font-mono mt-1">
                   %{googleConversionStats.googleConversionRate}
                 </span>
-                <span className="text-[10px] text-[#8b949e]">Her 100 organik kişiden randevu oranı</span>
+                <span className="text-[10px] text-slate-500">Her 100 organik kişiden randevu oranı</span>
               </div>
             </div>
 
@@ -3202,55 +3367,57 @@ export default function BmsSecurePortalDashboard() {
       {/* ── SEKME 2: HER İLAN İÇİN DETAYLI ANALİZ & REFERRER (NEREDEN GELDİ) ── */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'listings' && (
-        <div className="p-5 sm:p-7 rounded-3xl bg-[#161b22] border border-amber-500/40 shadow-2xl flex flex-col gap-6 animate-fadeIn">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4 animate-fadeIn">
           
           {/* Başlık ve Arama Kutusu */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#30363d] pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3.5">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-300 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-amber-500/20 shrink-0">
-                <TrendingUp className="w-6 h-6 stroke-[2.5]" />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-5 h-5" />
               </div>
-              <div className="flex flex-col">
-                <h2 className="font-black text-lg sm:text-xl text-white font-heading tracking-tight flex items-center gap-2">
-                  <span>İlan Performans, Tıklama &amp; Referrer Raporu</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="font-bold text-sm sm:text-base text-white tracking-tight">
+                    İlan Performans, Tıklama &amp; Referrer Raporu
+                  </h2>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 font-mono font-semibold">
                     {filteredListings.length} İlan
                   </span>
-                </h2>
-                <p className="text-xs text-[#8b949e]">
-                  Hangi ilan kaç kez görüntülendi, kaç kez WhatsApp'a tıklandı, Facebook, Google, Twitter referansları ve gelen linkler.
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
+                  Hangi ilan kaç kez görüntülendi, kaç kez WhatsApp&apos;a tıklandı, Google, Yandex ve sosyal medya referansları.
                 </p>
               </div>
             </div>
 
             {/* Hızlı Arama Kutusu */}
-            <div className="relative w-full sm:w-72">
+            <div className="relative w-full sm:w-64">
               <input
                 type="text"
                 placeholder="İlan adı veya şehir ara..."
                 value={listingSearchTerm}
                 onChange={(e) => setListingSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none shadow-inner"
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:border-amber-500/60 focus:outline-none transition-colors"
               />
-              <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-3" />
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
             </div>
           </div>
 
           {/* İlan Detay Tablosu (Masaüstü) & Kartlar (Mobil) */}
           {filteredListings.length === 0 ? (
-            <div className="p-12 text-center text-xs text-[#8b949e] bg-[#0d1117] rounded-2xl border border-[#30363d]">
+            <div className="p-12 text-center text-xs text-slate-500 bg-[#070a0f] rounded-xl border border-slate-800">
               Arama kriterine uygun ilan bulunamadı.
             </div>
           ) : (
             <>
               {/* MOBİL GÖRÜNÜM: Her ilan ayrı şık kart (Yatay kaydırma sorunu olmadan rahatça okunur) */}
-              <div className="flex flex-col gap-3.5 md:hidden">
+              <div className="flex flex-col gap-3 md:hidden">
                 {filteredListings.map((item: any) => {
                   const isExpanded = expandedListingId === item.id;
                   return (
-                    <div key={item.id} className="p-4 rounded-2xl bg-[#0d1117] border border-[#30363d] flex flex-col gap-3">
+                    <div key={item.id} className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col gap-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="relative w-12 h-16 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
+                        <div className="relative w-12 h-16 rounded-xl overflow-hidden bg-slate-900 border border-slate-800 shrink-0">
                           <Image src={item.fotoUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'} alt={item.baslik} fill sizes="48px" className="object-cover" />
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
@@ -3639,80 +3806,80 @@ export default function BmsSecurePortalDashboard() {
       {/* ── SEKME 4: CANLI VE DETAYLI ZİYARETÇİ LOGLARI (SON 100 İSTEK) ─────── */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'live_visitors' && (
-        <div className="p-5 sm:p-7 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4 animate-fadeIn">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#30363d] pb-4">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4 animate-fadeIn">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3.5">
             <div className="flex flex-wrap items-center gap-2.5">
               <div className="flex items-center gap-2">
-                <Activity className="w-5 h-5 text-amber-400" />
-                <h2 className="font-black text-base text-white font-heading">
+                <Activity className="w-4 h-4 text-emerald-400" />
+                <h2 className="font-bold text-sm sm:text-base text-white tracking-tight">
                   Canlı Ziyaretçi Akış Günlüğü
                 </h2>
               </div>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-800">
                 {Math.min(filteredVisitors.length, visitorDisplayLimit)} / {filteredVisitors.length} İstek
               </span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
               {/* Gösterim Sınırı Seçici */}
-              <div className="flex items-center bg-[#0d1117] border border-[#30363d] rounded-xl p-0.5 text-xs font-mono">
+              <div className="flex items-center bg-[#070a0f] border border-slate-800 rounded-xl p-0.5 text-xs font-mono">
                 {[100, 500, 1000, 9999].map((limit) => (
                   <button
                     key={limit}
                     onClick={() => setVisitorDisplayLimit(limit)}
-                    className={`px-2.5 py-1 rounded-lg transition-all font-bold ${
+                    className={`px-2 py-1 rounded-lg transition-all font-semibold text-[11px] ${
                       visitorDisplayLimit === limit
-                        ? 'bg-amber-500 text-slate-950 shadow-sm'
-                        : 'text-[#8b949e] hover:text-white'
+                        ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                        : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    {limit === 9999 ? '🔥 Hepsini Gör (Tümü)' : limit}
+                    {limit === 9999 ? 'Tümü' : limit}
                   </button>
                 ))}
               </div>
 
-              <div className="relative w-full sm:w-56">
+              <div className="relative w-full sm:w-52">
                 <input
                   type="text"
                   placeholder="IP, Şehir, Sayfa ara..."
                   value={searchTermFilter}
                   onChange={(e) => setSearchTermFilter(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:border-emerald-500/60 focus:outline-none transition-colors"
                 />
-                <Search className="w-3.5 h-3.5 text-[#8b949e] absolute left-2.5 top-2.5" />
+                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2" />
               </div>
             </div>
           </div>
 
           {/* HIZLI FİLTRELER: GÜVENLİK & DOMAİN SEÇİCİ */}
-          <div className="flex flex-col gap-2.5 p-3 sm:p-3.5 rounded-2xl bg-[#0d1117] border border-[#30363d]">
+          <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-[#070a0f] border border-slate-800/80">
             <div className="flex flex-wrap items-center justify-between gap-3">
               {/* Güvenlik Filtresi */}
               <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={() => setOnlySuspiciousFilter(false)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  className={`px-2.5 py-1.2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                     !onlySuspiciousFilter
-                      ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                      : 'text-[#8b949e] hover:text-white bg-[#161b22]'
+                      ? 'bg-slate-800 text-white border border-slate-700/60'
+                      : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <span>🔘 Tümü</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20 font-mono font-bold">
+                  <span>Tümü</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-900 font-mono">
                     {(recentVisitors as any[]).length}
                   </span>
                 </button>
 
                 <button
                   onClick={() => setOnlySuspiciousFilter(true)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  className={`px-2.5 py-1.2 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 ${
                     onlySuspiciousFilter
-                      ? 'bg-red-500 text-white shadow-md shadow-red-500/30 font-black animate-pulse'
-                      : 'text-red-400 hover:text-red-300 bg-red-950/30 border border-red-500/40'
+                      ? 'bg-red-500 text-white shadow-md shadow-red-500/20 font-bold'
+                      : 'text-red-400 hover:text-red-300 bg-red-950/20 border border-red-500/30'
                   }`}
                 >
-                  <span>🚨 Sadece Şüpheli &amp; Bot / Saldırı</span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-red-900/80 font-mono font-black">
+                  <span>🚨 Şüpheli &amp; Bot</span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-red-900/60 font-mono">
                     {suspiciousTotalCount}
                   </span>
                 </button>
@@ -4171,45 +4338,69 @@ export default function BmsSecurePortalDashboard() {
       {activeTab === 'pwa_installs' && (
         <div className="flex flex-col gap-5 sm:gap-6 animate-fadeIn">
           {/* Üst Bilgi & 3'lü Özet Kartı */}
-          <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shrink-0 shadow-lg">
-                <Smartphone className="w-6 h-6" />
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                <Smartphone className="w-5 h-5" />
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <h2 className="font-heading font-black text-lg sm:text-xl text-white">
+              <div className="flex flex-col min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="font-bold text-sm sm:text-base text-white tracking-tight">
                     Uygulama Kurulum &amp; Kaldırma Canlı Takibi (PWA)
                   </h2>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold">
-                    LİMİTSİZ TÜM LİSTE
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono font-semibold">
+                    Limitsiz Liste
                   </span>
                 </div>
-                <p className="text-xs text-[#8b949e] mt-0.5">
+                <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
                   Kullanıcıların cihazlarına kurduğu veya kaldırdığı tüm gerçek cihaz kayıtları (BTK engelsiz kitle).
                 </p>
               </div>
             </div>
 
-            {/* 3'lü Metrik Çubuğu */}
-            <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
-              <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-emerald-500/30 flex flex-col min-w-[100px]">
-                <span className="text-[10px] text-[#8b949e]">Toplam Kurulum:</span>
-                <span className="font-mono font-black text-base text-emerald-400">
+            {/* 1. MOBİL: NATIVE 3'LÜ ORTALANMIŞ GRID (sm:hidden) */}
+            <div className="grid grid-cols-3 gap-2 w-full sm:hidden">
+              <div className="p-2.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Kurulum</span>
+                <span className="font-mono font-bold text-base text-emerald-400 mt-0.5">
                   {(pwaInstalls || recentPwaInstalls?.filter((x: any) => x.eventType === 'pwa_install')?.length || 0).toLocaleString()}
                 </span>
               </div>
 
-              <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-rose-500/30 flex flex-col min-w-[100px]">
-                <span className="text-[10px] text-[#8b949e]">Kaldıran / Dönen:</span>
-                <span className="font-mono font-black text-base text-rose-400">
+              <div className="p-2.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[9px] text-rose-400 font-medium uppercase tracking-wider">Kaldıran</span>
+                <span className="font-mono font-bold text-base text-rose-400 mt-0.5">
                   {((data?.pwaUninstalls || 0) || recentPwaInstalls?.filter((x: any) => x.eventType === 'pwa_uninstall')?.length || 0).toLocaleString()}
                 </span>
               </div>
 
-              <div className="px-3.5 py-2 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col min-w-[100px]">
-                <span className="text-[10px] text-[#8b949e]">Net Aktif Kurulu:</span>
-                <span className="font-mono font-black text-base text-blue-400">
+              <div className="p-2.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
+                <span className="text-[9px] text-blue-400 font-medium uppercase tracking-wider">Net Aktif</span>
+                <span className="font-mono font-bold text-base text-blue-400 mt-0.5">
+                  {Math.max(0, (pwaInstalls || 0) - ((data?.pwaUninstalls || 0) || 0)).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* 2. MASAÜSTÜ: 3'LÜ METRİK ÇUBUĞU (hidden sm:flex) */}
+            <div className="hidden sm:flex items-center gap-2.5">
+              <div className="px-3.5 py-2 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col min-w-[100px]">
+                <span className="text-[10px] text-slate-400 font-medium">Toplam Kurulum:</span>
+                <span className="font-mono font-bold text-sm text-emerald-400">
+                  {(pwaInstalls || recentPwaInstalls?.filter((x: any) => x.eventType === 'pwa_install')?.length || 0).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="px-3.5 py-2 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col min-w-[100px]">
+                <span className="text-[10px] text-slate-400 font-medium">Kaldıran / Dönen:</span>
+                <span className="font-mono font-bold text-sm text-rose-400">
+                  {((data?.pwaUninstalls || 0) || recentPwaInstalls?.filter((x: any) => x.eventType === 'pwa_uninstall')?.length || 0).toLocaleString()}
+                </span>
+              </div>
+
+              <div className="px-3.5 py-2 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col min-w-[100px]">
+                <span className="text-[10px] text-slate-400 font-medium">Net Aktif Kurulu:</span>
+                <span className="font-mono font-bold text-sm text-blue-400">
                   {Math.max(0, (pwaInstalls || 0) - ((data?.pwaUninstalls || 0) || 0)).toLocaleString()}
                 </span>
               </div>
