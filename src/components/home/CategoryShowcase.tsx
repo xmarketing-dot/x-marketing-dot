@@ -95,6 +95,7 @@ export default function CategoryShowcase({
             <Link
               key={cat.id}
               href={cat.href}
+              prefetch={false}
               className={`group relative rounded-2xl sm:rounded-3xl p-1.5 sm:p-2.5 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl active:scale-95 shadow-xl select-none ${cardBg}`}
             >
               {/* VIP İçin Özel Arka Plan Parlama Efekti */}

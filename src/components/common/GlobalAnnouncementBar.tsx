@@ -98,10 +98,14 @@ export default function GlobalAnnouncementBar() {
       }
     }
 
-    loadAnnouncement();
+    const initialDelay = setTimeout(() => {
+      loadAnnouncement();
+    }, 2500);
+
     return () => {
       isMounted = false;
       window.removeEventListener('resize', handleResize);
+      clearTimeout(initialDelay);
       if (timerId) clearTimeout(timerId);
     };
   }, []);

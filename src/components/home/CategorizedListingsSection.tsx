@@ -39,7 +39,7 @@ export default function CategorizedListingsSection({
       {displayedVip.length > 0 && (
         <section className="px-1.5 sm:px-4 flex flex-col gap-2">
           <div className="flex items-center justify-between pb-1.5 border-b border-amber-500/40">
-            <Link href="/kategori/vip" className="flex items-center gap-1.5 sm:gap-2 group">
+            <Link href="/kategori/vip" prefetch={false} className="flex items-center gap-1.5 sm:gap-2 group">
               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-yellow-300 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/30 group-hover:scale-105 transition-transform shrink-0">
                 <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-slate-950 stroke-[2.5]" />
               </div>
@@ -54,6 +54,7 @@ export default function CategorizedListingsSection({
             </Link>
             <Link
               href="/kategori/vip"
+              prefetch={false}
               className="text-[11px] sm:text-xs text-amber-400 hover:text-amber-300 font-heading font-bold flex items-center gap-0.5"
             >
               <span>Tüm VIP ({displayedVip.length}/50)</span>
@@ -81,7 +82,7 @@ export default function CategorizedListingsSection({
       {displayedGold.length > 0 && (
         <section className="px-1.5 sm:px-4 flex flex-col gap-2">
           <div className="flex items-center justify-between pb-1.5 border-b border-yellow-500/40">
-            <Link href="/kategori/gold" className="flex items-center gap-1.5 sm:gap-2 group">
+            <Link href="/kategori/gold" prefetch={false} className="flex items-center gap-1.5 sm:gap-2 group">
               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-gradient-to-tr from-yellow-500 to-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md shadow-yellow-500/30 group-hover:scale-105 transition-transform shrink-0">
                 <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
               </div>
@@ -96,6 +97,7 @@ export default function CategorizedListingsSection({
             </Link>
             <Link
               href="/kategori/gold"
+              prefetch={false}
               className="text-[11px] sm:text-xs text-yellow-400 hover:text-yellow-300 font-heading font-bold flex items-center gap-0.5"
             >
               <span>Tüm Gold ({displayedGold.length}/100)</span>
@@ -123,7 +125,7 @@ export default function CategorizedListingsSection({
       {displayedSilver.length > 0 && (
         <section className="px-1.5 sm:px-4 flex flex-col gap-2">
           <div className="flex items-center justify-between pb-1.5 border-b border-slate-600/50">
-            <Link href="/kategori/silver" className="flex items-center gap-1.5 sm:gap-2 group">
+            <Link href="/kategori/silver" prefetch={false} className="flex items-center gap-1.5 sm:gap-2 group">
               <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl bg-gradient-to-tr from-slate-400 to-slate-200 text-slate-950 flex items-center justify-center font-black shadow-md group-hover:scale-105 transition-transform shrink-0">
                 <Medal className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
               </div>
@@ -138,6 +140,7 @@ export default function CategorizedListingsSection({
             </Link>
             <Link
               href="/kategori/silver"
+              prefetch={false}
               className="text-[11px] sm:text-xs text-slate-300 hover:text-white font-heading font-bold flex items-center gap-0.5"
             >
               <span>Tüm Silver ({displayedSilver.length}/200)</span>

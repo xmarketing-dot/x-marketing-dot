@@ -50,11 +50,17 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
       } catch (_) {}
     };
 
+    let timer: any = null;
     if (pathname === '/bildirimler') {
       setUnreadNotifCount(0);
     } else {
-      fetchUnread();
+      // Sayfa açılışında LCP ve ana kaynakları bloke etmemesi için 3.5 sn rölantide çalıştır
+      timer = setTimeout(fetchUnread, 3500);
     }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
   }, [pathname]);
 
   const [isCorporateEnforced, setIsCorporateEnforced] = useState(forceCorporate);
@@ -181,7 +187,7 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
 
           {/* MOBILE APP HEADER — Premium Global Brand Bar */}
           <header className="px-3.5 py-3 border-b border-[#30363d]/60 flex items-center justify-between w-full shadow-md">
-            <Link href="/" className="flex items-center gap-2 group">
+            <Link href="/" prefetch={false} className="flex items-center gap-2 group">
               <CorporateLogo className="w-9 h-9 shrink-0 group-hover:scale-105 transition-transform" />
               <span className="font-black text-lg text-white font-heading tracking-tight group-hover:text-amber-400 transition-colors">
                 Best Eskort
@@ -192,6 +198,7 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
             <div className="flex items-center gap-2">
               <Link
                 href="/ilan-ver"
+                prefetch={false}
                 className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs font-heading uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all"
               >
                 İlan Ver
@@ -200,6 +207,7 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
               {/* Bildirim İkonu (+1, +2 Rozetli) */}
               <Link
                 href="/bildirimler"
+                prefetch={false}
                 aria-label="Bildirimler"
                 title="Bildirimler"
                 className="relative w-9 h-9 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-slate-300 hover:text-amber-400 transition-all active:scale-95 flex items-center justify-center shrink-0 cursor-pointer"
@@ -215,6 +223,7 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
               {/* Panelim (Personel) İkonu */}
               <Link
                 href="/panelim"
+                prefetch={false}
                 aria-label="Personel / Müşteri Paneli"
                 title="Personel / Müşteri Paneli"
                 className="w-9 h-9 rounded-xl bg-[#161b22] hover:bg-[#21262d] border border-[#30363d] text-amber-400 hover:text-amber-300 transition-all active:scale-95 flex items-center justify-center shrink-0 cursor-pointer"

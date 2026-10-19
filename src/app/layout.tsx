@@ -200,7 +200,7 @@ export default async function RootLayout({
         {/* Yandex Metrika Counters (112120217 & 113056145) - Search Analytics & Heatmap Tracking */}
         <Script
           id="yandex-metrika"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
               (function(m,e,t,r,i,k,a){
@@ -213,7 +213,7 @@ export default async function RootLayout({
               // Counter 1 (112120217)
               ym(112120217, 'init', {
                 ssr: true,
-                webvisor: true,
+                webvisor: false,
                 clickmap: true,
                 ecommerce: "dataLayer",
                 referrer: document.referrer,
@@ -225,7 +225,7 @@ export default async function RootLayout({
               // Counter 2 (113056145)
               ym(113056145, 'init', {
                 ssr: true,
-                webvisor: true,
+                webvisor: false,
                 clickmap: true,
                 ecommerce: "dataLayer",
                 referrer: document.referrer,

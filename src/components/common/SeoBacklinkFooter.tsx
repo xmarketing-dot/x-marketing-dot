@@ -16,17 +16,21 @@ export default function SeoBacklinkFooter() {
 
   useEffect(() => {
     let isMounted = true;
-    fetch('/api/backlinks')
-      .then((res) => res.json())
-      .then((data) => {
-        if (isMounted && data.success && Array.isArray(data.backlinks)) {
-          setBacklinks(data.backlinks);
-        }
-      })
-      .catch(() => {});
+    // Sayfanın ilk açılışındaki ağ kuyruğunu rahatlatmak için 4 sn rölantide çalıştır
+    const timer = setTimeout(() => {
+      fetch('/api/backlinks')
+        .then((res) => res.json())
+        .then((data) => {
+          if (isMounted && data.success && Array.isArray(data.backlinks)) {
+            setBacklinks(data.backlinks);
+          }
+        })
+        .catch(() => {});
+    }, 4000);
 
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
   }, []);
 

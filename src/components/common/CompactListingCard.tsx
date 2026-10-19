@@ -26,6 +26,26 @@ if (typeof window !== 'undefined') {
   );
 }
 
+// ── PERFORMANS İÇİN TEK PAYLAŞIMLI INTERSECTION OBSERVER (350 ayrı observer yerine 1 adet) ──
+let sharedObserver: IntersectionObserver | null = null;
+const cardCallbacks = new Map<Element, (isIntersecting: boolean) => void>();
+
+function getSharedObserver() {
+  if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return null;
+  if (!sharedObserver) {
+    sharedObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const cb = cardCallbacks.get(entry.target);
+          if (cb) cb(entry.isIntersecting);
+        });
+      },
+      { rootMargin: '120px 0px', threshold: 0.1 }
+    );
+  }
+  return sharedObserver;
+}
+
 interface CompactListingCardProps {
   listing: {
     _id: string;
@@ -88,23 +108,29 @@ export default function CompactListingCard({ listing, priority = false }: Compac
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
 
-  // IntersectionObserver: Yalnızca fiilen ekranda olan kartlar timer çalıştırsın (rootMargin: 0px)
+  // Tek paylaşımlı IntersectionObserver ile kart görünürlük takibi (Sıfır ek CPU/Observer maliyeti)
   useEffect(() => {
-    if (!cardRef.current || typeof IntersectionObserver === 'undefined') {
+    const el = cardRef.current;
+    if (!el) {
       setIsVisible(true);
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        setIsVisible(entry.isIntersecting);
-      },
-      { rootMargin: '0px', threshold: 0.25 }
-    );
+    const observer = getSharedObserver();
+    if (!observer) {
+      setIsVisible(true);
+      return;
+    }
 
-    observer.observe(cardRef.current);
-    return () => observer.disconnect();
+    cardCallbacks.set(el, (intersecting) => {
+      setIsVisible(intersecting);
+    });
+    observer.observe(el);
+
+    return () => {
+      cardCallbacks.delete(el);
+      observer.unobserve(el);
+    };
   }, []);
 
   // Otomatik Görüntülenme / Gösterim (Impression) Takibi (Yalnızca ekranda görününce)
@@ -197,14 +223,15 @@ export default function CompactListingCard({ listing, priority = false }: Compac
   return (
     <div
       ref={cardRef}
-      className={`group relative aspect-[3/4.8] sm:aspect-[3/4.5] w-full rounded-lg sm:rounded-xl overflow-hidden bg-[#0d1117] border transition-all duration-300 shadow-md select-none ${
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '110px 180px' }}
+      className={`group relative aspect-[3/4.8] sm:aspect-[3/4.5] w-full rounded-lg sm:rounded-xl overflow-hidden bg-[#0d1117] border shadow-md select-none ${
         isPassive
           ? 'border-zinc-800/80 bg-zinc-950/90 opacity-90'
           : isVip
-          ? 'border-amber-500/75 hover:border-amber-400 shadow-amber-500/10 ring-1 ring-amber-500/20 hover:shadow-xl'
+          ? 'border-amber-500/75 shadow-amber-500/10 ring-1 ring-amber-500/20'
           : isGold
-          ? 'border-yellow-500/60 hover:border-yellow-400 shadow-yellow-500/10 ring-1 ring-yellow-500/15 hover:shadow-xl'
-          : 'border-slate-600/50 hover:border-slate-400 shadow-slate-500/5 ring-1 ring-slate-400/10 hover:shadow-xl'
+          ? 'border-yellow-500/60 shadow-yellow-500/10 ring-1 ring-yellow-500/15'
+          : 'border-slate-600/50 shadow-slate-500/5 ring-1 ring-slate-400/10'
       }`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -246,7 +273,7 @@ export default function CompactListingCard({ listing, priority = false }: Compac
       {/* Pasif İlan Çapraz Şerit (Ribbon) */}
       {isPassive && (
         <div className="absolute inset-0 z-15 pointer-events-none flex items-center justify-center overflow-hidden">
-          <div className="w-[140%] py-1 bg-rose-600/90 text-white font-black text-[8px] sm:text-[9.5px] tracking-wider uppercase text-center -rotate-25 shadow-lg border-y border-rose-400/50 backdrop-blur-xs font-heading">
+          <div className="w-[140%] py-1 bg-rose-600/90 text-white font-black text-[8px] sm:text-[9.5px] tracking-wider uppercase text-center -rotate-25 shadow-lg border-y border-rose-400/50 font-heading">
             ⚠️ SÜRESİ DOLDU
           </div>
         </div>
@@ -256,7 +283,7 @@ export default function CompactListingCard({ listing, priority = false }: Compac
       <div className="absolute top-1.5 left-1.5 right-1.5 z-20 flex items-center justify-between pointer-events-none">
         <div>
           {isPassive ? (
-            <span className="px-1.5 py-0.5 rounded bg-zinc-900/95 border border-zinc-700/80 text-zinc-300 font-extrabold text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-1">
+            <span className="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-700/80 text-zinc-300 font-extrabold text-[8px] sm:text-[9px] uppercase tracking-wider font-heading shadow-md flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
               <span>PASİF</span>
             </span>
@@ -287,16 +314,18 @@ export default function CompactListingCard({ listing, priority = false }: Compac
         <div className="flex items-center gap-1">
           {/* Canlı Online Nabzı */}
           {isOnline && (
-            <span className="p-1 rounded-full bg-black/75 backdrop-blur-md border border-emerald-500/40 shadow-sm flex items-center justify-center">
+            <span className="p-1 rounded-full bg-black/85 border border-emerald-500/40 shadow-sm flex items-center justify-center">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                {priority && isVisible && (
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                )}
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_6px_#10b981]"></span>
               </span>
             </span>
           )}
 
           {!isPassive && (
-            <span className="px-1.5 py-0.5 rounded bg-emerald-500/90 backdrop-blur-xs text-slate-950 font-black text-[8.5px] sm:text-[9.5px] font-heading shadow-md flex items-center gap-0.5 ring-1 ring-emerald-400/40">
+            <span className="px-1.5 py-0.5 rounded bg-emerald-500 text-slate-950 font-black text-[8.5px] sm:text-[9.5px] font-heading shadow-md flex items-center gap-0.5 ring-1 ring-emerald-400/40">
               <ShieldCheck className="w-2.5 h-2.5 stroke-[3]" />
               <span>Teyitli</span>
             </span>
@@ -313,7 +342,7 @@ export default function CompactListingCard({ listing, priority = false }: Compac
               className={`h-1 rounded-full transition-all duration-300 ${
                 dotIdx === currentIndex
                   ? isVip ? 'w-2.5 bg-amber-400' : isGold ? 'w-2.5 bg-yellow-400' : 'w-2.5 bg-slate-300'
-                  : 'w-1 bg-white/60 backdrop-blur-sm'
+                  : 'w-1 bg-white/60'
               }`}
             />
           ))}
