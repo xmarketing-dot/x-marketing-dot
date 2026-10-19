@@ -28,7 +28,6 @@ import {
   X,
   Megaphone,
   Link2,
-  Activity,
   Smartphone,
   Bell,
   BellRing,
@@ -421,23 +420,6 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
               </Link>
 
               <Link
-                href="/bms-secure-portal/derin-analiz"
-                prefetch={false}
-                title="Derin Analitik"
-                className={`${getNavClass('/bms-secure-portal/derin-analiz')} ${isSidebarCollapsed ? '' : 'justify-between'}`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <Activity className="w-4 h-4 text-emerald-400 shrink-0" />
-                  {!isSidebarCollapsed && <span className="text-emerald-300 truncate">Derin Analitik</span>}
-                </div>
-                {!isSidebarCollapsed && (
-                  <span className="px-1.5 py-0.5 text-[9px] font-semibold rounded-md bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 shrink-0 whitespace-nowrap">
-                    MÜDAVİM
-                  </span>
-                )}
-              </Link>
-
-              <Link
                 href="/bms-secure-portal/bildirimler"
                 prefetch={false}
                 title="Bildirim & Push Masası"
@@ -792,7 +774,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                 <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider font-bold">
                   Canlı Akış &amp; Analiz
                 </span>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <Link
                     href="/bms-secure-portal"
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -802,14 +784,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     <span className="text-[11px] truncate w-full">Canlı Trafik</span>
                   </Link>
 
-                  <Link
-                    href="/bms-secure-portal/derin-analiz"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-2.5 rounded-xl bg-[#070a0f] hover:bg-slate-900 text-emerald-300 flex flex-col items-center text-center gap-1.5 border border-slate-800 relative"
-                  >
-                    <Activity className="w-5 h-5 text-emerald-400" />
-                    <span className="text-[11px] truncate w-full">Derin Analiz</span>
-                  </Link>
+                  
 
                   <Link
                     href="/bms-secure-portal/bildirimler"

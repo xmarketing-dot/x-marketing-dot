@@ -915,15 +915,6 @@ export default function BmsSecurePortalDashboard() {
             ))}
           </div>
 
-          {/* Derin Analiz Linki */}
-          <Link
-            href="/bms-secure-portal/derin-analiz"
-            title="Derin Ağ Analizi"
-            className="p-1.5 sm:p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0"
-          >
-            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
-          </Link>
-
           {/* Masaüstü Yenile Butonu */}
           <button
             onClick={fetchAnalytics}
