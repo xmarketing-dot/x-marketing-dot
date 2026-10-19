@@ -8,27 +8,9 @@ import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { formatWhatsAppNumber } from '@/lib/format';
 import { trackEvent } from '@/components/common/AnalyticsTracker';
 
-// Global scroll takibi: Kullanıcı parmağıyla scroll yaparken kartların resim değiştirmesini dondurur (FPS düşüşünü sıfırlar)
-let isGlobalScrolling = false;
-let globalScrollTimeout: any = null;
-
-if (typeof window !== 'undefined') {
-  window.addEventListener(
-    'scroll',
-    () => {
-      isGlobalScrolling = true;
-      if (globalScrollTimeout) clearTimeout(globalScrollTimeout);
-      globalScrollTimeout = setTimeout(() => {
-        isGlobalScrolling = false;
-      }, 150);
-    },
-    { passive: true }
-  );
-}
-
-// ── PERFORMANS İÇİN TEK PAYLAŞIMLI INTERSECTION OBSERVER (350 ayrı observer yerine 1 adet) ──
+// ── PERFORMANS İÇİN TEK PAYLAŞIMLI INTERSECTION OBSERVER (1000px önceden tek seferlik tetikleme) ──
 let sharedObserver: IntersectionObserver | null = null;
-const cardCallbacks = new Map<Element, (isIntersecting: boolean) => void>();
+const cardCallbacks = new Map<Element, () => void>();
 
 function getSharedObserver() {
   if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') return null;
@@ -36,18 +18,24 @@ function getSharedObserver() {
     sharedObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const cb = cardCallbacks.get(entry.target);
-          if (cb) cb(entry.isIntersecting);
+          if (entry.isIntersecting) {
+            const cb = cardCallbacks.get(entry.target);
+            if (cb) {
+              cb();
+              cardCallbacks.delete(entry.target);
+              sharedObserver?.unobserve(entry.target);
+            }
+          }
         });
       },
-      { rootMargin: '800px 0px', threshold: 0.01 }
+      { rootMargin: '1000px 0px', threshold: 0.01 }
     );
   }
   return sharedObserver;
 }
 
 /**
- * Grid görünümünde 1600px orijinal yerine 480px Retina (~15KB) hafif ve net thumbnail ister
+ * Grid görünümünde 1600px orijinal yerine 480px Retina (~20KB) hafif ve net thumbnail ister
  */
 function getThumbnailUrl(rawUrl: string, width = 480): string {
   if (!rawUrl) return '';
@@ -115,27 +103,27 @@ export default function CompactListingCard({ listing, priority = false }: Compac
   }, [isPassive, listing.slug, listing._id]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(priority);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const touchStartXRef = useRef<number | null>(null);
-  const touchEndXRef = useRef<number | null>(null);
 
-  // Tek paylaşımlı IntersectionObserver ile kart görünürlük takibi (800px önceden tetiklenir)
+  // 1000px önceden tek seferlik ön yükleme tetikleyicisi (Görünür olunca hemen unobserve olur, CPU maliyeti 0'a iner)
   useEffect(() => {
+    if (priority || isLoaded) return;
     const el = cardRef.current;
     if (!el) {
-      setIsVisible(true);
+      setIsLoaded(true);
       return;
     }
 
     const observer = getSharedObserver();
     if (!observer) {
-      setIsVisible(true);
+      setIsLoaded(true);
       return;
     }
 
-    cardCallbacks.set(el, (intersecting) => {
-      setIsVisible(intersecting);
+    cardCallbacks.set(el, () => {
+      setIsLoaded(true);
     });
     observer.observe(el);
 
@@ -143,11 +131,11 @@ export default function CompactListingCard({ listing, priority = false }: Compac
       cardCallbacks.delete(el);
       observer.unobserve(el);
     };
-  }, []);
+  }, [priority, isLoaded]);
 
   // Otomatik Görüntülenme / Gösterim (Impression) Takibi (Yalnızca ekranda görününce)
   useEffect(() => {
-    if (!isVisible || !listing || !listing._id) return;
+    if (!isLoaded || !listing || !listing._id) return;
     if (typeof window !== 'undefined' && window.trackListingImpression) {
       window.trackListingImpression({
         listingId: listing._id,
@@ -156,47 +144,40 @@ export default function CompactListingCard({ listing, priority = false }: Compac
         city: `${listing.ilSlug || ''}/${listing.ilceSlug || ''}`,
       });
     }
-  }, [isVisible, listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
+  }, [isLoaded, listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
 
-  // Auto-slide: Sadece ekrandaki öncelikli VIP kartlar için sakin ritimde çalışır
+  // Sadece ekrandaki öncelikli VIP kartlar için sakin ritimde döner
   useEffect(() => {
-    if (!priority || !isVisible || !allImages || allImages.length <= 1) return;
+    if (!priority || !isLoaded || !allImages || allImages.length <= 1) return;
 
     const hash = (listing.slug || listing._id || 'a').charCodeAt(0) + (listing.slug || '').length;
-    const intervalTime = 6500 + (hash % 3000);
+    const intervalTime = 7000 + (hash % 3000);
 
     const timer = setInterval(() => {
-      if (isGlobalScrolling) return;
       setCurrentIndex((prev) => (prev + 1) % allImages.length);
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [priority, isVisible, allImages.length, listing.slug, listing._id]);
+  }, [priority, isLoaded, allImages.length, listing.slug, listing._id]);
 
-  // Touch Swipe Handlers for Mobile
+  // Hafif mobil dokunmatik fotoğraf kaydırma (touchmove event'i olmadan doğrudan native scroll'u korur)
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartXRef.current = e.targetTouches[0].clientX;
+    touchStartXRef.current = e.touches[0].clientX;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndXRef.current = e.targetTouches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStartXRef.current === null || touchEndXRef.current === null) return;
-    const distance = touchStartXRef.current - touchEndXRef.current;
-    const minSwipeDistance = 40;
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartXRef.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const distance = touchStartXRef.current - touchEndX;
+    const minSwipeDistance = 45;
 
     if (distance > minSwipeDistance) {
-      // Swiped Left -> Next Photo
       setCurrentIndex((prev) => (prev + 1) % allImages.length);
     } else if (distance < -minSwipeDistance) {
-      // Swiped Right -> Prev Photo
       setCurrentIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
     }
 
     touchStartXRef.current = null;
-    touchEndXRef.current = null;
   };
 
   const formattedNumber = formatWhatsAppNumber(listing.whatsappNumara);
@@ -231,7 +212,7 @@ export default function CompactListingCard({ listing, priority = false }: Compac
     }
   };
 
-  const currentPhotoUrl = getThumbnailUrl(allImages[currentIndex] || allImages[0], 360);
+  const currentPhotoUrl = getThumbnailUrl(allImages[currentIndex] || allImages[0], 480);
 
   return (
     <div
@@ -247,22 +228,23 @@ export default function CompactListingCard({ listing, priority = false }: Compac
           : 'border-slate-600/50 shadow-slate-500/5 ring-1 ring-slate-400/10'
       }`}
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar) ── */}
       <Link href={`/ilan/${listing.slug}`} prefetch={false} className="absolute inset-0 block w-full h-full z-0 overflow-hidden">
-        <div className="relative w-full h-full">
-          <img
-            src={currentPhotoUrl}
-            alt={`${listing.baslik} - Fotoğraf ${currentIndex + 1}`}
-            loading={priority ? "eager" : "lazy"}
-            fetchPriority={priority ? "high" : "low"}
-            decoding="async"
-            className={`w-full h-full object-cover object-top select-none pointer-events-none transition-opacity duration-300 ${
-              isPassive ? 'grayscale contrast-125 brightness-75' : ''
-            }`}
-          />
+        <div className="relative w-full h-full bg-[#161b22]/40">
+          {isLoaded ? (
+            <img
+              src={currentPhotoUrl}
+              alt={`${listing.baslik} - Fotoğraf ${currentIndex + 1}`}
+              decoding="async"
+              className={`w-full h-full object-cover object-top select-none pointer-events-none transition-opacity duration-300 ${
+                isPassive ? 'grayscale contrast-125 brightness-75' : ''
+              }`}
+            />
+          ) : (
+            <div className="w-full h-full bg-[#161b22]/40" />
+          )}
         </div>
       </Link>
 
@@ -312,7 +294,7 @@ export default function CompactListingCard({ listing, priority = false }: Compac
           {isOnline && (
             <span className="p-1 rounded-full bg-black/85 border border-emerald-500/40 shadow-sm flex items-center justify-center">
               <span className="relative flex h-1.5 w-1.5">
-                {priority && isVisible && (
+                {priority && isLoaded && (
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 )}
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_6px_#10b981]"></span>
