@@ -187,7 +187,7 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
 
           {/* MOBILE APP HEADER — Premium Global Brand Bar */}
           <header className="px-3.5 py-3 border-b border-[#30363d]/60 flex items-center justify-between w-full shadow-md">
-            <Link href="/" prefetch={false} className="flex items-center gap-2 group">
+            <Link href="/" prefetch={true} className="flex items-center gap-2 group">
               <CorporateLogo className="w-9 h-9 shrink-0 group-hover:scale-105 transition-transform" />
               <span className="font-black text-lg text-white font-heading tracking-tight group-hover:text-amber-400 transition-colors">
                 Best Eskort

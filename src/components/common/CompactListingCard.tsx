@@ -40,10 +40,22 @@ function getSharedObserver() {
           if (cb) cb(entry.isIntersecting);
         });
       },
-      { rootMargin: '120px 0px', threshold: 0.1 }
+      { rootMargin: '800px 0px', threshold: 0.01 }
     );
   }
   return sharedObserver;
+}
+
+/**
+ * Grid görünümünde 1600px orijinal yerine 360px (~11KB) hafif thumbnail ister
+ */
+function getThumbnailUrl(rawUrl: string, width = 360): string {
+  if (!rawUrl) return '';
+  if (rawUrl.startsWith('/api/img/')) {
+    const separator = rawUrl.includes('?') ? '&' : '?';
+    return `${rawUrl}${separator}w=${width}`;
+  }
+  return rawUrl;
 }
 
 interface CompactListingCardProps {
@@ -108,7 +120,7 @@ export default function CompactListingCard({ listing, priority = false }: Compac
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
 
-  // Tek paylaşımlı IntersectionObserver ile kart görünürlük takibi (Sıfır ek CPU/Observer maliyeti)
+  // Tek paylaşımlı IntersectionObserver ile kart görünürlük takibi (800px önceden tetiklenir)
   useEffect(() => {
     const el = cardRef.current;
     if (!el) {
@@ -146,21 +158,20 @@ export default function CompactListingCard({ listing, priority = false }: Compac
     }
   }, [isVisible, listing._id, listing.slug, listing.baslik, listing.ilSlug, listing.ilceSlug]);
 
-  // Auto-slide: Her kart kendi bağımsız rastgele ritminde bağımsız döner (asla sırayla/domino gibi değil)
+  // Auto-slide: Sadece ekrandaki öncelikli VIP kartlar için sakin ritimde çalışır
   useEffect(() => {
-    if (!isVisible || !allImages || allImages.length <= 1) return;
+    if (!priority || !isVisible || !allImages || allImages.length <= 1) return;
 
-    // Her kart için benzersiz rastgele ritim (5.5s - 8.5s arası sakin lüks akış, GPU yormaz)
     const hash = (listing.slug || listing._id || 'a').charCodeAt(0) + (listing.slug || '').length;
-    const intervalTime = 5500 + (hash % 3000);
+    const intervalTime = 6500 + (hash % 3000);
 
     const timer = setInterval(() => {
-      if (isGlobalScrolling) return; // Parmakla scroll yaparken kasma olmasın diye dondurulur
+      if (isGlobalScrolling) return;
       setCurrentIndex((prev) => (prev + 1) % allImages.length);
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [isVisible, allImages.length, listing.slug, listing._id]);
+  }, [priority, isVisible, allImages.length, listing.slug, listing._id]);
 
   // Touch Swipe Handlers for Mobile
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -220,10 +231,12 @@ export default function CompactListingCard({ listing, priority = false }: Compac
     }
   };
 
+  const currentPhotoUrl = getThumbnailUrl(allImages[currentIndex] || allImages[0], 360);
+
   return (
     <div
       ref={cardRef}
-      style={{ contentVisibility: 'auto', containIntrinsicSize: '110px 180px' }}
+      style={{ contain: 'layout paint' }}
       className={`group relative aspect-[3/4.8] sm:aspect-[3/4.5] w-full rounded-lg sm:rounded-xl overflow-hidden bg-[#0d1117] border shadow-md select-none ${
         isPassive
           ? 'border-zinc-800/80 bg-zinc-950/90 opacity-90'
@@ -237,36 +250,19 @@ export default function CompactListingCard({ listing, priority = false }: Compac
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar - KAYARAK SLIDE GEÇİŞ) ── */}
+      {/* ── 1. FOTOĞRAF (Kartın Tamamını En Tepeden En Alta Kadar %100 Kaplar) ── */}
       <Link href={`/ilan/${listing.slug}`} prefetch={false} className="absolute inset-0 block w-full h-full z-0 overflow-hidden">
-        <div
-          className="flex w-full h-full transition-transform duration-500 ease-out"
-          style={{
-            transform: `translate3d(-${currentIndex * 100}%, 0, 0)`,
-          }}
-        >
-          {allImages.map((imgUrl, idx) => {
-            // İlk açılışta ve uzaktaki kartlarda sadece ilk resim yüklenir; gereksiz resim indirmeleri sıfırlanır
-            const shouldRender = idx === currentIndex || (currentIndex > 0 && Math.abs(idx - currentIndex) <= 1);
-            return (
-              <div key={idx} className="relative w-full h-full flex-shrink-0">
-                {shouldRender ? (
-                  <img
-                    src={imgUrl}
-                    alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
-                    loading={priority && idx === 0 ? "eager" : "lazy"}
-                    fetchPriority={priority && idx === 0 ? "high" : "low"}
-                    decoding="async"
-                    className={`w-full h-full object-cover object-top select-none pointer-events-none ${
-                      isPassive ? 'grayscale contrast-125 brightness-75' : ''
-                    }`}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[#0d1117]" />
-                )}
-              </div>
-            );
-          })}
+        <div className="relative w-full h-full">
+          <img
+            src={currentPhotoUrl}
+            alt={`${listing.baslik} - Fotoğraf ${currentIndex + 1}`}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "low"}
+            decoding="async"
+            className={`w-full h-full object-cover object-top select-none pointer-events-none transition-opacity duration-300 ${
+              isPassive ? 'grayscale contrast-125 brightness-75' : ''
+            }`}
+          />
         </div>
       </Link>
 
