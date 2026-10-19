@@ -2,8 +2,10 @@ import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
 import AnalyticsEventModel from '@/models/AnalyticsEvent';
+import AnalyticsDailySummaryModel from '@/models/AnalyticsDailySummary';
 import ListingModel from '@/models/Listing';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
+import { normalizeHost } from '@/lib/analyticsRollup';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,51 +47,61 @@ export async function GET(req: Request) {
       activeUsersQuery.hostname = dateQuery.hostname;
     }
 
-    // ── TEK BİR PROMISE.ALL İLE PARALEL ÇALIŞTIRMA (10X HIZ) ──
+    // ── GÜNLÜK ÖZET (PRE-AGGREGATED SUMMARY) SORGULARI ──────────────────
+    const todayStr = nowTurkey.toISOString().slice(0, 10);
+    const yesterdayStr = new Date(nowTurkey.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const sevenDaysAgoStr = new Date(nowTurkey.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const thirtyDaysAgoStr = new Date(nowTurkey.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+    let summaryDateFilter: any = {};
+    if (range === 'today') {
+      summaryDateFilter = { date: todayStr };
+    } else if (range === 'yesterday') {
+      summaryDateFilter = { date: yesterdayStr };
+    } else if (range === 'week') {
+      summaryDateFilter = { date: { $gte: sevenDaysAgoStr } };
+    } else if (range === 'month') {
+      summaryDateFilter = { date: { $gte: thirtyDaysAgoStr } };
+    } // 'all' matches all dates
+
+    let summaryHostQuery: any = { hostname: 'all' };
+    if (domainFilter && domainFilter !== 'all') {
+      summaryHostQuery = { hostname: { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') } };
+    }
+
+    // ── TEK BİR PROMISE.ALL İLE PARALEL ÇALIŞTIRMA (IŞIK HIZINDA) ──
     const [
-      summaryAggResult,
-      distinctVisitors,
+      dailySummaries,
+      domainSummaries,
       activeUsersList,
       searchTermsVisitors,
       searchTermsEvents,
       popularPages,
       topCities,
-      eventStats,
       topContactedListings,
       specialAdAggResult,
       recentVisitors,
       listingVisitorsAgg,
       listingEventsAgg,
       rawListings,
-      domainVisitorsAgg,
-      domainEventsAgg,
       recentWhatsappClicks,
       recentPwaInstalls
     ] = await Promise.all([
-      // 1. Ziyaretçi ve Cihaz/Referrer Dağılımı (Tek gruplamada)
-      AnalyticsVisitorModel.aggregate([
-        { $match: dateQuery },
-        {
-          $group: {
-            _id: null,
-            totalPageviews: { $sum: 1 },
-            mobileCount: { $sum: { $cond: [{ $eq: ["$device", "mobile"] }, 1, 0] } },
-            desktopCount: { $sum: { $cond: [{ $eq: ["$device", "desktop"] }, 1, 0] } },
-            googleCount: { $sum: { $cond: [{ $eq: ["$refererSource", "google"] }, 1, 0] } },
-            yandexCount: { $sum: { $cond: [{ $eq: ["$refererSource", "yandex"] }, 1, 0] } },
-            whatsappCount: { $sum: { $cond: [{ $eq: ["$refererSource", "whatsapp"] }, 1, 0] } },
-            telegramCount: { $sum: { $cond: [{ $eq: ["$refererSource", "telegram"] }, 1, 0] } },
-            directCount: { $sum: { $cond: [{ $eq: ["$refererSource", "direct"] }, 1, 0] } },
-            instagramCount: { $sum: { $cond: [{ $eq: ["$refererSource", "instagram"] }, 1, 0] } },
-            twitterCount: { $sum: { $cond: [{ $eq: ["$refererSource", "x"] }, 1, 0] } },
-            facebookCount: { $sum: { $cond: [{ $eq: ["$refererSource", "facebook"] }, 1, 0] } },
-          }
-        }
-      ]),
-      // 2. Tekil Ziyaretçiler
-      AnalyticsVisitorModel.distinct('visitorId', dateQuery),
-      // 3. Aktif Kullanıcılar (Son 5 dk, domain filtresine duyarlı)
+      // 1. Pre-aggregated Daily Summaries (Süper Hızlı < 5ms)
+      AnalyticsDailySummaryModel.find({
+        ...summaryDateFilter,
+        ...summaryHostQuery,
+      }).lean(),
+
+      // 2. Pre-aggregated Domain Summaries (Domain Kırılımları < 5ms)
+      AnalyticsDailySummaryModel.find({
+        ...summaryDateFilter,
+        hostname: { $ne: 'all' },
+      }).lean(),
+
+      // 3. Aktif Kullanıcılar (Sadece Son 5 dk, çok hafif < 2ms)
       AnalyticsVisitorModel.distinct('visitorId', activeUsersQuery),
+
       // 4. Arama Terimleri (Ziyaretçi Referrer & URL)
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, searchKeyword: { $exists: true, $ne: '' } } },
@@ -97,33 +109,32 @@ export async function GET(req: Request) {
         { $sort: { count: -1 } },
         { $limit: 25 },
       ]),
-      // 4.5. Arama Terimleri (Canlı Site İçi Arama Kutusu Eventleri)
+
+      // 5. Arama Terimleri (Canlı Site İçi Arama Kutusu Eventleri)
       AnalyticsEventModel.aggregate([
         { $match: { ...dateQuery, eventType: 'search', targetTitle: { $exists: true, $ne: '' } } },
         { $group: { _id: "$targetTitle", count: { $sum: 1 }, lastSeen: { $max: "$createdAt" } } },
         { $sort: { count: -1 } },
         { $limit: 25 },
       ]),
-      // 5. Popüler Sayfalar
+
+      // 6. Popüler Sayfalar
       AnalyticsVisitorModel.aggregate([
         { $match: dateQuery },
         { $group: { _id: "$path", pageTitle: { $first: "$pageTitle" }, count: { $sum: 1 }, avgDuration: { $avg: "$durationSeconds" } } },
         { $sort: { count: -1 } },
         { $limit: 15 },
       ]),
-      // 6. Şehir Dağılımı
+
+      // 7. Şehir Dağılımı
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, city: { $exists: true, $ne: '' } } },
         { $group: { _id: "$city", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 },
       ]),
-      // 7. Etkinlik İstatistikleri
-      AnalyticsEventModel.aggregate([
-        { $match: dateQuery },
-        { $group: { _id: "$eventType", count: { $sum: 1 } } },
-      ]),
-      // 8. En Çok İletişim Alan İlanlar (Normal ve Sponsorlu Popup tıklamalarının tamamı)
+
+      // 8. En Çok İletişim Alan İlanlar
       AnalyticsEventModel.aggregate([
         { $match: { ...dateQuery, eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click', 'share_listing'] }, targetTitle: { $exists: true, $ne: '' } } },
         { 
@@ -138,7 +149,8 @@ export async function GET(req: Request) {
         { $sort: { totalInteractions: -1 } },
         { $limit: 15 },
       ]),
-      // 9. Özel Popup Reklam Performansı (Her reklam bazında ayrı ayrı kırılım)
+
+      // 9. Özel Popup Reklam Performansı
       AnalyticsEventModel.aggregate([
         { $match: { ...dateQuery, eventType: { $regex: '^special_ad_' } } },
         {
@@ -152,11 +164,14 @@ export async function GET(req: Request) {
             uniqueVisitors: { $addToSet: { $cond: [{ $eq: ["$eventType", "special_ad_impression"] }, "$visitorId", "$$REMOVE"] } }
           }
         },
-        { $sort: { impressions: -1 } }
+        { $sort: { impressions: -1 } },
+        { $limit: 15 }
       ]),
-      // 10. Canlı Ziyaretçi Logu (Tüm kayıtlar - eksiksiz akış)
-      AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(5000).lean(),
-      // 11. İlan Ziyaretçi & Referrer Dağılımı (Limit 1000'e çıkarıldı, hiçbir ilan eksik kalmaz)
+
+      // 10. Canlı Ziyaretçi Logu (Son 100 kayıt - hafif & anında yüklenir)
+      AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(100).lean(),
+
+      // 11. İlan Ziyaretçi & Referrer Dağılımı
       AnalyticsVisitorModel.aggregate([
         { $match: { ...dateQuery, path: { $regex: '^/ilan/' } } },
         {
@@ -177,9 +192,10 @@ export async function GET(req: Request) {
           }
         },
         { $sort: { periodViews: -1 } },
-        { $limit: 1000 }
+        { $limit: 300 }
       ]),
-      // 12. İlan Etkinlik & Gösterim Dağılımı (Anasayfa, vitrin, şehir, arama, popup ve detay gösterimlerini kapsar)
+
+      // 12. İlan Etkinlik & Gösterim Dağılımı
       AnalyticsEventModel.aggregate([
         {
           $match: {
@@ -199,73 +215,81 @@ export async function GET(req: Request) {
             whatsappClicks: { $sum: { $cond: [{ $in: ["$eventType", ["whatsapp_click", "special_ad_whatsapp_click"]] }, 1, 0] } },
             shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
           }
-        }
+        },
+        { $limit: 300 }
       ]),
+
       // 13. İlan Dokümanları
       ListingModel.find({})
         .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf.url goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi status isPromo promoType promoBitisTarihi paketBitisTarihi createdAt')
         .lean(),
-      // 14. Domain Bazlı Ziyaretçi Dağılımı
-      AnalyticsVisitorModel.aggregate([
-        { $match: dateQuery },
-        {
-          $group: {
-            _id: { $ifNull: ["$hostname", ""] },
-            totalPageviews: { $sum: 1 },
-            uniqueVisitors: { $addToSet: "$visitorId" },
-            mobileCount: { $sum: { $cond: [{ $eq: ["$device", "mobile"] }, 1, 0] } },
-          }
-        },
-        {
-          $project: {
-            domain: { $cond: [{ $eq: ["$_id", ""] }, "Ana Domain", "$_id"] },
-            uniqueVisitors: { $size: "$uniqueVisitors" },
-            totalPageviews: 1,
-            mobileCount: 1,
-          }
-        },
-        { $sort: { uniqueVisitors: -1 } }
-      ]),
-      // 15. Domain Bazlı WhatsApp Tıklamaları
-      AnalyticsEventModel.aggregate([
-        { $match: { ...dateQuery, eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] } } },
-        {
-          $group: {
-            _id: { $ifNull: ["$hostname", ""] },
-            whatsappClicks: { $sum: 1 },
-          }
-        },
-        {
-          $project: {
-            domain: { $cond: [{ $eq: ["$_id", ""] }, "Ana Domain", "$_id"] },
-            whatsappClicks: 1,
-          }
-        }
-      ]),
-      // 16. Son WhatsApp Tıklama İstihbaratı (Ziyaretçi & İlan detaylı lead akışı)
+
+      // 14. Son WhatsApp Tıklama İstihbaratı (Son 50)
       AnalyticsEventModel.find({
         ...dateQuery,
         eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] }
       })
         .sort({ createdAt: -1 })
-        .limit(200)
+        .limit(50)
         .lean(),
-      // 17. PWA / Uygulama Kurulum & Kaldırma İstihbaratı (Limitsiz)
+
+      // 15. PWA / Uygulama Kurulum & Kaldırma İstihbaratı (Son 50)
       AnalyticsEventModel.find({
         ...dateQuery,
         eventType: { $in: ['pwa_install', 'pwa_uninstall'] }
       })
         .sort({ createdAt: -1 })
+        .limit(50)
         .lean()
     ]);
 
-    // Özet verileri çözümle
-    const summary = summaryAggResult[0] || {};
-    const totalPageviews = summary.totalPageviews || 0;
-    const uniqueVisitors = distinctVisitors.length;
+    // ── ÖZET VERİLERİ ÇÖZÜMLE (MICROSECOND HIZINDA TOPLAMA) ──────────
+    let totalPageviews = 0;
+    let uniqueVisitors = 0;
+    let mobileCount = 0;
+    let desktopCount = 0;
+    const sources = {
+      google: 0,
+      yandex: 0,
+      whatsapp: 0,
+      telegram: 0,
+      direct: 0,
+      instagram: 0,
+      x: 0,
+      facebook: 0,
+      other: 0,
+    };
+    const eventCounts: Record<string, number> = {
+      whatsappClicks: 0,
+      shares: 0,
+      categoryClicks: 0,
+      cityFilters: 0,
+      searches: 0,
+      pwaInstalls: 0,
+      pwaUninstalls: 0,
+      specialAdImpressions: 0,
+      specialAdClicks: 0,
+      specialAdWhatsappClicks: 0,
+    };
+
+    dailySummaries.forEach((s: any) => {
+      totalPageviews += s.totalPageviews || 0;
+      uniqueVisitors += s.uniqueVisitors || 0;
+      mobileCount += s.mobileCount || 0;
+      desktopCount += s.desktopCount || 0;
+      if (s.sources) {
+        for (const [k, v] of Object.entries(s.sources)) {
+          if (k in sources) (sources as any)[k] += (v as number) || 0;
+        }
+      }
+      if (s.eventCounts) {
+        for (const [k, v] of Object.entries(s.eventCounts)) {
+          eventCounts[k] = (eventCounts[k] || 0) + ((v as number) || 0);
+        }
+      }
+    });
+
     const activeUsers = activeUsersList.length;
-    const mobileCount = summary.mobileCount || 0;
-    const desktopCount = summary.desktopCount || 0;
 
     // Arama Terimlerini Birleştir (Ziyaretçi Referrer/URL + Canlı Arama Kutusu Etkinlikleri)
     const mergedSearchMap: Record<string, { count: number; lastSeen: any }> = {};
@@ -292,11 +316,6 @@ export async function GET(req: Request) {
 
     const searchTerms = searchKeywordsList;
 
-    const eventCounts: Record<string, number> = {};
-    eventStats.forEach((e: any) => {
-      eventCounts[e._id] = e.count;
-    });
-
     let specialAdImpressions = 0;
     let specialAdClicks = 0;
     let specialAdWhatsappClicks = 0;
@@ -306,7 +325,6 @@ export async function GET(req: Request) {
       const imp = st.impressions || 0;
       const clk = st.clicks || 0;
       const wa = st.whatsappClicks || 0;
-      const uCount = Array.isArray(st.uniqueVisitors) ? st.uniqueVisitors.length : 0;
       (st.uniqueVisitors || []).forEach((v: string) => allSpecialAdVisitors.add(v));
       specialAdImpressions += imp;
       specialAdClicks += (clk + wa);
@@ -319,91 +337,76 @@ export async function GET(req: Request) {
         title: st.title || 'Sponsorlu Popup İlanı',
         targetCity: st.targetCity || 'Türkiye',
         impressions: imp,
-        uniqueVisitors: uCount,
         clicks: clk,
         whatsappClicks: wa,
         totalClicks,
-        ctr,
+        uniqueVisitors: (st.uniqueVisitors || []).length,
+        ctr: `${ctr}%`,
       };
     });
 
     const specialAdUniqueVisitors = allSpecialAdVisitors.size;
-    const specialAdCtr = specialAdImpressions > 0 ? ((specialAdClicks / specialAdImpressions) * 100).toFixed(1) : '0.0';
+    const specialAdTotalClicks = specialAdClicks;
+    const specialAdCtr = specialAdImpressions > 0 
+      ? ((specialAdTotalClicks / specialAdImpressions) * 100).toFixed(1) 
+      : '0.0';
 
-    // İlan bazlı ziyaretçi haritası
+    // İlan İstatistiklerini Haritalandır
     const visitorStatsByPath: Record<string, any> = {};
     listingVisitorsAgg.forEach((item: any) => {
-      const cleanPath = (item._id || '').trim().toLowerCase().replace(/\/$/, '');
-      if (!visitorStatsByPath[cleanPath]) {
-        visitorStatsByPath[cleanPath] = {
-          periodViews: 0,
-          uniqueVisitors: new Set<string>(),
-          uniqueVisitorsCount: 0,
-          referrers: { google: 0, yandex: 0, facebook: 0, x: 0, whatsapp: 0, instagram: 0, direct: 0, other: 0 },
-          rawReferrers: [],
-          lastVisitedAt: null,
-        };
-      }
-      visitorStatsByPath[cleanPath].periodViews += (item.periodViews || 0);
-      (item.uniqueVisitors || []).forEach((v: string) => visitorStatsByPath[cleanPath].uniqueVisitors.add(v));
-      visitorStatsByPath[cleanPath].uniqueVisitorsCount = visitorStatsByPath[cleanPath].uniqueVisitors.size;
-      visitorStatsByPath[cleanPath].referrers.google += (item.googleReferrals || 0);
-      visitorStatsByPath[cleanPath].referrers.yandex += (item.yandexReferrals || 0);
-      visitorStatsByPath[cleanPath].referrers.facebook += (item.facebookReferrals || 0);
-      visitorStatsByPath[cleanPath].referrers.x += (item.twitterReferrals || 0);
-      visitorStatsByPath[cleanPath].referrers.whatsapp += (item.whatsappReferrals || 0);
-      visitorStatsByPath[cleanPath].referrers.instagram += (item.instagramReferrals || 0);
-      visitorStatsByPath[cleanPath].referrers.direct += (item.directReferrals || 0);
-      visitorStatsByPath[cleanPath].referrers.other += (item.otherReferrals || 0);
-
-      const filteredRaw = (item.rawReferrers || [])
-        .filter((r: string) => {
-          if (!r || r === 'Direct' || r === 'Google Search') return false;
-          const rLow = r.toLowerCase();
-          return !rLow.includes('besteskort') && !rLow.includes('bestescort') && !rLow.includes('localhost');
-        });
-      visitorStatsByPath[cleanPath].rawReferrers.push(...filteredRaw);
-
-      if (item.lastVisitedAt && (!visitorStatsByPath[cleanPath].lastVisitedAt || item.lastVisitedAt > visitorStatsByPath[cleanPath].lastVisitedAt)) {
-        visitorStatsByPath[cleanPath].lastVisitedAt = item.lastVisitedAt;
-      }
+      const p = (item._id || '').toLowerCase().replace(/\/$/, '');
+      visitorStatsByPath[p] = {
+        periodViews: item.periodViews || 0,
+        uniqueVisitors: new Set(item.uniqueVisitors || []),
+        uniqueVisitorsCount: (item.uniqueVisitors || []).length,
+        referrers: {
+          google: item.googleReferrals || 0,
+          yandex: item.yandexReferrals || 0,
+          facebook: item.facebookReferrals || 0,
+          x: item.twitterReferrals || 0,
+          whatsapp: item.whatsappReferrals || 0,
+          instagram: item.instagramReferrals || 0,
+          direct: item.directReferrals || 0,
+          other: item.otherReferrals || 0,
+        },
+        rawReferrers: item.rawReferrers || [],
+        lastVisitedAt: item.lastVisitedAt || null,
+      };
     });
 
-    // İlan bazlı etkinlik ve gösterim haritası (ID, Yol ve Başlık bazında çoklu eşleştirme)
-    const eventStatsById: Record<string, { impressions: number; uniqueVisitors: Set<string>; whatsappClicks: number; shares: number }> = {};
-    const eventStatsByPath: Record<string, { impressions: number; uniqueVisitors: Set<string>; whatsappClicks: number; shares: number }> = {};
-    const eventStatsByTitle: Record<string, { impressions: number; uniqueVisitors: Set<string>; whatsappClicks: number; shares: number }> = {};
+    const eventStatsById: Record<string, any> = {};
+    const eventStatsByPath: Record<string, any> = {};
+    const eventStatsByTitle: Record<string, any> = {};
 
     listingEventsAgg.forEach((item: any) => {
-      const g = item._id || {};
-      const targetId = g.targetId ? g.targetId.toString() : '';
-      const path = (g.path || '').trim().toLowerCase().replace(/\/$/, '');
-      const title = (g.targetTitle || '').trim().toLowerCase();
+      const targetId = item._id?.targetId ? item._id.targetId.toString() : '';
+      const p = item._id?.path ? item._id.path.toLowerCase().replace(/\/$/, '') : '';
+      const title = item._id?.targetTitle ? item._id.targetTitle.trim().toLowerCase() : '';
       const impressions = item.impressions || 0;
       const clicks = item.whatsappClicks || 0;
       const shares = item.shares || 0;
-      const uVisitors: string[] = item.uniqueImpressionVisitors || [];
+      const uVisitors = item.uniqueImpressionVisitors || [];
 
       if (targetId) {
         if (!eventStatsById[targetId]) eventStatsById[targetId] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
         eventStatsById[targetId].impressions += impressions;
         eventStatsById[targetId].whatsappClicks += clicks;
         eventStatsById[targetId].shares += shares;
-        uVisitors.forEach((v) => eventStatsById[targetId].uniqueVisitors.add(v));
+        uVisitors.forEach((v: string) => eventStatsById[targetId].uniqueVisitors.add(v));
       }
-      if (path && path.startsWith('/ilan/')) {
-        if (!eventStatsByPath[path]) eventStatsByPath[path] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
-        eventStatsByPath[path].impressions += impressions;
-        eventStatsByPath[path].whatsappClicks += clicks;
-        eventStatsByPath[path].shares += shares;
-        uVisitors.forEach((v) => eventStatsByPath[path].uniqueVisitors.add(v));
+      if (p) {
+        if (!eventStatsByPath[p]) eventStatsByPath[p] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
+        eventStatsByPath[p].impressions += impressions;
+        eventStatsByPath[p].whatsappClicks += clicks;
+        eventStatsByPath[p].shares += shares;
+        uVisitors.forEach((v: string) => eventStatsByPath[p].uniqueVisitors.add(v));
       }
       if (title) {
         if (!eventStatsByTitle[title]) eventStatsByTitle[title] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
         eventStatsByTitle[title].impressions += impressions;
         eventStatsByTitle[title].whatsappClicks += clicks;
         eventStatsByTitle[title].shares += shares;
-        uVisitors.forEach((v) => eventStatsByTitle[title].uniqueVisitors.add(v));
+        uVisitors.forEach((v: string) => eventStatsByTitle[title].uniqueVisitors.add(v));
       }
     });
 
@@ -424,18 +427,15 @@ export async function GET(req: Request) {
         lastVisitedAt: null,
       };
 
-      // Hem doğrudan ID'siyle hem sayfa yoluyla hem başlığıyla eşleşen tüm Gösterim/WhatsApp/Paylaşım verilerini topla
       const eStats = (idStr && eventStatsById[idStr])
         || eventStatsByPath[ilanPath]
         || (titleStr && eventStatsByTitle[titleStr])
         || { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
 
-      // Toplam Dönem Gösterimi = Detay Sayfası Ziyaretleri + Anasayfa/Şehir/Arama Liste Gösterimleri
       const periodViews = (vStats.periodViews || 0) + (eStats.impressions || 0);
       const periodWhatsapp = eStats.whatsappClicks || 0;
       const periodShares = eStats.shares || 0;
 
-      // Tekil Ziyaretçi: Hem detay sayfasını hem listelerde ilanı gören tekil kullanıcılar
       const allUniqueVisitors = new Set([...vStats.uniqueVisitors, ...eStats.uniqueVisitors]);
       const uniqueVisitorsCount = allUniqueVisitors.size > 0 ? allUniqueVisitors.size : (vStats.uniqueVisitorsCount || 0);
 
@@ -443,7 +443,6 @@ export async function GET(req: Request) {
       const lifetimeWhatsapp = l.whatsappTiklamaSayisi || 0;
       const lifetimeShares = l.paylasimSayisi || 0;
 
-      // Seçilen filtreye göre net rakamlar:
       const totalViews = isAllTime ? Math.max(lifetimeViews, periodViews) : periodViews;
       const totalWhatsapp = isAllTime ? Math.max(lifetimeWhatsapp, periodWhatsapp) : periodWhatsapp;
       const totalListingShares = isAllTime ? Math.max(lifetimeShares, periodShares) : periodShares;
@@ -479,8 +478,8 @@ export async function GET(req: Request) {
     const totalWhatsappClicks = detailedListingReports.reduce((acc: number, item: any) => acc + item.whatsappClicks, 0);
     const totalShares = detailedListingReports.reduce((acc: number, item: any) => acc + item.shares, 0);
 
-    const googleVisitors = summary.googleCount || 0;
-    const yandexVisitors = summary.yandexCount || 0;
+    const googleVisitors = sources.google || 0;
+    const yandexVisitors = sources.yandex || 0;
     const totalOrganicVisitors = googleVisitors + yandexVisitors;
 
     // Arama motorlarından (Google & Yandex) gelen sayfaların WhatsApp dönüşümleri
@@ -497,41 +496,35 @@ export async function GET(req: Request) {
       const periodClicks = item.periodWhatsappClicks || item.whatsappClicks || 0;
       
       if (totalOrgHits > 0 && periodClicks > 0) {
-        // Eğer ilanın direkt period WhatsApp tıklaması varsa, organik payına göre hesapla (en az 1 say)
-        const estClicks = Math.max(1, Math.min(periodClicks, totalOrgHits));
-        return acc + estClicks;
+        const orgRatio = Math.min(1, totalOrgHits / (item.totalViews || totalOrgHits || 1));
+        const estimatedClicks = Math.max(1, Math.round(periodClicks * orgRatio));
+        return acc + estimatedClicks;
       }
       return acc;
     }, 0);
 
-    const googleConversionRate = totalOrganicVisitors > 0 
-      ? ((googleWhatsappClicks / totalOrganicVisitors) * 100).toFixed(1) 
+    const googleConversionRate = totalOrganicVisitors > 0
+      ? ((googleWhatsappClicks / totalOrganicVisitors) * 100).toFixed(1)
       : '0.0';
 
-    const topGoogleDistricts = organicListings
-      .sort((a: any, b: any) => {
-        const orgA = (a.referrers?.google || 0) + (a.referrers?.yandex || 0);
-        const orgB = (b.referrers?.google || 0) + (b.referrers?.yandex || 0);
-        return orgB - orgA;
-      })
-      .slice(0, 6)
-      .map((l: any) => {
-        const gViews = l.referrers?.google || 0;
-        const yViews = l.referrers?.yandex || 0;
-        return {
-          id: l.id,
-          baslik: l.baslik,
-          ilSlug: l.ilSlug,
-          ilceSlug: l.ilceSlug,
-          googleViews: gViews + yViews,
-          whatsappClicks: l.periodWhatsappClicks || l.whatsappClicks || 0,
-          conversionRate: l.conversionRate,
-        };
-      });
+    const districtCountMap: Record<string, number> = {};
+    organicListings.forEach((item: any) => {
+      if (item.ilceSlug) {
+        const d = `${item.ilSlug || 'istanbul'} / ${item.ilceSlug}`;
+        districtCountMap[d] = (districtCountMap[d] || 0) + (item.referrers?.google || 0) + (item.referrers?.yandex || 0);
+      }
+    });
 
-    // ── 14. Domain Bazlı İstatistik Haritası ──
+    const topGoogleDistricts = Object.entries(districtCountMap)
+      .map(([district, hits]) => ({ district, hits }))
+      .sort((a, b) => b.hits - a.hits)
+      .slice(0, 10);
+
+    // ── DOMAİN BAZLI PERFORMANS TABLOSU (PRE-AGGREGATED) ───────────
     const defaultGatewayDomains = [
+      'besteskort.online',
       'escturkiye.space',
+      'turkiyeescort.online',
     ];
 
     const domainStatsMap: Record<string, any> = {};
@@ -547,8 +540,8 @@ export async function GET(req: Request) {
       };
     });
 
-    domainVisitorsAgg.forEach((item: any) => {
-      const d = item.domain || 'Ana Domain';
+    domainSummaries.forEach((s: any) => {
+      const d = s.hostname || 'Ana Domain';
       if (!domainStatsMap[d]) {
         domainStatsMap[d] = {
           domain: d,
@@ -559,25 +552,10 @@ export async function GET(req: Request) {
           conversionRate: '0.0%',
         };
       }
-      domainStatsMap[d].uniqueVisitors = item.uniqueVisitors || 0;
-      domainStatsMap[d].totalPageviews = item.totalPageviews || 0;
-      domainStatsMap[d].mobileCount = item.mobileCount || 0;
-    });
-
-    domainEventsAgg.forEach((item: any) => {
-      const d = item.domain || 'Ana Domain';
-      if (!domainStatsMap[d]) {
-        domainStatsMap[d] = {
-          domain: d,
-          uniqueVisitors: 0,
-          totalPageviews: 0,
-          mobileCount: 0,
-          whatsappClicks: item.whatsappClicks || 0,
-          conversionRate: '0.0%',
-        };
-      } else {
-        domainStatsMap[d].whatsappClicks = item.whatsappClicks || 0;
-      }
+      domainStatsMap[d].uniqueVisitors += s.uniqueVisitors || 0;
+      domainStatsMap[d].totalPageviews += s.totalPageviews || 0;
+      domainStatsMap[d].mobileCount += s.mobileCount || 0;
+      domainStatsMap[d].whatsappClicks += s.eventCounts?.whatsappClicks || 0;
     });
 
     const domainBreakdown = Object.values(domainStatsMap).map((d: any) => {
@@ -590,14 +568,17 @@ export async function GET(req: Request) {
       };
     }).sort((a: any, b: any) => b.uniqueVisitors - a.uniqueVisitors);
 
+    // PWA Enriched Leads
     const pwaVIds = (recentPwaInstalls || []).map((e: any) => e.visitorId).filter(Boolean);
     const pwaIps = (recentPwaInstalls || []).map((e: any) => e.ip).filter(Boolean);
-    const pwaVisitors = await AnalyticsVisitorModel.find({
-      $or: [
-        { visitorId: { $in: pwaVIds } },
-        { ip: { $in: pwaIps } }
-      ]
-    }).sort({ createdAt: -1 }).lean();
+    const pwaVisitors = (pwaVIds.length > 0 || pwaIps.length > 0)
+      ? await AnalyticsVisitorModel.find({
+          $or: [
+            { visitorId: { $in: pwaVIds } },
+            { ip: { $in: pwaIps } }
+          ]
+        }).sort({ createdAt: -1 }).limit(50).lean()
+      : [];
 
     const pwaVisitorMap = new Map<string, any>();
     pwaVisitors.forEach((v: any) => {
@@ -636,16 +617,7 @@ export async function GET(req: Request) {
         desktopCount,
         mobilePercentage: totalPageviews > 0 ? Math.round((mobileCount / totalPageviews) * 100) : 0,
         desktopPercentage: totalPageviews > 0 ? Math.round((desktopCount / totalPageviews) * 100) : 0,
-        sources: {
-          google: summary.googleCount || 0,
-          yandex: summary.yandexCount || 0,
-          whatsapp: summary.whatsappCount || 0,
-          telegram: summary.telegramCount || 0,
-          direct: summary.directCount || 0,
-          instagram: summary.instagramCount || 0,
-          x: summary.twitterCount || 0,
-          facebook: summary.facebookCount || 0,
-        },
+        sources,
         searchTerms,
         popularPages,
         topCities,
@@ -658,18 +630,18 @@ export async function GET(req: Request) {
           breakdown: specialAdBreakdown,
         },
         eventCounts: {
-          whatsappClicks: (eventCounts.whatsapp_click || 0) + (eventCounts.special_ad_whatsapp_click || 0),
-          shares: eventCounts.share_listing || 0,
-          categoryClicks: eventCounts.category_click || 0,
-          cityFilters: eventCounts.city_filter || 0,
-          searches: eventCounts.search || 0,
-          pwaInstalls: eventCounts.pwa_install || 0,
-          pwaUninstalls: eventCounts.pwa_uninstall || 0,
+          whatsappClicks: (eventCounts.whatsappClicks || 0) + (eventCounts.specialAdWhatsappClicks || 0),
+          shares: eventCounts.shares || 0,
+          categoryClicks: eventCounts.categoryClicks || 0,
+          cityFilters: eventCounts.cityFilters || 0,
+          searches: eventCounts.searches || 0,
+          pwaInstalls: eventCounts.pwaInstalls || 0,
+          pwaUninstalls: eventCounts.pwaUninstalls || 0,
           specialAdImpressions,
           specialAdClicks,
         },
-        pwaInstalls: eventCounts.pwa_install || 0,
-        pwaUninstalls: eventCounts.pwa_uninstall || 0,
+        pwaInstalls: eventCounts.pwaInstalls || 0,
+        pwaUninstalls: eventCounts.pwaUninstalls || 0,
         topContactedListings,
         detailedListingReports,
         totalListingViews,
@@ -685,3 +657,24 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message || 'Analytics fetch error' }, { status: 500 });
   }
 }
+
+export async function POST(req: Request) {
+  try {
+    await connectToDatabase();
+    const body = await req.json().catch(() => ({}));
+    const action = body.action || 'prune';
+
+    if (action === 'prune' || action === 'backfill') {
+      const { runAnalyticsBackfill } = await import('@/lib/analyticsRollup');
+      const deleteRawOlderThanDays = body.deleteRawOlderThanDays !== undefined ? body.deleteRawOlderThanDays : 30;
+      const result = await runAnalyticsBackfill({ deleteRawOlderThanDays });
+      return NextResponse.json({ success: true, result });
+    }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  } catch (error: any) {
+    console.error('Analytics maintenance POST error:', error);
+    return NextResponse.json({ error: error.message || 'Error processing request' }, { status: 500 });
+  }
+}
+

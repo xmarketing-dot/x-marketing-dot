@@ -3,6 +3,7 @@ import connectToDatabase from '@/lib/mongodb';
 import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
 import ListingModel from '@/models/Listing';
 import { checkIsBanned } from '@/lib/banCheck';
+import { recordPageviewRollup } from '@/lib/analyticsRollup';
 
 export const dynamic = 'force-dynamic';
 
@@ -175,6 +176,18 @@ export async function POST(req: NextRequest) {
       durationSeconds: 5,
       isUniqueToday,
     });
+
+    // Real-time atomic daily summary rollup (zero overhead)
+    recordPageviewRollup({
+      hostname: incomingHost,
+      isMobile,
+      source,
+      isUniqueToday,
+      city: decodeURIComponent(vercelCity),
+      path,
+      pageTitle,
+      searchKeyword,
+    }).catch(() => {});
 
     // If viewing a listing, increment listing view count
     if (path && path.startsWith('/ilan/')) {

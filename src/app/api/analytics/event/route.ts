@@ -5,6 +5,7 @@ import AnalyticsEventModel from '@/models/AnalyticsEvent';
 import AnalyticsVisitorModel from '@/models/AnalyticsVisitor';
 import ListingModel from '@/models/Listing';
 import { chatEmitter } from '@/lib/chatEmitter';
+import { recordEventRollup } from '@/lib/analyticsRollup';
 
 export const dynamic = 'force-dynamic';
 
@@ -95,6 +96,16 @@ export async function POST(req: NextRequest) {
       metadata: enrichedMetadata,
       ip: cleanIp,
     });
+
+    // Real-time atomic daily summary rollup (zero overhead)
+    recordEventRollup({
+      hostname: incomingHost,
+      eventType,
+      targetId: targetId || lId || '',
+      targetTitle: finalTitle,
+      targetCity: listingInfo?.ilSlug || city,
+      path,
+    }).catch(() => {});
 
     // 3. WhatsApp Tıklaması, Paylaşım veya Gösterim/Görüntülenme Sayısını Arttır
     const effectiveTargetId = targetId || lId || metadata?.slug;
