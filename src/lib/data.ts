@@ -10,9 +10,27 @@ import HomepageConfigModel from '../models/HomepageConfig';
 let locationsCache: any = null;
 let locationsCacheTime = 0;
 
+let citiesLightCache: any = null;
+let citiesLightCacheTime = 0;
+
+export async function getAllCitiesLight() {
+  const now = Date.now();
+  if (citiesLightCache && now - citiesLightCacheTime < 3600000) {
+    return citiesLightCache;
+  }
+  await connectToDatabase();
+  const res = await LocationModel.find({})
+    .select('il ilSlug')
+    .sort({ il: 1 })
+    .lean();
+  citiesLightCache = JSON.parse(JSON.stringify(res));
+  citiesLightCacheTime = now;
+  return citiesLightCache;
+}
+
 export async function getAllLocations() {
   const now = Date.now();
-  if (locationsCache && now - locationsCacheTime < 60000) {
+  if (locationsCache && now - locationsCacheTime < 3600000) {
     return locationsCache;
   }
   await connectToDatabase();
@@ -259,11 +277,19 @@ export const getListingBySlug = cache(async (slug: string) => {
 
 import BannerAdModel from '../models/BannerAd';
 
+const bannerCache = new Map<string, { data: any; time: number }>();
+
 export const getActiveBanner = cache(async (konum: 'anasayfa' | 'ilan_detay' | string = 'anasayfa') => {
   try {
+    const targetKonum = konum === 'ilan_detay' ? 'ilan_detay' : 'anasayfa';
+    const nowMs = Date.now();
+    const cached = bannerCache.get(targetKonum);
+    if (cached && nowMs - cached.time < 60000) {
+      return cached.data;
+    }
+
     await connectToDatabase();
     const now = new Date();
-    const targetKonum = konum === 'ilan_detay' ? 'ilan_detay' : 'anasayfa';
 
     // Süresi dolan yayındaki banner'ları anında otomatik pasife al
     BannerAdModel.updateMany(
@@ -283,8 +309,9 @@ export const getActiveBanner = cache(async (konum: 'anasayfa' | 'ilan_detay' | s
       .sort({ updatedAt: -1 })
       .lean();
 
-    if (!banner) return null;
-    return JSON.parse(JSON.stringify(banner));
+    const result = banner ? JSON.parse(JSON.stringify(banner)) : null;
+    bannerCache.set(targetKonum, { data: result, time: nowMs });
+    return result;
   } catch (e) {
     return null;
   }

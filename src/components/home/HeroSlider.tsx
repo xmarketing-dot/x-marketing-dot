@@ -447,7 +447,7 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
 
               {/* 2. ORTA: MODEL İSMİ VE BAŞLIK (AYRI TAM SATIR - ULTRA PREMİUM & ASLA ÇAKIŞMAZ) */}
               <div className="w-full pt-0.5">
-                <Link href={`/ilan/${current.slug}`} className="block group/title">
+                <Link href={`/ilan/${current.slug}`} prefetch={false} className="block group/title">
                   <p className="font-heading font-black text-xl sm:text-3xl md:text-4xl text-white tracking-tight leading-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] group-hover/title:text-amber-300 transition-colors line-clamp-2">
                     {current.baslik}
                   </p>
@@ -470,6 +470,7 @@ export default function HeroSlider({ slides = [], promoSlides = [], banner = nul
 
                 <Link
                   href={`/ilan/${current.slug}`}
+                  prefetch={false}
                   className="relative overflow-hidden py-3.5 sm:py-4 px-3 sm:px-4 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 hover:bg-slate-900 text-amber-300 hover:text-white font-black text-sm sm:text-base tracking-wider uppercase shadow-[0_4px_25px_rgba(251,191,36,0.35)] hover:shadow-[0_4px_30px_rgba(251,191,36,0.55)] active:scale-95 transition-all flex items-center justify-center gap-2 border-2 border-amber-400 hover:border-amber-300 group/btn text-center"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent group-hover/btn:translate-x-full duration-700 transition-transform pointer-events-none" />

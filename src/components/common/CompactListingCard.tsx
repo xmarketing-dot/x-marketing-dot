@@ -219,14 +219,14 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
         >
           {allImages.map((imgUrl, idx) => {
             // İlk açılışta ve uzaktaki kartlarda sadece ilk resim yüklenir; gereksiz resim indirmeleri sıfırlanır
-            const shouldRender = idx === currentIndex || (isVisible && Math.abs(idx - currentIndex) <= 1);
+            const shouldRender = idx === currentIndex || (currentIndex > 0 && Math.abs(idx - currentIndex) <= 1);
             return (
               <div key={idx} className="relative w-full h-full flex-shrink-0">
                 {shouldRender ? (
                   <img
                     src={imgUrl}
                     alt={`${listing.baslik} - Fotoğraf ${idx + 1}`}
-                    loading="lazy"
+                    loading={idx === 0 ? "eager" : "lazy"}
                     decoding="async"
                     className={`w-full h-full object-cover object-top select-none pointer-events-none ${
                       isPassive ? 'grayscale contrast-125 brightness-75' : ''
@@ -329,7 +329,7 @@ export default function CompactListingCard({ listing }: CompactListingCardProps)
       <div className="absolute inset-x-0 bottom-0 z-20 p-1.5 sm:p-2 pt-6 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex flex-col gap-1.5 pointer-events-auto">
         {/* Başlık ve İl */}
         <div className="flex items-center justify-between gap-1">
-          <Link href={`/ilan/${listing.slug}`} className="block min-w-0 flex-1">
+          <Link href={`/ilan/${listing.slug}`} prefetch={false} className="block min-w-0 flex-1">
             <h3 className={`font-black text-[10.5px] sm:text-xs text-white leading-tight font-heading transition-colors line-clamp-1 truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] ${
               isPassive ? 'text-zinc-400 line-through' : isVip ? 'group-hover:text-amber-300' : isGold ? 'group-hover:text-yellow-300' : 'group-hover:text-slate-200'
             }`}>

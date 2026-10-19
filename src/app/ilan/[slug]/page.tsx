@@ -1,5 +1,5 @@
 import React from 'react';
-import { getSiteUrl, getRequestSiteUrl } from '@/lib/siteUrl';
+import { getSiteUrl } from '@/lib/siteUrl';
 import { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -26,7 +26,7 @@ import {
   Users,
   AlertTriangle,
 } from 'lucide-react';
-import { getListingBySlug, getListings, getActiveBanner, getAllLocations } from '@/lib/data';
+import { getListingBySlug, getListings, getActiveBanner, getAllCitiesLight } from '@/lib/data';
 import { getSmartRecommendedListings } from '@/lib/geoProximity';
 import { generateListingSeoContent } from '@/lib/seoData';
 import WhatsAppButton, { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
@@ -42,7 +42,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export const revalidate = 3600; // 1 saat — ilan güncellemeleri ve yeni ilanlar hızlı yansısın
+export const revalidate = 3600; // 1 saat — Vercel Edge CDN önbellek (0ms TTFB)
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'İlan Bulunamadı | Best Eskort' };
   }
 
-  const siteUrl = await getRequestSiteUrl();
+  const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
   const ogImageUrl = `${siteUrl}/api/og/listing/${listing.slug}`;
 
@@ -123,7 +123,7 @@ export default async function ListingDetailPage({ params }: Props) {
   const [listing, activeBanner, locations] = await Promise.all([
     getListingBySlug(slug),
     getActiveBanner('ilan_detay'),
-    getAllLocations(),
+    getAllCitiesLight(),
   ]);
 
   if (!listing) {
@@ -139,7 +139,7 @@ export default async function ListingDetailPage({ params }: Props) {
     'Güneydoğu & Doğu Anadolu': locations.filter((l: any) => ['gaziantep', 'diyarbakir', 'sanliurfa', 'batman', 'mardin', 'adiyaman', 'sirnak', 'siirt', 'kilis', 'malatya', 'elazig', 'erzurum', 'van', 'agri', 'kars', 'igdir', 'ardahan', 'mus', 'bingol', 'bitlis', 'hakkari', 'tunceli', 'erzincan'].includes(l.ilSlug)),
   };
 
-  const siteUrl = await getRequestSiteUrl();
+  const siteUrl = getSiteUrl();
   const canonicalUrl = `${siteUrl}/ilan/${listing.slug}`;
 
   const ilSlugSafe = listing.ilSlug || 'istanbul';

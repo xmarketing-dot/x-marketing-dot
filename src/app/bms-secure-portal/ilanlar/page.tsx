@@ -804,26 +804,109 @@ export default function AdminListingsPage() {
     }
   };
 
-  // Helper to format remaining listing days
-  const getRemainingTime = (expiryDate?: string | Date, status?: string) => {
-    if (status === 'onay_bekliyor') return { text: '⏳ Onay Bekliyor', isExpired: false, isPending: true };
-    if (status === 'suresi_doldu') return { text: '❌ Süresi Doldu', isExpired: true, isPending: false };
-    if (!expiryDate) return { text: '⏳ 7 Gün Kaldı', isExpired: false, isPending: false };
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const diffMs = expiry.getTime() - now.getTime();
+  // Helper to format dates and remaining listing days
+  const formatDateTime = (dateVal?: string | Date) => {
+    if (!dateVal) return '-';
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
 
-    if (diffMs <= 0) {
-      return { text: '❌ Süresi Doldu', isExpired: true, isPending: false };
+  const getTimeAgoOrLeft = (dateVal?: string | Date) => {
+    if (!dateVal) return '';
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    const diffMs = Date.now() - d.getTime();
+    const isPast = diffMs > 0;
+    const absDiff = Math.abs(diffMs);
+
+    const minutes = Math.floor(absDiff / (1000 * 60));
+    const hours = Math.floor(absDiff / (1000 * 60 * 60));
+    const days = Math.floor(absDiff / (1000 * 60 * 60 * 24));
+
+    if (isPast) {
+      if (days > 0) return days + ' gün önce';
+      if (hours > 0) return hours + ' sa önce';
+      if (minutes > 0) return minutes + ' dk önce';
+      return 'Az önce';
+    } else {
+      if (days > 0) return days + ' gün ' + (hours % 24) + ' sa kaldı';
+      if (hours > 0) return hours + ' sa ' + (minutes % 60) + ' dk kaldı';
+      return minutes + ' dk kaldı';
+    }
+  };
+
+  const getRemainingTime = (expiryDate?: string | Date, status?: string, createdDate?: string | Date) => {
+    const createdStr = createdDate ? formatDateTime(createdDate) : null;
+    const createdAgo = createdDate ? getTimeAgoOrLeft(createdDate) : null;
+
+    if (status === 'onay_bekliyor') {
+      return {
+        text: '⏳ Onay Bekliyor',
+        detail: expiryDate ? 'Bitiş: ' + formatDateTime(expiryDate) : null,
+        isExpired: false,
+        isPending: true,
+        expiryStr: expiryDate ? formatDateTime(expiryDate) : null,
+        expiryAgo: null,
+        createdStr,
+        createdAgo,
+      };
+    }
+
+    const expiry = expiryDate ? new Date(expiryDate) : null;
+    const hasExpiry = expiry && !isNaN(expiry.getTime());
+    const now = Date.now();
+    const diffMs = hasExpiry ? expiry.getTime() - now : 0;
+    const isExpired = status === 'suresi_doldu' || (hasExpiry && diffMs <= 0);
+
+    if (isExpired) {
+      const expiryStr = hasExpiry ? formatDateTime(expiry) : null;
+      const expiredAgo = hasExpiry ? getTimeAgoOrLeft(expiry) : null;
+      return {
+        text: hasExpiry ? '❌ Süresi Doldu (' + expiredAgo + ')' : '❌ Süresi Doldu',
+        detail: hasExpiry ? 'Bitiş: ' + expiryStr : null,
+        isExpired: true,
+        isPending: false,
+        expiryStr,
+        expiryAgo: expiredAgo,
+        createdStr,
+        createdAgo,
+      };
+    }
+
+    if (!hasExpiry) {
+      return {
+        text: '⏳ 7 Gün Kaldı',
+        detail: null,
+        isExpired: false,
+        isPending: false,
+        expiryStr: null,
+        expiryAgo: null,
+        createdStr,
+        createdAgo,
+      };
     }
 
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const remainingText = diffDays > 0 ? '⏳ ' + diffDays + ' Gün ' + diffHours + ' Sa Kaldı' : '⏳ ' + diffHours + ' Saat Kaldı';
 
-    if (diffDays > 0) {
-      return { text: `⏳ ${diffDays} Gün ${diffHours} Saat Kaldı`, isExpired: false, isPending: false };
-    }
-    return { text: `⏳ ${diffHours} Saat Kaldı`, isExpired: false, isPending: false };
+    return {
+      text: remainingText,
+      detail: 'Bitiş: ' + formatDateTime(expiry),
+      isExpired: false,
+      isPending: false,
+      expiryStr: formatDateTime(expiry),
+      expiryAgo: null,
+      createdStr,
+      createdAgo,
+    };
   };
 
   const selectedProvince = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
@@ -1278,7 +1361,7 @@ export default function AdminListingsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-800/50 text-xs">
                     {filteredListings.map((item) => {
-                      const remaining = getRemainingTime(item.paketBitisTarihi, item.status);
+                      const remaining = getRemainingTime(item.paketBitisTarihi, item.status, item.createdAt);
                       const isPending = item.status === 'onay_bekliyor';
                       const isLive = item.status === 'yayinda';
 
@@ -1326,12 +1409,12 @@ export default function AdminListingsPage() {
                                 >
                                   {item.baslik}
                                 </span>
-                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono mt-0.5">
+                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono mt-0.5 flex-wrap">
                                   <span>#{item._id.slice(-6)}</span>
                                   {item.createdAt && (
                                     <>
                                       <span>&bull;</span>
-                                      <span>{new Date(item.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}</span>
+                                      <span className="text-amber-400/90 font-bold">📅 İlan: {formatDateTime(item.createdAt)} ({getTimeAgoOrLeft(item.createdAt)})</span>
                                     </>
                                   )}
                                 </div>
@@ -1372,7 +1455,17 @@ export default function AdminListingsPage() {
                                 <Clock className="w-3.5 h-3.5 shrink-0" />
                                 <span>{remaining.text}</span>
                               </span>
-                              <div className="flex items-center gap-1">
+                              {remaining.expiryStr && (
+                                <span className={`text-[10px] font-mono font-bold ${remaining.isExpired ? 'text-rose-300' : 'text-emerald-300'}`}>
+                                  ⏰ Bitiş: {remaining.expiryStr}
+                                </span>
+                              )}
+                              {remaining.createdStr && (
+                                <span className="text-[10px] font-mono text-[#8b949e]">
+                                  📅 İlan: {remaining.createdStr}
+                                </span>
+                              )}
+                              <div className="flex items-center gap-1 pt-0.5">
                                 <button
                                   onClick={() => handleExtendDuration(item._id, 7)}
                                   className="px-2 py-0.5 rounded bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[10px] font-mono font-bold transition-all border border-amber-500/30"
@@ -1535,7 +1628,7 @@ export default function AdminListingsPage() {
             {/* ── MOBİL NATIVE KARTLAR LİSTESİ (MOBILE CARDS - md altında 100% korunan düzen) ──────────────── */}
             <div className="md:hidden flex flex-col gap-3">
               {filteredListings.map((item) => {
-                const remaining = getRemainingTime(item.paketBitisTarihi, item.status);
+                const remaining = getRemainingTime(item.paketBitisTarihi, item.status, item.createdAt);
                 const isPending = item.status === 'onay_bekliyor';
                 const isLive = item.status === 'yayinda';
 
@@ -1597,10 +1690,15 @@ export default function AdminListingsPage() {
                             <span>{item.ilSlug} / {item.ilceSlug}</span>
                           </span>
                           <span className="text-slate-400">•</span>
-                          <span className="text-emerald-400 font-mono flex items-center gap-1">
+                          <span className={`${remaining.isExpired ? 'text-rose-400 font-bold' : 'text-emerald-400 font-mono'} flex items-center gap-1`}>
                             <Clock className="w-3 h-3 shrink-0" />
                             <span>{remaining.text}</span>
                           </span>
+                          {remaining.expiryStr && (
+                            <span className={`text-[10px] font-mono font-bold ${remaining.isExpired ? 'text-rose-300' : 'text-emerald-300'}`}>
+                              ⏰ Bitiş: {remaining.expiryStr}
+                            </span>
+                          )}
                         </div>
 
                         {/* İletişim, Tarih, Kullanıcı & Şifre Çipleri */}
@@ -1618,7 +1716,7 @@ export default function AdminListingsPage() {
                           {item.createdAt && (
                             <span className="px-1.5 py-0.5 rounded-md bg-[#070a0f] text-slate-300 font-mono text-[10px] border border-slate-800 flex items-center gap-1">
                               <Calendar className="w-2.5 h-2.5 text-blue-400" />
-                              <span>Ekleme: {new Date(item.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                              <span>📅 İlan: {formatDateTime(item.createdAt)} ({getTimeAgoOrLeft(item.createdAt)})</span>
                             </span>
                           )}
                           {item.panelSifresi && (

@@ -83,7 +83,7 @@ export default function ListingCard({ listing }: ListingCardProps) {
       <div className="p-4 flex flex-col gap-3">
         
         {/* Title Link */}
-        <Link href={`/ilan/${listing.slug}`} className="group flex items-start justify-between gap-2">
+        <Link href={`/ilan/${listing.slug}`} prefetch={false} className="group flex items-start justify-between gap-2">
           <h3 className={`font-extrabold text-[15px] leading-snug tracking-tight font-heading transition-colors line-clamp-2 ${
             isPassive ? 'text-zinc-400 line-through' : 'text-white group-hover:text-amber-400'
           }`}>

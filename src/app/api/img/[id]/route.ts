@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
  * In-memory buffer cache for serverless hot instances (Bypass GridFS on repeated hits)
  */
 const memCache = new Map<string, { buffer: Buffer; contentType: string; filename: string }>();
-const MAX_MEM_CACHE = 100;
+const MAX_MEM_CACHE = 500;
 
 /**
  * GET /api/img/[id]
@@ -52,27 +52,32 @@ export async function GET(
     const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'uploads' });
     const objectId = new mongoose.Types.ObjectId(id);
 
-    // Dosya bilgilerini al
-    const files = await bucket.find({ _id: objectId }).toArray();
-    if (!files || files.length === 0) {
+    // GridFS'ten doğrudan stream olarak oku (Ayrı find sorgusunu bypass ederek gecikmeyi yarıya indirir)
+    const downloadStream = bucket.openDownloadStream(objectId);
+
+    let fileDoc: any = null;
+    downloadStream.on('file', (file) => {
+      fileDoc = file;
+    });
+
+    const chunks: Buffer[] = [];
+    try {
+      await new Promise<void>((resolve, reject) => {
+        downloadStream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+        downloadStream.on('end', () => resolve());
+        downloadStream.on('error', reject);
+      });
+    } catch (streamErr: any) {
       return new NextResponse('Resim bulunamadı', { status: 404 });
     }
 
-    const file = files[0];
-
-    // GridFS'ten stream olarak oku
-    const downloadStream = bucket.openDownloadStream(objectId);
-
-    const chunks: Buffer[] = [];
-    await new Promise<void>((resolve, reject) => {
-      downloadStream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-      downloadStream.on('end', () => resolve());
-      downloadStream.on('error', reject);
-    });
+    if (chunks.length === 0) {
+      return new NextResponse('Resim içeriği boş', { status: 404 });
+    }
 
     const buffer = Buffer.concat(chunks);
-    const contentType = (file as any).metadata?.contentType || 'image/webp';
-    const filename = file.filename || `image-${id}.webp`;
+    const contentType = fileDoc?.metadata?.contentType || 'image/webp';
+    const filename = fileDoc?.filename || `image-${id}.webp`;
 
     // Bellek sınırını koru
     if (memCache.size >= MAX_MEM_CACHE) {
