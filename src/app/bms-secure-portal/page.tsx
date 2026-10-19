@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -9,7 +9,7 @@ import {
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
   Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
   Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3, X, Copy,
-  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key
+  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key, Route
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
@@ -24,9 +24,10 @@ export default function BmsSecurePortalDashboard() {
   const [listingSearchTerm, setListingSearchTerm] = useState('');
   const [listingSortBy, setListingSortBy] = useState<'views' | 'whatsapp' | 'ctr' | 'shares' | 'facebook' | 'google' | 'yandex' | 'x'>('views');
   const [expandedListingId, setExpandedListingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'whatsapp_leads' | 'promos' | 'seo_rankings' | 'listings' | 'live_visitors' | 'pwa_installs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'whatsapp_leads' | 'seo_rankings' | 'listings' | 'live_visitors' | 'pwa_installs'>('overview');
   const [selectedDomain, setSelectedDomain] = useState<string>('all');
   const [whatsappLeadSearchTerm, setWhatsappLeadSearchTerm] = useState('');
+  const [expandedVisitorKey, setExpandedVisitorKey] = useState<string | null>(null);
   const [promoFilterType, setPromoFilterType] = useState<'all' | 'listing' | 'banner'>('all');
   const [promoStatusFilter, setPromoStatusFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
 
@@ -382,12 +383,66 @@ export default function BmsSecurePortalDashboard() {
 
   if (loading && !data) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center bg-[#161b22] border border-[#30363d] rounded-3xl p-8 shadow-2xl w-full">
-        <CircularProgress
-          size="lg"
-          title="BMS Portal Canlı Verileri Yükleniyor..."
-          subtitle="Tekil ziyaretçiler, randevu dönüşümleri ve canlı akış hazırlanıyor"
-        />
+      <div className="flex flex-col gap-5 w-full max-w-full text-left font-sans animate-pulse">
+        {/* Top Command Bar Skeleton */}
+        <div className="bg-[#0c1017] border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-800/60 border border-slate-700/40 shrink-0" />
+            <div className="flex flex-col gap-2">
+              <div className="h-5 w-44 rounded-md bg-slate-800/80" />
+              <div className="h-3 w-64 rounded bg-slate-800/50" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-28 rounded-xl bg-slate-800/60" />
+            <div className="h-9 w-28 rounded-xl bg-slate-800/60" />
+          </div>
+        </div>
+
+        {/* Tab Pills Skeleton */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-slate-800/80 no-scrollbar">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-8 w-28 rounded-xl bg-slate-800/50 shrink-0" />
+          ))}
+        </div>
+
+        {/* Mobil 2x2 KPI Skeleton */}
+        <div className="grid grid-cols-2 gap-2 sm:hidden">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-3 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center gap-1.5 text-center">
+              <div className="w-6 h-6 rounded-md bg-slate-800/70" />
+              <div className="h-5 w-16 rounded bg-slate-800/80 mt-1" />
+              <div className="h-2.5 w-20 rounded bg-slate-800/50" />
+            </div>
+          ))}
+        </div>
+
+        {/* Masaüstü 4'lü KPI Strip Skeleton */}
+        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="p-4 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <div className="h-3 w-24 rounded bg-slate-800/70" />
+                <div className="w-5 h-5 rounded-md bg-slate-800/60" />
+              </div>
+              <div className="h-7 w-20 rounded bg-slate-800/90 mt-1" />
+              <div className="h-3 w-32 rounded bg-slate-800/40" />
+            </div>
+          ))}
+        </div>
+
+        {/* Büyük İçerik Kartı Skeleton */}
+        <div className="p-5 rounded-2xl bg-[#0c1017] border border-slate-800/80 flex flex-col gap-4">
+          <div className="flex items-center justify-between border-b border-slate-800/70 pb-3">
+            <div className="h-4 w-48 rounded bg-slate-800/80" />
+            <div className="h-3 w-24 rounded bg-slate-800/50" />
+          </div>
+          <div className="space-y-2.5">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 w-full rounded-xl bg-slate-800/40" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -717,8 +772,40 @@ export default function BmsSecurePortalDashboard() {
     );
   });
 
+  const groupedVisitors = useMemo(() => {
+    const map = new Map<string, { latest: any; totalActions: number; history: any[]; pages: Set<string> }>();
+    (filteredVisitors || []).forEach((v: any) => {
+      const key = v.visitorId || v.ip || v._id || 'anon';
+      const existing = map.get(key);
+      if (!existing) {
+        const pagesSet = new Set<string>();
+        if (v.path) pagesSet.add(v.path);
+        map.set(key, { latest: v, totalActions: 1, history: [v], pages: pagesSet });
+      } else {
+        existing.totalActions += 1;
+        existing.history.push(v);
+        if (v.path) existing.pages.add(v.path);
+        if (new Date(v.createdAt).getTime() > new Date(existing.latest.createdAt).getTime()) {
+          existing.latest = v;
+        }
+      }
+    });
+
+    return Array.from(map.values()).map(g => ({
+      ...g.latest,
+      sessionKey: g.latest.visitorId || g.latest.ip || g.latest._id,
+      totalActions: g.totalActions,
+      distinctPagesCount: g.pages.size,
+      history: [...g.history].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    })).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [filteredVisitors]);
+
   return (
-    <div className="flex flex-col gap-5 w-full max-w-full text-left font-sans text-slate-200">
+    <div className="flex flex-col gap-5 w-full max-w-full text-left font-sans text-slate-200 relative">
+      {/* Sleek Top Nano-Progress Bar when refetching */}
+      {loading && (
+        <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-cyan-400 to-emerald-400 z-50 animate-pulse shadow-sm shadow-emerald-500/50" />
+      )}
       
       {/* ── 1. UNIFIED EXECUTIVE COMMAND BAR ──────────────────────────────── */}
       <div className="bg-[#0c1017] border border-slate-800/80 rounded-2xl p-3 sm:p-5 shadow-xl flex flex-col xl:flex-row xl:items-center justify-between gap-3 sm:gap-4">
@@ -851,20 +938,14 @@ export default function BmsSecurePortalDashboard() {
 
       {/* ── 2. SEGMENTED TAB NAVIGATION ───────────────────────────────────── */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-800/80 no-scrollbar">
-        {(() => {
-          const promoListingsCount = (detailedListingReports as any[] || []).filter((l: any) => l.isPromo).length;
-          const promoBannersCount = (bannerList || []).filter((b: any) => b.isPromo).length;
-          const totalPromosCount = promoListingsCount + promoBannersCount;
-
-          return [
-            { id: 'overview', icon: BarChart3, label: 'Genel Bakış', count: null },
-            { id: 'whatsapp_leads', icon: MessageSquare, label: 'WhatsApp Randevu', count: eventCounts.whatsappClicks || null },
-            { id: 'live_visitors', icon: Activity, label: 'Canlı Radar & Güvenlik', count: recentVisitors.length },
-            { id: 'listings', icon: Crown, label: 'İlan Performansı', count: filteredListings.length },
-            { id: 'seo_rankings', icon: Search, label: 'SEO & Sıralama', count: keywordList.length > 0 ? keywordList.length : null },
-            { id: 'promos', icon: Megaphone, label: 'Kampanya & Banner', count: totalPromosCount > 0 ? totalPromosCount : null },
-            { id: 'pwa_installs', icon: Smartphone, label: 'PWA Kurulum', count: pwaInstalls || null },
-          ].map((tab) => {
+        {[
+          { id: 'overview', icon: BarChart3, label: 'Genel Bakış', count: null },
+          { id: 'whatsapp_leads', icon: MessageSquare, label: 'WhatsApp Randevu', count: eventCounts.whatsappClicks || null },
+          { id: 'live_visitors', icon: Activity, label: 'Canlı Radar & Güvenlik', count: groupedVisitors.length || recentVisitors.length },
+          { id: 'listings', icon: Crown, label: 'İlan Performansı', count: filteredListings.length },
+          { id: 'seo_rankings', icon: Search, label: 'SEO & Sıralama', count: keywordList.length > 0 ? keywordList.length : null },
+          { id: 'pwa_installs', icon: Smartphone, label: 'PWA Kurulum', count: pwaInstalls || null },
+        ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
@@ -888,8 +969,7 @@ export default function BmsSecurePortalDashboard() {
                 )}
               </button>
             );
-          });
-        })()}
+          })}
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
@@ -1903,588 +1983,7 @@ export default function BmsSecurePortalDashboard() {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── SEKME: 🎁 3 GÜNLÜK ÜCRETSİZ PROMOSYON & KAMPANYA YÖNETİM MERKEZİ ─ */}
-      {/* ══════════════════════════════════════════════════════════════════════ */}
-      {activeTab === 'promos' && (
-        <div className="flex flex-col gap-6 animate-fadeIn">
-          {(() => {
-            const rawListings = (detailedListingReports as any[] || []).filter((l: any) => l.isPromo);
-            const rawBanners = (bannerList || []).filter((b: any) => b.isPromo);
 
-            const filteredPromoListings = rawListings.filter((l: any) => {
-              if (promoStatusFilter === 'all') return true;
-              return l.status === promoStatusFilter;
-            });
-
-            const filteredPromoBanners = rawBanners.filter((b: any) => {
-              if (promoStatusFilter === 'all') return true;
-              if (promoStatusFilter === 'onay_bekliyor') return b.durum === 'beklemede';
-              if (promoStatusFilter === 'yayinda') return b.durum === 'yayinda';
-              if (promoStatusFilter === 'suresi_doldu') return b.durum === 'suresi_doldu' || b.durum === 'pasif';
-              return true;
-            });
-
-            const activeListingsCount = rawListings.filter((l: any) => l.status === 'yayinda').length;
-            const pendingListingsCount = rawListings.filter((l: any) => l.status === 'onay_bekliyor').length;
-            const expiredListingsCount = rawListings.filter((l: any) => l.status === 'suresi_doldu' || l.status === 'pasif').length;
-
-            const activeBannersCount = rawBanners.filter((b: any) => b.durum === 'yayinda').length;
-            const pendingBannersCount = rawBanners.filter((b: any) => b.durum === 'beklemede').length;
-            const expiredBannersCount = rawBanners.filter((b: any) => b.durum === 'suresi_doldu' || b.durum === 'pasif').length;
-
-            const totalActive = activeListingsCount + activeBannersCount;
-            const totalPending = pendingListingsCount + pendingBannersCount;
-            const totalExpired = expiredListingsCount + expiredBannersCount;
-            const grandTotal = rawListings.length + rawBanners.length;
-
-            return (
-              <>
-                {/* ── KAMPANYA BİLGİ & DUYURU KARTI ── */}
-                <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
-                      <Sparkles className="w-5 h-5 animate-pulse text-amber-300" />
-                    </div>
-                    <div className="flex flex-col min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-bold text-sm sm:text-base text-white tracking-tight">
-                          🎁 24 Saatlik Ücretsiz Promosyon Kampanyası
-                        </h2>
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-semibold shrink-0">
-                          4. SIRADAN BAŞLAR
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 sm:line-clamp-none">
-                        Ücretsiz başvuru yapan modeller &amp; reklam verenler burada toplanır. Süre bitince WhatsApp&apos;tan VIP paket teklifi gönderebilirsiniz.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
-                    <Link
-                      href="/ucretsiz-ilan"
-                      target="_blank"
-                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 text-xs font-semibold border border-slate-800 flex items-center gap-1.5 transition-all"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>İlan Başvuru</span>
-                    </Link>
-                    <Link
-                      href="/ucretsiz-reklam"
-                      target="_blank"
-                      className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 text-xs font-semibold border border-slate-800 flex items-center gap-1.5 transition-all"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Reklam Başvuru</span>
-                    </Link>
-                  </div>
-                </div>
-
-                {/* ── 1. MOBİL: NATIVE 2x2 ORTALANMIŞ GRID (sm:hidden) ── */}
-                <div className="grid grid-cols-2 gap-2 sm:hidden">
-                  <div className="p-3 rounded-xl bg-[#0c1017] border border-slate-800/80 flex flex-col items-center justify-center text-center">
-                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Toplam 24S</span>
-                    <span className="text-xl font-bold font-mono text-white mt-0.5">{grandTotal}</span>
-                    <span className="text-[9px] text-slate-500 font-mono">{rawListings.length} İlan • {rawBanners.length} Banner</span>
-                  </div>
-
-                  <div className={`p-3 rounded-xl border flex flex-col items-center justify-center text-center ${
-                    totalPending > 0 ? 'bg-amber-950/20 border-amber-500/40' : 'bg-[#0c1017] border-slate-800/80'
-                  }`}>
-                    <span className="text-[10px] text-amber-400 font-medium uppercase tracking-wider">Onay Bekleyen</span>
-                    <span className="text-xl font-bold font-mono text-amber-400 mt-0.5">{totalPending}</span>
-                    <span className="text-[9px] text-amber-400/80 font-mono">{pendingListingsCount} İlan • {pendingBannersCount} Ban</span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-[#0c1017] border border-slate-800/80 flex flex-col items-center justify-center text-center">
-                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Aktif Yayında</span>
-                    <span className="text-xl font-bold font-mono text-emerald-400 mt-0.5">{totalActive}</span>
-                    <span className="text-[9px] text-emerald-400/80 font-mono">{activeListingsCount} İlan • {activeBannersCount} Ban</span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-[#0c1017] border border-slate-800/80 flex flex-col items-center justify-center text-center">
-                    <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Süresi Biten</span>
-                    <span className="text-xl font-bold font-mono text-rose-400 mt-0.5">{totalExpired}</span>
-                    <span className="text-[9px] text-rose-400/80 font-mono">{expiredListingsCount} İlan • {expiredBannersCount} Ban</span>
-                  </div>
-                </div>
-
-                {/* ── 2. MASAÜSTÜ: 4 SÜTUNLU KURUMSAL KARTLAR (hidden sm:grid) ── */}
-                <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  {/* Toplam Başvuru */}
-                  <div className="p-3.5 rounded-xl bg-[#0c1017] border border-slate-800/80 shadow-sm flex flex-col justify-between gap-2">
-                    <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                      <span>TOPLAM 24S PROMO</span>
-                      <Tag className="w-3.5 h-3.5 text-amber-400" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-2xl text-white font-mono">{grandTotal}</span>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-slate-500">
-                        <span>{rawListings.length} İlan</span>
-                        <span>•</span>
-                        <span>{rawBanners.length} Banner</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Onay Bekleyenler */}
-                  <div className={`p-3.5 rounded-xl border shadow-sm flex flex-col justify-between gap-2 ${
-                    totalPending > 0 ? 'border-amber-500/50 bg-amber-950/15' : 'bg-[#0c1017] border-slate-800/80'
-                  }`}>
-                    <div className="flex items-center justify-between text-amber-400 text-xs font-semibold">
-                      <span>ONAY BEKLEYEN</span>
-                      <Clock className="w-3.5 h-3.5 text-amber-400" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-2xl text-amber-400 font-mono">{totalPending}</span>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-amber-400/80">
-                        <span>{pendingListingsCount} İlan</span>
-                        <span>•</span>
-                        <span>{pendingBannersCount} Banner</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Aktif Yayındakiler */}
-                  <div className="p-3.5 rounded-xl bg-[#0c1017] border border-slate-800/80 hover:border-emerald-500/40 shadow-sm flex flex-col justify-between gap-2 transition-colors">
-                    <div className="flex items-center justify-between text-emerald-400 text-xs font-semibold">
-                      <span>AKTİF YAYINDA (24S)</span>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-2xl text-emerald-400 font-mono">{totalActive}</span>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-emerald-400/80">
-                        <span>{activeListingsCount} İlan</span>
-                        <span>•</span>
-                        <span>{activeBannersCount} Banner</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Süresi Dolanlar / Satış Fırsatları */}
-                  <div className="p-3.5 rounded-xl bg-[#0c1017] border border-slate-800/80 hover:border-rose-500/40 shadow-sm flex flex-col justify-between gap-2 transition-colors">
-                    <div className="flex items-center justify-between text-rose-400 text-xs font-semibold">
-                      <span>SÜRESİ BİTEN (SATIŞ)</span>
-                      <Megaphone className="w-3.5 h-3.5 text-rose-400" />
-                    </div>
-                    <div>
-                      <span className="font-bold text-2xl text-rose-400 font-mono">{totalExpired}</span>
-                      <div className="flex items-center gap-2 mt-0.5 text-[11px] text-rose-400/80">
-                        <span>{expiredListingsCount} İlan</span>
-                        <span>•</span>
-                        <span>{expiredBannersCount} Banner</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ── FİLTRE VE ARAMA ÇUBUĞU ── */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#161b22] border border-[#30363d] p-3 sm:p-4 rounded-2xl">
-                  {/* Tür Filtreleri */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-                    {[
-                      { id: 'all', label: 'Tüm Promosyonlar', count: grandTotal },
-                      { id: 'listing', label: '🎁 24S İlanlar', count: rawListings.length },
-                      { id: 'banner', label: '🖼️ 24S Banner Reklamlar', count: rawBanners.length },
-                    ].map((btn) => (
-                      <button
-                        key={btn.id}
-                        onClick={() => setPromoFilterType(btn.id as any)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-black font-heading shrink-0 transition-all border ${
-                          promoFilterType === btn.id
-                            ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md'
-                            : 'bg-[#0d1117] text-[#8b949e] hover:text-white border-[#30363d]'
-                        }`}
-                      >
-                        {btn.label} ({btn.count})
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Durum Filtreleri */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto">
-                    {[
-                      { id: 'all', label: 'Tüm Durumlar' },
-                      { id: 'onay_bekliyor', label: '🟡 Onay Bekliyor', count: totalPending },
-                      { id: 'yayinda', label: '🟢 Yayında', count: totalActive },
-                      { id: 'suresi_doldu', label: '🔴 Süresi Doldu', count: totalExpired },
-                    ].map((st) => (
-                      <button
-                        key={st.id}
-                        onClick={() => setPromoStatusFilter(st.id as any)}
-                        className={`px-2.5 py-1 rounded-xl text-[11px] font-bold font-heading shrink-0 transition-all border ${
-                          promoStatusFilter === st.id
-                            ? 'bg-white/10 text-white border-white/30'
-                            : 'bg-[#0d1117] text-[#8b949e] hover:text-white border-[#30363d]'
-                        }`}
-                      >
-                        {st.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* ── BÖLÜM 1: 24 SAATLİK ÜCRETSİZ İLANLAR LİSTESİ ── */}
-                {(promoFilterType === 'all' || promoFilterType === 'listing') && (
-                  <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-                    <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
-                      <div className="flex items-center gap-2">
-                        <Crown className="w-5 h-5 text-amber-400" />
-                        <h3 className="font-black text-sm sm:text-base text-white font-heading">
-                          24 Saatlik Ücretsiz VIP İlanlar ({filteredPromoListings.length})
-                        </h3>
-                      </div>
-                      <span className="text-xs text-amber-400 font-mono font-bold">
-                        Anasayfa Sıralaması: 4. Sıradan İtibaren
-                      </span>
-                    </div>
-
-                    {filteredPromoListings.length === 0 ? (
-                      <div className="py-12 text-center text-xs text-[#8b949e]">
-                        Bu filtreye uygun 24 saatlik ücretsiz promosyon ilan kaydı bulunamadı.
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-3.5">
-                        {filteredPromoListings.map((l: any) => {
-                          const now = Date.now();
-                          const expiryTime = l.paketBitisTarihi ? new Date(l.paketBitisTarihi).getTime() : 0;
-                          const diffMs = Math.max(0, expiryTime - now);
-                          const remainingHours = Math.floor(diffMs / (1000 * 60 * 60));
-                          const remainingMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                          const remainingTimeText = remainingHours > 0 
-                            ? `${remainingHours} Saat ${remainingMinutes > 0 ? `${remainingMinutes} Dk` : ''}`.trim()
-                            : `${remainingMinutes} Dakika`;
-                          const isExpired = l.status === 'suresi_doldu' || (expiryTime > 0 && expiryTime <= now);
-                          const isLive = l.status === 'yayinda' && !isExpired;
-                          const isPending = l.status === 'onay_bekliyor';
-                          const cleanPhone = (l.whatsappNumara || '').replace(/\D/g, '');
-
-                          // WhatsApp Satış & Bilgilendirme Mesajları
-                          const salesMsg = encodeURIComponent(
-                            `Merhaba ${l.baslik}! 👑\n\nwww.besteskort.online üzerindeki 24 saatlik ücretsiz VIP vitrin deneme süreniz tamamlandı.\n\nİlanınızın anasayfada ve ${(l.ilSlug || 'şehir').toUpperCase()} vitrininde kesintisiz yer alması, Google ve Yandex aramalarından gelen müşterileri kaçırmamak için avantajlı haftalık VIP paketlerimizi aktif edebiliriz.\n\n💎 Haftalık VIP Vitrin Paketlerimizi incelemek ve hemen yenilemek ister misiniz?\nPaneliniz: https://www.besteskort.online/panelim`
-                          );
-
-                          const liveNoticeMsg = encodeURIComponent(
-                            `Merhaba ${l.baslik}! 🎉\n\n24 saatlik ücretsiz VIP vitrin ilanınız ONAYLANDI ve yayına alındı!\n\n🔗 Canlı İlan Linkiniz: https://www.besteskort.online/ilan/${l.slug}\n🔑 İlan Yönetim Paneliniz: https://www.besteskort.online/panelim\n\nBol kazançlar dileriz! 🚀`
-                          );
-
-                          return (
-                            <div
-                              key={l.id || l._id}
-                              className={`p-4 rounded-2xl border transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-lg ${
-                                isPending
-                                  ? 'bg-amber-950/20 border-amber-500/40'
-                                  : isLive
-                                  ? 'bg-[#0d1117] border-emerald-500/30'
-                                  : 'bg-[#0d1117]/80 border-[#30363d]'
-                              }`}
-                            >
-                              {/* İlan Detayları */}
-                              <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-                                <div className="relative w-14 h-20 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-[#161b22] border border-[#30363d] shrink-0">
-                                  <Image
-                                    src={l.fotoUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
-                                    alt={l.baslik}
-                                    fill
-                                    sizes="64px"
-                                    className="object-cover"
-                                  />
-                                </div>
-
-                                <div className="flex flex-col min-w-0 gap-1">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-black text-xs sm:text-sm text-white truncate font-heading hover:text-amber-400 transition-colors">
-                                      {l.baslik}
-                                    </span>
-                                    <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/30 text-[10px] font-black font-mono">
-                                      🎁 24S ÜCRETSİZ
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 text-[11px] text-[#8b949e] font-mono flex-wrap">
-                                    <span className="text-slate-300 font-bold">📍 {(l.ilSlug || 'TR').toUpperCase()} {l.ilceSlug ? `/ ${l.ilceSlug.toUpperCase()}` : ''}</span>
-                                    <span>•</span>
-                                    <span className="text-emerald-400 font-bold">📞 {l.whatsappNumara}</span>
-                                    <span>•</span>
-                                    <span>👁️ {l.totalViews || 0} İzlenme</span>
-                                    <span>•</span>
-                                    <span className="text-emerald-400 font-bold">💬 {l.whatsappClicks || 0} WA Tıklama</span>
-                                  </div>
-
-                                  {/* Kalan Süre & Durum Rozeti */}
-                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                    {isPending && (
-                                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[11px] font-black flex items-center gap-1 animate-pulse">
-                                        <Clock className="w-3 h-3" /> Onay Bekliyor
-                                      </span>
-                                    )}
-                                    {isLive && (
-                                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-black flex items-center gap-1">
-                                        <CheckCircle2 className="w-3 h-3" /> Yayında ({remainingTimeText} Kaldı)
-                                      </span>
-                                    )}
-                                    {isExpired && (
-                                      <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[11px] font-black flex items-center gap-1">
-                                        <Clock className="w-3 h-3" /> Süresi Doldu / Pasif
-                                      </span>
-                                    )}
-                                    {l.panelSifresi && (
-                                      <span className="px-2 py-0.5 rounded-md bg-[#21262d] text-[#8b949e] border border-[#30363d] text-[10px] font-mono">
-                                        🔑 Şifre: {l.panelSifresi}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Eylem Butonları */}
-                              <div className="flex items-center gap-2 shrink-0 flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-[#21262d]">
-                                {/* WhatsApp Satış / Bilgi Butonu */}
-                                {cleanPhone && (
-                                  <a
-                                    href={`https://wa.me/${cleanPhone}?text=${isExpired ? salesMsg : liveNoticeMsg}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={`px-3 py-2 rounded-xl text-xs font-black font-heading flex items-center gap-1.5 transition-all shadow-md ${
-                                      isExpired
-                                        ? 'bg-rose-500 text-white hover:bg-rose-600 animate-pulse'
-                                        : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500 hover:text-slate-950'
-                                    }`}
-                                  >
-                                    <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
-                                    <span>{isExpired ? 'Paket Sat (WhatsApp)' : 'WhatsApp Yaz'}</span>
-                                  </a>
-                                )}
-
-                                {/* Onayla Butonu */}
-                                {isPending && (
-                                  <button
-                                    onClick={() => handleUpdateListingStatus(l.id || l._id, 'yayinda')}
-                                    className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center gap-1 transition-all shadow-md"
-                                  >
-                                    <Check className="w-3.5 h-3.5" />
-                                    <span>24 Saatlik Başlat (Onayla)</span>
-                                  </button>
-                                )}
-
-                                {/* Pasife Al Butonu */}
-                                {isLive && (
-                                  <button
-                                    onClick={() => handleUpdateListingStatus(l.id || l._id, 'suresi_doldu')}
-                                    className="px-3 py-2 rounded-xl bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 border border-[#30363d] font-bold text-xs transition-all"
-                                    title="İlanın süresini bitirip pasife alır"
-                                  >
-                                    Süreyi Bitir
-                                  </button>
-                                )}
-
-                                {/* Yeniden Yayına Al */}
-                                {isExpired && (
-                                  <button
-                                    onClick={() => handleUpdateListingStatus(l.id || l._id, 'yayinda')}
-                                    className="px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 border border-amber-500/40 font-bold text-xs transition-all"
-                                  >
-                                    +24 Saat Uzat
-                                  </button>
-                                )}
-
-                                {/* İlanı Gör */}
-                                <Link
-                                  href={`/ilan/${l.slug}`}
-                                  target="_blank"
-                                  className="p-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white transition-all border border-[#30363d]"
-                                  title="Canlı İlanı Görüntüle"
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </Link>
-
-                                {/* Sil */}
-                                <button
-                                  onClick={() => handleDeleteListing(l.id || l._id)}
-                                  className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-all border border-rose-500/20"
-                                  title="İlanı Tamamen Sil"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* ── BÖLÜM 2: 24 SAATLİK ÜCRETSİZ REKLAM BANNERLARI LİSTESİ ── */}
-                {(promoFilterType === 'all' || promoFilterType === 'banner') && (
-                  <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
-                    <div className="flex items-center justify-between border-b border-[#30363d] pb-3">
-                      <div className="flex items-center gap-2">
-                        <Megaphone className="w-5 h-5 text-emerald-400" />
-                        <h3 className="font-black text-sm sm:text-base text-white font-heading">
-                          24 Saatlik Ücretsiz Banner Reklamlar ({filteredPromoBanners.length})
-                        </h3>
-                      </div>
-                      <span className="text-xs text-emerald-400 font-mono font-bold">
-                        21:9 Ultra Geniş Masaüstü &amp; Mobil Vitrin
-                      </span>
-                    </div>
-
-                    {filteredPromoBanners.length === 0 ? (
-                      <div className="py-12 text-center text-xs text-[#8b949e]">
-                        Bu filtreye uygun 24 saatlik ücretsiz reklam bannerı bulunamadı.
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-3.5">
-                        {filteredPromoBanners.map((b: any) => {
-                          const now = Date.now();
-                          const expiryTime = b.bitisTarihi ? new Date(b.bitisTarihi).getTime() : 0;
-                          const diffMs = Math.max(0, expiryTime - now);
-                          const remainingHours = Math.floor(diffMs / (1000 * 60 * 60));
-                          const remainingMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                          const remainingTimeText = remainingHours > 0 
-                            ? `${remainingHours} Saat ${remainingMinutes > 0 ? `${remainingMinutes} Dk` : ''}`.trim()
-                            : `${remainingMinutes} Dakika`;
-                          const isExpired = b.durum === 'suresi_doldu' || (expiryTime > 0 && expiryTime <= now);
-                          const isLive = b.durum === 'yayinda' && !isExpired;
-                          const isPending = b.durum === 'beklemede';
-                          const cleanPhone = (b.reklamVerenTelefon || '').replace(/\D/g, '');
-
-                          const bannerSalesMsg = encodeURIComponent(
-                            `Merhaba ${b.reklamVerenAd || ''}! 🖼️\n\nwww.besteskort.online üzerindeki 24 saatlik ücretsiz 21:9 ultra geniş banner reklam süreniz tamamlandı.\n\nReklamınızın anasayfa ve ilan detaylarında en üstte kesintisiz yayında kalması ve yüz binlerce müşteriye ulaşması için haftalık/aylık paketlerimiz hakkında bilgi almak ister misiniz?`
-                          );
-
-                          return (
-                            <div
-                              key={b._id}
-                              className={`p-4 rounded-2xl border transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-lg ${
-                                isPending
-                                  ? 'bg-amber-950/20 border-amber-500/40'
-                                  : isLive
-                                  ? 'bg-[#0d1117] border-emerald-500/30'
-                                  : 'bg-[#0d1117]/80 border-[#30363d]'
-                              }`}
-                            >
-                              <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-                                {/* Banner Görsel Önizleme */}
-                                <div className="relative w-36 h-16 sm:w-44 sm:h-20 rounded-xl overflow-hidden bg-slate-900 border border-[#30363d] shrink-0">
-                                  {b.gorselUrl ? (
-                                    <Image
-                                      src={b.gorselUrl}
-                                      alt={b.hedefUrl || 'Banner'}
-                                      fill
-                                      sizes="180px"
-                                      className="object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8b949e]">
-                                      Görsel Yok
-                                    </div>
-                                  )}
-                                  <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[8px] font-mono text-white">
-                                    21:9
-                                  </span>
-                                </div>
-
-                                <div className="flex flex-col min-w-0 gap-1">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="font-bold text-xs sm:text-sm text-white truncate font-heading">
-                                      {b.reklamVerenAd || 'Reklam Veren'}
-                                    </span>
-                                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-[10px] font-black font-mono">
-                                      🎁 24S REKLAM
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 text-[11px] text-[#8b949e] font-mono flex-wrap">
-                                    <span className="text-emerald-400 font-bold">📞 {b.reklamVerenTelefon}</span>
-                                    <span>•</span>
-                                    <a
-                                      href={b.hedefUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-amber-400 hover:underline truncate max-w-[200px]"
-                                    >
-                                      🔗 {b.hedefUrl}
-                                    </a>
-                                    <span>•</span>
-                                    <span>👆 {b.tiklamaSayisi || 0} Tıklama</span>
-                                  </div>
-
-                                  {/* Kalan Süre & Durum Rozeti */}
-                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                    {isPending && (
-                                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-[11px] font-black flex items-center gap-1 animate-pulse">
-                                        <Clock className="w-3 h-3" /> Onay Bekliyor
-                                      </span>
-                                    )}
-                                    {isLive && (
-                                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-black flex items-center gap-1">
-                                        <CheckCircle2 className="w-3 h-3" /> Yayında ({remainingTimeText} Kaldı)
-                                      </span>
-                                    )}
-                                    {isExpired && (
-                                      <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 text-[11px] font-black flex items-center gap-1">
-                                        <Clock className="w-3 h-3" /> Süresi Doldu
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Eylem Butonları */}
-                              <div className="flex items-center gap-2 shrink-0 flex-wrap pt-2 lg:pt-0 border-t lg:border-t-0 border-[#21262d]">
-                                {cleanPhone && (
-                                  <a
-                                    href={`https://wa.me/${cleanPhone}?text=${bannerSalesMsg}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-3 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 border border-emerald-500/40 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md"
-                                  >
-                                    <OfficialWhatsAppIcon className="w-4 h-4 fill-current" />
-                                    <span>WhatsApp Yaz</span>
-                                  </a>
-                                )}
-
-                                {isPending && (
-                                  <button
-                                    onClick={() => handleBannerAction(b._id, 'onayla')}
-                                    className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center gap-1 transition-all shadow-md"
-                                  >
-                                    <Check className="w-3.5 h-3.5" />
-                                    <span>Onayla (24S Yayına Al)</span>
-                                  </button>
-                                )}
-
-                                {isLive && (
-                                  <button
-                                    onClick={() => handleBannerAction(b._id, 'pasife_al')}
-                                    className="px-3 py-2 rounded-xl bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 border border-[#30363d] font-bold text-xs transition-all"
-                                  >
-                                    Durdur
-                                  </button>
-                                )}
-
-                                <button
-                                  onClick={() => handleBannerAction(b._id, 'delete')}
-                                  className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-all border border-rose-500/20"
-                                  title="Bannerı Sil"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </>
-            );
-          })()}
-        </div>
-      )}
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* ── SEKME: GOOGLE CANLI SIRALAMA (SERP) & WHATSAPP DÖNÜŞÜM TAKİBİ ───── */}
@@ -2596,237 +2095,84 @@ export default function BmsSecurePortalDashboard() {
               </div>
             </div>
 
-            {/* Arama Motorlarından En Çok WhatsApp Getiren İlanlar / İlçeler */}
-            {googleConversionStats.topGoogleDistricts && googleConversionStats.topGoogleDistricts.length > 0 && (
-              <div className="flex flex-col gap-3 pt-2">
-                <span className="text-xs font-black text-white font-heading uppercase tracking-wider flex items-center gap-1.5">
-                  <Award className="w-4 h-4 text-amber-400" />
-                  Organik Aramalardan En Çok WhatsApp Müşterisi Getiren Sayfalar:
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {googleConversionStats.topGoogleDistricts.map((item: any) => (
-                    <div key={item.id} className="p-3 rounded-xl bg-[#0d1117] border border-[#30363d] flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-white truncate max-w-[150px]">{item.baslik}</span>
-                        <span className="text-[10px] text-amber-400 capitalize">{item.ilSlug} / {item.ilceSlug}</span>
                       </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs font-black text-emerald-400 font-mono flex items-center gap-1">
-                          <OfficialWhatsAppIcon className="w-3 h-3" />
-                          {item.whatsappClicks} Tık
-                        </span>
-                        <span className="text-[10px] text-[#8b949e] font-mono">{item.googleViews} Organik Hit</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ── BÖLÜM 1.5: ÇOKLU DOMAIN & SEO GATEWAY AĞI ── */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
-              <div>
-                <h2 className="font-black text-lg sm:text-xl text-white font-heading flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-amber-400" />
-                  <span>Çoklu Domain &amp; SEO Gateway Ağı</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Dinamik Yönlendirme Aktif
-                  </span>
-                </h2>
-                <p className="text-xs text-[#8b949e] mt-1">
-                  Vercel'e eklediğiniz tüm domainler otomatik olarak algılanır, WhatsApp mesajları ve vitrinler o domaine özel üretilir.
-                </p>
-              </div>
-            </div>
-
-            {/* Bağlı ve Aktif Domainler Listesi (Dinamik Canlı Gateway Ağı) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-              {(domainBreakdown && domainBreakdown.length > 0 ? domainBreakdown : [
-                { domain: 'www.besteskort.online', resolvedTarget: 'TÜRKİYE / ANA VİTRİN (PRODUCTION)', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
-                { domain: 'besteskort.online', resolvedTarget: 'TÜRKİYE / 308 YÖNLENDİRME', uniqueVisitors: 0, totalPageviews: 0, whatsappClicks: 0 },
-              ]).map((d: any, idx: number) => {
-                const target = d.resolvedTarget || resolveTargetFromHost(d.domain);
-                const targetLabel = typeof target === 'string' ? target : (target ? `${target.ilSlug?.toUpperCase()} ${target.ilceSlug ? '/ ' + target.ilceSlug?.toUpperCase() : ''}` : 'TÜRKİYE / ANA VİTRİN');
-                const isMain = d.domain.includes('besteskort') || d.domain.includes('bestescort');
-
-                return (
-                  <div 
-                    key={idx}
-                    className={`p-4 rounded-2xl bg-[#0d1117] border flex flex-col justify-between gap-3 transition-all hover:border-amber-500/50 ${
-                      isMain ? 'border-amber-500/40 shadow-lg shadow-amber-500/5' : 'border-[#30363d]'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex flex-col">
-                        <span className={`text-xs font-bold uppercase tracking-wider font-heading flex items-center gap-1.5 ${
-                          isMain ? 'text-amber-400' : 'text-emerald-400'
-                        }`}>
-                          {isMain ? <Crown className="w-3.5 h-3.5 text-amber-400" /> : <Target className="w-3.5 h-3.5 text-emerald-400" />}
-                          {isMain ? 'Ana Platform' : 'Bölgesel Gateway (EMD)'}
-                        </span>
-                        <span className="text-sm font-black text-white font-mono mt-0.5 break-all">
-                          {d.domain}
-                        </span>
-                      </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono shrink-0">
-                        {targetLabel}
-                      </span>
-                    </div>
-
-                    {/* Metrikler */}
-                    <div className="grid grid-cols-3 gap-2 bg-[#161b22] p-2 rounded-xl border border-[#21262d] text-center text-xs">
-                      <div className="flex flex-col">
-                        <span className="text-[9px] text-[#8b949e]">Tekil</span>
-                        <span className="font-black text-white font-mono">{d.uniqueVisitors || 0}</span>
-                      </div>
-                      <div className="flex flex-col border-x border-[#21262d]">
-                        <span className="text-[9px] text-[#8b949e]">Görüntüleme</span>
-                        <span className="font-black text-white font-mono">{d.totalPageviews || 0}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-[9px] text-[#8b949e]">WhatsApp</span>
-                        <span className="font-black text-emerald-400 font-mono">{d.whatsappClicks || 0}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-[#21262d]">
-                      <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400" /> SSL &amp; Gateway Aktif
-                      </span>
-                      <a
-                        href={d.domain.startsWith('http') ? d.domain : `https://${d.domain}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1"
-                      >
-                        <span>Ziyaret Et</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Yeni Domain Yönlendirme Simülatörü */}
-            <div className="p-4 rounded-2xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  Yeni Domain Simülatörü &amp; Eşleştirme Testi
-                </span>
-                <span className="text-[10px] text-[#8b949e]">Yeni ekleyeceğiniz domainin nereye açılacağını anında görün</span>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-3">
-                <input
-                  type="text"
-                  placeholder="Ekleyeceğiniz domain adını yazın... (örn: kadikoyescort.devs.surf, istanbulescort.devs.surf)"
-                  value={testDomainInput}
-                  onChange={(e) => setTestDomainInput(e.target.value)}
-                  className="w-full sm:flex-1 px-3.5 py-2.5 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none font-mono"
-                />
-              </div>
-              {testDomainInput && (
-                <div className="p-3 rounded-xl bg-[#161b22] border border-[#30363d] flex items-center justify-between text-xs">
-                  {(() => {
-                    const resolved = resolveTargetFromHost(testDomainInput);
-                    if (resolved) {
-                      return (
-                        <div className="flex items-center gap-2 text-emerald-400 font-medium">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span>
-                            Hedef Bölge: <strong className="text-white capitalize">{resolved.ilSlug} {resolved.ilceSlug ? `/ ${resolved.ilceSlug}` : ''}</strong>. Bu domain Vercel'e eklendiği an otomatik olarak o bölgenin eskort vitrini olarak açılacaktır!
-                          </span>
-                        </div>
-                      );
-                    }
-                    return (
-                      <div className="flex items-center gap-2 text-amber-400 font-medium">
-                        <span>Domain isminde il/ilçe kelimesi bulunamadı. Bu domain doğrudan Türkiye Ana Platformu (Tüm İller) olarak çalışacaktır.</span>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-          </div>
 
           {/* ── BÖLÜM 2: CANLI GOOGLE & YANDEX SIRALAMA TAKİP MOTORU (DUAL SERP TRACKER) ── */}
           {/* YANDEX CANLI SERP MOTORU */}
-          <div className="p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-2xl flex flex-col gap-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#30363d] pb-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/80 pb-3.5">
               <div>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h2 className="font-black text-lg sm:text-xl text-white font-heading flex items-center gap-2">
-                    <span>🟡 Yandex TR Canlı SERP Sıralama &amp; Rakip Takip Motoru</span>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+                    🟡
+                  </div>
+                  <h2 className="font-bold text-sm sm:text-base text-white tracking-tight flex items-center gap-2">
+                    <span>Yandex TR &amp; Google Canlı SERP Sıralama &amp; Rakip Takip Motoru</span>
                   </h2>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30 font-mono font-semibold">
                     {keywordList.length} Kelime Takipte
                   </span>
                 </div>
-                <p className="text-xs text-[#8b949e] mt-1">
-                  Hedef kelimelerinizde <strong>Yandex Türkiye</strong>'deki anlık sıranızı, değişimleri ve gerçek rakipleri canlı izleyin.
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Hedef anahtar kelimelerde <strong>Yandex Türkiye</strong> ve <strong>Google</strong>'daki anlık pozisyonları, rakipleri ve sıralama değişimlerini canlı izleyin.
                 </p>
               </div>
 
-              {/* Butonlar */}
-              <div className="flex flex-wrap items-center gap-2.5">
+              {/* Aksiyon Butonları */}
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setShowApiKeyModal(!showApiKeyModal)}
-                  className={`flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl font-bold text-xs border transition-all shrink-0 ${
+                  className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-xs border transition-all shrink-0 ${
                     showApiKeyModal
-                      ? 'bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20'
-                      : 'bg-[#21262d] hover:bg-[#30363d] text-blue-300 border-[#30363d]'
+                      ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
+                      : 'bg-[#070a0f] hover:bg-slate-800 text-blue-300 border-slate-800'
                   }`}
                   title="Google SERP Motoru ve Serper API Anahtarını Yönet"
                 >
                   <Key className="w-3.5 h-3.5 text-blue-400" />
-                  <span>🔑 Google API / Motor Ayarı</span>
+                  <span>Google API / Motor</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleBoostAndPing()}
                   disabled={boostingPing}
-                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
-                  title="599 URL'yi anında IndexNow & Ping ile arama motorlarına iletir ve beğeni sayılarını güçlendirir"
+                  className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                  title="URL'leri anında IndexNow & Ping ile arama motorlarına iletir"
                 >
-                  <Sparkles className={`w-4 h-4 ${boostingPing ? 'animate-spin' : ''}`} />
-                  <span>{boostingPing ? 'Motor Ateşleniyor...' : '🚀 1-Tıkla IndexNow & Ping'}</span>
+                  <Sparkles className={`w-3.5 h-3.5 ${boostingPing ? 'animate-spin' : ''}`} />
+                  <span>{boostingPing ? 'Gönderiliyor...' : '1-Tıkla IndexNow & Ping'}</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleScanRankings()}
                   disabled={scanningRankings}
-                  className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider font-heading shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                  className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-sm transition-all active:scale-95 disabled:opacity-50 shrink-0"
                 >
-                  <Zap className={`w-4 h-4 ${scanningRankings ? 'animate-spin text-slate-950' : 'fill-slate-950'}`} />
-                  <span>{scanningRankings ? 'Yandex & Google Taranıyor...' : '⚡ Tüm Sıralamaları Canlı Tara'}</span>
+                  <Zap className={`w-3.5 h-3.5 ${scanningRankings ? 'animate-spin text-slate-950' : 'fill-slate-950'}`} />
+                  <span>{scanningRankings ? 'Taranıyor...' : 'Tüm Sıralamaları Canlı Tara'}</span>
                 </button>
               </div>
             </div>
 
             {/* Google API & Motor Ayar Paneli */}
             {showApiKeyModal && (
-              <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-3 animate-fadeIn shadow-xl">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-[#070a0f] border border-blue-500/30 flex flex-col gap-2.5 animate-fadeIn">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2 text-blue-400 font-bold text-xs">
-                    <Key className="w-4 h-4 shrink-0" />
-                    <span>Google & SERP Motoru Ayarları</span>
+                    <Key className="w-3.5 h-3.5 shrink-0" />
+                    <span>Google &amp; SERP Motoru Ayarları</span>
                   </div>
-                  <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">
-                    {serperApiKeyInput.trim() ? '🟢 Özel Serper API Anahtarı Aktif' : '🔵 Ücretsiz Organik Fallback (DDG) Aktif'}
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                    {serperApiKeyInput.trim() ? '🟢 Özel Serper API Aktif' : '🔵 Ücretsiz Organik Fallback (DDG) Aktif'}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-[#8b949e]">
-                  🟡 <strong>Yandex TR:</strong> Hiçbir API anahtarı veya kredi gerektirmez, direkt canlı taranır.<br />
-                  🔍 <strong>Google TR:</strong> Google bot korumasını aşmak için Serper API kullanılır veya kredi bittiğinde otomatik Organik Web Motoru devreye girer. Ücretsiz <strong>2.500 Google arama kredisi</strong> almak için <a href="https://serper.dev" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline font-bold">serper.dev</a> adresine herhangi bir e-posta ile kayıt olup API anahtarınızı yapıştırabilirsiniz:
+                <p className="text-[11px] text-slate-400">
+                  🟡 <strong>Yandex TR:</strong> Direkt canlı taranır, API gerektirmez.<br />
+                  🔍 <strong>Google TR:</strong> Serper API veya ücretsiz Organik Web Motoru ile taranır. Ücretsiz 2.500 kredi için <a href="https://serper.dev" target="_blank" rel="noopener noreferrer" className="text-blue-400 underline font-semibold">serper.dev</a> adresinden key alabilirsiniz:
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center gap-2">
@@ -2835,13 +2181,13 @@ export default function BmsSecurePortalDashboard() {
                     placeholder="Serper API Key yapıştırın (örn: 8078961d0c92...)"
                     value={serperApiKeyInput}
                     onChange={(e) => setSerperApiKeyInput(e.target.value)}
-                    className="w-full sm:flex-1 px-3 py-2 rounded-xl bg-[#161b22] border border-[#30363d] text-white text-xs font-mono focus:border-blue-400 focus:outline-none"
+                    className="w-full sm:flex-1 px-3 py-1.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs font-mono focus:border-blue-400 focus:outline-none"
                   />
                   <div className="flex items-center gap-2 w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={handleSaveApiKey}
-                      className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors shrink-0"
+                      className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors shrink-0"
                     >
                       Kaydet
                     </button>
@@ -2852,8 +2198,7 @@ export default function BmsSecurePortalDashboard() {
                           setSerperApiKeyInput('');
                           if (typeof window !== 'undefined') localStorage.removeItem('bms_serper_api_key');
                         }}
-                        className="px-3 py-2 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-[#8b949e] hover:text-white font-bold text-xs transition-colors shrink-0"
-                        title="Anahtarı Temizle"
+                        className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white font-semibold text-xs transition-colors shrink-0"
                       >
                         Temizle
                       </button>
@@ -2861,91 +2206,79 @@ export default function BmsSecurePortalDashboard() {
                   </div>
                 </div>
                 {apiKeySaveMsg && (
-                  <span className="text-xs font-bold text-emerald-400 font-mono">{apiKeySaveMsg}</span>
+                  <span className="text-xs font-semibold text-emerald-400 font-mono">{apiKeySaveMsg}</span>
                 )}
               </div>
             )}
 
             {boostPingResult && (
-              <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-white flex flex-col gap-3 animate-fadeIn shadow-xl">
+              <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-white flex flex-col gap-2.5 animate-fadeIn">
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
-                    <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                     <span>{boostPingResult.message || 'IndexNow & Ping Gönderimi Başarıyla Tamamlandı'}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setBoostPingResult(null)}
-                    className="text-[11px] text-[#8b949e] hover:text-white px-2 py-0.5 rounded-md hover:bg-[#30363d] transition-colors"
+                    className="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded-md hover:bg-slate-800 transition-colors"
                   >
                     ✕ Kapat
                   </button>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 border-t border-emerald-500/20">
-                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
-                    <span className="text-[10px] text-[#8b949e] font-mono">⚡ Google Indexing API</span>
+                  <div className="p-2 rounded-lg bg-[#070a0f] border border-slate-800 flex flex-col justify-between">
+                    <span className="text-[10px] text-slate-400 font-mono">⚡ Google Indexing API</span>
                     <span className="text-xs font-bold text-blue-400 font-mono mt-0.5">
                       {!boostPingResult.googleIndexingResult
                         ? '⚠️ Anahtar Bulunamadı'
                         : boostPingResult.googleIndexingResult.failCount > 0
-                        ? `${boostPingResult.googleIndexingResult.successCount > 0 ? `✅ ${boostPingResult.googleIndexingResult.successCount} İletildi / ` : ''}⚠️ ${boostPingResult.googleIndexingResult.failCount} (Günlük 200 Kota Dolu)`
-                        : `✅ ${boostPingResult.googleIndexingResult.successCount} URL İletildi`}
+                        ? `${boostPingResult.googleIndexingResult.successCount > 0 ? `✅ ${boostPingResult.googleIndexingResult.successCount} / ` : ''}⚠️ ${boostPingResult.googleIndexingResult.failCount} (Kota Dolu)`
+                        : `✅ ${boostPingResult.googleIndexingResult.successCount} İletildi`}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
-                    <span className="text-[10px] text-[#8b949e] font-mono">🟡 Yandex IndexNow</span>
+                  <div className="p-2 rounded-lg bg-[#070a0f] border border-slate-800 flex flex-col justify-between">
+                    <span className="text-[10px] text-slate-400 font-mono">🟡 Yandex IndexNow</span>
                     <span className="text-xs font-bold text-emerald-400 font-mono mt-0.5">
                       {boostPingResult.pingResult?.endpoints?.yandex ? '✅ HTTP 200 (İletildi)' : '⚠️ Kuyrukta'}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
-                    <span className="text-[10px] text-[#8b949e] font-mono">🔵 Bing IndexNow</span>
+                  <div className="p-2 rounded-lg bg-[#070a0f] border border-slate-800 flex flex-col justify-between">
+                    <span className="text-[10px] text-slate-400 font-mono">🔵 Bing IndexNow</span>
                     <span className="text-xs font-bold text-emerald-400 font-mono mt-0.5">
                       {boostPingResult.pingResult?.endpoints?.bing || boostPingResult.pingResult?.endpoints?.indexnow ? '✅ HTTP 200 (İletildi)' : '⚠️ Kuyrukta'}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
-                    <span className="text-[10px] text-[#8b949e] font-mono">🔍 Google Sitemap Ping</span>
+                  <div className="p-2 rounded-lg bg-[#070a0f] border border-slate-800 flex flex-col justify-between">
+                    <span className="text-[10px] text-slate-400 font-mono">🔍 Google Sitemap Ping</span>
                     <span className="text-xs font-bold text-blue-400 font-mono mt-0.5">
                       {boostPingResult.pingResult?.endpoints?.googleSitemapPing ? '✅ Ping Gönderildi' : '⚠️ Kuyrukta'}
                     </span>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-[#0d1117]/80 border border-[#30363d] flex flex-col justify-between">
-                    <span className="text-[10px] text-[#8b949e] font-mono">🚀 Toplam Sayfa</span>
+                  <div className="p-2 rounded-lg bg-[#070a0f] border border-slate-800 flex flex-col justify-between">
+                    <span className="text-[10px] text-slate-400 font-mono">🚀 Toplam Sayfa</span>
                     <span className="text-xs font-bold text-amber-400 font-mono mt-0.5">
                       {boostPingResult.pingResult?.submittedCount || 0} Adet Sayfa
                     </span>
                   </div>
                 </div>
-
-                {boostPingResult.googleIndexingResult?.firstError && (
-                  <div className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 font-mono flex items-center justify-between">
-                    <span>ℹ️ Google Notu: {boostPingResult.googleIndexingResult.firstError.includes('Quota exceeded') ? 'Google Indexing API günlük 200 URL istek kotası doldu (Gece 03:00\'te sıfırlanır).' : boostPingResult.googleIndexingResult.firstError}</span>
-                  </div>
-                )}
-
-                {boostPingResult.updatedLikesCount > 0 && (
-                  <div className="text-[11px] text-emerald-300/80 font-mono flex items-center gap-1.5">
-                    <span>❤️ Toplam {boostPingResult.updatedLikesCount} ilanın beğeni sayıları doğal SEO limitlerine yükseltildi.</span>
-                  </div>
-                )}
               </div>
             )}
 
-            {/* ── GOOGLE SEARCH CONSOLE HIZLI URL SUBMIT PANELI ── */}
-            <div className="p-4 rounded-2xl bg-[#0d1117] border border-blue-500/30 flex flex-col gap-3">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+            {/* Google Search Console Hızlı Gönderim */}
+            <div className="p-3.5 sm:p-4 rounded-xl bg-[#070a0f] border border-blue-500/20 flex flex-col gap-2.5">
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-blue-400">🔍 Google Search Console — Hızlı URL Gönderimi</span>
+                    <span className="text-xs sm:text-sm font-bold text-blue-400">🔍 Google Search Console — Hızlı URL Gönderimi</span>
                   </div>
-                  <p className="text-[11px] text-[#8b949e] mt-0.5">
-                    Tüm aktif ilan URL'lerini kopyala → GSC URL Inspection aracına yapıştır → "Test Live URL" tıkla.
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Aktif ilan URL'lerini kopyalayıp Search Console URL Denetimi aracına doğrudan yapıştırabilirsiniz.
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -2953,173 +2286,193 @@ export default function BmsSecurePortalDashboard() {
                     type="button"
                     onClick={handleFetchGscUrls}
                     disabled={gscLoading}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all active:scale-95 disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-all active:scale-95 disabled:opacity-50"
                   >
                     <Copy className={`w-3.5 h-3.5 ${gscLoading ? 'animate-pulse' : ''}`} />
-                    {gscLoading ? 'Yükleniyor...' : gscCopied ? '✅ Kopyalandı!' : '📋 Tüm URL\'leri Kopyala'}
+                    {gscLoading ? 'Yükleniyor...' : gscCopied ? '✅ Kopyalandı!' : 'Tüm URL\'leri Kopyala'}
                   </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const BASE = 'https://www.besteskort.online';
-                      const cityUrls = [
-                        BASE,
-                        `${BASE}/sehirler`,
-                        `${BASE}/kategori/vip`,
-                        `${BASE}/kategori/gold`,
-                        `${BASE}/kategori/silver`,
-                        `${BASE}/istanbul`,
-                        `${BASE}/istanbul/beylikduzu`,
-                        `${BASE}/istanbul/kadikoy`,
-                        `${BASE}/istanbul/sisli`,
-                        `${BASE}/istanbul/besiktas`,
-                        `${BASE}/istanbul/avcilar`,
-                        `${BASE}/istanbul/esenyurt`,
-                        `${BASE}/istanbul/bakirkoy`,
-                        `${BASE}/istanbul/fatih`,
-                        `${BASE}/istanbul/umraniye`,
-                        `${BASE}/istanbul/maltepe`,
-                        `${BASE}/istanbul/pendik`,
-                        `${BASE}/istanbul/kartal`,
-                        `${BASE}/istanbul/bagcilar`,
-                        `${BASE}/istanbul/bahcelievler`,
-                        `${BASE}/istanbul/buyukcekmece`,
-                        `${BASE}/izmir`,
-                        `${BASE}/izmir/konak`,
-                        `${BASE}/izmir/karsiyaka`,
-                        `${BASE}/izmir/bornova`,
-                        `${BASE}/izmir/alsancak`,
-                        `${BASE}/ankara`,
-                        `${BASE}/ankara/cankaya`,
-                        `${BASE}/ankara/kizilay`,
-                        `${BASE}/antalya`,
-                        `${BASE}/antalya/muratpasa`,
-                        `${BASE}/antalya/kepez`,
-                        `${BASE}/bursa`,
-                        `${BASE}/bursa/nilufer`,
-                      ];
-                      await navigator.clipboard.writeText(cityUrls.join('\n'));
-                      setGscCityCopied(true);
-                      setTimeout(() => setGscCityCopied(false), 4000);
-                    }}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs transition-all active:scale-95"
-                  >
-                    <MapPin className="w-3.5 h-3.5" />
-                    {gscCityCopied ? '✅ Şehirler Kopyalandı!' : '🏙️ Sadece Şehirleri Kopyala (34 URL)'}
-                  </button>
-                  <a
-                    href="https://search.google.com/search-console/sitemaps?resource_id=https%3A%2F%2Fwww.besteskort.online%2F"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1e2a3a] hover:bg-[#2a3a4f] text-blue-300 font-bold text-xs border border-blue-500/30 transition-all"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    GSC Sitemap
-                  </a>
                   <a
                     href="https://search.google.com/search-console/?resource_id=https%3A%2F%2Fwww.besteskort.online%2F"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1e2a3a] hover:bg-[#2a3a4f] text-blue-300 font-bold text-xs border border-blue-500/30 transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-blue-300 font-semibold text-xs border border-slate-700 transition-all"
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                     GSC Aç
                   </a>
                 </div>
               </div>
-              {gscUrls.length > 0 && (
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-emerald-400 font-mono">✅ {gscUrls.length} URL hazır {gscCopied ? '— panoya kopyalandı!' : ''}</span>
-                    <button
-                      type="button"
-                      onClick={async () => { await navigator.clipboard.writeText(gscUrls.join('\n')); setGscCopied(true); setTimeout(() => setGscCopied(false), 3000); }}
-                      className="text-[10px] text-blue-400 hover:text-blue-300 px-2 py-0.5 rounded-md hover:bg-blue-500/10 transition-colors"
-                    >
-                      Tekrar Kopyala
-                    </button>
-                  </div>
-                  <div className="max-h-32 overflow-y-auto rounded-lg bg-[#0a0f14] border border-[#30363d] p-2">
-                    {gscUrls.slice(0, 20).map((url, i) => (
-                      <div key={i} className="text-[10px] font-mono text-[#8b949e] hover:text-blue-400 truncate cursor-pointer" onClick={() => window.open(url, '_blank')}>
-                        {url}
-                      </div>
-                    ))}
-                    {gscUrls.length > 20 && (
-                      <div className="text-[10px] text-[#8b949e] font-mono pt-1 border-t border-[#30363d] mt-1">
-                        ... ve {gscUrls.length - 20} URL daha (hepsi kopyalandı)
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-[#8b949e]">
-                    💡 <strong className="text-white">Nasıl kullanılır:</strong> Kopyala → GSC &quot;URL Inspection&quot; kutusuna yapıştır → her URL için &quot;Request Indexing&quot; tıkla. Günde max ~10-15 URL manuel istek yapılabilir.
-                  </p>
-                </div>
-              )}
             </div>
 
             {/* Akıllı Sıralı Kuyruk Canlı İlerleme Çubuğu */}
             {scanProgress && (
-              <div className="p-4 rounded-2xl bg-amber-950/30 border border-amber-500/40 flex flex-col gap-2.5 animate-fadeIn">
+              <div className="p-3.5 rounded-xl bg-amber-950/20 border border-amber-500/30 flex flex-col gap-2 animate-fadeIn">
                 <div className="flex items-center justify-between text-xs flex-wrap gap-2">
-                  <span className="font-bold text-amber-300 flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-400 animate-spin" />
-                    <span>Akıllı Sıralı Kuyruk Taraması ({scanProgress.current}/{scanProgress.total})</span>
+                  <span className="font-semibold text-amber-300 flex items-center gap-2">
+                    <Zap className="w-3.5 h-3.5 text-amber-400 animate-spin" />
+                    <span>Sıralı Canlı Tarama ({scanProgress.current}/{scanProgress.total})</span>
                   </span>
-                  <span className="font-mono text-white bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30 text-[11px]">
-                    Canlı Taranıyor: <strong className="text-amber-300">{scanProgress.keyword}</strong>
+                  <span className="font-mono text-white bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 text-[11px]">
+                    Canlı: <strong className="text-amber-300">{scanProgress.keyword}</strong>
                   </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-[#0d1117] overflow-hidden border border-[#30363d]">
+                <div className="w-full h-1.5 rounded-full bg-[#0c1017] overflow-hidden border border-slate-800">
                   <div
                     className="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-300 rounded-full"
                     style={{ width: `${Math.round((scanProgress.current / scanProgress.total) * 100)}%` }}
                   />
                 </div>
-                <span className="text-[10px] text-[#8b949e]">
-                  🛡️ Yandex ve Google bot engelini aşmak için kelimeler 3-4 saniyelik insansı zaman aralıklarıyla taranıyor, sonuçlar canlı güncelleniyor.
-                </span>
               </div>
             )}
 
             {/* Yeni Kelime Ekleme Formu */}
-            <form onSubmit={handleAddKeyword} className="flex flex-col sm:flex-row items-center gap-3">
+            <form onSubmit={handleAddKeyword} className="flex flex-col sm:flex-row items-center gap-2.5">
               <div className="relative w-full sm:flex-1">
                 <input
                   type="text"
                   placeholder="Takip edilecek kelime yazın... (örn: kadıköy eskort, beylikdüzü escort)"
                   value={newKeywordInput}
                   onChange={(e) => setNewKeywordInput(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs placeholder-[#484f58] focus:border-amber-400 focus:outline-none"
+                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:border-amber-400 focus:outline-none transition-colors"
                 />
-                <Search className="w-4 h-4 text-[#8b949e] absolute left-3 top-3" />
+                <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
               </div>
               <button
                 type="submit"
                 disabled={keywordLoading || !newKeywordInput.trim()}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#21262d] hover:bg-[#30363d] text-white border border-[#30363d] font-bold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-50 shrink-0"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50 shrink-0"
               >
-                <Plus className="w-4 h-4 text-amber-400" />
+                <Plus className="w-3.5 h-3.5 text-amber-400" />
                 <span>Kelime Ekle &amp; Tara</span>
               </button>
             </form>
 
-            {/* Sıralama Tablosu */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            {/* 1. MOBİL: NATIVE EXECUTIVE KEYWORD KARTLARI (sm:hidden) */}
+            <div className="flex flex-col gap-2.5 sm:hidden">
+              {keywordList.map((item: any) => {
+                const posY = item.yandexPosition || 0;
+                const changeY = item.yandexChange || 0;
+                const posG = item.currentPosition || 0;
+                const changeG = item.change || 0;
+                const isScanningThis = scanProgress && scanProgress.keyword.toLowerCase() === item.keyword.toLowerCase();
+
+                const renderMiniRank = (pos: number, change: number, engine: 'google' | 'yandex') => {
+                  const isY = engine === 'yandex';
+                  const title = isY ? 'Yandex' : 'Google';
+                  const searchUrl = isY
+                    ? `https://yandex.com.tr/search/?text=${encodeURIComponent(item.keyword)}&lr=11508`
+                    : `https://www.google.com.tr/search?q=${encodeURIComponent(item.keyword)}`;
+
+                  return (
+                    <a
+                      href={searchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2.5 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col items-center justify-center text-center gap-0.5 hover:border-slate-700 transition-colors"
+                    >
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${isY ? 'text-amber-400' : 'text-blue-400'}`}>
+                        {title}
+                      </span>
+                      <span className="text-base font-bold font-mono text-white">
+                        {pos > 0 ? `#${pos}` : '100+'}
+                      </span>
+                      <span className="text-[9px] font-mono">
+                        {change > 0 ? (
+                          <span className="text-emerald-400 font-bold">+{change} ↗</span>
+                        ) : change < 0 ? (
+                          <span className="text-rose-400 font-bold">{change} ↘</span>
+                        ) : (
+                          <span className="text-slate-500">{pos > 0 ? 'Sabit' : 'Dışında'}</span>
+                        )}
+                      </span>
+                    </a>
+                  );
+                };
+
+                return (
+                  <div
+                    key={item._id}
+                    className={`p-3.5 rounded-xl bg-[#070a0f] border transition-all flex flex-col gap-2.5 ${
+                      isScanningThis ? 'border-amber-400 bg-amber-500/5' : 'border-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-xs text-white capitalize truncate">
+                          {item.keyword}
+                        </span>
+                        {isScanningThis ? (
+                          <span className="text-[10px] text-amber-400 font-semibold animate-pulse">
+                            Şu an taranıyor...
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-500 font-mono">
+                            {item.lastCheckedAt
+                              ? new Date(item.lastCheckedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
+                              : 'Henüz taranmadı'}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleScanRankings(item._id)}
+                          disabled={scanningRankings}
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                          title="Bu Kelimeyi Tara"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${scanningRankings ? 'animate-spin' : ''}`} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteKeyword(item._id)}
+                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors"
+                          title="Sil"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Yan Yana Google ve Yandex Sıralama Kutusu */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {renderMiniRank(posG, changeG, 'google')}
+                      {renderMiniRank(posY, changeY, 'yandex')}
+                    </div>
+
+                    {/* Rakipler */}
+                    {((item.topCompetitors && item.topCompetitors.length > 0) || (item.yandexCompetitors && item.yandexCompetitors.length > 0)) && (
+                      <div className="flex flex-wrap gap-1 text-[10px] font-mono text-slate-400 pt-1 border-t border-slate-800/80">
+                        <span className="text-slate-500">Rakipler:</span>
+                        {(item.yandexCompetitors || item.topCompetitors || []).slice(0, 2).map((c: any, i: number) => (
+                          <span key={i} className="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-300 font-mono truncate max-w-[120px]">
+                            #{c.position} {c.domain}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* 2. MASAÜSTÜ: KURUMSAL OBSIDIAN SIRALAMA TABLOSU (hidden sm:block) */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#30363d] text-[11px] font-black text-[#8b949e] uppercase tracking-wider">
-                    <th className="py-3 px-3">Anahtar Kelime</th>
-                    <th className="py-3 px-3 text-blue-400">Google Sırası</th>
-                    <th className="py-3 px-3 text-amber-400">Yandex Sırası</th>
-                    <th className="py-3 px-3 text-blue-400">Google Değişim</th>
-                    <th className="py-3 px-3 text-amber-400">Yandex Değişim</th>
-                    <th className="py-3 px-3">Rakipler (G/Y)</th>
-                    <th className="py-3 px-3">Son Tarama</th>
-                    <th className="py-3 px-3 text-right">İşlemler</th>
+                  <tr className="border-b border-slate-800 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                    <th className="py-2.5 px-3">Anahtar Kelime</th>
+                    <th className="py-2.5 px-3 text-blue-400">Google Sırası</th>
+                    <th className="py-2.5 px-3 text-amber-400">Yandex Sırası</th>
+                    <th className="py-2.5 px-3 text-blue-400">Google Değişim</th>
+                    <th className="py-2.5 px-3 text-amber-400">Yandex Değişim</th>
+                    <th className="py-2.5 px-3">Rakipler (G/Y)</th>
+                    <th className="py-2.5 px-3">Son Tarama</th>
+                    <th className="py-2.5 px-3 text-right">İşlemler</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#21262d]">
+                <tbody className="divide-y divide-slate-800/80">
                   {keywordList.map((item: any) => {
                     const posY = item.yandexPosition || 0;
                     const changeY = item.yandexChange || 0;
@@ -3141,32 +2494,32 @@ export default function BmsSecurePortalDashboard() {
                       let badgeContent = null;
                       if (pos > 0 && pos <= 10) {
                         badgeContent = (
-                          <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
                             {pos === 1 ? '👑 #1 (1. Sayfa)' : `🥇 #${pos} (1. Sayfa)`} ↗
                           </span>
                         );
                       } else if (pos > 10 && pos <= 20) {
                         badgeContent = (
-                          <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                          <span className="px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 text-xs font-bold font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
                             🥈 #{pos} (2. Sayfa) ↗
                           </span>
                         );
                       } else if (pos > 20 && pos <= 30) {
                         badgeContent = (
-                          <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-xs font-bold font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
                             🥉 #{pos} (3. Sayfa) ↗
                           </span>
                         );
                       } else if (pos > 30 && pos <= 100) {
                         const pageNum = Math.ceil(pos / 10);
                         badgeContent = (
-                          <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-black font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
+                          <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30 text-xs font-bold font-mono inline-flex items-center gap-1 group-hover:scale-105 transition-transform">
                             📄 #{pos} ({pageNum}. Sayfa) ↗
                           </span>
                         );
                       } else {
                         badgeContent = (
-                          <span className="px-2 py-0.5 rounded-full bg-[#21262d] text-[#8b949e] border border-[#30363d] text-xs font-bold font-mono inline-flex items-center gap-1 group-hover:text-white transition-colors">
+                          <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-xs font-medium font-mono inline-flex items-center gap-1 group-hover:text-white transition-colors">
                             100+ (Dışında) ↗
                           </span>
                         );
@@ -3180,12 +2533,12 @@ export default function BmsSecurePortalDashboard() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="group inline-block"
-                              title={`${engine === 'yandex' ? 'Yandex TR' : 'Google TR'} üzerinde canlı sonuçları yeni sekmede gör`}
+                              title={`${engine === 'yandex' ? 'Yandex TR' : 'Google TR'} üzerinde canlı sonuçları gör`}
                             >
                               {badgeContent}
                             </a>
                             {engine === 'google' && foundEngine === 'ddg_organic' && pos > 0 && (
-                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20" title="DuckDuckGo TR Organik Arama İndeksi">
+                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
                                 Organik
                               </span>
                             )}
@@ -3195,7 +2548,7 @@ export default function BmsSecurePortalDashboard() {
                               href={foundUrl || `https://${foundDomain}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`text-[10px] font-mono px-1.5 py-0.5 rounded border max-w-[150px] truncate inline-flex items-center gap-1 transition-colors ${
+                              className={`text-[10px] font-mono px-1.5 py-0.2 rounded border max-w-[150px] truncate inline-flex items-center gap-1 transition-colors ${
                                 engine === 'google'
                                   ? 'text-blue-400/90 bg-blue-500/10 border-blue-500/20 hover:border-blue-500/50'
                                   : 'text-amber-400/90 bg-amber-500/10 border-amber-500/20 hover:border-amber-500/50'
@@ -3227,14 +2580,10 @@ export default function BmsSecurePortalDashboard() {
                         );
                       }
                       if (pos === 0) {
-                        return (
-                          <span className="inline-flex items-center gap-1 text-[#484f58] font-mono text-xs">
-                            —
-                          </span>
-                        );
+                        return <span className="inline-flex items-center gap-1 text-slate-600 font-mono text-xs">—</span>;
                       }
                       return (
-                        <span className="inline-flex items-center gap-1 text-[#8b949e] font-bold text-xs font-mono">
+                        <span className="inline-flex items-center gap-1 text-slate-400 font-semibold text-xs font-mono">
                           <Minus className="w-3.5 h-3.5" />
                           Sabit
                         </span>
@@ -3248,55 +2597,55 @@ export default function BmsSecurePortalDashboard() {
                         key={item._id} 
                         className={`transition-all ${
                           isScanningThis 
-                            ? 'bg-amber-500/15 border-l-4 border-amber-400 shadow-inner' 
-                            : 'hover:bg-[#21262d]/40'
+                            ? 'bg-amber-500/10 border-l-4 border-amber-400 shadow-inner' 
+                            : 'hover:bg-slate-900/50'
                         }`}
                       >
                         {/* Kelime Adı */}
-                        <td className="py-3.5 px-3">
-                          <span className="font-bold text-xs text-white capitalize font-heading block">
+                        <td className="py-3 px-3">
+                          <span className="font-semibold text-xs text-white capitalize block">
                             {item.keyword}
                           </span>
                           {isScanningThis ? (
                             <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1 mt-0.5 animate-pulse">
                               <Zap className="w-3 h-3 text-amber-400 animate-spin" />
-                              Şu an Canlı Taranıyor...
+                              Canlı Taranıyor...
                             </span>
                           ) : (
-                            <span className="text-[10px] text-[#8b949e]">Yandex / Google TR</span>
+                            <span className="text-[10px] text-slate-500">Yandex / Google TR</span>
                           )}
                         </td>
 
                         {/* Google Sırası */}
-                        <td className="py-3.5 px-3">
+                        <td className="py-3 px-3">
                           {renderPosBadge(posG, item.keyword, 'google', item.googleFoundDomain, item.googleFoundUrl, item.googleFoundEngine)}
                         </td>
 
                         {/* Yandex Sırası */}
-                        <td className="py-3.5 px-3">
+                        <td className="py-3 px-3">
                           {renderPosBadge(posY, item.keyword, 'yandex', item.yandexFoundDomain, item.yandexFoundUrl)}
                         </td>
 
                         {/* Google Değişimi */}
-                        <td className="py-3.5 px-3">
+                        <td className="py-3 px-3">
                           {renderChangeBadge(changeG, posG)}
                         </td>
 
                         {/* Yandex Değişimi */}
-                        <td className="py-3.5 px-3">
+                        <td className="py-3 px-3">
                           {renderChangeBadge(changeY, posY)}
                         </td>
 
-                        {/* Rakipler (Google/Yandex) */}
-                        <td className="py-3.5 px-3">
-                          <div className="flex flex-col gap-2">
+                        {/* Rakipler */}
+                        <td className="py-3 px-3">
+                          <div className="flex flex-col gap-1.5">
                             {item.topCompetitors && item.topCompetitors.length > 0 && (
                               <div className="flex flex-wrap gap-1 max-w-xs">
                                 <span className="text-[10px] text-blue-400 font-bold mr-1">G:</span>
                                 {item.topCompetitors.slice(0, 2).map((c: any, cIdx: number) => (
                                   <span
                                     key={cIdx}
-                                    className="text-[10px] px-2 py-0.5 rounded bg-[#0d1117] border border-[#30363d] text-[#8b949e] font-mono truncate max-w-[140px]"
+                                    className="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-300 font-mono truncate max-w-[130px]"
                                     title={c.domain}
                                   >
                                     #{c.position} {c.domain}
@@ -3310,7 +2659,7 @@ export default function BmsSecurePortalDashboard() {
                                 {item.yandexCompetitors.slice(0, 2).map((c: any, cIdx: number) => (
                                   <span
                                     key={cIdx}
-                                    className="text-[10px] px-2 py-0.5 rounded bg-[#0d1117] border border-[#30363d] text-[#8b949e] font-mono truncate max-w-[140px]"
+                                    className="text-[10px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-300 font-mono truncate max-w-[130px]"
                                     title={c.domain}
                                   >
                                     #{c.position} {c.domain}
@@ -3319,27 +2668,27 @@ export default function BmsSecurePortalDashboard() {
                               </div>
                             )}
                             {(!item.topCompetitors?.length && !item.yandexCompetitors?.length) && (
-                              <span className="text-[10px] text-[#484f58]">Tespit edilmedi</span>
+                              <span className="text-[10px] text-slate-600">Tespit edilmedi</span>
                             )}
                           </div>
                         </td>
 
                         {/* Son Kontrol */}
-                        <td className="py-3.5 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
+                        <td className="py-3 px-3 text-[10px] text-slate-400 font-mono whitespace-nowrap">
                           {item.lastCheckedAt
                             ? new Date(item.lastCheckedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })
                             : 'Henüz taranmadı'}
                         </td>
 
                         {/* İşlemler */}
-                        <td className="py-3.5 px-3 text-right">
+                        <td className="py-3 px-3 text-right">
                           <div className="flex items-center justify-end gap-1.5">
                             <button
                               type="button"
                               onClick={() => handleScanRankings(item._id)}
                               disabled={scanningRankings}
                               title="Bu Kelimeyi Tekrar Tara (Google + Yandex)"
-                              className="p-1.5 rounded-lg bg-[#21262d] hover:bg-amber-500/20 text-[#8b949e] hover:text-amber-400 border border-[#30363d] transition-colors"
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-slate-400 hover:text-amber-400 border border-slate-700 transition-colors"
                             >
                               <RefreshCw className={`w-3.5 h-3.5 ${scanningRankings ? 'animate-spin' : ''}`} />
                             </button>
@@ -3347,7 +2696,7 @@ export default function BmsSecurePortalDashboard() {
                               type="button"
                               onClick={() => handleDeleteKeyword(item._id)}
                               title="Kelimeyi Sil"
-                              className="p-1.5 rounded-lg bg-[#21262d] hover:bg-rose-500/20 text-[#8b949e] hover:text-rose-400 border border-[#30363d] transition-colors"
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700 transition-colors"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -3362,6 +2711,7 @@ export default function BmsSecurePortalDashboard() {
           </div>
         </div>
       )}
+
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* ── SEKME 2: HER İLAN İÇİN DETAYLI ANALİZ & REFERRER (NEREDEN GELDİ) ── */}
@@ -3816,7 +3166,7 @@ export default function BmsSecurePortalDashboard() {
                 </h2>
               </div>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-900 text-slate-300 border border-slate-800">
-                {Math.min(filteredVisitors.length, visitorDisplayLimit)} / {filteredVisitors.length} İstek
+                {Math.min(groupedVisitors.length, visitorDisplayLimit)} / {groupedVisitors.length} Tekil Kişi ({filteredVisitors.length} İstek)
               </span>
             </div>
 
@@ -3940,7 +3290,7 @@ export default function BmsSecurePortalDashboard() {
 
           {/* MOBİL GÖRÜNÜM: Canlı Ziyaretçi Akış Kartları */}
           <div className="flex flex-col gap-2.5 md:hidden">
-            {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
+            {groupedVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
               const isGoogle = v.refererSource === 'google';
               const isWa = v.refererSource === 'whatsapp';
               const isFb = v.refererSource === 'facebook';
@@ -3997,6 +3347,77 @@ export default function BmsSecurePortalDashboard() {
                     <span>{v.device === 'mobile' ? '📱 Mobil' : '💻 Masaüstü'} ({v.browser})</span>
                     <span className="text-emerald-400 font-mono font-bold">{v.durationSeconds > 0 ? `${v.durationSeconds}s` : '<15s'}</span>
                   </div>
+
+                  {/* 3. YOLCULUK AKIŞI: SAĞDA BUTON & AÇILIR DROPDOWN */}
+                  {v.totalActions > 1 && (
+                    <div className="pt-2 border-t border-slate-800/80 flex flex-col gap-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-slate-400 font-mono">
+                          Toplam <strong className="text-amber-400">{v.totalActions}</strong> hareket ({v.distinctPagesCount || 1} sayfa)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setExpandedVisitorKey(expandedVisitorKey === v.sessionKey ? null : v.sessionKey)}
+                          className={`px-2.5 py-1 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 border active:scale-95 shrink-0 ${
+                            expandedVisitorKey === v.sessionKey
+                              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black'
+                              : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                          }`}
+                        >
+                          <Route className="w-3.5 h-3.5" />
+                          <span>Yolculuk ({v.totalActions} Adım)</span>
+                          {expandedVisitorKey === v.sessionKey ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </button>
+                      </div>
+
+                      {expandedVisitorKey === v.sessionKey && (
+                        <div className="p-2.5 bg-[#070a0f] border border-amber-500/30 rounded-xl flex flex-col gap-1.5 animate-fadeIn">
+                          <div className="flex items-center justify-between pb-1.5 border-b border-slate-800 text-[10px] font-mono text-slate-400">
+                            <span className="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+                              <Route className="w-3 h-3" />
+                              <span>Ziyaretçi Adım Geçmişi (İlk Girişten Güncele)</span>
+                            </span>
+                            <span>Saat</span>
+                          </div>
+
+                          <div className="flex flex-col gap-1.5 max-h-52 overflow-y-auto pr-0.5">
+                            {v.history.map((step: any, stepIdx: number) => {
+                              const isFirst = stepIdx === 0;
+                              const isLatest = stepIdx === v.history.length - 1;
+                              return (
+                                <div
+                                  key={step._id || stepIdx}
+                                  className={`flex items-center justify-between gap-1.5 text-xs font-mono py-1.5 px-2 rounded-lg border transition-all ${
+                                    isLatest
+                                      ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
+                                      : isFirst
+                                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+                                      : 'bg-[#0c1017] border-slate-800 text-slate-300'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className={`w-4 h-4 rounded text-[9px] font-black flex items-center justify-center shrink-0 ${
+                                      isLatest ? 'bg-emerald-500 text-slate-950' : isFirst ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-300'
+                                    }`}>
+                                      #{stepIdx + 1}
+                                    </span>
+                                    <span className="text-white truncate max-w-[140px]" title={step.path}>
+                                      {step.path || '/'}
+                                    </span>
+                                    {isFirst && <span className="text-[9px] text-amber-400 font-bold shrink-0">İlk</span>}
+                                    {isLatest && <span className="text-[9px] text-emerald-400 font-bold shrink-0">Son 🟢</span>}
+                                  </div>
+                                  <span className="text-[10px] text-slate-400 shrink-0">
+                                    {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -4016,14 +3437,16 @@ export default function BmsSecurePortalDashboard() {
                   <th className="py-2.5 px-3">CİHAZ / TARAYICI</th>
                   <th className="py-2.5 px-3">SÜRE</th>
                   <th className="py-2.5 px-3">ZAMAN</th>
+                  <th className="py-2.5 px-3 text-right">ADIMLAR / YOLCULUK</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#21262d]">
-                {filteredVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
+                {groupedVisitors.slice(0, visitorDisplayLimit).map((v: any) => {
                   const analysis = getSuspiciousAnalysis(v);
 
                   return (
-                    <tr key={v._id} className={`transition-colors ${
+                    <React.Fragment key={v._id || v.sessionKey}>
+                    <tr className={`transition-colors ${
                       analysis.isSuspicious 
                         ? 'bg-red-950/30 hover:bg-red-950/40 border-l-4 border-red-500' 
                         : v.isBanned 
@@ -4103,13 +3526,90 @@ export default function BmsSecurePortalDashboard() {
                       </td>
 
                       {/* Zaman */}
-                      <td className="py-3 px-3 text-[10px] text-[#8b949e] font-mono whitespace-nowrap">
+                      <td className="py-3 px-3 text-[10px] text-slate-400 font-mono whitespace-nowrap">
                         {new Date(v.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                       </td>
 
+                      {/* Yolculuk Butonu (Sağ Sütun) */}
+                      <td className="py-3 px-3 text-right">
+                        {v.totalActions > 1 ? (
+                          <button
+                            type="button"
+                            onClick={() => setExpandedVisitorKey(expandedVisitorKey === v.sessionKey ? null : v.sessionKey)}
+                            className={`px-2.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all inline-flex items-center gap-1.5 border active:scale-95 ${
+                              expandedVisitorKey === v.sessionKey
+                                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black'
+                                : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                            }`}
+                          >
+                            <Route className="w-3.5 h-3.5" />
+                            <span>Yolculuk ({v.totalActions} Adım)</span>
+                            {expandedVisitorKey === v.sessionKey ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-slate-500 font-mono">1 Adım</span>
+                        )}
+                      </td>
                     </tr>
-                  );
-                })}
+
+                    {/* Genişletilmiş Yolculuk Akordeon Satırı */}
+                    {expandedVisitorKey === v.sessionKey && v.totalActions > 1 && (
+                      <tr key={`${v._id || v.sessionKey}-journey`}>
+                        <td colSpan={10} className="p-3 bg-[#070a0f] border-b border-slate-800">
+                          <div className="p-3.5 bg-[#0c1017] border border-amber-500/30 rounded-xl flex flex-col gap-2">
+                            <div className="flex items-center justify-between pb-2 border-b border-slate-800 text-xs font-mono text-slate-400">
+                              <span className="font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <Route className="w-4 h-4 text-amber-400" />
+                                <span>Ziyaretçi Yolculuk Akışı (İlk Girişten Güncele • Toplam {v.totalActions} Hareket)</span>
+                              </span>
+                              <span>İlk Giriş: {new Date(v.history[0]?.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-1">
+                              {v.history.map((step: any, stepIdx: number) => {
+                                const isFirst = stepIdx === 0;
+                                const isLatest = stepIdx === v.history.length - 1;
+                                return (
+                                  <div
+                                    key={step._id || stepIdx}
+                                    className={`flex items-center justify-between gap-2 text-xs font-mono py-1.5 px-3 rounded-lg border transition-all ${
+                                      isLatest
+                                        ? 'bg-emerald-500/10 border-emerald-500/40 text-white'
+                                        : isFirst
+                                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
+                                        : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-black shrink-0 ${
+                                        isLatest
+                                          ? 'bg-emerald-500 text-slate-950'
+                                          : isFirst
+                                          ? 'bg-amber-500 text-slate-950'
+                                          : 'bg-slate-800 text-slate-300'
+                                      }`}>
+                                        #{stepIdx + 1}
+                                      </span>
+                                      <span className="text-white truncate font-medium max-w-md" title={step.path}>
+                                        {step.path || '/'}
+                                      </span>
+                                      {isFirst && <span className="text-[10px] text-amber-400 font-bold px-1.5 py-0.2 rounded bg-amber-500/15">İlk Giriş</span>}
+                                      {isLatest && <span className="text-[10px] text-emerald-400 font-bold px-1.5 py-0.2 rounded bg-emerald-500/15">Şu An Burada 🟢</span>}
+                                    </div>
+                                    <span className="text-[11px] text-slate-400 shrink-0 font-mono">
+                                      {new Date(step.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
               </tbody>
             </table>
           </div>
@@ -4408,7 +3908,7 @@ export default function BmsSecurePortalDashboard() {
           </div>
 
           {/* Limitsiz Kurulum & Kaldırma Akışı Listesi */}
-          <div className="p-4 sm:p-6 rounded-3xl bg-[#161b22] border border-[#30363d] shadow-xl flex flex-col gap-4">
+          <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <h3 className="font-heading font-black text-sm text-white flex items-center gap-2">
                 <span>📱 Tüm Cihaz Olayları (Limitsiz)</span>
@@ -4433,7 +3933,7 @@ export default function BmsSecurePortalDashboard() {
                   return (
                     <div 
                       key={ev._id || idx}
-                      className={`p-3.5 sm:p-4 rounded-2xl bg-[#0d1117] border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${
+                      className={`p-3.5 sm:p-4 rounded-xl bg-[#070a0f] border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm ${
                         isUninstall ? 'border-rose-500/40 hover:border-rose-400' : 'border-[#30363d] hover:border-emerald-500/40'
                       }`}
                     >

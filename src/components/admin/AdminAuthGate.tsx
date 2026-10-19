@@ -318,9 +318,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
 
   // 3. AUTHENTICATED: Render Full Admin Portal Layout
   return (
-    <div className={`min-h-screen bg-[#070a0f] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative ${
-      pathname === '/bms-secure-portal/chat' ? 'md:h-screen md:max-h-screen md:overflow-hidden' : ''
-    }`}>
+    <div className="min-h-screen md:h-screen md:max-h-screen md:overflow-hidden bg-[#070a0f] text-[#f0f6fc] flex flex-col md:flex-row font-sans selection:bg-amber-500 selection:text-slate-950 relative">
       
       {/* Mobile Top Header */}
       <div className="md:hidden flex items-center justify-between bg-[#0c1017] border-b border-slate-800/80 px-4 py-3 sticky top-0 z-30 shadow-md">
@@ -346,10 +344,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         </div>
       </div>
 
-      {/* Desktop Admin Sidebar (Collapsible & Expandable) */}
+      {/* Desktop Admin Sidebar (Collapsible & Expandable with Independent Scroll) */}
       <aside className={`hidden md:flex ${
         isSidebarCollapsed ? 'w-[72px] px-2 py-3' : 'w-64 xl:w-72 p-3.5 xl:p-4'
-      } bg-[#0c1017] border-r border-slate-800/80 flex-col justify-between shrink-0 shadow-2xl h-screen sticky top-0 overflow-y-auto select-none transition-all duration-300 ease-in-out [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-800 [&::-webkit-scrollbar-track]:bg-transparent`}>
+      } bg-[#0c1017] border-r border-slate-800/80 flex-col justify-between shrink-0 shadow-2xl h-full max-h-screen overflow-y-auto overscroll-contain select-none transition-all duration-300 ease-in-out [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-slate-800 [&::-webkit-scrollbar-track]:bg-transparent`}>
         <div className="flex flex-col gap-3.5">
           
           {/* Logo, Gate Badge & Collapse Toggle */}
