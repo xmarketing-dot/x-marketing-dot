@@ -962,8 +962,10 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         </div>
       )}
 
-      {/* Facebook Messenger Style Floating Live Chat */}
-      <AdminFloatingChat />
+      {/* Canlı Destek Masası - Sadece Web / Masaüstünde (Mobilde gizli) */}
+      <div className="hidden md:block">
+        <AdminFloatingChat />
+      </div>
     </div>
   );
 }

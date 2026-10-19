@@ -103,7 +103,19 @@ export default function AdminFloatingChat() {
   const isFirstLoadRef = useRef<boolean>(true);
   const prevMessagesCountRef = useRef<number>(0);
 
-  // 1. Hide on dedicated /chat page to avoid duplicate interface
+  // 1. Desktop web-only check (Never show or execute on mobile screens)
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkIsDesktop = () => {
+      setIsDesktop(typeof window !== 'undefined' && window.innerWidth >= 768);
+    };
+    checkIsDesktop();
+    window.addEventListener('resize', checkIsDesktop);
+    return () => window.removeEventListener('resize', checkIsDesktop);
+  }, []);
+
+  // 2. Hide on dedicated /chat page to avoid duplicate interface
   const isChatPage = pathname === '/bms-secure-portal/chat';
 
   // Sound preference from localStorage
@@ -124,8 +136,9 @@ export default function AdminFloatingChat() {
     } catch (e) {}
   };
 
-  // 2. Fetch all threads and auto-pop on new message
+  // 3. Fetch all threads and auto-pop on new message (ONLY on desktop web)
   const fetchThreads = async () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return;
     try {
       const res = await fetch('/api/admin/chat/threads', { cache: 'no-store' });
       const data = await res.json();
@@ -137,11 +150,13 @@ export default function AdminFloatingChat() {
           0
         );
 
-        // Auto-popup: only when incoming unread count INCREASES and admin is not on /chat
+        // Auto-popup: only when incoming unread count INCREASES, admin is on desktop web, and not on /chat
         if (
           !isFirstLoadRef.current &&
           currentTotalUnread > prevTotalUnreadRef.current &&
-          !isChatPage
+          !isChatPage &&
+          typeof window !== 'undefined' &&
+          window.innerWidth >= 768
         ) {
           if (soundEnabled) playAdminDing();
 
@@ -173,15 +188,16 @@ export default function AdminFloatingChat() {
     } catch (e) {}
   };
 
-  // Poll threads across entire portal every 5 seconds
+  // Poll threads across entire portal every 5 seconds (ONLY on desktop web)
   useEffect(() => {
+    if (!isDesktop || isChatPage) return;
     fetchThreads();
     const interval = setInterval(() => {
       if (typeof document !== 'undefined' && document.hidden) return;
       fetchThreads();
     }, 5000);
     return () => clearInterval(interval);
-  }, [soundEnabled, isChatPage]);
+  }, [soundEnabled, isChatPage, isDesktop]);
 
   // 3. Load messages for active thread
   useEffect(() => {
@@ -299,15 +315,15 @@ export default function AdminFloatingChat() {
     }
   };
 
-  // If currently on /chat page, do not render floating widget
-  if (isChatPage) return null;
+  // Sadece webde (desktop >= 768px) gözükmeli ve çalışmalı, mobilde kesinlikle gizli
+  if (!isDesktop || isChatPage) return null;
 
   // ══════════════════════════════════════════════════════════════
   // A. MINIMIZED STATE (SLEEK BOTTOM DOCK TAB)
   // ══════════════════════════════════════════════════════════════
   if (isOpen && isMinimized) {
     return (
-      <div className="fixed bottom-0 right-4 sm:right-6 z-50">
+      <div className="hidden md:block fixed bottom-0 right-6 z-50">
         <div
           onClick={() => setIsMinimized(false)}
           className="group flex items-center gap-3 px-3.5 py-2.5 rounded-t-2xl bg-[#090d16]/95 hover:bg-[#0e1424] border-t border-x border-emerald-500/30 text-white shadow-[0_-8px_30px_rgba(0,0,0,0.8)] backdrop-blur-xl cursor-pointer transition-all hover:border-emerald-500/60"
@@ -371,14 +387,14 @@ export default function AdminFloatingChat() {
   // ══════════════════════════════════════════════════════════════
   if (!isOpen) {
     return (
-      <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50">
+      <div className="hidden md:block fixed bottom-6 right-6 z-50">
         <button
           type="button"
           onClick={() => {
             setIsOpen(true);
             setIsMinimized(false);
           }}
-          className="relative group px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-[#090d16]/95 hover:bg-[#0e1424] text-white font-heading font-bold shadow-[0_10px_35px_rgba(0,0,0,0.8)] border border-emerald-500/40 hover:border-emerald-400 flex items-center gap-2.5 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
+          className="relative group px-4 py-3 rounded-2xl bg-[#090d16]/95 hover:bg-[#0e1424] text-white font-heading font-bold shadow-[0_10px_35px_rgba(0,0,0,0.8)] border border-emerald-500/40 hover:border-emerald-400 flex items-center gap-2.5 active:scale-95 transition-all cursor-pointer backdrop-blur-xl"
           title="BMS Canlı Destek Masasını Aç"
         >
           <div className="relative">
@@ -411,7 +427,7 @@ export default function AdminFloatingChat() {
   // C. EXPANDED CYBER LUXURY CHAT WINDOW
   // ══════════════════════════════════════════════════════════════
   return (
-    <div className="fixed bottom-3 right-3 sm:right-6 z-50 w-[350px] sm:w-[410px] h-[550px] max-h-[88vh] bg-[#080c14] border border-slate-800/90 rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden backdrop-blur-2xl ring-1 ring-emerald-500/20">
+    <div className="hidden md:flex fixed bottom-6 right-6 z-50 w-[410px] h-[550px] max-h-[88vh] bg-[#080c14] border border-slate-800/90 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] flex-col overflow-hidden backdrop-blur-2xl ring-1 ring-emerald-500/20">
       
       {/* ── 1. HEADER (CYBER GLASSMORPHISM) ────────────────────── */}
       <div className="px-3.5 py-2.5 bg-[#0a0f18]/95 border-b border-slate-800/80 flex items-center justify-between gap-2 shrink-0">
