@@ -17,38 +17,27 @@ export function getPrimaryDomain(): string {
 export const EXACT_OUR_DOMAINS = new Set([
   'besteskort.online',
   'www.besteskort.online',
-  'besteskort.devs.surf',
-  'www.besteskort.devs.surf',
   'escturkiye.space',
   'www.escturkiye.space',
-  'istanbuleskort.devs.surf',
-  'beylikduzueskort.devs.surf',
-  'beylikduzuescort.devs.surf',
-  'izmireskort.devs.surf',
-  'bestescort.vercel.app',
-  'besteskort.vercel.app',
 ]);
 
 export function isOurSiteDomain(hostname: string, targetDomain?: string): boolean {
   const host = hostname.toLowerCase().replace(/^www\./, '').trim();
   const rawHost = hostname.toLowerCase().trim();
 
-  // 1. Wildcard: Tüm .devs.surf alt alan adları bize aittir
-  if (host.endsWith('.devs.surf') || host === 'devs.surf' || rawHost.includes('devs.surf')) {
+  // 1. Bizim iki resmi domainimiz
+  if (
+    host === 'besteskort.online' ||
+    rawHost === 'besteskort.online' ||
+    host === 'escturkiye.space' ||
+    rawHost === 'escturkiye.space' ||
+    EXACT_OUR_DOMAINS.has(host) ||
+    EXACT_OUR_DOMAINS.has(rawHost)
+  ) {
     return true;
   }
 
-  // 2. Marka domainleri: besteskort / bestescort içeren tüm alan adları
-  if (host.includes('besteskort') || host.includes('bestescort')) {
-    return true;
-  }
-
-  // 3. Kesin olarak bizim sahip olduğumuz tam domain listesi
-  if (EXACT_OUR_DOMAINS.has(rawHost) || EXACT_OUR_DOMAINS.has(host)) {
-    return true;
-  }
-
-  // 4. Takip kaydında özel olarak belirtilmiş spesifik hedef domain varsa
+  // 2. Takip kaydında özel olarak belirtilmiş spesifik hedef domain varsa
   if (targetDomain) {
     const cleanTarget = targetDomain
       .replace(/^https?:\/\//, '')
