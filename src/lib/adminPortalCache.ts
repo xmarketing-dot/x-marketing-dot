@@ -18,7 +18,7 @@ class AdminPortalCache {
   /**
    * Önbellekten veriyi getirir. Yoksa null döner.
    */
-  get<T>(key: string): T | null {
+  get<T = any>(key: string): T | null {
     const entry = this.store.get(key);
     if (!entry) return null;
     return entry.data as T;
@@ -27,7 +27,7 @@ class AdminPortalCache {
   /**
    * Önbelleğe veriyi kaydeder ve zaman damgası vurur.
    */
-  set<T>(key: string, data: T): void {
+  set<T = any>(key: string, data: T): void {
     this.store.set(key, {
       data,
       timestamp: Date.now(),
