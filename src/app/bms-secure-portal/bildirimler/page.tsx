@@ -27,18 +27,52 @@ import { adminPortalCache } from '@/lib/adminPortalCache';
 function MetricCircle({
   percent,
   color = '#10b981',
-  size = 38,
-  strokeWidth = 3.5,
+  size = 48,
+  strokeWidth = 4,
+  loading = false,
 }: {
   percent: number;
   color?: string;
   size?: number;
   strokeWidth?: number;
+  loading?: boolean;
 }) {
   const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  if (loading) {
+    return (
+      <div className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="transform -rotate-90 animate-spin" style={{ animationDuration: '1.6s' }}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="#1e293b"
+            strokeWidth={strokeWidth}
+            fill="transparent"
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * 0.7}
+            strokeLinecap="round"
+            fill="transparent"
+            className="opacity-90"
+          />
+        </svg>
+        <span className="absolute flex items-center justify-center">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color }} />
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="relative inline-flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
@@ -64,7 +98,7 @@ function MetricCircle({
           className="transition-all duration-700 ease-out"
         />
       </svg>
-      <span className="absolute text-[10px] font-mono font-bold text-white">
+      <span className="absolute text-[11px] font-mono font-bold text-white">
         %{Math.round(safePercent)}
       </span>
     </div>
@@ -414,70 +448,106 @@ export default function UnifiedNotificationsManagementPage() {
       </div>
 
       {/* ── 2. EXECUTIVE 4-KPI METRİK ŞERİDİ (IMAGE 2 DİZAYNI) ───────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         
         {/* KPI 1: Kilit Ekranı Push */}
-        <div className="p-3 sm:p-4 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-between gap-2 shadow-sm">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-between gap-3 shadow-md hover:border-slate-700 transition-all">
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-bold">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400">
               Kilit Ekranı Push
             </span>
-            <span className="font-mono font-bold text-lg sm:text-xl text-white mt-0.5 truncate">
-              {stats.totalSubscribers}
-            </span>
-            <span className="text-[10px] text-slate-500 truncate mt-0.5">
-              Android: {stats.androidSubscribers} • PC: {stats.desktopSubscribers}
+            {loading && stats.totalSubscribers === 0 ? (
+              <div className="h-8 w-16 rounded bg-slate-800/80 animate-pulse my-1" />
+            ) : (
+              <span className="font-mono font-extrabold text-2xl sm:text-3xl lg:text-4xl text-white mt-1 tracking-tight truncate">
+                {stats.totalSubscribers}
+              </span>
+            )}
+            <span className="text-xs text-slate-400 font-mono mt-1 truncate">
+              Android: <strong className="text-white">{stats.androidSubscribers}</strong> • PC: <strong className="text-white">{stats.desktopSubscribers}</strong>
             </span>
           </div>
-          <MetricCircle percent={stats.totalSubscribers > 0 ? 100 : 0} color="#10b981" size={38} />
+          <MetricCircle
+            percent={(stats.totalSubscribers + stats.inactiveSubscribers) > 0 ? Math.round((stats.totalSubscribers / (stats.totalSubscribers + stats.inactiveSubscribers)) * 100) : (stats.totalSubscribers > 0 ? 100 : 0)}
+            color="#10b981"
+            size={48}
+            loading={loading && stats.totalSubscribers === 0}
+          />
         </div>
 
         {/* KPI 2: Net PWA Kurulum */}
-        <div className="p-3 sm:p-4 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-between gap-2 shadow-sm">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-between gap-3 shadow-md hover:border-slate-700 transition-all">
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider font-bold">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400">
               Net PWA Kurulum
             </span>
-            <span className="font-mono font-bold text-lg sm:text-xl text-emerald-400 mt-0.5 truncate">
-              {stats.netActivePwa}
-            </span>
-            <span className="text-[10px] text-slate-500 truncate mt-0.5">
+            {loading && stats.netActivePwa === 0 && stats.pwaInstalls === 0 ? (
+              <div className="h-8 w-16 rounded bg-slate-800/80 animate-pulse my-1" />
+            ) : (
+              <span className="font-mono font-extrabold text-2xl sm:text-3xl lg:text-4xl text-emerald-400 mt-1 tracking-tight truncate">
+                {stats.netActivePwa}
+              </span>
+            )}
+            <span className="text-xs text-slate-400 font-mono mt-1 truncate">
               +{stats.pwaInstalls} Kuruldu • -{stats.pwaUninstalls} Silindi
             </span>
           </div>
-          <MetricCircle percent={pwaInstallRate} color="#10b981" size={38} />
+          <MetricCircle
+            percent={stats.pwaInstalls > 0 ? Math.min(100, Math.round((stats.netActivePwa / stats.pwaInstalls) * 100)) : (stats.netActivePwa > 0 ? 100 : 0)}
+            color="#10b981"
+            size={48}
+            loading={loading && stats.netActivePwa === 0 && stats.pwaInstalls === 0}
+          />
         </div>
 
         {/* KPI 3: Site Çan Bildirimleri */}
-        <div className="p-3 sm:p-4 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-between gap-2 shadow-sm">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-between gap-3 shadow-md hover:border-slate-700 transition-all">
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider font-bold">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">
               Site Çan Bildirimi
             </span>
-            <span className="font-mono font-bold text-lg sm:text-xl text-cyan-400 mt-0.5 truncate">
-              {activeNotifsCount}
-            </span>
-            <span className="text-[10px] text-slate-500 truncate mt-0.5">
+            {loading && notifications.length === 0 ? (
+              <div className="h-8 w-16 rounded bg-slate-800/80 animate-pulse my-1" />
+            ) : (
+              <span className="font-mono font-extrabold text-2xl sm:text-3xl lg:text-4xl text-cyan-400 mt-1 tracking-tight truncate">
+                {activeNotifsCount}
+              </span>
+            )}
+            <span className="text-xs text-slate-400 font-mono mt-1 truncate">
               Toplam {notifications.length} bildirim kaydı
             </span>
           </div>
-          <MetricCircle percent={notifActiveRate} color="#06b6d4" size={38} />
+          <MetricCircle
+            percent={notifications.length > 0 ? Math.round((activeNotifsCount / notifications.length) * 100) : (activeNotifsCount > 0 ? 100 : 0)}
+            color="#06b6d4"
+            size={48}
+            loading={loading && notifications.length === 0}
+          />
         </div>
 
         {/* KPI 4: Push Kampanyaları */}
-        <div className="p-3 sm:p-4 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-between gap-2 shadow-sm">
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-between gap-3 shadow-md hover:border-slate-700 transition-all">
           <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider font-bold">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
               Push Kampanyaları
             </span>
-            <span className="font-mono font-bold text-lg sm:text-xl text-amber-400 mt-0.5 truncate">
-              {campaigns.length}
-            </span>
-            <span className="text-[10px] text-slate-500 truncate mt-0.5">
+            {loading && campaigns.length === 0 ? (
+              <div className="h-8 w-16 rounded bg-slate-800/80 animate-pulse my-1" />
+            ) : (
+              <span className="font-mono font-extrabold text-2xl sm:text-3xl lg:text-4xl text-amber-400 mt-1 tracking-tight truncate">
+                {campaigns.length}
+              </span>
+            )}
+            <span className="text-xs text-slate-400 font-mono mt-1 truncate">
               %100 Güvenli İletim Oranı
             </span>
           </div>
-          <MetricCircle percent={campaigns.length > 0 ? 100 : 0} color="#f59e0b" size={38} />
+          <MetricCircle
+            percent={campaigns.length > 0 ? 100 : 0}
+            color="#f59e0b"
+            size={48}
+            loading={loading && campaigns.length === 0}
+          />
         </div>
 
       </div>

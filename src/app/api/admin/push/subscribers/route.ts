@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     await connectToDatabase();
 
     const [subscribers, totalActive, totalInactive, platformCounts, campaigns, pwaInstalls, pwaUninstalls, recentPwaEvents] = await Promise.all([
-      PushSubscriptionModel.find().sort({ createdAt: -1 }).lean(),
+      PushSubscriptionModel.find().sort({ createdAt: -1 }).limit(100).lean(),
       PushSubscriptionModel.countDocuments({ active: true }),
       PushSubscriptionModel.countDocuments({ active: false }),
       PushSubscriptionModel.aggregate([
@@ -22,19 +22,23 @@ export async function GET(req: NextRequest) {
       PushCampaignModel.find().sort({ createdAt: -1 }).limit(50).lean(),
       AnalyticsEventModel.countDocuments({ eventType: 'pwa_install' }),
       AnalyticsEventModel.countDocuments({ eventType: 'pwa_uninstall' }),
-      AnalyticsEventModel.find({ eventType: { $in: ['pwa_install', 'pwa_uninstall'] } }).sort({ createdAt: -1 }).lean()
+      AnalyticsEventModel.find({ eventType: { $in: ['pwa_install', 'pwa_uninstall'] } }).sort({ createdAt: -1 }).limit(60).lean()
     ]);
 
-    // 1. Ziyaretçi İstihbaratı ile Şehirleri & Kaynakları Eşleştir (Konya, İstanbul, İzmir vs.)
-    const vIds = recentPwaEvents.map((e: any) => e.visitorId).concat(subscribers.map((s: any) => s.visitorId)).filter(Boolean);
-    const ips = recentPwaEvents.map((e: any) => e.ip).concat(subscribers.map((s: any) => s.ip)).filter(Boolean);
+    // 1. Ziyaretçi İstihbaratı ile Şehirleri & Kaynakları Eşleştir (Hızlı & İndeksli)
+    const rawVIds = recentPwaEvents.map((e: any) => e.visitorId).concat(subscribers.map((s: any) => s.visitorId)).filter(Boolean);
+    const rawIps = recentPwaEvents.map((e: any) => e.ip).concat(subscribers.map((s: any) => s.ip)).filter(Boolean);
+    const vIds = Array.from(new Set(rawVIds)).slice(0, 50);
+    const ips = Array.from(new Set(rawIps)).slice(0, 50);
 
-    const visitors = await AnalyticsVisitorModel.find({
-      $or: [
-        { visitorId: { $in: vIds } },
-        { ip: { $in: ips } }
-      ]
-    }).sort({ createdAt: -1 }).lean();
+    const visitors = (vIds.length > 0 || ips.length > 0)
+      ? await AnalyticsVisitorModel.find({
+          $or: [
+            ...(vIds.length > 0 ? [{ visitorId: { $in: vIds } }] : []),
+            ...(ips.length > 0 ? [{ ip: { $in: ips } }] : [])
+          ]
+        }).select('visitorId ip city referer searchKeyword path').lean()
+      : [];
 
     const visitorMap = new Map<string, any>();
     visitors.forEach((v: any) => {
