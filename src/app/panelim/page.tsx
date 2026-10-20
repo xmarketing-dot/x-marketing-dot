@@ -627,6 +627,7 @@ export default function PanelimPage() {
 
   const totalViews = listings.reduce((acc, curr) => acc + (curr.totalViews || curr.goruntulenmeSayisi || curr.goruntulenme || 0), 0);
   const totalWhatsapp = listings.reduce((acc, curr) => acc + (curr.whatsappTiklamaSayisi || curr.whatsappTiklama || 0), 0);
+  const totalTodayWhatsapp = listings.reduce((acc, curr) => acc + (curr.todayWhatsappClicks || 0), 0);
   const totalUniqueVisitors = listings.reduce((acc, curr) => acc + (curr.uniqueVisitors || 0), 0);
   const overallConversion = totalViews > 0 ? ((totalWhatsapp / totalViews) * 100).toFixed(1) : '0.0';
 
@@ -728,8 +729,19 @@ export default function PanelimPage() {
               <div className="flex flex-col items-center">
                 <span className="text-[9px] sm:text-[10px] text-emerald-400 font-mono uppercase tracking-wider">WHATSAPP</span>
                 <span className="font-mono font-bold text-sm sm:text-base text-emerald-400 mt-0.5">
-                  {totalWhatsapp.toLocaleString('tr-TR')}
+                  {totalTodayWhatsapp > 0 ? (
+                    <span title={`Bugün: ${totalTodayWhatsapp} | Toplam: ${totalWhatsapp}`}>
+                      {totalTodayWhatsapp} <span className="text-[10px] font-normal text-emerald-300">Bugün</span>
+                    </span>
+                  ) : (
+                    totalWhatsapp.toLocaleString('tr-TR')
+                  )}
                 </span>
+                {totalTodayWhatsapp > 0 && (
+                  <span className="text-[8px] sm:text-[9px] text-slate-400 font-mono">
+                    {totalWhatsapp} toplam
+                  </span>
+                )}
               </div>
               <div className="flex flex-col items-center">
                 <span className="text-[9px] sm:text-[10px] text-sky-400 font-mono uppercase tracking-wider">MÜŞTERİ</span>
@@ -933,7 +945,15 @@ export default function PanelimPage() {
                         <span className="flex items-center gap-1 font-mono text-[10px] sm:text-[11px]">
                           <span>{(item.goruntulenmeSayisi || item.goruntulenme || 0).toLocaleString('tr-TR')} Görüntülenme</span>
                           <span>•</span>
-                          <span className="text-emerald-400">{(item.whatsappTiklamaSayisi || item.whatsappTiklama || 0)} Tık</span>
+                          <span className="text-emerald-400">
+                            {item.todayWhatsappClicks && item.todayWhatsappClicks > 0 ? (
+                              <span className="font-semibold text-emerald-300">
+                                {item.todayWhatsappClicks} Bugün <span className="text-slate-400 font-normal">({item.whatsappTiklamaSayisi || 0} Tık)</span>
+                              </span>
+                            ) : (
+                              <span>{(item.whatsappTiklamaSayisi || item.whatsappTiklama || 0)} Tık</span>
+                            )}
+                          </span>
                         </span>
                         <div className="flex items-center gap-1 text-sky-400 hover:text-sky-300 font-medium text-[10px] sm:text-[11px]">
                           <span>{isExpanded ? 'Gizle' : 'Detaylı Rapor'}</span>
@@ -956,8 +976,11 @@ export default function PanelimPage() {
                             </div>
                             <div className="flex flex-col">
                               <span className="text-[10px] text-emerald-400 font-mono">WhatsApp Tık</span>
-                              <span className="font-bold text-emerald-400 mt-0.5 font-mono">
-                                {(item.whatsappTiklamaSayisi || 0)}
+                              <span className="font-bold text-emerald-400 mt-0.5 font-mono flex flex-col items-center">
+                                <span>{(item.whatsappTiklamaSayisi || 0)} <span className="text-[9px] font-normal text-slate-400">Toplam</span></span>
+                                {item.todayWhatsappClicks !== undefined && item.todayWhatsappClicks > 0 && (
+                                  <span className="text-[10px] text-emerald-300 font-semibold">⚡ {item.todayWhatsappClicks} Bugün</span>
+                                )}
                               </span>
                             </div>
                             <div className="flex flex-col">

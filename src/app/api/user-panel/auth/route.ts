@@ -46,6 +46,84 @@ export async function POST(req: NextRequest) {
       ],
     });
 
+    // Türkiye Saat Dilimi (UTC+3) ile Gün Başlangıcı Hesaplama
+    const turkeyOffsetMs = 3 * 60 * 60 * 1000;
+    const nowTurkey = new Date(now.getTime() + turkeyOffsetMs);
+    const startOfTodayTurkey = new Date(Date.UTC(nowTurkey.getUTCFullYear(), nowTurkey.getUTCMonth(), nowTurkey.getUTCDate()) - turkeyOffsetMs);
+
+    async function enrichUserListings(listings: any[]) {
+      if (!listings || listings.length === 0) return [];
+      const ids = listings.map((l: any) => l._id.toString());
+      const slugs = listings.map((l: any) => (l.slug || '').toLowerCase().trim()).filter(Boolean);
+
+      const todayEvents = await AnalyticsEventModel.aggregate([
+        {
+          $match: {
+            createdAt: { $gte: startOfTodayTurkey },
+            eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] },
+            $or: [
+              { targetId: { $in: [...ids, ...slugs] } },
+              { 'metadata.listingId': { $in: ids } },
+              { 'metadata.slug': { $in: slugs } },
+              { 'metadata.listingSlug': { $in: slugs } }
+            ]
+          }
+        },
+        {
+          $group: {
+            _id: {
+              targetId: "$targetId",
+              metaListingId: "$metadata.listingId",
+              metaSlug: "$metadata.slug",
+              metaListingSlug: "$metadata.listingSlug"
+            },
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      const todayClicksById = new Map<string, number>();
+      todayEvents.forEach((ev: any) => {
+        const c = ev.count || 0;
+        const tid = (ev._id?.targetId || '').toString().trim();
+        const metaId = (ev._id?.metaListingId || '').toString().trim();
+        const mSlug = (ev._id?.metaSlug || ev._id?.metaListingSlug || '').toString().toLowerCase().trim();
+
+        let matchedId: string | null = null;
+        if (metaId && ids.includes(metaId)) matchedId = metaId;
+        else if (tid && ids.includes(tid)) matchedId = tid;
+        else if (mSlug && slugs.includes(mSlug)) {
+          const found = listings.find((l: any) => l.slug?.toLowerCase() === mSlug);
+          if (found) matchedId = found._id.toString();
+        } else if (tid && slugs.includes(tid.toLowerCase())) {
+          const found = listings.find((l: any) => l.slug?.toLowerCase() === tid.toLowerCase());
+          if (found) matchedId = found._id.toString();
+        }
+
+        if (matchedId) {
+          todayClicksById.set(matchedId, (todayClicksById.get(matchedId) || 0) + c);
+        }
+      });
+
+      return listings.map((l: any) => {
+        const doc = l.toObject ? l.toObject() : l;
+        const idStr = doc._id.toString();
+        const views = doc.goruntulenmeSayisi || 0;
+        const todayClicks = todayClicksById.get(idStr) || 0;
+        const lifetimeClicks = Math.max(doc.whatsappTiklamaSayisi || 0, todayClicks);
+        const conv = views > 0 ? ((lifetimeClicks / views) * 100).toFixed(1) : '0.0';
+        const uVis = views > 0 ? Math.max(1, Math.round(views * 0.78)) : 0;
+        return {
+          ...doc,
+          todayWhatsappClicks: todayClicks,
+          whatsappTiklamaSayisi: lifetimeClicks,
+          totalViews: views,
+          uniqueVisitors: uVis,
+          conversionRate: conv,
+        };
+      });
+    }
+
     if (user) {
       // Şifre kontrolü
       if (user.sifreHash && user.sifreHash !== cleanPass) {
@@ -95,19 +173,7 @@ export async function POST(req: NextRequest) {
         ],
       }).sort({ createdAt: -1 });
 
-      const enrichedListings = userListings.map((l: any) => {
-        const doc = l.toObject ? l.toObject() : l;
-        const views = doc.goruntulenmeSayisi || 0;
-        const clicks = doc.whatsappTiklamaSayisi || 0;
-        const conv = views > 0 ? ((clicks / views) * 100).toFixed(1) : '0.0';
-        const uVis = views > 0 ? Math.max(1, Math.round(views * 0.78)) : 0;
-        return {
-          ...doc,
-          totalViews: views,
-          uniqueVisitors: uVis,
-          conversionRate: conv,
-        };
-      });
+      const enrichedListings = await enrichUserListings(userListings);
 
       return NextResponse.json({
         success: true,
@@ -142,20 +208,7 @@ export async function POST(req: NextRequest) {
     const matchedListing = listingMatches.length > 0 ? listingMatches[0] : null;
 
     if (matchedListing) {
-      const validMatches = listingMatches;
-      const enrichedListings = validMatches.map((l: any) => {
-        const doc = l.toObject ? l.toObject() : l;
-        const views = doc.goruntulenmeSayisi || 0;
-        const clicks = doc.whatsappTiklamaSayisi || 0;
-        const conv = views > 0 ? ((clicks / views) * 100).toFixed(1) : '0.0';
-        const uVis = views > 0 ? Math.max(1, Math.round(views * 0.78)) : 0;
-        return {
-          ...doc,
-          totalViews: views,
-          uniqueVisitors: uVis,
-          conversionRate: conv,
-        };
-      });
+      const enrichedListings = await enrichUserListings(listingMatches);
 
       // İlan sahibinin reklam banner'larını da getir
       const userBanners = await BannerAdModel.find({

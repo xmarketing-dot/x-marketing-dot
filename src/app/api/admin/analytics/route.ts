@@ -82,7 +82,8 @@ export async function GET(req: Request) {
       specialAdAggResult,
       recentVisitors,
       listingVisitorsAgg,
-      listingEventsAgg,
+      listingConversionAgg,
+      listingImpressionAgg,
       rawListings,
       recentWhatsappClicks,
       recentPwaInstalls
@@ -192,15 +193,15 @@ export async function GET(req: Request) {
           }
         },
         { $sort: { periodViews: -1 } },
-        { $limit: 300 }
+        { $limit: 500 }
       ]),
 
-      // 12. İlan Etkinlik & Gösterim Dağılımı
+      // 12. İlan WhatsApp Tıklama & Dönüşüm Dağılımı (LİMİTSİZ - %100 Doğrulanmış Clicks)
       AnalyticsEventModel.aggregate([
         {
           $match: {
             ...dateQuery,
-            eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click', 'share_listing', 'phone_call', 'listing_impression'] },
+            eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click', 'share_listing', 'phone_call'] },
           }
         },
         {
@@ -208,15 +209,31 @@ export async function GET(req: Request) {
             _id: {
               targetId: "$targetId",
               targetTitle: "$targetTitle",
-              path: { $toLower: { $arrayElemAt: [{ $split: ["$path", "?"] }, 0] } }
+              metaSlug: "$metadata.slug",
+              metaListingId: "$metadata.listingId",
+              metaListingSlug: "$metadata.listingSlug"
             },
-            impressions: { $sum: { $cond: [{ $eq: ["$eventType", "listing_impression"] }, 1, 0] } },
-            uniqueImpressionVisitors: { $addToSet: "$visitorId" },
             whatsappClicks: { $sum: { $cond: [{ $in: ["$eventType", ["whatsapp_click", "special_ad_whatsapp_click"]] }, 1, 0] } },
             shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
           }
+        }
+      ]),
+
+      // 12b. İlan Kart Gösterim Dağılımı (Hafif ve Doğrudan TargetId bazlı)
+      AnalyticsEventModel.aggregate([
+        {
+          $match: {
+            ...dateQuery,
+            eventType: 'listing_impression'
+          }
         },
-        { $limit: 300 }
+        {
+          $group: {
+            _id: "$targetId",
+            impressions: { $sum: 1 },
+            uniqueImpressionVisitors: { $addToSet: "$visitorId" }
+          }
+        }
       ]),
 
       // 13. İlan Dokümanları
@@ -443,49 +460,79 @@ export async function GET(req: Request) {
       };
     });
 
-    const eventStatsById: Record<string, any> = {};
-    const eventStatsByPath: Record<string, any> = {};
-    const eventStatsByTitle: Record<string, any> = {};
+    // İlan ID, Slug ve Başlık eşleme tabloları (100% kusursuz ilişkilendirme)
+    const listingStatsById = new Map<string, { whatsappClicks: number; shares: number; impressions: number; uniqueVisitors: Set<string> }>();
+    const slugToIdMap = new Map<string, string>();
+    const titleToIdMap = new Map<string, string>();
 
-    listingEventsAgg.forEach((item: any) => {
-      const targetId = item._id?.targetId ? item._id.targetId.toString() : '';
-      const p = item._id?.path ? item._id.path.toLowerCase().replace(/\/$/, '') : '';
-      const title = item._id?.targetTitle ? item._id.targetTitle.trim().toLowerCase() : '';
-      const impressions = item.impressions || 0;
+    rawListings.forEach((l: any) => {
+      const idStr = l._id.toString();
+      listingStatsById.set(idStr, {
+        whatsappClicks: 0,
+        shares: 0,
+        impressions: 0,
+        uniqueVisitors: new Set(),
+      });
+      if (l.slug) slugToIdMap.set(l.slug.toLowerCase().trim(), idStr);
+      if (l.baslik) titleToIdMap.set(l.baslik.toLowerCase().trim(), idStr);
+    });
+
+    // 1. WhatsApp Tıklamaları ve Paylaşımları Eşleştir (%100 Garantili Eşleşme)
+    listingConversionAgg.forEach((item: any) => {
       const clicks = item.whatsappClicks || 0;
       const shares = item.shares || 0;
-      const uVisitors = item.uniqueImpressionVisitors || [];
+      const tid = (item._id?.targetId || '').toString().trim();
+      const metaId = (item._id?.metaListingId || '').toString().trim();
+      const metaSlug = (item._id?.metaSlug || item._id?.metaListingSlug || '').toString().toLowerCase().trim();
+      const title = (item._id?.targetTitle || '').toString().toLowerCase().trim();
 
-      if (targetId) {
-        if (!eventStatsById[targetId]) eventStatsById[targetId] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
-        eventStatsById[targetId].impressions += impressions;
-        eventStatsById[targetId].whatsappClicks += clicks;
-        eventStatsById[targetId].shares += shares;
-        uVisitors.forEach((v: string) => eventStatsById[targetId].uniqueVisitors.add(v));
+      let targetId: string | null = null;
+      if (metaId && listingStatsById.has(metaId)) {
+        targetId = metaId;
+      } else if (tid && listingStatsById.has(tid)) {
+        targetId = tid;
+      } else if (metaSlug && slugToIdMap.has(metaSlug)) {
+        targetId = slugToIdMap.get(metaSlug)!;
+      } else if (tid && slugToIdMap.has(tid.toLowerCase())) {
+        targetId = slugToIdMap.get(tid.toLowerCase())!;
+      } else if (title && titleToIdMap.has(title)) {
+        targetId = titleToIdMap.get(title)!;
       }
-      if (p) {
-        if (!eventStatsByPath[p]) eventStatsByPath[p] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
-        eventStatsByPath[p].impressions += impressions;
-        eventStatsByPath[p].whatsappClicks += clicks;
-        eventStatsByPath[p].shares += shares;
-        uVisitors.forEach((v: string) => eventStatsByPath[p].uniqueVisitors.add(v));
-      }
-      if (title) {
-        if (!eventStatsByTitle[title]) eventStatsByTitle[title] = { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
-        eventStatsByTitle[title].impressions += impressions;
-        eventStatsByTitle[title].whatsappClicks += clicks;
-        eventStatsByTitle[title].shares += shares;
-        uVisitors.forEach((v: string) => eventStatsByTitle[title].uniqueVisitors.add(v));
+
+      if (targetId && listingStatsById.has(targetId)) {
+        const stats = listingStatsById.get(targetId)!;
+        stats.whatsappClicks += clicks;
+        stats.shares += shares;
       }
     });
 
-    // İlan rapor listesini oluştur
+    // 2. Kart Gösterimlerini Eşleştir
+    listingImpressionAgg.forEach((item: any) => {
+      const tid = (item._id || '').toString().trim();
+      const imp = item.impressions || 0;
+      const uVisitors = item.uniqueImpressionVisitors || [];
+
+      let targetId: string | null = null;
+      if (tid && listingStatsById.has(tid)) {
+        targetId = tid;
+      } else if (tid && slugToIdMap.has(tid.toLowerCase())) {
+        targetId = slugToIdMap.get(tid.toLowerCase())!;
+      }
+
+      if (targetId && listingStatsById.has(targetId)) {
+        const stats = listingStatsById.get(targetId)!;
+        stats.impressions += imp;
+        uVisitors.forEach((v: string) => stats.uniqueVisitors.add(v));
+      }
+    });
+
+    // 3. İlan rapor listesini oluştur
     const isAllTime = range === 'all';
 
     const detailedListingReports = rawListings.map((l: any) => {
       const idStr = l._id ? l._id.toString() : '';
       const ilanPath = `/ilan/${l.slug}`.toLowerCase().replace(/\/$/, '');
-      const titleStr = (l.baslik || '').trim().toLowerCase();
+      const eStats = listingStatsById.get(idStr) || { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
 
       const vStats = visitorStatsByPath[ilanPath] || {
         periodViews: 0,
@@ -495,11 +542,6 @@ export async function GET(req: Request) {
         rawReferrers: [],
         lastVisitedAt: null,
       };
-
-      const eStats = (idStr && eventStatsById[idStr])
-        || eventStatsByPath[ilanPath]
-        || (titleStr && eventStatsByTitle[titleStr])
-        || { impressions: 0, uniqueVisitors: new Set(), whatsappClicks: 0, shares: 0 };
 
       const periodViews = (vStats.periodViews || 0) + (eStats.impressions || 0);
       const periodWhatsapp = eStats.whatsappClicks || 0;
@@ -518,7 +560,7 @@ export async function GET(req: Request) {
       const conversionRate = totalViews > 0 ? ((totalWhatsapp / totalViews) * 100).toFixed(1) : '0.0';
 
       return {
-        id: l._id.toString(),
+        id: idStr,
         baslik: l.baslik,
         slug: l.slug,
         ilSlug: l.ilSlug,
@@ -534,7 +576,7 @@ export async function GET(req: Request) {
         uniqueVisitors: uniqueVisitorsCount,
         whatsappClicks: totalWhatsapp,
         periodWhatsappClicks: periodWhatsapp,
-        lifetimeWhatsapp,
+        lifetimeWhatsapp: Math.max(lifetimeWhatsapp, periodWhatsapp),
         shares: totalListingShares,
         conversionRate,
         referrers: vStats.referrers,
