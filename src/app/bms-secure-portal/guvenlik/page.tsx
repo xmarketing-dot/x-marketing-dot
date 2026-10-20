@@ -21,6 +21,7 @@ import {
   Flame,
   Radio
 } from 'lucide-react';
+import { adminPortalCache } from '@/lib/adminPortalCache';
 
 interface BanItem {
   _id: string;
@@ -86,9 +87,9 @@ function MetricCircle({ percent, color = '#ef4444', size = 38, strokeWidth = 3.5
 }
 
 export default function AdminSecurityPage() {
-  const [bans, setBans] = useState<BanItem[]>([]);
-  const [recentThreads, setRecentThreads] = useState<RecentThread[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [bans, setBans] = useState<BanItem[]>(() => adminPortalCache.get<BanItem[]>('bms_security_bans') || []);
+  const [recentThreads, setRecentThreads] = useState<RecentThread[]>(() => adminPortalCache.get<RecentThread[]>('bms_security_threads') || []);
+  const [loading, setLoading] = useState(() => !adminPortalCache.has('bms_security_bans'));
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Manuel Ban Form State
@@ -100,19 +101,24 @@ export default function AdminSecurityPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetchBans();
+    fetchBans(!adminPortalCache.has('bms_security_bans'));
   }, []);
 
-  const fetchBans = async () => {
-    setLoading(true);
+  const fetchBans = async (showLoading: boolean | any = true) => {
+    const shouldShow = showLoading === true;
+    if (shouldShow && !adminPortalCache.has('bms_security_bans')) {
+      setLoading(true);
+    }
     try {
       const res = await fetch('/api/admin/bans');
       const data = await res.json();
       if (data.bans) {
         setBans(data.bans);
+        adminPortalCache.set('bms_security_bans', data.bans);
       }
       if (data.recentThreads) {
         setRecentThreads(data.recentThreads);
+        adminPortalCache.set('bms_security_threads', data.recentThreads);
       }
     } catch (e) {
     } finally {

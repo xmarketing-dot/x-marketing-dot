@@ -15,10 +15,11 @@ import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
 import CircularProgress from '@/components/common/CircularProgress';
 import { parsePhoneNumber, setClientAdminWhatsApp } from '@/lib/siteConfig';
+import { adminPortalCache } from '@/lib/adminPortalCache';
 
 export default function BmsSecurePortalDashboard() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any>(() => adminPortalCache.get<any>('bms_analytics_today_all') || null);
+  const [loading, setLoading] = useState(() => !adminPortalCache.has('bms_analytics_today_all'));
   const [range, setRange] = useState('today'); // today, yesterday, week, month, all
   const [searchTermFilter, setSearchTermFilter] = useState('');
   const [listingSearchTerm, setListingSearchTerm] = useState('');
@@ -362,17 +363,28 @@ export default function BmsSecurePortalDashboard() {
   };
 
   useEffect(() => {
-    fetchAnalytics();
+    const cacheKey = `bms_analytics_${range}_${selectedDomain}`;
+    const cached = adminPortalCache.get(cacheKey);
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+    }
+    fetchAnalytics(!cached);
   }, [range, selectedDomain]);
 
-  const fetchAnalytics = async () => {
-    setLoading(true);
+  const fetchAnalytics = async (showLoading: boolean | any = true) => {
+    const shouldShow = showLoading === true;
+    const cacheKey = `bms_analytics_${range}_${selectedDomain}`;
+    if (shouldShow && !adminPortalCache.has(cacheKey)) {
+      setLoading(true);
+    }
     try {
       const domainQuery = selectedDomain !== 'all' ? `&domain=${encodeURIComponent(selectedDomain)}` : '';
       const res = await fetch(`/api/admin/analytics?range=${range}${domainQuery}`);
       const json = await res.json();
       if (json.analytics) {
         setData(json.analytics);
+        adminPortalCache.set(cacheKey, json.analytics);
       }
     } catch (e) {
       // Silent

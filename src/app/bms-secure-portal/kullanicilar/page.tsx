@@ -28,6 +28,7 @@ import {
   Plus
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { adminPortalCache } from '@/lib/adminPortalCache';
 
 function MetricCircle({ percent, color = '#10b981', size = 38, strokeWidth = 3.5 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
   const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
@@ -67,8 +68,8 @@ function MetricCircle({ percent, color = '#10b981', size = 38, strokeWidth = 3.5
 }
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<any[]>(() => adminPortalCache.get<any[]>('bms_admin_users') || []);
+  const [loading, setLoading] = useState(() => !adminPortalCache.has('bms_admin_users'));
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -141,18 +142,21 @@ export default function AdminUsersPage() {
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(!adminPortalCache.has('bms_admin_users'));
   }, []);
 
-  const fetchUsers = async () => {
-    setLoading(true);
+  const fetchUsers = async (showLoading: boolean | any = true) => {
+    const shouldShow = showLoading === true;
+    if (shouldShow && !adminPortalCache.has('bms_admin_users')) {
+      setLoading(true);
+    }
     try {
       const res = await fetch('/api/admin/users');
       const data = await res.json();
-      if (data.users && Array.isArray(data.users)) {
-        setUsers(data.users);
-      } else if (Array.isArray(data)) {
-        setUsers(data);
+      const list = (data.users && Array.isArray(data.users)) ? data.users : (Array.isArray(data) ? data : []);
+      if (list.length > 0) {
+        setUsers(list);
+        adminPortalCache.set('bms_admin_users', list);
       }
     } catch (err) {
     } finally {

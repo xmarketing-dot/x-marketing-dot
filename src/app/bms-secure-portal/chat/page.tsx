@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useAdminWhatsApp } from '@/lib/siteConfig';
+import { adminPortalCache } from '@/lib/adminPortalCache';
 
 interface Thread {
   _id: string;
@@ -96,11 +97,11 @@ export default function AdminChatPage() {
   const targetThreadId = searchParams.get('threadId');
   const { display, formatted, waLink } = useAdminWhatsApp();
 
-  const [threads, setThreads] = useState<Thread[]>([]);
-  const [selectedThread, setSelectedThread] = useState<Thread | null>(null);
+  const [threads, setThreads] = useState<Thread[]>(() => adminPortalCache.get<Thread[]>('bms_chat_threads') || []);
+  const [selectedThread, setSelectedThread] = useState<Thread | null>(() => adminPortalCache.get<Thread | null>('bms_chat_selected_thread') || null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [replyText, setReplyText] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !adminPortalCache.has('bms_chat_threads'));
   const [sending, setSending] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -128,12 +129,14 @@ export default function AdminChatPage() {
       const data = await res.json();
       if (data.threads) {
         setThreads(data.threads);
+        adminPortalCache.set('bms_chat_threads', data.threads);
 
         // targetThreadId parametresini sadece İLK SAYFA AÇILIŞINDA bir kez uygula
         if (!initialTargetHandled.current && targetThreadId) {
           const matched = data.threads.find((t: Thread) => t._id === targetThreadId);
           if (matched) {
             setSelectedThread(matched);
+            adminPortalCache.set('bms_chat_selected_thread', matched);
             initialTargetHandled.current = true;
             return;
           }
@@ -156,6 +159,13 @@ export default function AdminChatPage() {
       setLoading(false);
     }
   };
+
+  // Aktif seçili sohbeti hafızada tut (kullanıcı menü değiştirip geri döndüğünde sohbeti açık kalsın)
+  useEffect(() => {
+    if (selectedThread) {
+      adminPortalCache.set('bms_chat_selected_thread', selectedThread);
+    }
+  }, [selectedThread?._id]);
 
   // 2. Global Thread Polling (Hafif ve Vercel dostu 10s aralık)
   useEffect(() => {

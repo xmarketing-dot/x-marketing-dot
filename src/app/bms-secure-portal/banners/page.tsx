@@ -33,6 +33,7 @@ import {
   PlayCircle 
 } from 'lucide-react';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
+import { adminPortalCache } from '@/lib/adminPortalCache';
 
 function MetricCircle({ percent, color = '#10b981', size = 38, strokeWidth = 3.5 }: { percent: number; color?: string; size?: number; strokeWidth?: number }) {
   const safePercent = Math.min(Math.max(percent || 0, 0), 100);
@@ -72,26 +73,31 @@ function MetricCircle({ percent, color = '#10b981', size = 38, strokeWidth = 3.5
 }
 
 export default function AdminBannerManagementPage() {
-  const [banners, setBanners] = useState<any[]>([]);
-  const [emptyClicks, setEmptyClicks] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
+  const [banners, setBanners] = useState<any[]>(() => adminPortalCache.get<any[]>('bms_admin_banners') || []);
+  const [emptyClicks, setEmptyClicks] = useState<number>(() => adminPortalCache.get<number>('bms_admin_empty_clicks') || 0);
+  const [loading, setLoading] = useState(() => !adminPortalCache.has('bms_admin_banners'));
   const [statusFilter, setStatusFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu' | 'reddedildi'>('all');
   const [editingBanner, setEditingBanner] = useState<any | null>(null);
   const [editSureGun, setEditSureGun] = useState<number>(7);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchBanners();
+    fetchBanners(!adminPortalCache.has('bms_admin_banners'));
   }, []);
 
-  const fetchBanners = async () => {
-    setLoading(true);
+  const fetchBanners = async (showLoading: boolean | any = true) => {
+    const shouldShow = showLoading === true;
+    if (shouldShow && !adminPortalCache.has('bms_admin_banners')) {
+      setLoading(true);
+    }
     try {
       const res = await fetch('/api/admin/banners');
       const data = await res.json();
       if (data.success && data.banners) {
         setBanners(data.banners);
         setEmptyClicks(data.emptyClicksCount || 0);
+        adminPortalCache.set('bms_admin_banners', data.banners);
+        adminPortalCache.set('bms_admin_empty_clicks', data.emptyClicksCount || 0);
       }
     } catch (e) {
     } finally {

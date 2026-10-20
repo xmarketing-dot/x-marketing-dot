@@ -45,6 +45,7 @@ import {
   ThumbsUp
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
+import { adminPortalCache } from '@/lib/adminPortalCache';
 
 function MetricCircle({
   percent,
@@ -131,11 +132,15 @@ function MetricCircle({
 
 
 export default function AdminListingsPage() {
-  const [listings, setListings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [listings, setListings] = useState<any[]>(() => adminPortalCache.get<any[]>('bms_admin_listings') || []);
+  const [loading, setLoading] = useState(() => !adminPortalCache.has('bms_admin_listings'));
   const [filter, setFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
   const [sortBy, setSortBy] = useState<'expiry_asc' | 'created_desc' | 'city_asc' | 'views_desc' | 'whatsapp_desc' | 'title_asc'>('created_desc');
   const [searchTerm, setSearchTerm] = useState('');
+  const [highlightedListingIds, setHighlightedListingIds] = useState<string[]>([]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  const [syncNewCount, setSyncNewCount] = useState<number>(0);
 
   // Detaylı İnceleme Modalı (Full Inspection Modal)
   const [inspectItem, setInspectItem] = useState<any | null>(null);
@@ -206,8 +211,8 @@ export default function AdminListingsPage() {
   // Quick User Account Assignment states (Yeni Oluştur veya Mevcut Seç)
   const [assignModalItem, setAssignModalItem] = useState<any | null>(null);
   const [assignMode, setAssignMode] = useState<'create' | 'select'>('select');
-  const [systemUsers, setSystemUsers] = useState<any[]>([]);
-  const [usersLoading, setUsersLoading] = useState(false);
+  const [systemUsers, setSystemUsers] = useState<any[]>(() => adminPortalCache.get<any[]>('bms_system_users') || []);
+  const [usersLoading, setUsersLoading] = useState(() => !adminPortalCache.has('bms_system_users'));
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [selectedExistingUserId, setSelectedExistingUserId] = useState('');
   const [assignForm, setAssignForm] = useState({ kullaniciAdi: '', sifre: '', telefon: '' });
@@ -359,23 +364,27 @@ export default function AdminListingsPage() {
   };
 
   useEffect(() => {
-    fetchListings(true);
+    fetchListings(!adminPortalCache.has('bms_admin_listings'));
     fetchSystemUsers();
     const interval = setInterval(() => {
       fetchListings(false);
-    }, 8000);
+    }, 10000);
     return () => clearInterval(interval);
   }, []);
 
   const fetchSystemUsers = async () => {
-    setUsersLoading(true);
+    if (!adminPortalCache.has('bms_system_users')) {
+      setUsersLoading(true);
+    }
     try {
       const res = await fetch('/api/admin/users');
       const data = await res.json();
       if (Array.isArray(data)) {
         setSystemUsers(data);
+        adminPortalCache.set('bms_system_users', data);
       } else if (data.users && Array.isArray(data.users)) {
         setSystemUsers(data.users);
+        adminPortalCache.set('bms_system_users', data.users);
       }
     } catch (e) {
       // Silent
@@ -384,21 +393,44 @@ export default function AdminListingsPage() {
     }
   };
 
-  const fetchListings = async (showLoading = true) => {
-    if (showLoading) setLoading(true);
+  const fetchListings = async (showLoading: boolean | any = true) => {
+    const shouldShow = showLoading === true;
+    if (shouldShow && !adminPortalCache.has('bms_admin_listings')) {
+      setLoading(true);
+    } else {
+      setIsSyncing(true);
+    }
     try {
       const res = await fetch(`/api/admin/listings?t=${Date.now()}`, {
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' }
       });
       const data = await res.json();
-      if (data.listings) {
-        setListings(data.listings);
+      if (data.listings && Array.isArray(data.listings)) {
+        setListings((prev) => {
+          if (prev && prev.length > 0) {
+            const prevIds = new Set(prev.map((l: any) => l._id));
+            const newItems = data.listings.filter((l: any) => !prevIds.has(l._id));
+            if (newItems.length > 0) {
+              const newIds = newItems.map((l: any) => l._id);
+              setHighlightedListingIds(newIds);
+              setSyncNewCount(newItems.length);
+              setTimeout(() => {
+                setHighlightedListingIds([]);
+                setSyncNewCount(0);
+              }, 7000);
+            }
+          }
+          adminPortalCache.set('bms_admin_listings', data.listings);
+          return data.listings;
+        });
+        setLastSyncTime(new Date());
       }
     } catch (e) {
       console.error(e);
     } finally {
-      if (showLoading) setLoading(false);
+      setLoading(false);
+      setIsSyncing(false);
     }
   };
 
@@ -428,9 +460,11 @@ export default function AdminListingsPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setListings((prev) =>
-          prev.map((l) => (l._id === id ? { ...l, status: newStatus } : l))
-        );
+        setListings((prev) => {
+          const updated = prev.map((l) => (l._id === id ? { ...l, status: newStatus } : l));
+          adminPortalCache.set('bms_admin_listings', updated);
+          return updated;
+        });
       } else {
         alert(data.error || 'İşlem başarısız.');
       }
@@ -843,7 +877,12 @@ export default function AdminListingsPage() {
     if (!confirm('Bu ilanı tamamen silmek istediğinizden emin misiniz?')) return;
     try {
       await fetch(`/api/admin/listings?id=${id}`, { method: 'DELETE' });
-      fetchListings();
+      setListings((prev) => {
+        const updated = prev.filter((l) => l._id !== id);
+        adminPortalCache.set('bms_admin_listings', updated);
+        return updated;
+      });
+      fetchListings(false);
     } catch (e) {
       console.error(e);
     }
@@ -1090,12 +1129,29 @@ export default function AdminListingsPage() {
               <span className="truncate">+ Yeni VIP Model / İlan</span>
             </button>
 
+            {isSyncing ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-emerald-500/30 text-[11px] font-mono text-emerald-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                <span className="hidden sm:inline">Taranıyor...</span>
+              </span>
+            ) : syncNewCount > 0 ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/50 text-[11px] font-mono font-bold text-emerald-300 animate-pulse">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                +{syncNewCount} Yeni İlan Düştü!
+              </span>
+            ) : lastSyncTime ? (
+              <span className="hidden xl:inline-flex items-center gap-1.5 text-[10px] font-mono text-slate-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60" />
+                {lastSyncTime.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+            ) : null}
+
             <button
               onClick={() => fetchListings(true)}
               className="p-2.5 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors active:scale-95 shrink-0 cursor-pointer"
               title="İlanları Yenile"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading || isSyncing ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
@@ -1433,11 +1489,17 @@ export default function AdminListingsPage() {
                         : '5.0';
                       const conversion = hits > 0 ? ((clicks / hits) * 100).toFixed(1) : '0.0';
 
+                      const isHighlighted = highlightedListingIds.includes(item._id);
+
                       return (
                         <tr
                           key={item._id}
-                          className={`hover:bg-slate-900/40 transition-colors group ${
-                            isPending ? 'bg-amber-500/[0.03]' : ''
+                          className={`transition-all duration-700 group ${
+                            isHighlighted
+                              ? 'bg-emerald-950/70 border-y border-emerald-400 ring-2 ring-emerald-400 shadow-[0_0_35px_rgba(16,185,129,0.4)]'
+                              : isPending
+                              ? 'bg-amber-500/[0.03] hover:bg-slate-900/40'
+                              : 'hover:bg-slate-900/40'
                           }`}
                         >
                           {/* 1. İlan & Model & Rozet & Konum (Tekil Entegre Blok) */}
@@ -1469,6 +1531,11 @@ export default function AdminListingsPage() {
                                   >
                                     {item.baslik}
                                   </span>
+                                  {isHighlighted && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-black uppercase tracking-wider bg-emerald-500 text-slate-950 shadow-sm animate-pulse shrink-0">
+                                      <Sparkles className="w-2.5 h-2.5" /> YENİ GELDİ
+                                    </span>
+                                  )}
                                   <span className={`inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[9px] font-bold font-mono tracking-wider shrink-0 ${
                                     isLive
                                       ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
@@ -1686,12 +1753,15 @@ export default function AdminListingsPage() {
                 const remaining = getRemainingTime(item.paketBitisTarihi, item.status, item.createdAt);
                 const isPending = item.status === 'onay_bekliyor';
                 const isLive = item.status === 'yayinda';
+                const isHighlighted = highlightedListingIds.includes(item._id);
 
                 return (
                   <div
                     key={item._id}
                     className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all flex flex-col gap-3 shadow-lg ${
-                      isPending
+                      isHighlighted
+                        ? 'border-emerald-400 ring-2 ring-emerald-400 bg-emerald-950/50 shadow-[0_0_35px_rgba(16,185,129,0.35)]'
+                        : isPending
                         ? 'border-amber-500/40 bg-amber-500/[0.03]'
                         : 'border-slate-800 hover:border-slate-700'
                     }`}
@@ -1725,6 +1795,11 @@ export default function AdminListingsPage() {
                           >
                             {item.baslik}
                           </h3>
+                          {isHighlighted && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-mono font-black uppercase tracking-wider bg-emerald-500 text-slate-950 shadow-sm animate-pulse shrink-0">
+                              <Sparkles className="w-2.5 h-2.5" /> YENİ GELDİ
+                            </span>
+                          )}
 
                           <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold font-mono tracking-wider ${
                             isLive
