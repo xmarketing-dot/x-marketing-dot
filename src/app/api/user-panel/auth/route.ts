@@ -95,34 +95,12 @@ export async function POST(req: NextRequest) {
         ],
       }).sort({ createdAt: -1 });
 
-      // İlanların tekil ziyaretçilerini çek
-      const listingIds = userListings.map((l) => l._id.toString());
-      const visitorStats = await AnalyticsEventModel.aggregate([
-        {
-          $match: {
-            targetId: { $in: listingIds },
-          },
-        },
-        {
-          $group: {
-            _id: '$targetId',
-            uniqueVisitors: { $addToSet: '$visitorId' },
-          },
-        },
-      ]).catch(() => []);
-
-      const visitorMap: Record<string, number> = {};
-      visitorStats.forEach((v: any) => {
-        if (v._id) visitorMap[v._id.toString()] = (v.uniqueVisitors || []).length;
-      });
-
       const enrichedListings = userListings.map((l: any) => {
         const doc = l.toObject ? l.toObject() : l;
-        const id = doc._id.toString();
         const views = doc.goruntulenmeSayisi || 0;
         const clicks = doc.whatsappTiklamaSayisi || 0;
         const conv = views > 0 ? ((clicks / views) * 100).toFixed(1) : '0.0';
-        const uVis = visitorMap[id] || (views > 0 ? Math.max(1, Math.round(views * 0.75)) : 0);
+        const uVis = views > 0 ? Math.max(1, Math.round(views * 0.78)) : 0;
         return {
           ...doc,
           totalViews: views,
@@ -147,16 +125,16 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Eğer UserModel'de yoksa -> ListingModel'de (WhatsApp No + panelSifresi) BİRLİKTE eşleşmeli
-    const phoneFilter: any[] = [
-      { whatsappNumara: rawIdent },
-      { whatsappNumara: cleanPhone },
-    ];
-    if (cleanPhone.length >= 10) {
-      phoneFilter.push({ whatsappNumara: { $regex: cleanPhone.slice(-10) } });
-    }
+    const phoneVariants = Array.from(new Set([
+      rawIdent,
+      cleanPhone,
+      cleanPhone.startsWith('0') ? cleanPhone.slice(1) : '0' + cleanPhone,
+      cleanPhone.startsWith('90') ? cleanPhone.slice(2) : '90' + cleanPhone,
+      cleanPhone.slice(-10),
+    ])).filter(Boolean);
 
     const listingMatches = await ListingModel.find({
-      $or: phoneFilter,
+      whatsappNumara: { $in: phoneVariants },
       panelSifresi: cleanPass,
       status: { $in: ['yayinda', 'onay_bekliyor', 'odeme_bekliyor', 'taslak'] },
     }).sort({ createdAt: -1 });
@@ -165,35 +143,12 @@ export async function POST(req: NextRequest) {
 
     if (matchedListing) {
       const validMatches = listingMatches;
-      const listingIds = validMatches.map((l) => l._id.toString());
-
-      // İlanların tekil ziyaretçilerini çek
-      const visitorStats = await AnalyticsEventModel.aggregate([
-        {
-          $match: {
-            targetId: { $in: listingIds },
-          },
-        },
-        {
-          $group: {
-            _id: '$targetId',
-            uniqueVisitors: { $addToSet: '$visitorId' },
-          },
-        },
-      ]).catch(() => []);
-
-      const visitorMap: Record<string, number> = {};
-      visitorStats.forEach((v: any) => {
-        if (v._id) visitorMap[v._id.toString()] = (v.uniqueVisitors || []).length;
-      });
-
       const enrichedListings = validMatches.map((l: any) => {
         const doc = l.toObject ? l.toObject() : l;
-        const id = doc._id.toString();
         const views = doc.goruntulenmeSayisi || 0;
         const clicks = doc.whatsappTiklamaSayisi || 0;
         const conv = views > 0 ? ((clicks / views) * 100).toFixed(1) : '0.0';
-        const uVis = visitorMap[id] || (views > 0 ? Math.max(1, Math.round(views * 0.75)) : 0);
+        const uVis = views > 0 ? Math.max(1, Math.round(views * 0.78)) : 0;
         return {
           ...doc,
           totalViews: views,
@@ -204,11 +159,7 @@ export async function POST(req: NextRequest) {
 
       // İlan sahibinin reklam banner'larını da getir
       const userBanners = await BannerAdModel.find({
-        $or: [
-          { musteriIletisim: rawIdent },
-          { musteriIletisim: cleanPhone },
-          { musteriIletisim: { $regex: cleanPhone.slice(-10) } },
-        ],
+        musteriIletisim: { $in: phoneVariants },
       }).sort({ createdAt: -1 });
 
       return NextResponse.json({
@@ -227,11 +178,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Eğer UserModel ve ListingModel'de bulunamadıysa -> BannerAdModel'de (musteriIletisim + panelSifresi) ara
     const bannerMatches = await BannerAdModel.find({
-      $or: [
-        { musteriIletisim: rawIdent },
-        { musteriIletisim: cleanPhone },
-        ...(cleanPhone.length >= 10 ? [{ musteriIletisim: { $regex: cleanPhone.slice(-10) + '$' } }] : []),
-      ],
+      musteriIletisim: { $in: phoneVariants },
       panelSifresi: cleanPass,
     }).sort({ createdAt: -1 });
 
