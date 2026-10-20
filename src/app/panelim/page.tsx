@@ -516,15 +516,15 @@ export default function PanelimPage() {
   };
 
   // ══════════════════════════════════════════════════
-  // 1. GİRİŞ YAPILMAMIŞ DURUM (SENIOR CYBER LUXURY GİRİŞ)
+  // 1. GİRİŞ YAPILMAMIŞ DURUM (BMS LUXURY OBSIDIAN GİRİŞ)
   // ══════════════════════════════════════════════════
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[#070a0f] text-slate-100 flex flex-col justify-center px-4 py-8 max-w-md mx-auto selection:bg-emerald-500 selection:text-slate-950 font-sans">
+      <div className="min-h-screen bg-[#070a0f] text-slate-100 flex flex-col justify-center px-4 py-8 max-w-md mx-auto selection:bg-slate-700 selection:text-white font-sans">
         <div className="p-6 sm:p-7 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-2xl flex flex-col gap-5 relative overflow-hidden">
           
           <div className="flex flex-col items-center text-center gap-2">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 flex items-center justify-center font-bold shadow-sm">
+            <div className="w-12 h-12 rounded-xl bg-[#0e131f] border border-slate-700/80 text-sky-400 flex items-center justify-center font-bold shadow-sm">
               <KeyRound className="w-6 h-6 stroke-[2]" />
             </div>
             <h1 className="font-bold text-lg sm:text-xl text-white tracking-tight mt-1">
@@ -554,7 +554,7 @@ export default function PanelimPage() {
                   placeholder="Örn: 0530... veya kullanici_adi"
                   value={telefon}
                   onChange={(e) => setTelefon(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
                 />
                 <UserIcon className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
               </div>
@@ -571,7 +571,7 @@ export default function PanelimPage() {
                   placeholder="••••••"
                   value={panelSifresi}
                   onChange={(e) => setPanelSifresi(e.target.value)}
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 transition-colors"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
                 />
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
               </div>
@@ -580,11 +580,11 @@ export default function PanelimPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 cursor-pointer"
+              className="w-full py-3 rounded-xl bg-slate-100 hover:bg-white active:scale-95 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg transition-all flex items-center justify-center gap-2 mt-2 disabled:opacity-50 cursor-pointer"
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
                   <span>Doğrulanıyor...</span>
                 </>
               ) : (
@@ -600,7 +600,7 @@ export default function PanelimPage() {
             <span className="text-[11px] text-slate-400">Şifrenizi hatırlamıyor musunuz?</span>
             <Link
               href="/chat"
-              className="text-xs text-emerald-400 font-semibold hover:underline flex items-center gap-1"
+              className="text-xs text-sky-400 hover:text-sky-300 font-semibold hover:underline flex items-center gap-1"
             >
               <Headphones className="w-3.5 h-3.5" />
               <span>7/24 Canlı Destekten Şifremi İste</span>
@@ -637,7 +637,7 @@ export default function PanelimPage() {
       <header className="sticky top-0 z-30 bg-[#070a0f]/90 backdrop-blur-xl border-b border-slate-800 px-2.5 sm:px-4 py-2 sm:py-2.5">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono font-bold flex items-center justify-center text-xs shadow-sm shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#0e131f] border border-slate-700/80 text-white font-mono font-bold flex items-center justify-center text-xs shadow-sm shrink-0">
               {currentUser.ad?.charAt(0).toUpperCase() || 'İ'}
             </div>
             <div className="flex flex-col min-w-0">
@@ -645,7 +645,7 @@ export default function PanelimPage() {
                 <span className="font-semibold text-xs sm:text-sm text-white truncate">
                   {currentUser.kullaniciAdi || currentUser.ad}
                 </span>
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <ShieldCheck className="w-3.5 h-3.5 text-sky-400 shrink-0" />
               </div>
               <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono truncate">
                 {currentUser.telefon ? currentUser.telefon : 'Doğrulanmış Profil'}
@@ -656,14 +656,14 @@ export default function PanelimPage() {
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setActiveTab('chat')}
-              className="p-1.5 sm:p-2 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-emerald-400 active:scale-95 transition-all cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl bg-[#0b101b] hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white active:scale-95 transition-all cursor-pointer"
               title="Canlı Destek"
             >
               <Headphones className="w-4 h-4" />
             </button>
             <button
               onClick={handleLogout}
-              className="p-1.5 sm:p-2 rounded-xl bg-slate-900/60 hover:bg-rose-500/15 border border-slate-800 text-slate-400 hover:text-rose-400 active:scale-95 transition-all cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl bg-[#0b101b] hover:bg-rose-500/15 border border-slate-800 text-slate-400 hover:text-rose-400 active:scale-95 transition-all cursor-pointer"
               title="Çıkış Yap"
             >
               <LogOut className="w-4 h-4" />
@@ -671,7 +671,7 @@ export default function PanelimPage() {
           </div>
         </div>
 
-        {/* ── SEGMENTED PILL TAB BAR ──────────────── */}
+        {/* ── SEGMENTED PILL TAB BAR (BMS Secure Portal Tarzı Yüksek Kontrast & Şık Tasarım) ──────────────── */}
         <div className="max-w-2xl mx-auto mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
           {menuItems.map((item) => {
             const isSelected = activeTab === item.id;
@@ -679,23 +679,25 @@ export default function PanelimPage() {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id as any)}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer border ${
                   isSelected
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20'
-                    : 'bg-slate-900/60 border border-slate-800 text-slate-400 hover:text-white'
+                    ? 'bg-[#151f32] text-white border-slate-600 shadow-md ring-1 ring-slate-500/30'
+                    : 'bg-[#090d14] border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800/60'
                 }`}
               >
                 <span>{item.label}</span>
                 {item.count !== undefined && (
-                  <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
-                    isSelected ? 'bg-slate-950 text-emerald-300' : 'bg-slate-800 text-slate-300'
+                  <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-mono font-bold border ${
+                    isSelected
+                      ? 'bg-slate-800 text-slate-100 border-slate-600'
+                      : 'bg-slate-900 text-slate-400 border-slate-800'
                   }`}>
                     {item.count}
                   </span>
                 )}
                 {item.badge && (
                   <span className={`text-[9px] font-mono font-semibold ${
-                    isSelected ? 'text-slate-950' : 'text-emerald-400'
+                    item.badge === 'VIP' ? 'text-amber-400' : 'text-sky-400'
                   }`}>
                     {item.badge}
                   </span>
@@ -715,7 +717,7 @@ export default function PanelimPage() {
         {activeTab === 'ilanlarim' && (
           <div className="flex flex-col gap-2.5 sm:gap-3.5 animate-fadeIn">
 
-            {/* ── KPI ŞERİDİ ──────────────── */}
+            {/* ── KPI ŞERİDİ (BMS Portal Renk Hiyerarşisi: Beyaz/Hit, Zümrüt/WA, Sky/Müşteri, Mor/Dönüşüm) ──────────────── */}
             <div className="grid grid-cols-4 py-2.5 px-1 sm:px-3 bg-[#0c1017] rounded-xl sm:rounded-2xl border border-slate-800 text-center divide-x divide-slate-800/80 shadow-sm">
               <div className="flex flex-col items-center">
                 <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono uppercase tracking-wider">GÖSTERİM</span>
@@ -730,33 +732,35 @@ export default function PanelimPage() {
                 </span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-[9px] sm:text-[10px] text-cyan-400 font-mono uppercase tracking-wider">MÜŞTERİ</span>
-                <span className="font-mono font-bold text-sm sm:text-base text-cyan-400 mt-0.5">
+                <span className="text-[9px] sm:text-[10px] text-sky-400 font-mono uppercase tracking-wider">MÜŞTERİ</span>
+                <span className="font-mono font-bold text-sm sm:text-base text-sky-300 mt-0.5">
                   {(totalUniqueVisitors || Math.max(1, Math.round(totalViews * 0.78))).toLocaleString('tr-TR')}
                 </span>
               </div>
               <div className="flex flex-col items-center">
-                <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono uppercase tracking-wider">DÖNÜŞÜM</span>
-                <span className="font-mono font-bold text-sm sm:text-base text-emerald-400 mt-0.5">
+                <span className="text-[9px] sm:text-[10px] text-purple-400 font-mono uppercase tracking-wider">DÖNÜŞÜM</span>
+                <span className="font-mono font-bold text-sm sm:text-base text-purple-300 mt-0.5">
                   %{overallConversion}
                 </span>
               </div>
             </div>
 
-            {/* ── AKTİF VİTRİN BİLGİLENDİRME ── */}
+            {/* ── AKTİF VİTRİN BİLGİLENDİRME (VIP Altın/Amber Hiyerarşisi) ── */}
             {(() => {
               const activeVitrin = listings.find((l) => l.isVitrin || (l.vitrinBitisTarihi && new Date(l.vitrinBitisTarihi).getTime() > currentTime));
               if (activeVitrin) {
                 const vitrinCd = calculateVitrinCountdown(activeVitrin.vitrinBitisTarihi, activeVitrin.isVitrin);
                 return (
-                  <div className="px-2.5 sm:px-3.5 py-2 rounded-xl sm:rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between gap-2">
+                  <div className="px-2.5 sm:px-3.5 py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-950/20 to-[#0c1017] border border-amber-500/30 flex items-center justify-between gap-2 shadow-sm">
                     <div className="flex items-center gap-2 min-w-0">
-                      <Crown className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <div className="w-6 h-6 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center shrink-0">
+                        <Crown className="w-3.5 h-3.5 text-amber-400" />
+                      </div>
                       <div className="flex flex-col min-w-0">
                         <span className="text-xs font-semibold text-white truncate">
                           Anasayfa Vitrininde Yayında
                         </span>
-                        <span className="text-[10px] text-emerald-300 font-mono">
+                        <span className="text-[10px] text-amber-300/90 font-mono">
                           Kalan Süre: {vitrinCd?.text}
                         </span>
                       </div>
@@ -766,7 +770,7 @@ export default function PanelimPage() {
                         setSelectedVitrinListing(activeVitrin);
                         setVitrinSuccessMsg('');
                       }}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px] shrink-0 active:scale-95 transition-all cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-[11px] shrink-0 active:scale-95 transition-all shadow-sm shadow-amber-500/20 cursor-pointer"
                     >
                       Uzat
                     </button>
@@ -894,7 +898,7 @@ export default function PanelimPage() {
                               hakkindaBiyografi: item.hakkindaBiyografi || '',
                             });
                           }}
-                          className="flex-1 h-9 px-2 rounded-xl bg-[#070a0f] hover:bg-slate-800 border border-slate-800 active:scale-95 text-slate-200 text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
+                          className="flex-1 h-9 px-2 rounded-xl bg-[#090d14] hover:bg-slate-800 border border-slate-800 active:scale-95 text-slate-200 text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
                         >
                           <Edit3 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                           <span>Düzenle</span>
@@ -905,7 +909,7 @@ export default function PanelimPage() {
                             setSelectedVitrinListing(item);
                             setVitrinSuccessMsg('');
                           }}
-                          className="flex-[1.25] h-9 px-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-emerald-500/15 cursor-pointer whitespace-nowrap"
+                          className="flex-[1.25] h-9 px-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-slate-950 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-amber-500/20 cursor-pointer whitespace-nowrap"
                         >
                           <Crown className="w-3.5 h-3.5 shrink-0" />
                           <span>{isVitrinActive ? 'Vitrini Uzat' : 'Vitrine Al'}</span>
@@ -914,7 +918,7 @@ export default function PanelimPage() {
                         <Link
                           href={`/ilan/${item.slug}`}
                           target="_blank"
-                          className="h-9 px-3 sm:px-4 rounded-xl bg-[#070a0f] hover:bg-slate-800 border border-slate-800 active:scale-95 text-slate-300 hover:text-white text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1 transition-all text-center whitespace-nowrap shrink-0"
+                          className="h-9 px-3 sm:px-4 rounded-xl bg-[#090d14] hover:bg-slate-800 border border-slate-800 active:scale-95 text-slate-300 hover:text-white text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1 transition-all text-center whitespace-nowrap shrink-0"
                         >
                           <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                           <span>Gör</span>
@@ -931,22 +935,22 @@ export default function PanelimPage() {
                           <span>•</span>
                           <span className="text-emerald-400">{(item.whatsappTiklamaSayisi || item.whatsappTiklama || 0)} Tık</span>
                         </span>
-                        <div className="flex items-center gap-1 text-emerald-400 font-medium text-[10px] sm:text-[11px]">
+                        <div className="flex items-center gap-1 text-sky-400 hover:text-sky-300 font-medium text-[10px] sm:text-[11px]">
                           <span>{isExpanded ? 'Gizle' : 'Detaylı Rapor'}</span>
                           <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                         </div>
                       </button>
 
                       {isExpanded && (
-                        <div className="p-2.5 sm:p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col gap-2 text-xs animate-fadeIn">
+                        <div className="p-2.5 sm:p-3 rounded-xl bg-[#090d14] border border-slate-800/80 flex flex-col gap-2 text-xs animate-fadeIn">
                           <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono pb-1 border-b border-slate-800">
                             <span>MÜŞTERİ ANALİZİ</span>
-                            <span className="text-emerald-400">CANLI VERİ</span>
+                            <span className="text-sky-400 font-semibold">CANLI VERİ</span>
                           </div>
                           <div className="grid grid-cols-3 gap-2 text-center py-1">
                             <div className="flex flex-col">
                               <span className="text-[10px] text-slate-500 font-mono">Tekil Müşteri</span>
-                              <span className="font-bold text-white mt-0.5 font-mono">
+                              <span className="font-bold text-sky-300 mt-0.5 font-mono">
                                 {(item.uniqueVisitors || Math.max(1, Math.round((item.goruntulenmeSayisi || 1) * 0.78))).toLocaleString('tr-TR')}
                               </span>
                             </div>
@@ -957,8 +961,8 @@ export default function PanelimPage() {
                               </span>
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-[10px] text-slate-400 font-mono">Dönüşüm</span>
-                              <span className="font-bold text-slate-200 mt-0.5 font-mono">
+                              <span className="text-[10px] text-purple-400 font-mono">Dönüşüm</span>
+                              <span className="font-bold text-purple-300 mt-0.5 font-mono">
                                 %{((item.whatsappTiklamaSayisi || 0) / Math.max(1, (item.goruntulenmeSayisi || 1)) * 100).toFixed(1)}
                               </span>
                             </div>
