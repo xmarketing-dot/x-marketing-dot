@@ -45,12 +45,58 @@ import {
   ThumbsUp
 } from 'lucide-react';
 import { turkeyProvinces } from '@/data/turkeyLocations';
+import CircularProgress from '@/components/common/CircularProgress';
 
-function MetricCircle({ percent, color, size = 42, strokeWidth = 3.5 }: { percent: number; color: string; size?: number; strokeWidth?: number }) {
+function MetricCircle({
+  percent,
+  color,
+  size = 44,
+  strokeWidth = 3.5,
+  loading = false,
+}: {
+  percent: number;
+  color: string;
+  size?: number;
+  strokeWidth?: number;
+  loading?: boolean;
+}) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const safePercent = Math.min(100, Math.max(0, isNaN(percent) ? 0 : percent));
   const strokeDashoffset = circumference - (safePercent / 100) * circumference;
+
+  if (loading) {
+    return (
+      <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="transform -rotate-90 animate-spin" style={{ animationDuration: '1.6s' }}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            className="text-slate-800/80"
+            fill="transparent"
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * 0.7}
+            strokeLinecap="round"
+            fill="transparent"
+            className="opacity-90"
+          />
+        </svg>
+        <span className="absolute flex items-center justify-center">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color }} />
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex items-center justify-center shrink-0" style={{ width: size, height: size }}>
@@ -1061,7 +1107,7 @@ export default function AdminListingsPage() {
           <div 
             onClick={() => setFilter('all')} 
             className={`p-3.5 sm:p-4 rounded-2xl bg-[#0c1017] border transition-all cursor-pointer hover:border-slate-700 flex items-center justify-between shadow-lg relative overflow-hidden group ${
-              filter === 'all' ? 'border-emerald-500 ring-1 ring-emerald-500/30 bg-gradient-to-br from-emerald-950/20 to-[#0c1017]' : 'border-slate-800/80'
+              filter === 'all' ? 'border-amber-500 ring-1 ring-amber-500/30 bg-gradient-to-br from-amber-950/20 to-[#0c1017]' : 'border-slate-800/80'
             }`}
           >
             <div className="flex flex-col min-w-0 z-10">
@@ -1071,11 +1117,15 @@ export default function AdminListingsPage() {
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 )}
               </div>
-              <span className="font-black text-xl sm:text-2xl text-white font-heading mt-0.5">{listings.length}</span>
-              <span className="text-[10px] text-slate-500">Tüm havuz</span>
+              {loading && listings.length === 0 ? (
+                <div className="h-7 w-12 rounded bg-slate-800/80 animate-pulse my-0.5" />
+              ) : (
+                <span className="font-black text-xl sm:text-2xl text-white font-heading mt-0.5">{listings.length}</span>
+              )}
+              <span className="text-[10px] text-slate-500">{loading && listings.length === 0 ? 'Taranıyor...' : 'Tüm havuz'}</span>
             </div>
             <div className="flex items-center gap-2 z-10">
-              <MetricCircle percent={100} color="#f59e0b" size={42} />
+              <MetricCircle percent={100} color="#f59e0b" size={44} loading={loading && listings.length === 0} />
             </div>
           </div>
 
@@ -1091,14 +1141,19 @@ export default function AdminListingsPage() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-rose-300 font-heading">Onay Bekleyen</span>
                 {pendingCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />}
               </div>
-              <span className="font-black text-xl sm:text-2xl text-rose-400 font-heading mt-0.5">{pendingCount}</span>
-              <span className="text-[10px] text-slate-500">Kuyrukta moderasyon</span>
+              {loading && listings.length === 0 ? (
+                <div className="h-7 w-8 rounded bg-slate-800/80 animate-pulse my-0.5" />
+              ) : (
+                <span className="font-black text-xl sm:text-2xl text-rose-400 font-heading mt-0.5">{pendingCount}</span>
+              )}
+              <span className="text-[10px] text-slate-500">{loading && listings.length === 0 ? 'Hesaplanıyor...' : 'Kuyrukta moderasyon'}</span>
             </div>
             <div className="flex items-center gap-2 z-10">
               <MetricCircle 
                 percent={listings.length > 0 ? (pendingCount / listings.length) * 100 : 0} 
                 color="#f43f5e" 
-                size={42} 
+                size={44} 
+                loading={loading && listings.length === 0}
               />
             </div>
           </div>
@@ -1115,14 +1170,19 @@ export default function AdminListingsPage() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300 font-heading">Yayında</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               </div>
-              <span className="font-black text-xl sm:text-2xl text-emerald-400 font-heading mt-0.5">{liveCount}</span>
-              <span className="text-[10px] text-slate-500">Canlı vitrinde aktif</span>
+              {loading && listings.length === 0 ? (
+                <div className="h-7 w-10 rounded bg-slate-800/80 animate-pulse my-0.5" />
+              ) : (
+                <span className="font-black text-xl sm:text-2xl text-emerald-400 font-heading mt-0.5">{liveCount}</span>
+              )}
+              <span className="text-[10px] text-slate-500">{loading && listings.length === 0 ? 'Hesaplanıyor...' : 'Canlı vitrinde aktif'}</span>
             </div>
             <div className="flex items-center gap-2 z-10">
               <MetricCircle 
                 percent={listings.length > 0 ? (liveCount / listings.length) * 100 : 0} 
                 color="#10b981" 
-                size={42} 
+                size={44} 
+                loading={loading && listings.length === 0}
               />
             </div>
           </div>
@@ -1139,14 +1199,19 @@ export default function AdminListingsPage() {
                 <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 font-heading">Süresi Dolan</span>
                 {expiredCount > 0 && <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />}
               </div>
-              <span className="font-black text-xl sm:text-2xl text-amber-400 font-heading mt-0.5">{expiredCount}</span>
-              <span className="text-[10px] text-slate-500">Süre yenileme bekleyen</span>
+              {loading && listings.length === 0 ? (
+                <div className="h-7 w-8 rounded bg-slate-800/80 animate-pulse my-0.5" />
+              ) : (
+                <span className="font-black text-xl sm:text-2xl text-amber-400 font-heading mt-0.5">{expiredCount}</span>
+              )}
+              <span className="text-[10px] text-slate-500">{loading && listings.length === 0 ? 'Hesaplanıyor...' : 'Süre yenileme bekleyen'}</span>
             </div>
             <div className="flex items-center gap-2 z-10">
               <MetricCircle 
                 percent={listings.length > 0 ? (expiredCount / listings.length) * 100 : 0} 
                 color="#f59e0b" 
-                size={42} 
+                size={44} 
+                loading={loading && listings.length === 0}
               />
             </div>
           </div>
@@ -1272,68 +1337,69 @@ export default function AdminListingsPage() {
 
       {/* ── 3. LISTINGS DISPLAY (MASAÜSTÜ İÇİN TABLO & MOBİL İÇİN NATIVE KARTLAR) ──────────────── */}
       <div>
-        {loading ? (
+        {loading && listings.length === 0 ? (
           <div className="flex flex-col gap-4">
-            {/* KPI Cards Skeleton */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-24 rounded-2xl bg-[#0c1017] border border-slate-800/80 p-4 animate-pulse flex flex-col justify-between">
-                  <div className="flex items-center justify-between">
-                    <div className="h-3 w-20 bg-slate-800 rounded" />
-                    <div className="w-8 h-8 rounded-xl bg-slate-800" />
-                  </div>
-                  <div className="h-7 w-16 bg-slate-700/60 rounded" />
-                </div>
-              ))}
+            {/* Cyber Luxury Dynamic Loading Telemetry */}
+            <div className="rounded-2xl bg-[#0c1017] border border-slate-800/80 shadow-2xl p-6 sm:p-8 flex items-center justify-center">
+              <CircularProgress
+                size="lg"
+                title="İlan Moderasyon Masası Yükleniyor..."
+                subtitle="Veritabanı taranıyor, onay kuyruğu ve vitrin metrikleri ayrıştırılıyor"
+                steps={[
+                  'İlan havuzu ve model kayıtları taranıyor...',
+                  'Onay bekleyen model başvuruları ayrıştırılıyor...',
+                  'Ziyaretçi hit ve WhatsApp dönüşümleri hesaplanıyor...',
+                  'Moderasyon masası hazırlandı.',
+                ]}
+              />
             </div>
 
-            {/* Desktop Table Skeleton */}
+            {/* Desktop Table Precision Skeleton */}
             <div className="hidden md:block rounded-2xl bg-[#0c1017] border border-slate-800/80 overflow-hidden shadow-xl">
               <div className="p-4 bg-[#070a0f] border-b border-slate-800 flex items-center justify-between">
-                <div className="h-4 w-32 bg-slate-800 rounded animate-pulse" />
-                <div className="h-4 w-24 bg-slate-800 rounded animate-pulse" />
+                <div className="h-4 w-40 bg-slate-800/80 rounded animate-pulse" />
+                <div className="h-4 w-24 bg-slate-800/80 rounded animate-pulse" />
               </div>
               <div className="p-4 space-y-3">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
+                {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="h-16 rounded-xl bg-slate-900/40 border border-slate-800/50 animate-pulse flex items-center justify-between px-4 gap-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-slate-800 shrink-0" />
+                      <div className="w-12 h-12 rounded-xl bg-slate-800/80 shrink-0" />
                       <div className="space-y-1.5">
                         <div className="h-4 w-36 bg-slate-700/60 rounded" />
-                        <div className="h-3 w-24 bg-slate-800 rounded" />
+                        <div className="h-3 w-24 bg-slate-800/80 rounded" />
                       </div>
                     </div>
-                    <div className="h-4 w-24 bg-slate-800 rounded hidden lg:block" />
-                    <div className="h-5 w-20 bg-slate-800 rounded" />
-                    <div className="h-4 w-28 bg-slate-800 rounded hidden xl:block" />
-                    <div className="flex gap-1.5">
-                      <div className="w-8 h-8 rounded-xl bg-slate-800" />
-                      <div className="w-8 h-8 rounded-xl bg-slate-800" />
-                      <div className="w-8 h-8 rounded-xl bg-slate-800" />
+                    <div className="h-4 w-24 bg-slate-800/80 rounded hidden lg:block" />
+                    <div className="h-5 w-20 bg-slate-800/80 rounded" />
+                    <div className="h-4 w-28 bg-slate-800/80 rounded hidden xl:block" />
+                    <div className="flex gap-2">
+                      <div className="w-16 h-8 rounded-xl bg-slate-800/80" />
+                      <div className="w-16 h-8 rounded-xl bg-slate-800/80" />
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Mobile Cards Skeleton */}
+            {/* Mobile Cards Precision Skeleton */}
             <div className="md:hidden flex flex-col gap-3">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="p-4 rounded-2xl bg-[#0c1017] border border-slate-800/80 animate-pulse flex flex-col gap-3">
                   <div className="flex items-start gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-slate-800 shrink-0" />
+                    <div className="w-18 h-18 rounded-xl bg-slate-800/80 shrink-0" />
                     <div className="flex-1 space-y-2">
                       <div className="h-4 w-3/4 bg-slate-700/60 rounded" />
-                      <div className="h-3 w-1/2 bg-slate-800 rounded" />
-                      <div className="h-3 w-2/3 bg-slate-800 rounded" />
+                      <div className="h-3 w-1/2 bg-slate-800/80 rounded" />
+                      <div className="h-3 w-2/3 bg-slate-800/80 rounded" />
                     </div>
                   </div>
                   <div className="grid grid-cols-4 gap-1.5 p-2 rounded-xl bg-[#070a0f] border border-slate-800/80">
                     {[1, 2, 3, 4].map((j) => (
-                      <div key={j} className="h-8 bg-slate-800/60 rounded" />
+                      <div key={j} className="h-7 bg-slate-800/60 rounded" />
                     ))}
                   </div>
-                  <div className="h-9 w-full bg-slate-800 rounded-xl" />
+                  <div className="h-10 w-full bg-slate-800/80 rounded-xl" />
                 </div>
               ))}
             </div>
@@ -1541,80 +1607,82 @@ export default function AdminListingsPage() {
 
                           {/* Yönetim & Aksiyonlar */}
                           <td className="py-3 px-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                              {/* Onayla / Durdur */}
+                            <div className="flex items-center justify-end gap-1.5 flex-nowrap">
+                              {/* 1. Birincil Durum Değiştirme Butonu */}
                               {isPending ? (
                                 <button
                                   onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
-                                  className="p-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-95"
+                                  className="px-2.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all shadow-md shadow-emerald-500/25 active:scale-95 flex items-center gap-1 shrink-0 cursor-pointer"
                                   title="Hemen Onayla & Yayına Al"
                                 >
-                                  <Check className="w-4 h-4 stroke-[3]" />
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                  <span>Onayla</span>
                                 </button>
                               ) : (
                                 <button
                                   onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                                  className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border border-slate-800 text-xs transition-all"
+                                  className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-amber-500/10 text-slate-400 hover:text-amber-400 border border-slate-800 hover:border-amber-500/30 text-xs font-bold transition-all flex items-center gap-1 shrink-0 cursor-pointer"
                                   title="İlanı Durdur / Beklemeye Al"
                                 >
-                                  <Clock className="w-4 h-4" />
+                                  <Clock className="w-3.5 h-3.5 text-amber-400" />
+                                  <span>Durdur</span>
                                 </button>
                               )}
 
-                              {/* İncele */}
+                              {/* 2. İncele & Düzenle Butonları */}
                               <button
                                 onClick={() => handleOpenInspect(item)}
-                                className="p-2 rounded-xl bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-slate-800 transition-all"
+                                className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500 hover:text-slate-950 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shrink-0 cursor-pointer"
                                 title="Detaylı Önizleme & İnceleme"
                               >
-                                <Eye className="w-4 h-4" />
+                                <Eye className="w-3.5 h-3.5 text-amber-400" />
+                                <span>İncele</span>
                               </button>
 
-                              {/* Düzenle */}
                               <button
                                 onClick={() => handleOpenEdit(item)}
-                                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800 transition-all"
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-bold transition-all flex items-center gap-1 active:scale-95 shrink-0 cursor-pointer"
                                 title="İlanı Düzenle"
                               >
-                                <Edit3 className="w-4 h-4" />
+                                <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                                <span>Düzenle</span>
                               </button>
 
-                              {/* Chate At */}
-                              <button
-                                onClick={() => handleSendApprovalChat(item._id)}
-                                className="p-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500 hover:text-slate-950 text-cyan-300 border border-cyan-500/30 transition-all"
-                                title="Müşteri Sohbetine Onay Linki Gönder"
-                              >
-                                <MessageSquare className="w-4 h-4" />
-                              </button>
+                              {/* 3. Araç Çubuğu Kapsülü (Chate At, Hesap, Canlı Gör, Sil) */}
+                              <div className="flex items-center gap-0.5 bg-[#070a0f] p-1 rounded-xl border border-slate-800/80 shrink-0">
+                                <button
+                                  onClick={() => handleSendApprovalChat(item._id)}
+                                  className="p-1.5 rounded-lg text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/15 transition-all cursor-pointer"
+                                  title="Müşteri Sohbetine Onay Linki Gönder"
+                                >
+                                  <MessageSquare className="w-3.5 h-3.5" />
+                                </button>
 
-                              {/* Hesap Ata */}
-                              <button
-                                onClick={() => handleOpenAssignModal(item)}
-                                className="p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-amber-500/30 transition-all"
-                                title="Kullanıcı Hesabı Oluştur / Ata"
-                              >
-                                <KeyRound className="w-4 h-4" />
-                              </button>
+                                <button
+                                  onClick={() => handleOpenAssignModal(item)}
+                                  className="p-1.5 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-500/15 transition-all cursor-pointer"
+                                  title="Kullanıcı Hesabı Oluştur / Ata"
+                                >
+                                  <KeyRound className="w-3.5 h-3.5" />
+                                </button>
 
-                              {/* Sitede Aç */}
-                              <Link
-                                href={`/ilan/${item.slug}`}
-                                target="_blank"
-                                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-all"
-                                title="Canlı İlan Sayfasını Aç"
-                              >
-                                <ExternalLink className="w-4 h-4" />
-                              </Link>
+                                <Link
+                                  href={`/ilan/${item.slug}`}
+                                  target="_blank"
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                                  title="Canlı İlan Sayfasını Aç"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </Link>
 
-                              {/* Sil */}
-                              <button
-                                onClick={() => handleDelete(item._id)}
-                                className="p-2 rounded-xl bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 transition-all"
-                                title="İlanı Kalıcı Olarak Sil"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                                <button
+                                  onClick={() => handleDelete(item._id)}
+                                  className="p-1.5 rounded-lg text-rose-400 hover:text-rose-300 hover:bg-rose-500/15 transition-all cursor-pointer"
+                                  title="İlanı Kalıcı Olarak Sil"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
                             </div>
                           </td>
                         </tr>
@@ -1775,15 +1843,15 @@ export default function AdminListingsPage() {
                       );
                     })()}
 
-                    {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (2 SATIRLI DÜZEN) ──────────────── */}
-                    <div className="flex flex-col gap-1.5 border-t border-slate-800/60 pt-2.5">
-                      {/* Satır 1: Ana Operasyon Butonları */}
-                      <div className="flex items-center gap-1.5">
-                        {/* Onayla / Beklemeye Al */}
+                    {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (2 SEVİYELİ SEGMENTED DÜZEN) ──────────────── */}
+                    <div className="flex flex-col gap-2 border-t border-slate-800/80 pt-2.5">
+                      {/* Satır 1: Ana Operasyon & İnceleme Butonları */}
+                      <div className="grid grid-cols-12 gap-1.5 items-center">
+                        {/* Onayla / Durdur */}
                         {isPending ? (
                           <button
                             onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
-                            className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
+                            className="col-span-5 py-2 px-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs font-heading flex items-center justify-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-95 transition-all"
                           >
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
                             <span>Hemen Onayla</span>
@@ -1791,9 +1859,10 @@ export default function AdminListingsPage() {
                         ) : (
                           <button
                             onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                            className="py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 font-bold text-xs border border-slate-800 transition-colors"
+                            className="col-span-3 py-2 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 font-bold text-xs border border-slate-800 flex items-center justify-center gap-1 transition-colors"
                             title="İlanı beklemeye al"
                           >
+                            <Clock className="w-3 h-3 text-amber-400" />
                             <span>Durdur</span>
                           </button>
                         )}
@@ -1801,40 +1870,28 @@ export default function AdminListingsPage() {
                         {/* Detaylı İncele */}
                         <button
                           onClick={() => handleOpenInspect(item)}
-                          className={`py-2 px-3 rounded-xl text-xs font-heading font-black border flex items-center justify-center gap-1.5 transition-all active:scale-95 ${isPending
-                              ? 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-slate-800'
-                              : 'flex-1 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30'
-                            }`}
+                          className={`${isPending ? 'col-span-4' : 'col-span-5'} py-2 px-2.5 rounded-xl text-xs font-heading font-black border flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border-amber-500/30`}
                         >
                           <Eye className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Detaylı İncele</span>
+                          <span>İncele</span>
                         </button>
 
                         {/* Düzenle */}
                         <button
                           onClick={() => handleOpenEdit(item)}
-                          className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-amber-400 border border-slate-800 text-xs font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
+                          className={`${isPending ? 'col-span-3' : 'col-span-4'} py-2 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 text-xs font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95`}
                         >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">Düzenle</span>
-                        </button>
-
-                        {/* +7 Gün Uzat */}
-                        <button
-                          onClick={() => handleExtendDuration(item._id, 7)}
-                          className="py-2 px-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-mono font-bold text-xs border border-amber-500/30 transition-all shrink-0 active:scale-95"
-                          title="Yayın Süresine +7 Gün Ekle"
-                        >
-                          +7G
+                          <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Düzenle</span>
                         </button>
                       </div>
 
-                      {/* Satır 2: Hızlı Araç Butonları (Chate At, Hesap, Sitede Aç, Sil) */}
-                      <div className="grid grid-cols-4 gap-1.5">
+                      {/* Satır 2: Hızlı Araç Kapsülü (Chate At, Hesap, Sitede Gör, Sil) */}
+                      <div className="grid grid-cols-4 gap-1.5 bg-[#070a0f] p-1.5 rounded-xl border border-slate-800/80">
                         {/* Chate Link At */}
                         <button
                           onClick={() => handleSendApprovalChat(item._id)}
-                          className="py-1.5 px-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          className="py-1.5 px-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/20 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
                           title="Müşteri chatine onay ve link ilet"
                         >
                           <MessageSquare className="w-3 h-3 text-cyan-400 shrink-0" />
@@ -1844,7 +1901,7 @@ export default function AdminListingsPage() {
                         {/* Hesap Tanımla */}
                         <button
                           onClick={() => handleOpenAssignModal(item)}
-                          className="py-1.5 px-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          className="py-1.5 px-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/20 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
                           title="Bu ilana kullanıcı hesabı oluştur ve şifre ver"
                         >
                           <KeyRound className="w-3 h-3 text-amber-400 shrink-0" />
@@ -1855,20 +1912,20 @@ export default function AdminListingsPage() {
                         <Link
                           href={`/ilan/${item.slug}`}
                           target="_blank"
-                          className="py-1.5 px-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-slate-800 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          className="py-1.5 px-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
                           title="Canlı İlan Sayfasını Aç"
                         >
-                          <ExternalLink className="w-3 h-3 shrink-0" />
-                          <span className="truncate">Sitede Gör</span>
+                          <ExternalLink className="w-3 h-3 text-emerald-400 shrink-0" />
+                          <span className="truncate">Canlı</span>
                         </Link>
 
                         {/* Sil */}
                         <button
                           onClick={() => handleDelete(item._id)}
-                          className="py-1.5 px-1.5 rounded-xl bg-slate-900 hover:bg-red-500/20 text-slate-400 hover:text-red-400 border border-slate-800 hover:border-red-500/40 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all"
+                          className="py-1.5 px-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-[11px] font-heading font-bold flex items-center justify-center gap-1 transition-all active:scale-95"
                           title="İlanı Sil"
                         >
-                          <Trash2 className="w-3 h-3 shrink-0" />
+                          <Trash2 className="w-3 h-3 text-rose-400 shrink-0" />
                           <span>Sil</span>
                         </button>
                       </div>
