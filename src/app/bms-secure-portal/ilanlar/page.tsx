@@ -893,7 +893,7 @@ export default function AdminListingsPage() {
 
     if (status === 'onay_bekliyor') {
       return {
-        text: '⏳ Onay Bekliyor',
+        text: 'Onay Bekliyor',
         detail: expiryDate ? 'Bitiş: ' + formatDateTime(expiryDate) : null,
         isExpired: false,
         isPending: true,
@@ -914,7 +914,7 @@ export default function AdminListingsPage() {
       const expiryStr = hasExpiry ? formatDateTime(expiry) : null;
       const expiredAgo = hasExpiry ? getTimeAgoOrLeft(expiry) : null;
       return {
-        text: hasExpiry ? '❌ Süresi Doldu (' + expiredAgo + ')' : '❌ Süresi Doldu',
+        text: hasExpiry ? 'Süresi Doldu (' + expiredAgo + ')' : 'Süresi Doldu',
         detail: hasExpiry ? 'Bitiş: ' + expiryStr : null,
         isExpired: true,
         isPending: false,
@@ -927,7 +927,7 @@ export default function AdminListingsPage() {
 
     if (!hasExpiry) {
       return {
-        text: '⏳ 7 Gün Kaldı',
+        text: '7 Gün Kaldı',
         detail: null,
         isExpired: false,
         isPending: false,
@@ -940,7 +940,7 @@ export default function AdminListingsPage() {
 
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const remainingText = diffDays > 0 ? '⏳ ' + diffDays + ' Gün ' + diffHours + ' Sa Kaldı' : '⏳ ' + diffHours + ' Saat Kaldı';
+    const remainingText = diffDays > 0 ? diffDays + ' Gün ' + diffHours + ' Sa Kaldı' : diffHours + ' Saat Kaldı';
 
     return {
       text: remainingText,
@@ -1404,17 +1404,17 @@ export default function AdminListingsPage() {
           <>
             {/* ── MASAÜSTÜ PROFESYONEL VERİ TABLOSU (DESKTOP DATA TABLE - md & üstü) ──────────────── */}
             <div className="hidden md:block w-full overflow-hidden rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-slate-800">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-[#070a0f] border-b border-slate-800 text-[11px] font-bold uppercase text-slate-400 font-heading tracking-wider">
-                      <th className="py-3.5 px-4">İlan / Model</th>
-                      <th className="py-3.5 px-3">Konum &amp; Bölge</th>
-                      <th className="py-3.5 px-3">Rozet &amp; Durum</th>
-                      <th className="py-3.5 px-3">Yayın Süresi</th>
-                      <th className="py-3.5 px-3">İletişim &amp; Şifre</th>
-                      <th className="py-3.5 px-3 text-center">İstatistik &amp; Etkileşim</th>
-                      <th className="py-3.5 px-4 text-right">Yönetim &amp; Aksiyonlar</th>
+                      <th className="py-3.5 px-4 min-w-[280px]">İlan / Model</th>
+                      <th className="py-3.5 px-3 min-w-[150px] whitespace-nowrap">Konum &amp; Bölge</th>
+                      <th className="py-3.5 px-3 min-w-[130px] whitespace-nowrap">Rozet &amp; Durum</th>
+                      <th className="py-3.5 px-3 min-w-[170px] whitespace-nowrap">Yayın Süresi</th>
+                      <th className="py-3.5 px-3 min-w-[160px] whitespace-nowrap">İletişim &amp; Şifre</th>
+                      <th className="py-3.5 px-3 min-w-[160px] whitespace-nowrap text-center">İstatistik &amp; Etkileşim</th>
+                      <th className="py-3.5 px-4 min-w-[220px] whitespace-nowrap text-right">Yönetim &amp; Aksiyonlar</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60 text-xs">
@@ -1440,41 +1440,42 @@ export default function AdminListingsPage() {
                             isPending ? 'bg-amber-500/[0.03]' : ''
                           }`}
                         >
-                          {/* İlan & Thumbnail */}
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-3">
+                          {/* İlan & Thumbnail (Büyük Okunaklı Tipografi & Net ID) */}
+                          <td className="py-3.5 px-4 align-middle">
+                            <div className="flex items-center gap-3.5">
                               <div
                                 onClick={() => handleOpenInspect(item)}
-                                className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-800 bg-[#070a0f] cursor-pointer group/thumb shadow-sm"
+                                className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-800 bg-[#070a0f] cursor-pointer group/thumb shadow-sm"
                                 title="Büyük boyutta incele"
                               >
                                 <Image
                                   src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || '/placeholder-avatar.webp'}
                                   alt={item.baslik}
                                   fill
-                                  sizes="50px"
+                                  sizes="56px"
                                   className="object-cover group-hover/thumb:scale-105 transition-transform"
                                 />
-                                <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-black/80 text-slate-300 text-[8px] font-mono font-medium">
+                                <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-black/85 text-slate-300 text-[8px] font-mono font-medium">
                                   {item.fotograflar?.length || 1}
                                 </span>
                               </div>
 
-                              <div className="flex flex-col min-w-0 max-w-[220px] lg:max-w-xs">
+                              <div className="flex flex-col min-w-0 flex-1">
                                 <span
                                   onClick={() => handleOpenInspect(item)}
-                                  className="font-heading font-semibold text-sm text-white truncate cursor-pointer hover:text-emerald-400 transition-colors"
+                                  className="font-heading font-bold text-sm lg:text-base text-white truncate cursor-pointer hover:text-emerald-400 transition-colors"
                                   title={item.baslik}
                                 >
                                   {item.baslik}
                                 </span>
-                                <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono mt-0.5 flex-wrap">
-                                  <span>#{item._id.slice(-6)}</span>
+                                <div className="flex items-center gap-2 text-xs font-mono mt-1 flex-wrap">
+                                  <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-slate-200 font-bold shrink-0">
+                                    #{item._id.slice(-6)}
+                                  </span>
                                   {item.createdAt && (
-                                    <>
-                                      <span>&bull;</span>
-                                      <span className="text-slate-400">İlan: {formatDateTime(item.createdAt)} ({getTimeAgoOrLeft(item.createdAt)})</span>
-                                    </>
+                                    <span className="text-slate-300 font-medium whitespace-nowrap">
+                                      İlan: {formatDateTime(item.createdAt)} <span className="text-slate-400 font-normal">({getTimeAgoOrLeft(item.createdAt)})</span>
+                                    </span>
                                   )}
                                 </div>
                               </div>
@@ -1482,16 +1483,16 @@ export default function AdminListingsPage() {
                           </td>
 
                           {/* Konum */}
-                          <td className="py-3 px-3">
+                          <td className="py-3.5 px-3 align-middle whitespace-nowrap">
                             <div className="flex items-center gap-1.5 text-slate-300 font-medium capitalize text-xs">
                               <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                              <span className="truncate">{item.ilSlug} / {item.ilceSlug}</span>
+                              <span>{item.ilSlug} / {item.ilceSlug}</span>
                             </div>
                           </td>
 
                           {/* Rozet & Durum */}
-                          <td className="py-3 px-3">
-                            <div className="flex flex-col gap-1 items-start">
+                          <td className="py-3.5 px-3 align-middle whitespace-nowrap">
+                            <div className="flex flex-col gap-1.5 items-start">
                               <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider ${
                                 isLive
                                   ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
@@ -1500,27 +1501,27 @@ export default function AdminListingsPage() {
                                 <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
                                 <span>{isLive ? 'Yayında' : 'Onay Bekliyor'}</span>
                               </span>
-                              <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-wider">
+                              <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
                                 {item.rozet || 'vip'}
                               </span>
                             </div>
                           </td>
 
-                          {/* Kalan Süre */}
-                          <td className="py-3 px-3">
-                            <div className="flex flex-col gap-1">
-                              <span className={`font-mono text-xs font-semibold flex items-center gap-1.5 ${
+                          {/* Kalan Süre (Tek Satır & Sabit Düzen) */}
+                          <td className="py-3.5 px-3 align-middle whitespace-nowrap">
+                            <div className="flex flex-col gap-1 min-w-[150px]">
+                              <div className={`font-mono text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap ${
                                 remaining.isExpired ? 'text-rose-400' : 'text-emerald-400'
                               }`}>
                                 <Clock className="w-3.5 h-3.5 shrink-0 text-slate-500" />
                                 <span>{remaining.text}</span>
-                              </span>
+                              </div>
                               {remaining.expiryStr && (
-                                <span className="text-[10px] font-mono text-slate-400">
+                                <div className="text-[11px] font-mono text-slate-400 whitespace-nowrap">
                                   Bitiş: {remaining.expiryStr}
-                                </span>
+                                </div>
                               )}
-                              <div className="flex items-center gap-1 pt-0.5">
+                              <div className="flex items-center gap-1.5 pt-0.5">
                                 <button
                                   onClick={() => handleExtendDuration(item._id, 7)}
                                   className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[10px] font-mono font-medium border border-slate-800 transition-colors"
@@ -1540,18 +1541,18 @@ export default function AdminListingsPage() {
                           </td>
 
                           {/* İletişim & Şifre & Kullanıcı */}
-                          <td className="py-3 px-3">
-                            <div className="flex flex-col gap-1 text-[11px]">
+                          <td className="py-3.5 px-3 align-middle whitespace-nowrap">
+                            <div className="flex flex-col gap-1 text-xs">
                               {item.kullaniciAdi ? (
                                 <span className="flex items-center gap-1 text-slate-300 font-mono font-medium bg-slate-900/60 px-2 py-0.5 rounded-lg border border-slate-800/80 w-fit" title="İlan Sahibi Kullanıcı Adı">
                                   <AtSign className="w-3 h-3 text-slate-500" />
                                   <span>{item.kullaniciAdi}</span>
                                 </span>
                               ) : (
-                                <span className="text-slate-500 text-[10px] font-mono">@sahipsiz</span>
+                                <span className="text-slate-500 text-[11px] font-mono">@sahipsiz</span>
                               )}
                               <span className="text-white font-mono font-medium flex items-center gap-1">
-                                <Phone className="w-3 h-3 text-emerald-400" />
+                                <Phone className="w-3.5 h-3.5 text-emerald-400" />
                                 <span>{item.whatsappNumara}</span>
                               </span>
                               {item.panelSifresi && (
@@ -1563,23 +1564,23 @@ export default function AdminListingsPage() {
                           </td>
 
                           {/* İstatistik & Yorumlar */}
-                          <td className="py-3 px-3 text-center">
-                            <div className="flex flex-col items-center gap-1 font-mono text-[11px]">
+                          <td className="py-3.5 px-3 text-center align-middle whitespace-nowrap">
+                            <div className="flex flex-col items-center gap-1 font-mono text-xs">
                               <div className="flex items-center justify-center gap-2.5">
                                 <span className="text-slate-200 font-medium flex items-center gap-1" title="Toplam Görüntülenme (Hit)">
-                                  <Eye className="w-3 h-3 text-slate-500" />
+                                  <Eye className="w-3.5 h-3.5 text-slate-500" />
                                   <span>{hits.toLocaleString('tr-TR')}</span>
                                 </span>
                                 <span className="text-emerald-400 font-medium flex items-center gap-1" title="WhatsApp Tıklaması">
-                                  <Phone className="w-3 h-3" />
+                                  <Phone className="w-3.5 h-3.5" />
                                   <span>{clicks}</span>
                                 </span>
                                 <span className="text-slate-400 font-medium flex items-center gap-0.5" title="Dönüşüm Oranı">
-                                  <TrendingUp className="w-3 h-3 text-slate-500" />
+                                  <TrendingUp className="w-3.5 h-3.5 text-slate-500" />
                                   <span>%{conversion}</span>
                                 </span>
                               </div>
-                              <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400">
+                              <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400">
                                 <span className="flex items-center gap-1" title="Yorumlar">
                                   <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
                                   <span>{commentCount > 0 ? `${avgScore} (${commentCount})` : '0 Yorum'}</span>
@@ -1595,7 +1596,7 @@ export default function AdminListingsPage() {
                           </td>
 
                           {/* Yönetim & Aksiyonlar */}
-                          <td className="py-3 px-4 text-right">
+                          <td className="py-3.5 px-4 text-right align-middle whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1.5 flex-nowrap">
                               {/* 1. Birincil Durum Değiştirme Butonu */}
                               {isPending ? (
@@ -1719,11 +1720,11 @@ export default function AdminListingsPage() {
                       </div>
 
                       {/* Meta Bilgileri */}
-                      <div className="flex flex-col gap-1 flex-1 min-w-0">
+                      <div className="flex flex-col gap-1.5 flex-1 min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <h3
                             onClick={() => handleOpenInspect(item)}
-                            className="font-heading font-semibold text-sm sm:text-base text-white truncate max-w-[200px] sm:max-w-md cursor-pointer hover:text-emerald-400 transition-colors"
+                            className="font-heading font-bold text-sm sm:text-base text-white truncate max-w-[200px] sm:max-w-md cursor-pointer hover:text-emerald-400 transition-colors"
                           >
                             {item.baslik}
                           </h3>
@@ -1742,8 +1743,20 @@ export default function AdminListingsPage() {
                           </span>
                         </div>
 
+                        {/* ID ve Eklenme Tarihi (Okunaklı & Belirgin) */}
+                        <div className="flex items-center gap-2 text-xs font-mono flex-wrap">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-slate-200 font-bold shrink-0">
+                            #{item._id.slice(-6)}
+                          </span>
+                          {item.createdAt && (
+                            <span className="text-slate-300 font-medium">
+                              İlan: {formatDateTime(item.createdAt)} <span className="text-slate-400 font-normal">({getTimeAgoOrLeft(item.createdAt)})</span>
+                            </span>
+                          )}
+                        </div>
+
                         {/* Konum & Süre */}
-                        <div className="flex items-center gap-2 text-[11px] text-slate-300 font-medium capitalize flex-wrap">
+                        <div className="flex items-center gap-2 text-xs text-slate-300 font-medium capitalize flex-wrap">
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3 text-slate-500 shrink-0" />
                             <span>{item.ilSlug} / {item.ilceSlug}</span>
@@ -1754,16 +1767,16 @@ export default function AdminListingsPage() {
                             <span>{remaining.text}</span>
                           </span>
                           {remaining.expiryStr && (
-                            <span className="text-[10px] font-mono text-slate-400">
+                            <span className="text-[11px] font-mono text-slate-400">
                               Bitiş: {remaining.expiryStr}
                             </span>
                           )}
                         </div>
 
-                        {/* İletişim, Tarih, Kullanıcı & Şifre Çipleri */}
-                        <div className="flex items-center gap-2 text-[11px] text-slate-400 flex-wrap mt-0.5">
+                        {/* İletişim, Kullanıcı & Şifre Çipleri */}
+                        <div className="flex items-center gap-2 text-xs text-slate-300 flex-wrap mt-0.5">
                           {item.kullaniciAdi && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 text-slate-300 font-mono font-medium text-[10px] border border-slate-800/80 flex items-center gap-1">
+                            <span className="px-1.5 py-0.5 rounded-md bg-slate-900/60 text-slate-300 font-mono font-medium text-[11px] border border-slate-800/80 flex items-center gap-1">
                               <AtSign className="w-2.5 h-2.5 text-slate-500" />
                               <span>{item.kullaniciAdi}</span>
                             </span>
@@ -1772,14 +1785,8 @@ export default function AdminListingsPage() {
                             <Phone className="w-3 h-3 text-emerald-400" />
                             <span>{item.whatsappNumara}</span>
                           </span>
-                          {item.createdAt && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-[#070a0f] text-slate-400 font-mono text-[10px] border border-slate-800 flex items-center gap-1">
-                              <Calendar className="w-2.5 h-2.5 text-slate-500" />
-                              <span>İlan: {formatDateTime(item.createdAt)} ({getTimeAgoOrLeft(item.createdAt)})</span>
-                            </span>
-                          )}
                           {item.panelSifresi && (
-                            <span className="px-1.5 py-0.5 rounded-md bg-slate-950 text-slate-400 font-mono text-[10px] border border-slate-800/80 flex items-center gap-1">
+                            <span className="px-1.5 py-0.5 rounded-md bg-slate-950 text-slate-400 font-mono text-[11px] border border-slate-800/80 flex items-center gap-1">
                               <KeyRound className="w-2.5 h-2.5 text-slate-500" />
                               <span>Şifre: {item.panelSifresi}</span>
                             </span>
@@ -1788,7 +1795,7 @@ export default function AdminListingsPage() {
                       </div>
                     </div>
 
-                    {/* ── KART PERFORMANS & İSTATİSTİK BAR (IMAGE 2 TILES) ── */}
+                    {/* ── KART PERFORMANS & İSTATİSTİK BAR ── */}
                     {(() => {
                       const hits = Number(item.goruntulenmeSayisi || 0);
                       const clicks = Number(item.whatsappTiklamaSayisi || 0);
@@ -1801,30 +1808,30 @@ export default function AdminListingsPage() {
                       const conversion = hits > 0 ? ((clicks / hits) * 100).toFixed(1) : '0.0';
 
                       return (
-                        <div className="grid grid-cols-4 gap-1.5 p-2 rounded-xl bg-[#070a0f] border border-slate-800/80 text-center font-mono text-[11px]">
+                        <div className="grid grid-cols-4 gap-1.5 p-2 rounded-xl bg-[#070a0f] border border-slate-800/80 text-center font-mono text-xs">
                           <div className="flex flex-col items-center">
-                            <span className="text-[9px] text-slate-400 uppercase font-sans font-medium">Hit</span>
+                            <span className="text-[10px] text-slate-400 uppercase font-sans font-medium">Hit</span>
                             <span className="font-semibold text-slate-200 mt-0.5 flex items-center gap-0.5">
                               <Eye className="w-2.5 h-2.5 text-slate-500" />
                               <span>{hits.toLocaleString('tr-TR')}</span>
                             </span>
                           </div>
                           <div className="flex flex-col items-center">
-                            <span className="text-[9px] text-slate-400 uppercase font-sans font-medium">WP Tık</span>
+                            <span className="text-[10px] text-slate-400 uppercase font-sans font-medium">WP Tık</span>
                             <span className="font-semibold text-emerald-400 mt-0.5 flex items-center gap-0.5">
                               <Phone className="w-2.5 h-2.5" />
                               <span>{clicks}</span>
                             </span>
                           </div>
                           <div className="flex flex-col items-center">
-                            <span className="text-[9px] text-slate-400 uppercase font-sans font-medium">Dönüşüm</span>
+                            <span className="text-[10px] text-slate-400 uppercase font-sans font-medium">Dönüşüm</span>
                             <span className="font-semibold text-slate-300 mt-0.5 flex items-center gap-0.5">
                               <TrendingUp className="w-2.5 h-2.5 text-slate-500" />
                               <span>%{conversion}</span>
                             </span>
                           </div>
                           <div className="flex flex-col items-center">
-                            <span className="text-[9px] text-slate-400 uppercase font-sans font-medium">Yorum</span>
+                            <span className="text-[10px] text-slate-400 uppercase font-sans font-medium">Yorum</span>
                             <span className="font-semibold text-slate-300 mt-0.5 flex items-center gap-0.5">
                               <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400" />
                               <span>{commentCount > 0 ? `${avgScore}` : '0'}</span>
@@ -1834,11 +1841,9 @@ export default function AdminListingsPage() {
                       );
                     })()}
 
-                    {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI (EXECUTIVE DESIGN) ──────────────── */}
+                    {/* ── KART MOBİL UYUMLU AKSİYON BUTONLARI ── */}
                     <div className="flex flex-col gap-2 border-t border-slate-800/80 pt-2.5">
-                      {/* Satır 1: Ana Operasyon & İnceleme Butonları */}
                       <div className="grid grid-cols-12 gap-1.5 items-center">
-                        {/* Onayla / Durdur */}
                         {isPending ? (
                           <button
                             onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
@@ -1858,7 +1863,6 @@ export default function AdminListingsPage() {
                           </button>
                         )}
 
-                        {/* Detaylı İncele */}
                         <button
                           onClick={() => handleOpenInspect(item)}
                           className={`${isPending ? 'col-span-4' : 'col-span-5'} py-2 px-2.5 rounded-xl text-xs font-heading font-medium border flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-800`}
@@ -1867,7 +1871,6 @@ export default function AdminListingsPage() {
                           <span>İncele</span>
                         </button>
 
-                        {/* Düzenle */}
                         <button
                           onClick={() => handleOpenEdit(item)}
                           className={`${isPending ? 'col-span-3' : 'col-span-4'} py-2 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-heading font-medium flex items-center justify-center gap-1 transition-all active:scale-95`}
@@ -1877,9 +1880,7 @@ export default function AdminListingsPage() {
                         </button>
                       </div>
 
-                      {/* Satır 2: Hızlı Araç Kapsülü (Chate At, Hesap, Sitede Gör, Sil) */}
                       <div className="grid grid-cols-4 gap-1.5 bg-[#070a0f] p-1.5 rounded-xl border border-slate-800/80">
-                        {/* Chate Link At */}
                         <button
                           onClick={() => handleSendApprovalChat(item._id)}
                           className="py-1.5 px-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-cyan-400 border border-slate-800 text-[11px] font-medium flex items-center justify-center gap-1 transition-colors active:scale-95"
@@ -1889,7 +1890,6 @@ export default function AdminListingsPage() {
                           <span className="truncate">Chate At</span>
                         </button>
 
-                        {/* Hesap Tanımla */}
                         <button
                           onClick={() => handleOpenAssignModal(item)}
                           className="py-1.5 px-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border border-slate-800 text-[11px] font-medium flex items-center justify-center gap-1 transition-colors active:scale-95"
@@ -1899,7 +1899,6 @@ export default function AdminListingsPage() {
                           <span className="truncate">Hesap</span>
                         </button>
 
-                        {/* Sitede Aç */}
                         <Link
                           href={`/ilan/${item.slug}`}
                           target="_blank"
@@ -1910,7 +1909,6 @@ export default function AdminListingsPage() {
                           <span className="truncate">Canlı</span>
                         </Link>
 
-                        {/* Sil */}
                         <button
                           onClick={() => handleDelete(item._id)}
                           className="py-1.5 px-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-400 border border-slate-800 text-[11px] font-medium flex items-center justify-center gap-1 transition-colors active:scale-95"
