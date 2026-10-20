@@ -432,7 +432,7 @@ export default function AdminChatPage() {
       <div className="flex-1 min-h-0 flex w-full h-full relative overflow-hidden">
         
         {/* ════════════════════════════════════════════════════════════════
-            1. SOL SÜTUN: PROFESYONEL MÜŞTERİ / THREAD LİSTESİ
+            1. SOL SÜTUN: MÜŞTERİ / KONUŞMA (THREAD) LİSTESİ
            ════════════════════════════════════════════════════════════════ */}
         <div className={`w-full md:w-[320px] lg:w-[360px] border-r border-slate-800 flex flex-col h-full shrink-0 bg-[#0c1017] overflow-hidden ${
           selectedThread ? 'hidden md:flex' : 'flex'
@@ -442,19 +442,19 @@ export default function AdminChatPage() {
           <div className="p-3.5 border-b border-slate-800 bg-[#070a0f] flex flex-col gap-2.5 shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/30 shadow-sm">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/20 shadow-sm">
                   <MessageSquare className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col text-left leading-tight">
-                  <span className="font-heading font-black text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                    Canlı Destek Masası
+                  <span className="font-heading font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
+                    Canlı Destek
                     {totalUnreadCount > 0 && (
-                      <span className="px-1.5 py-0.2 rounded-full bg-red-500 text-white font-black text-[9px] animate-pulse">
+                      <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white font-mono text-[9px] font-bold animate-pulse">
                         {totalUnreadCount}
                       </span>
                     )}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">0ms Real-Time SSE</span>
+                  <span className="text-[10px] text-slate-500 font-mono">Real-Time SSE</span>
                 </div>
               </div>
 
@@ -465,8 +465,8 @@ export default function AdminChatPage() {
                   onClick={() => setSoundEnabled(!soundEnabled)}
                   className={`p-1.5 rounded-lg border text-xs transition-colors ${
                     soundEnabled 
-                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20' 
-                      : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
+                      ? 'bg-slate-900 border-slate-800 text-emerald-400' 
+                      : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-white'
                   }`}
                   title={soundEnabled ? 'Bildirim Sesi Açık' : 'Bildirim Sesi Kapalı'}
                 >
@@ -476,10 +476,10 @@ export default function AdminChatPage() {
                 <button
                   type="button"
                   onClick={fetchThreads}
-                  className="p-1.5 rounded-lg bg-slate-900 hover:bg-[#232c3d] border border-slate-700 text-slate-400 hover:text-amber-400 transition-colors"
+                  className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition-colors"
                   title="Listeyi Yenile"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-amber-400' : ''}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
                 </button>
               </div>
             </div>
@@ -491,7 +491,7 @@ export default function AdminChatPage() {
                 placeholder="Müşteri, telefon, ilan veya mesaj ara..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-7 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 transition-all font-medium"
+                className="w-full pl-8 pr-7 py-2 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-slate-700 transition-all font-medium"
               />
               <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" />
               {searchQuery && (
@@ -505,15 +505,15 @@ export default function AdminChatPage() {
               )}
             </div>
 
-            {/* Filtre Sekmeleri */}
-            <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-0.5">
+            {/* Filtre Sekmeleri (Image 2 Pill Design) */}
+            <div className="flex items-center gap-1 bg-[#06090e] p-0.5 rounded-xl border border-slate-800 overflow-x-auto no-scrollbar">
               <button
                 type="button"
                 onClick={() => setActiveFilter('all')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-black tracking-wider uppercase whitespace-nowrap transition-all ${
+                className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-medium transition-all text-center whitespace-nowrap ${
                   activeFilter === 'all'
-                    ? 'bg-amber-500 text-slate-950 shadow-sm shadow-amber-500/20'
-                    : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                    ? 'bg-slate-800 text-white shadow-sm font-semibold'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Tümü ({threads.length})
@@ -522,38 +522,38 @@ export default function AdminChatPage() {
               <button
                 type="button"
                 onClick={() => setActiveFilter('unread')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-black tracking-wider uppercase whitespace-nowrap transition-all flex items-center gap-1 ${
+                className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-medium transition-all flex items-center justify-center gap-1 whitespace-nowrap ${
                   activeFilter === 'unread'
-                    ? 'bg-red-500 text-white shadow-sm shadow-red-500/20'
-                    : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                    ? 'bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/30'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <span>Okunmamış</span>
                 {totalUnreadCount > 0 && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
                 )}
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveFilter('vip')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-black tracking-wider uppercase whitespace-nowrap transition-all flex items-center gap-1 ${
+                className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-medium transition-all flex items-center justify-center gap-1 whitespace-nowrap ${
                   activeFilter === 'vip'
-                    ? 'bg-emerald-500 text-slate-950 shadow-sm shadow-emerald-500/20'
-                    : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                    ? 'bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 <CrownIcon className="w-2.5 h-2.5" />
-                <span>İlan Sahipleri</span>
+                <span>İlanlar</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveFilter('banned')}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-heading font-black tracking-wider uppercase whitespace-nowrap transition-all ${
+                className={`flex-1 py-1 px-2 rounded-lg text-[10px] font-medium transition-all text-center whitespace-nowrap ${
                   activeFilter === 'banned'
-                    ? 'bg-red-900/60 text-red-200 border border-red-500/50'
-                    : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                    ? 'bg-slate-800 text-rose-400 font-semibold border border-rose-500/30'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Banlılar
@@ -562,7 +562,7 @@ export default function AdminChatPage() {
           </div>
 
           {/* Kaydırılabilir Sohbet Listesi */}
-          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-[#1e2433] max-md:no-scrollbar md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:w-1.5 md:[&::-webkit-scrollbar-thumb]:bg-slate-800 md:[&::-webkit-scrollbar-thumb]:rounded-full hover:md:[&::-webkit-scrollbar-thumb]:bg-[#343e52]">
+          <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-slate-800/60 max-md:no-scrollbar md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:w-1.5 md:[&::-webkit-scrollbar-thumb]:bg-slate-800 md:[&::-webkit-scrollbar-thumb]:rounded-full hover:md:[&::-webkit-scrollbar-thumb]:bg-slate-700">
             {loading ? (
               <div className="p-10 text-center flex flex-col items-center justify-center gap-2.5">
                 <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
@@ -580,44 +580,45 @@ export default function AdminChatPage() {
                     key={th._id}
                     onClick={() => setSelectedThread(th)}
                     className={`w-full p-3 flex items-start justify-between gap-3 text-left transition-all cursor-pointer relative group ${
-                      isSelected ? 'bg-emerald-500/10 border-l-[3px] border-emerald-400'
-                        : 'hover:bg-[#151b27] active:bg-[#1a2230]'
+                      isSelected 
+                        ? 'bg-slate-800/50 border-l-2 border-emerald-400'
+                        : 'hover:bg-slate-900/40 active:bg-slate-900/70'
                     }`}
                   >
                     {/* Profil Avatarı */}
                     <div className="relative shrink-0 mt-0.5">
                       {th.listingFoto ? (
-                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-700 shadow-sm bg-black">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-800 shadow-sm bg-[#070a0f]">
                           <img src={th.listingFoto} alt="" className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className={`w-10 h-10 rounded-xl font-heading font-black text-sm flex items-center justify-center shadow-md ${
+                        <div className={`w-10 h-10 rounded-xl font-heading font-bold text-sm flex items-center justify-center shadow-sm ${
                           isVip 
-                            ? 'bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-300 text-slate-950 border border-amber-300/40' 
-                            : 'bg-[#1e2638] text-white border border-slate-700'
+                            ? 'bg-slate-900 text-slate-200 border border-slate-700' 
+                            : 'bg-slate-900 text-slate-400 border border-slate-800'
                         }`}>
                           {th.kullaniciAdi.replace('👑 ', '').charAt(0).toUpperCase() || 'M'}
                         </div>
                       )}
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-[#10141d]" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#0c1017]" />
                     </div>
 
                     {/* Müşteri Başlık, Etiket ve Son Mesaj */}
                     <div className="flex-1 min-w-0 flex flex-col gap-1">
                       <div className="flex items-center justify-between gap-1.5">
                         <div className="flex items-center gap-1.5 truncate">
-                          <span className={`font-heading font-bold text-xs truncate ${
-                            isSelected ? 'text-emerald-300' : 'text-[#f0f6fc]'
+                          <span className={`font-heading font-semibold text-xs truncate ${
+                            isSelected ? 'text-emerald-400' : 'text-white'
                           }`}>
                             {th.kullaniciAdi}
                           </span>
                           {th.isBanned && (
-                            <span className="px-1.5 py-0.2 rounded bg-red-500/20 text-red-400 text-[8px] font-black uppercase border border-red-500/40 shrink-0">
+                            <span className="px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-400 text-[8px] font-bold uppercase border border-rose-500/20 shrink-0">
                               BANLI
                             </span>
                           )}
                         </div>
-                        <span className="text-[9px] text-slate-400 font-mono shrink-0">
+                        <span className="text-[10px] text-slate-500 font-mono shrink-0">
                           {new Date(th.updatedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -625,13 +626,13 @@ export default function AdminChatPage() {
                       {/* Rozetler: Telefon / İlan Başlığı */}
                       <div className="flex items-center gap-1 flex-wrap">
                         {th.listingBaslik && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-300 font-bold text-[9px] border border-amber-500/30 truncate max-w-[190px]">
-                            <CrownIcon className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-900 text-slate-300 font-medium text-[9px] border border-slate-800 truncate max-w-[190px]">
+                            <CrownIcon className="w-2.5 h-2.5 text-slate-400 shrink-0" />
                             <span className="truncate">{th.listingBaslik}</span>
                           </span>
                         )}
                         {th.kullaniciTelefon && !th.listingBaslik && (
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-300 font-bold text-[9px] border border-emerald-500/30">
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-900 text-emerald-400 font-medium text-[9px] border border-slate-800">
                             <Phone className="w-2.5 h-2.5 text-emerald-400" />
                             <span>{th.kullaniciTelefon}</span>
                           </span>
@@ -640,7 +641,7 @@ export default function AdminChatPage() {
 
                       {/* Son Mesaj Özeti */}
                       <p className={`text-[11px] truncate leading-tight mt-0.5 ${
-                        hasUnread ? 'text-white font-black' : 'text-slate-400 font-normal'
+                        hasUnread ? 'text-white font-medium' : 'text-slate-400 font-normal'
                       }`}>
                         {th.sonMesajOzeti || 'Mesaj geçmişi yok'}
                       </p>
@@ -649,17 +650,17 @@ export default function AdminChatPage() {
                     {/* Sağ Taraf: Rozet / Silme */}
                     <div className="flex flex-col items-end justify-between self-stretch shrink-0">
                       {hasUnread ? (
-                        <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white font-mono font-bold text-[10px] animate-pulse shadow-md shadow-rose-500/20">
+                        <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white font-mono font-bold text-[9px] animate-pulse shadow-sm">
                           {th.okunmadiAdminSayisi}
                         </span>
                       ) : (
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-500 opacity-40 group-hover:opacity-100 group-hover:text-amber-400 transition-all md:hidden" />
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-600 opacity-40 group-hover:opacity-100 group-hover:text-slate-300 transition-all md:hidden" />
                       )}
 
                       <button
                         type="button"
                         onClick={(e) => handleDeleteThread(th._id, e)}
-                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-red-400 hover:text-white hover:bg-red-600 transition-all text-xs"
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-slate-500 hover:text-rose-400 hover:bg-slate-800 transition-all text-xs"
                         title="Sohbeti Sil"
                       >
                         {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
@@ -670,7 +671,7 @@ export default function AdminChatPage() {
               })
             ) : (
               <div className="p-10 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
-                <MessageSquare className="w-8 h-8 opacity-25 text-amber-400" />
+                <MessageSquare className="w-8 h-8 opacity-25 text-slate-500" />
                 <span className="font-medium">Kriterlere uygun sohbet bulunamadı.</span>
               </div>
             )}
@@ -678,7 +679,7 @@ export default function AdminChatPage() {
         </div>
 
         {/* ════════════════════════════════════════════════════════════════
-            2. ORTA / SAĞ SÜTUN: WORLD-CLASS ENTERPRISE SOHBET PENCERESİ
+            2. ORTA / SAĞ SÜTUN: SENIOR CYBER LUXURY SOHBET PENCERESİ
            ════════════════════════════════════════════════════════════════ */}
         <div className={`flex-1 min-h-0 flex flex-col h-full bg-[#070a0f] overflow-hidden ${
           !selectedThread ? 'hidden md:flex' : 'flex'
@@ -686,7 +687,7 @@ export default function AdminChatPage() {
           {selectedThread ? (
             <>
               {/* ── ÜST BAŞLIK / MÜŞTERİ BİLGİ ŞERİDİ ──────────────── */}
-              <div className="p-3 sm:px-4 bg-[#0c1017] border-b border-slate-800 flex items-center justify-between shrink-0 shadow-md gap-2">
+              <div className="p-3 sm:px-4 bg-[#0c1017] border-b border-slate-800 flex items-center justify-between shrink-0 shadow-sm gap-2">
                 
                 {/* Sol Profil Özeti */}
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -695,7 +696,7 @@ export default function AdminChatPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedThread(null)}
-                    className="p-1.5 -ml-1 rounded-xl bg-slate-900 text-amber-400 hover:text-white hover:bg-[#283247] transition-colors md:hidden flex items-center gap-0.5 font-bold text-xs shrink-0"
+                    className="p-1.5 -ml-1 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition-colors md:hidden flex items-center gap-0.5 font-bold text-xs shrink-0"
                     title="Geri Dön"
                   >
                     <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
@@ -703,20 +704,20 @@ export default function AdminChatPage() {
 
                   <div className="relative shrink-0">
                     {selectedThread.listingFoto ? (
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-slate-700 bg-black shadow-sm">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-slate-800 bg-[#070a0f] shadow-sm">
                         <img src={selectedThread.listingFoto} alt="" className="w-full h-full object-cover" />
                       </div>
                     ) : (
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-sm shadow-md shadow-emerald-500/20">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-bold flex items-center justify-center text-sm shadow-sm">
                         {selectedThread.kullaniciAdi.replace('👑 ', '').charAt(0).toUpperCase() || 'M'}
                       </div>
                     )}
-                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#121722]" />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-[#0c1017]" />
                   </div>
 
                   <div className="flex flex-col text-left min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="font-heading font-black text-xs sm:text-sm text-white truncate drop-shadow-sm">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-heading font-bold text-xs sm:text-sm text-white truncate">
                         {selectedThread.kullaniciAdi}
                       </span>
 
@@ -725,7 +726,7 @@ export default function AdminChatPage() {
                           href={`https://wa.me/${selectedThread.kullaniciTelefon.replace(/[^0-9]/g, '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-2 py-0.5 rounded-md bg-emerald-500/15 hover:bg-emerald-500 hover:text-slate-950 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 transition-all flex items-center gap-1"
+                          className="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-emerald-400 font-mono text-[11px] border border-slate-800 transition-colors flex items-center gap-1"
                           title="WhatsApp'ta Aç"
                         >
                           <Phone className="w-2.5 h-2.5" />
@@ -734,15 +735,15 @@ export default function AdminChatPage() {
                       )}
 
                       {selectedThread.isBanned && (
-                        <span className="px-1.5 py-0.2 rounded-md bg-red-500/20 text-red-400 text-[9px] font-black uppercase border border-red-500/40">
-                          🚫 {selectedThread.banTuru === 'chat_ban' ? 'CHAT BANLI' : 'TAM BANLI'}
+                        <span className="px-1.5 py-0.2 rounded-md bg-rose-500/10 text-rose-400 text-[9px] font-bold uppercase border border-rose-500/20">
+                          {selectedThread.banTuru === 'chat_ban' ? 'CHAT BANLI' : 'TAM BANLI'}
                         </span>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono truncate mt-0.5">
-                      <span className="text-emerald-400 font-bold flex items-center gap-1 shrink-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono truncate mt-0.5">
+                      <span className="text-emerald-400 font-medium flex items-center gap-1 shrink-0">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                         IP: {selectedThread.ip || 'Gizli'}
                       </span>
                       <span>&bull;</span>
@@ -758,10 +759,10 @@ export default function AdminChatPage() {
                       href={`/ilan/${selectedThread.listingSlug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/40 text-[11px] font-heading font-black transition-all flex items-center gap-1 shadow-sm"
+                      className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-colors flex items-center gap-1"
                       title="İlanı Gör"
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Sparkles className="w-3.5 h-3.5 text-slate-400" />
                       <span className="hidden sm:inline">İlanı İncele</span>
                     </a>
                   )}
@@ -770,7 +771,7 @@ export default function AdminChatPage() {
                     <button
                       type="button"
                       onClick={() => handleUnban(selectedThread._id)}
-                      className="px-2.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500 hover:text-slate-950 text-[11px] font-bold border border-emerald-500/40 transition-all flex items-center gap-1"
+                      className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-emerald-400 hover:text-white text-xs font-medium border border-slate-800 transition-colors flex items-center gap-1"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Engeli Kaldır</span>
@@ -779,7 +780,7 @@ export default function AdminChatPage() {
                     <button
                       type="button"
                       onClick={() => setBanModalThread(selectedThread)}
-                      className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-600 hover:text-white text-[11px] font-bold border border-red-500/40 transition-all flex items-center gap-1"
+                      className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 text-xs font-medium border border-slate-800 transition-colors flex items-center gap-1"
                       title="Kullanıcıyı Engelle"
                     >
                       <Ban className="w-3.5 h-3.5" />
@@ -790,10 +791,10 @@ export default function AdminChatPage() {
                   <button
                     type="button"
                     onClick={() => setShowInfoSidebar(!showInfoSidebar)}
-                    className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border text-[11px] font-bold transition-all flex items-center gap-1 ${
+                    className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-medium transition-colors flex items-center gap-1 ${
                       showInfoSidebar 
-                        ? 'bg-amber-500 text-slate-950 border-amber-400' 
-                        : 'bg-slate-900 text-slate-400 hover:text-white border-slate-700'
+                        ? 'bg-slate-800 text-white border-slate-700' 
+                        : 'bg-slate-900 text-slate-400 hover:text-white border-slate-800'
                     }`}
                     title="Detay Bilgi Paneli"
                   >
@@ -808,8 +809,8 @@ export default function AdminChatPage() {
                 <div className="px-3 sm:px-4 py-2 bg-[#070a0f] border-b border-slate-800 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar shrink-0 text-left">
                   <div className="flex items-center gap-2 flex-wrap min-w-0">
                     {selectedThread.listingBaslik && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 text-amber-300 font-bold text-[10px] border border-amber-500/20 shrink-0">
-                        <CrownIcon className="w-3 h-3 text-amber-400" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900 text-slate-300 font-medium text-xs border border-slate-800 shrink-0">
+                        <CrownIcon className="w-3 h-3 text-slate-400" />
                         <span>{selectedThread.listingBaslik}</span>
                       </span>
                     )}
@@ -818,10 +819,10 @@ export default function AdminChatPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(selectedThread.username!, 'user')}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#070a0f] hover:bg-slate-900 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/30 transition-all shrink-0 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 font-mono text-xs border border-slate-800 transition-colors shrink-0 cursor-pointer"
                         title="Kullanıcı Adını Kopyala"
                       >
-                        <User className="w-3 h-3 text-amber-400" />
+                        <User className="w-3 h-3 text-slate-500" />
                         <span>Kullanıcı: {selectedThread.username}</span>
                         {copiedKey === 'user' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-2.5 h-2.5 opacity-60" />}
                       </button>
@@ -831,17 +832,17 @@ export default function AdminChatPage() {
                       <button
                         type="button"
                         onClick={() => copyToClipboard(selectedThread.password!, 'pwd')}
-                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#070a0f] hover:bg-slate-900 text-emerald-300 font-mono text-[10px] font-bold border border-emerald-500/30 transition-all shrink-0 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-emerald-400 font-mono text-xs font-medium border border-slate-800 transition-colors shrink-0 cursor-pointer"
                         title="Şifreyi Kopyala"
                       >
-                        <Key className="w-3 h-3 text-emerald-400" />
+                        <Key className="w-3 h-3 text-emerald-500" />
                         <span>Şifre: {selectedThread.password}</span>
                         {copiedKey === 'pwd' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-2.5 h-2.5 opacity-60" />}
                       </button>
                     )}
                   </div>
 
-                  <div className="text-[10px] text-slate-500 font-mono shrink-0 hidden sm:block">
+                  <div className="text-[11px] text-slate-500 font-mono shrink-0 hidden sm:block">
                     {messages.length} mesaj
                   </div>
                 </div>
@@ -854,23 +855,23 @@ export default function AdminChatPage() {
                 <div 
                   ref={scrollContainerRef}
                   onScroll={handleScroll}
-                  className="flex-1 min-h-0 overflow-y-auto p-3.5 sm:p-5 flex flex-col gap-3.5 relative max-md:no-scrollbar md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:w-2 md:[&::-webkit-scrollbar-thumb]:bg-slate-800 md:[&::-webkit-scrollbar-thumb]:rounded-full hover:md:[&::-webkit-scrollbar-thumb]:bg-slate-700 md:[&::-webkit-scrollbar-track]:bg-transparent"
+                  className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 flex flex-col gap-3 relative max-md:no-scrollbar md:[scrollbar-width:thin] md:[&::-webkit-scrollbar]:w-2 md:[&::-webkit-scrollbar-thumb]:bg-slate-800 md:[&::-webkit-scrollbar-thumb]:rounded-full hover:md:[&::-webkit-scrollbar-thumb]:bg-slate-700 md:[&::-webkit-scrollbar-track]:bg-transparent"
                 >
                   {selectedThread.isBanned && (
-                    <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center gap-2.5 text-red-300 text-xs font-bold shrink-0">
-                      <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+                    <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center gap-2.5 text-rose-300 text-xs font-medium shrink-0">
+                      <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
                       <span>Bu müşteri engellenmiştir. Sebep: {selectedThread.banSebebi || 'Kural İhlali'}</span>
                     </div>
                   )}
 
                   {messages.length === 0 ? (
                     <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-6 text-center text-xs text-slate-400 gap-2.5 my-auto max-w-sm mx-auto">
-                      <div className="w-12 h-12 rounded-2xl bg-[#070a0f] border border-slate-800 flex items-center justify-center text-amber-400 shadow-md">
-                        <MessageSquare className="w-6 h-6 opacity-60" />
+                      <div className="w-12 h-12 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-center text-slate-500 shadow-sm">
+                        <MessageSquare className="w-6 h-6" />
                       </div>
-                      <span className="font-heading font-black text-white text-sm">Mesajlaşma Henüz Başlamadı</span>
+                      <span className="font-heading font-bold text-white text-sm">Mesajlaşma Henüz Başlamadı</span>
                       <p className="text-[11px] text-slate-400 leading-relaxed">
-                        Müşteriyle henüz mesajlaşma yok. Aşağıdaki şablon butonlarına basarak hızlı paket fiyatı, onay veya hesap bilgisi gönderebilirsiniz.
+                        Müşteriyle henüz mesajlaşma yok. Aşağıdaki hızlı şablon butonlarına basarak fiyat tarifesi, onay veya hesap bilgisi iletebilirsiniz.
                       </p>
                     </div>
                   ) : (
@@ -885,12 +886,12 @@ export default function AdminChatPage() {
                             isAdmin ? 'self-end items-end' : 'self-start items-start'
                           } ${isNextSame ? 'mb-0.5' : 'mb-2'}`}
                         >
-                          {/* Baloncuk Gövdesi */}
+                          {/* Baloncuk Gövdesi (Senior Cyber Luxury Balon Mimarisi) */}
                           <div
-                            className={`p-3 sm:p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words text-left shadow-md select-text cursor-text ${
+                            className={`p-3 sm:p-3.5 text-xs sm:text-[13px] leading-relaxed whitespace-pre-wrap break-words text-left shadow-sm select-text cursor-text ${
                               isAdmin
-                                ? 'bg-gradient-to-br from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-semibold rounded-tr-sm border border-amber-300/40 shadow-amber-500/10'
-                                : 'bg-[#161c28] text-[#f0f6fc] rounded-tl-sm border border-slate-800 font-normal'
+                                ? 'bg-emerald-600 text-white rounded-2xl rounded-tr-xs border border-emerald-500/30'
+                                : 'bg-[#0c1017] text-slate-200 rounded-2xl rounded-tl-xs border border-slate-800'
                             }`}
                           >
                             {m.mesaj.split(/(https?:\/\/[^\s]+)/g).map((part, idx) => {
@@ -901,10 +902,10 @@ export default function AdminChatPage() {
                                     href={part}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className={`inline-flex items-center gap-1 underline font-black break-all my-1 p-1.5 rounded-lg text-xs ${
+                                    className={`inline-flex items-center gap-1 underline font-semibold break-all my-1 px-2 py-0.5 rounded-md text-xs transition-colors ${
                                       isAdmin 
-                                        ? 'bg-black/15 text-slate-950 hover:bg-black/25' 
-                                        : 'bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25'
+                                        ? 'bg-black/20 text-white hover:bg-black/30' 
+                                        : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
                                     }`}
                                   >
                                     <ExternalLink className="w-3 h-3" />
@@ -917,27 +918,27 @@ export default function AdminChatPage() {
                           </div>
 
                           {/* Zaman & İletildi Durumu */}
-                          <div className="flex items-center gap-1 mt-0.5 px-1 font-mono text-[9px] text-slate-400">
+                          <div className="flex items-center gap-1 mt-1 px-1 font-mono text-[10px] text-slate-500">
                             <span>
                               {new Date(m.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                             {isAdmin ? (
                               m.okundu ? (
-                                <span className="flex items-center text-sky-400 font-bold" title="Müşteri okudu (Görüldü)">
-                                  <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                                <span className="flex items-center text-emerald-400" title="Müşteri okudu (Görüldü)">
+                                  <CheckCheck className="w-3.5 h-3.5 stroke-[2]" />
                                 </span>
                               ) : (
-                                <span className="flex items-center text-slate-400" title="İletildi (Müşteri henüz görmedi)">
+                                <span className="flex items-center text-slate-500" title="İletildi (Müşteri henüz görmedi)">
                                   <Check className="w-3.5 h-3.5 stroke-[2]" />
                                 </span>
                               )
                             ) : (
                               m.okundu ? (
-                                <span className="flex items-center text-sky-400 font-bold" title="Okundu (Admin gördü)">
-                                  <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
+                                <span className="flex items-center text-emerald-400" title="Okundu">
+                                  <CheckCheck className="w-3.5 h-3.5 stroke-[2]" />
                                 </span>
                               ) : (
-                                <span className="flex items-center text-slate-400" title="Okunmadı">
+                                <span className="flex items-center text-slate-500" title="Okunmadı">
                                   <Check className="w-3.5 h-3.5 stroke-[2]" />
                                 </span>
                               )
@@ -955,19 +956,19 @@ export default function AdminChatPage() {
                   <button
                     type="button"
                     onClick={scrollToBottom}
-                    className="absolute right-6 bottom-4 p-2 rounded-full bg-amber-500 text-slate-950 shadow-xl hover:bg-amber-400 transition-all z-20 animate-bounce"
+                    className="absolute right-6 bottom-4 p-2 rounded-full bg-slate-800 text-white border border-slate-700 shadow-xl hover:bg-slate-700 transition-all z-20 animate-bounce cursor-pointer"
                     title="En alta kaydır"
                   >
-                    <ArrowDown className="w-4 h-4 stroke-[3]" />
+                    <ArrowDown className="w-4 h-4 stroke-[2.5]" />
                   </button>
                 )}
 
-                {/* ── SAĞ PROFİL BİLGİ PANELİ (DRAWER) ──────────────── */}
+                {/* ── SAĞ PROFİL BİLGİ PANELİ (MÜŞTERİ KARTI) ──────────────── */}
                 {showInfoSidebar && (
-                  <div className="w-72 lg:w-80 border-l border-slate-800 bg-[#070a0f] flex flex-col h-full shrink-0 p-4 gap-4 overflow-y-auto no-scrollbar animate-in slide-in-from-right duration-200">
+                  <div className="w-72 lg:w-80 border-l border-slate-800 bg-[#0c1017] flex flex-col h-full shrink-0 p-4 gap-4 overflow-y-auto no-scrollbar animate-in slide-in-from-right duration-200">
                     <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                      <h4 className="font-heading font-black text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                        <Info className="w-4 h-4 text-amber-400" />
+                      <h4 className="font-heading font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <Info className="w-4 h-4 text-slate-400" />
                         <span>Müşteri Kartı</span>
                       </h4>
                       <button
@@ -981,16 +982,16 @@ export default function AdminChatPage() {
 
                     {/* Müşteri Kimliği */}
                     <div className="flex flex-col gap-1 text-xs">
-                      <span className="text-slate-400 font-bold">Müşteri Adı / Ünvan:</span>
-                      <span className="font-bold text-white bg-[#070a0f] p-2.5 rounded-xl border border-slate-800">
+                      <span className="text-slate-400 font-medium">Müşteri Adı:</span>
+                      <span className="font-semibold text-white bg-[#070a0f] p-2.5 rounded-xl border border-slate-800">
                         {selectedThread.kullaniciAdi}
                       </span>
                     </div>
 
                     {/* Panel Bilgileri (Tek Tık Kopyala) */}
-                    <div className="flex flex-col gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25">
-                      <span className="text-[11px] font-heading font-black text-amber-400 uppercase tracking-wider flex items-center gap-1">
-                        <Key className="w-3.5 h-3.5" />
+                    <div className="flex flex-col gap-2.5 p-3 rounded-xl bg-[#070a0f] border border-slate-800">
+                      <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                        <Key className="w-3.5 h-3.5 text-slate-400" />
                         <span>Müşteri Panel Girişi</span>
                       </span>
 
@@ -1000,12 +1001,12 @@ export default function AdminChatPage() {
                           <button
                             type="button"
                             onClick={() => copyToClipboard(selectedThread.username || selectedThread.kullaniciAdi, 'user2')}
-                            className="text-amber-300 hover:underline flex items-center gap-0.5"
+                            className="text-slate-300 hover:text-white hover:underline flex items-center gap-0.5"
                           >
                             <span>{copiedKey === 'user2' ? 'Kopyalandı ✓' : 'Kopyala'}</span>
                           </button>
                         </div>
-                        <span className="font-mono text-white font-bold bg-[#070a0f] p-2 rounded-lg border border-slate-800">
+                        <span className="font-mono text-white font-medium bg-[#0c1017] p-2 rounded-lg border border-slate-800 text-xs">
                           {selectedThread.username || 'Bilinmiyor'}
                         </span>
                       </div>
@@ -1016,12 +1017,12 @@ export default function AdminChatPage() {
                           <button
                             type="button"
                             onClick={() => copyToClipboard(selectedThread.password || '', 'pwd2')}
-                            className="text-emerald-300 hover:underline flex items-center gap-0.5"
+                            className="text-emerald-400 hover:underline flex items-center gap-0.5"
                           >
                             <span>{copiedKey === 'pwd2' ? 'Kopyalandı ✓' : 'Kopyala'}</span>
                           </button>
                         </div>
-                        <span className="font-mono text-emerald-400 font-bold bg-[#070a0f] p-2 rounded-lg border border-slate-800">
+                        <span className="font-mono text-emerald-400 font-medium bg-[#0c1017] p-2 rounded-lg border border-slate-800 text-xs">
                           {selectedThread.password || 'Bilinmiyor'}
                         </span>
                       </div>
@@ -1030,15 +1031,15 @@ export default function AdminChatPage() {
                     {/* İlan Bağlantısı */}
                     {selectedThread.listingBaslik && (
                       <div className="flex flex-col gap-1 text-xs">
-                        <span className="text-slate-400 font-bold">Bağlı Olduğu İlan:</span>
+                        <span className="text-slate-400 font-medium">Bağlı Olduğu İlan:</span>
                         <div className="p-2.5 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-1.5">
-                          <span className="font-bold text-amber-300 text-xs">👑 {selectedThread.listingBaslik}</span>
+                          <span className="font-medium text-white text-xs">{selectedThread.listingBaslik}</span>
                           {selectedThread.listingSlug && (
                             <a
                               href={`/ilan/${selectedThread.listingSlug}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[11px] text-amber-400 hover:underline flex items-center gap-1 font-bold"
+                              className="text-xs text-slate-400 hover:text-white hover:underline flex items-center gap-1 font-medium"
                             >
                               <span>İlan Sayfasını Aç</span>
                               <ExternalLink className="w-3 h-3" />
@@ -1050,8 +1051,8 @@ export default function AdminChatPage() {
 
                     {/* IP & Güvenlik */}
                     <div className="flex flex-col gap-1 text-xs">
-                      <span className="text-slate-400 font-bold">Güvenlik / IP:</span>
-                      <span className="font-mono text-xs text-white bg-[#070a0f] p-2 rounded-xl border border-slate-800">
+                      <span className="text-slate-400 font-medium">Güvenlik / IP:</span>
+                      <span className="font-mono text-xs text-slate-300 bg-[#070a0f] p-2 rounded-xl border border-slate-800">
                         {selectedThread.ip || '127.0.0.1'}
                       </span>
                     </div>
@@ -1060,7 +1061,7 @@ export default function AdminChatPage() {
                     <button
                       type="button"
                       onClick={() => handleDeleteThread(selectedThread._id)}
-                      className="w-full py-2.5 px-3 rounded-xl bg-red-600/15 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/40 text-xs font-bold transition-all flex items-center justify-center gap-1.5 mt-auto"
+                      className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 mt-auto"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Bu Sohbeti Kalıcı Sil</span>
@@ -1069,8 +1070,8 @@ export default function AdminChatPage() {
                 )}
               </div>
 
-              {/* ── HIZLI ŞABLON BUTONLARI (TEK TIKLA CEVAP) ──────────────── */}
-              <div className="px-3 sm:px-4 py-2 bg-[#0c1017] border-t border-slate-800 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 w-full max-w-full min-w-0">
+              {/* ── HIZLI ŞABLON BUTONLARI (EXECUTIVE SLATE PILLS) ──────────────── */}
+              <div className="px-3 sm:px-4 py-2 bg-[#0c1017] border-t border-slate-800 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0 w-full max-w-full min-w-0">
                 <button
                   type="button"
                   onClick={() => {
@@ -1081,19 +1082,19 @@ export default function AdminChatPage() {
 
                     setReplyText(`Merhaba, Best Eskort VIP Destek Merkezine hoş geldiniz! 👑\n\nİlanınızı 2 farklı şekilde oluşturabilirsiniz:\n1️⃣ WhatsApp destek hattımızdan (${phoneText}) bilgilerinizi iletebilirsiniz:\n👉 WhatsApp: ${whatsappUrl}\n\n2️⃣ Web sitemiz üzerinden ilan formu doldurabilirsiniz:\n👉 İlan Formu: ${ilanVerUrl}\n\n🔥 PAKETLER:\n👑 VIP: 7.000 TL (1 gün ücretsiz vitrin)\n💎 GOLD: 4.000 TL\n🥈 SILVER: 2.500 TL\n\nDetaylı bilgi için bize yazabilirsiniz.`);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/25 to-amber-400/20 hover:from-amber-500/35 hover:to-amber-400/30 border border-amber-400/60 text-amber-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer whitespace-nowrap"
                   title="Paket Fiyat Tarifesini Yanıta Yapıştır"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                  <span>👑 Paket Tarifesi</span>
+                  <Sparkles className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Paket Tarifesi</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setReplyText('Ödeme Adresi (BNB SMART CHAIN BEP-20): 0xb7259aef66c9cd16e5a5d879baf0107bea03f527 - Ödemeden sonra lütfen TXID veya dekont iletiniz, 5 dakikada onaylanacaktır.')}
-                  className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer whitespace-nowrap"
                 >
-                  <span>💎 Kripto Cüzdan</span>
+                  <span>Kripto Cüzdan</span>
                 </button>
 
                 <button
@@ -1102,43 +1103,44 @@ export default function AdminChatPage() {
                     const origin = typeof window !== 'undefined' ? window.location.origin : '';
                     setReplyText(`🎉 Tebrikler! İlanınız onaylandı ve yayına alındı.\n\n🔑 Müşteri Panel Bilgileriniz:\nPanel Giriş: ${origin}/panelim\nKullanıcı Adı: ${selectedThread.username || '...'}\nŞifre: ${selectedThread.password || '...'}\n\nPanelinize giriş yaparak ilanınızı güncelleyebilirsiniz.`);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 text-[11px] font-heading font-black flex items-center gap-1.5 transition-all shrink-0 cursor-pointer whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 text-xs font-medium flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer whitespace-nowrap"
                 >
-                  <span>✅ Onay &amp; Şifre</span>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Onay &amp; Şifre</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setReplyText('Merhaba, ilanınızdaki fotoğrafların doğrulanabilmesi için yüzünüzün veya kimliğinizin görünmediği teyit fotoğrafı iletmeniz gerekmektedir.')}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer whitespace-nowrap"
                 >
-                  <span>📸 Fotoğraf Teyidi</span>
+                  <span>Fotoğraf Teyidi</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setReplyText('İlanınızdaki iletişim bilgileri güncellenmiştir. Başka bir işlem için bize yazabilirsiniz.')}
-                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white text-[11px] font-bold flex items-center gap-1.5 transition-all shrink-0 cursor-pointer whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer whitespace-nowrap"
                 >
-                  <span>✏️ Güncellendi</span>
+                  <span>Güncellendi</span>
                 </button>
               </div>
 
               {/* ── TABANA SABİTLENMİŞ CEVAP YAZMA FORMU ──────────────── */}
-              <form onSubmit={handleSendReply} className="p-2.5 sm:p-3.5 bg-[#0c1017] border-t border-slate-800 flex items-end gap-2 shrink-0 w-full max-w-full min-w-0">
+              <form onSubmit={handleSendReply} className="p-3 bg-[#0c1017] border-t border-slate-800 flex items-end gap-2.5 shrink-0 w-full max-w-full min-w-0">
                 <textarea
                   rows={1}
                   placeholder="Müşteriye yanıt yazın..."
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="flex-1 min-w-0 w-full px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-amber-400 resize-none max-h-28 transition-colors font-normal leading-relaxed break-words overflow-y-auto"
+                  className="flex-1 min-w-0 w-full px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-slate-700 resize-none max-h-28 transition-colors font-normal leading-relaxed break-words overflow-y-auto"
                 />
 
                 <button
                   type="submit"
                   disabled={sending || !replyText.trim()}
-                  className="flex items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-heading font-black text-xs sm:text-sm shadow-xl transition-all disabled:opacity-40 uppercase tracking-wider shrink-0 cursor-pointer h-10"
+                  className="flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-sm transition-all disabled:opacity-40 uppercase tracking-wider shrink-0 cursor-pointer h-10 active:scale-95"
                 >
                   {sending ? (
                     <Loader2 className="w-4 h-4 animate-spin stroke-[2.5]" />
@@ -1151,10 +1153,10 @@ export default function AdminChatPage() {
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-6 text-center gap-3.5 my-auto max-w-sm mx-auto">
-              <div className="w-14 h-14 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shadow-inner">
+              <div className="w-14 h-14 rounded-2xl bg-[#0c1017] border border-slate-800 flex items-center justify-center text-slate-500 shadow-sm">
                 <MessageSquare className="w-7 h-7" />
               </div>
-              <h3 className="font-heading font-black text-white text-base">Sohbet Seçilmedi</h3>
+              <h3 className="font-heading font-bold text-white text-base">Sohbet Seçilmedi</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Müşteriyle canlı mesajlaşmak veya panel bilgilerini iletmek için sol taraftaki listeden bir sohbete dokunun.
               </p>
@@ -1165,25 +1167,25 @@ export default function AdminChatPage() {
       </div>
 
       {/* ════════════════════════════════════════════════════════════════
-          3. PROFESYONEL BAN / ENGELLEME MODAL PENCERESİ
+          3. BAN / ENGELLEME MODAL PENCERESİ (EXECUTIVE ROUNDED-2XL)
          ════════════════════════════════════════════════════════════════ */}
       {banModalThread && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-[#0c1017] border-2 border-red-500/60 rounded-3xl p-6 shadow-2xl flex flex-col gap-5 animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-[#0c1017] border border-slate-800 rounded-2xl p-6 shadow-2xl flex flex-col gap-5 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-red-500 text-white flex items-center justify-center font-black shadow-lg shadow-red-500/30">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
                   <Ban className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <div className="flex flex-col text-left">
-                  <h3 className="font-heading font-black text-base text-white">Kullanıcıyı Engelle</h3>
-                  <span className="text-xs text-red-400 font-bold">{banModalThread.kullaniciAdi}</span>
+                  <h3 className="font-heading font-bold text-base text-white">Kullanıcıyı Engelle</h3>
+                  <span className="text-xs text-rose-400 font-medium">{banModalThread.kullaniciAdi}</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setBanModalThread(null)}
-                className="p-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white"
+                className="p-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1191,31 +1193,31 @@ export default function AdminChatPage() {
 
             <form onSubmit={handleApplyBan} className="flex flex-col gap-4 text-left">
               <div className="flex flex-col gap-1 text-xs">
-                <span className="text-slate-400 font-bold">Engellenecek IP Adresi:</span>
-                <span className="font-mono text-amber-400 font-bold bg-[#070a0f] p-2.5 rounded-xl border border-slate-800">
+                <span className="text-slate-400 font-medium">Engellenecek IP Adresi:</span>
+                <span className="font-mono text-slate-300 font-medium bg-[#070a0f] p-2.5 rounded-xl border border-slate-800">
                   {banModalThread.ip || 'Bilinmiyor (Sohbet ID üzerinden engellenecek)'}
                 </span>
               </div>
 
               <div className="flex flex-col gap-1 text-xs">
-                <label className="text-slate-400 font-bold">Engelleme Kapsamı:</label>
+                <label className="text-slate-400 font-medium">Engelleme Kapsamı:</label>
                 <select
                   value={banType}
                   onChange={(e: any) => setBanType(e.target.value)}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500 font-bold"
+                  className="px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-700 font-medium"
                 >
-                  <option value="tam_ban">🚫 Tam Siteden Banla (Siteye ve API'ye erişemez)</option>
-                  <option value="chat_ban">💬 Sadece Canlı Desteği Engelle</option>
+                  <option value="tam_ban">Tam Siteden Banla (Siteye ve API'ye erişemez)</option>
+                  <option value="chat_ban">Sadece Canlı Desteği Engelle</option>
                 </select>
               </div>
 
               <div className="flex flex-col gap-1 text-xs">
-                <label className="text-slate-400 font-bold">Engelleme Nedeni (Müşteriye Gösterilir):</label>
+                <label className="text-slate-400 font-medium">Engelleme Nedeni (Müşteriye Gösterilir):</label>
                 <textarea
                   rows={2}
                   value={banReason}
                   onChange={(e) => setBanReason(e.target.value)}
-                  className="px-3.5 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500"
+                  className="px-3.5 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-700"
                   required
                 />
               </div>
@@ -1224,14 +1226,14 @@ export default function AdminChatPage() {
                 <button
                   type="button"
                   onClick={() => setBanModalThread(null)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-[#283247]"
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 text-slate-300 text-xs font-medium hover:bg-slate-800 border border-slate-800"
                 >
                   Vazgeç
                 </button>
                 <button
                   type="submit"
                   disabled={banSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-heading font-black uppercase tracking-wider shadow-lg flex items-center gap-1.5 disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5 disabled:opacity-50"
                 >
                   {banSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
                   <span>Engeli Uygula</span>

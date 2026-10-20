@@ -1403,18 +1403,18 @@ export default function AdminListingsPage() {
         ) : (
           <>
             {/* ── MASAÜSTÜ PROFESYONEL VERİ TABLOSU (DESKTOP DATA TABLE - md & üstü) ──────────────── */}
-            <div className="hidden md:block w-full overflow-hidden rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl">
-              <div className="overflow-x-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-slate-800">
-                <table className="w-full text-left border-collapse">
+            <div className="hidden md:block w-full rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl overflow-hidden">
+              <div className="w-full overflow-x-auto [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-thumb]:bg-slate-800">
+                <table className="w-full text-left border-collapse table-auto">
                   <thead>
                     <tr className="bg-[#070a0f] border-b border-slate-800 text-[11px] font-bold uppercase text-slate-400 font-heading tracking-wider">
-                      <th className="py-3.5 px-4 min-w-[280px]">İlan / Model</th>
-                      <th className="py-3.5 px-3 min-w-[150px] whitespace-nowrap">Konum &amp; Bölge</th>
-                      <th className="py-3.5 px-3 min-w-[130px] whitespace-nowrap">Rozet &amp; Durum</th>
-                      <th className="py-3.5 px-3 min-w-[170px] whitespace-nowrap">Yayın Süresi</th>
-                      <th className="py-3.5 px-3 min-w-[160px] whitespace-nowrap">İletişim &amp; Şifre</th>
-                      <th className="py-3.5 px-3 min-w-[160px] whitespace-nowrap text-center">İstatistik &amp; Etkileşim</th>
-                      <th className="py-3.5 px-4 min-w-[220px] whitespace-nowrap text-right">Yönetim &amp; Aksiyonlar</th>
+                      <th className="py-3.5 px-3.5 whitespace-nowrap">İlan &amp; Model Bilgisi</th>
+                      <th className="py-3.5 px-3 whitespace-nowrap">Yayın Süresi</th>
+                      <th className="py-3.5 px-3 whitespace-nowrap">İletişim &amp; Hesap</th>
+                      <th className="py-3.5 px-3 whitespace-nowrap text-center">İstatistik</th>
+                      <th className="py-3.5 px-3.5 text-right sticky right-0 bg-[#070a0f] border-l border-slate-800/80 z-20 shadow-[-8px_0_12px_rgba(0,0,0,0.5)] whitespace-nowrap">
+                        Aksiyonlar
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/60 text-xs">
@@ -1440,19 +1440,19 @@ export default function AdminListingsPage() {
                             isPending ? 'bg-amber-500/[0.03]' : ''
                           }`}
                         >
-                          {/* İlan & Thumbnail (Büyük Okunaklı Tipografi & Net ID) */}
-                          <td className="py-3.5 px-4 align-middle">
-                            <div className="flex items-center gap-3.5">
+                          {/* 1. İlan & Model & Rozet & Konum (Tekil Entegre Blok) */}
+                          <td className="py-3 px-3.5 align-middle">
+                            <div className="flex items-center gap-3">
                               <div
                                 onClick={() => handleOpenInspect(item)}
-                                className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-800 bg-[#070a0f] cursor-pointer group/thumb shadow-sm"
+                                className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-800 bg-[#070a0f] cursor-pointer group/thumb shadow-sm"
                                 title="Büyük boyutta incele"
                               >
                                 <Image
                                   src={item.anaFotograf?.url || item.fotograflar?.[0]?.url || '/placeholder-avatar.webp'}
                                   alt={item.baslik}
                                   fill
-                                  sizes="56px"
+                                  sizes="48px"
                                   className="object-cover group-hover/thumb:scale-105 transition-transform"
                                 />
                                 <span className="absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-black/85 text-slate-300 text-[8px] font-mono font-medium">
@@ -1460,78 +1460,75 @@ export default function AdminListingsPage() {
                                 </span>
                               </div>
 
-                              <div className="flex flex-col min-w-0 flex-1">
-                                <span
-                                  onClick={() => handleOpenInspect(item)}
-                                  className="font-heading font-bold text-sm lg:text-base text-white truncate cursor-pointer hover:text-emerald-400 transition-colors"
-                                  title={item.baslik}
-                                >
-                                  {item.baslik}
-                                </span>
-                                <div className="flex items-center gap-2 text-xs font-mono mt-1 flex-wrap">
-                                  <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700/80 text-slate-200 font-bold shrink-0">
+                              <div className="flex flex-col min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span
+                                    onClick={() => handleOpenInspect(item)}
+                                    className="font-heading font-bold text-sm text-white truncate cursor-pointer hover:text-emerald-400 transition-colors max-w-[200px] lg:max-w-[260px] xl:max-w-[340px]"
+                                    title={item.baslik}
+                                  >
+                                    {item.baslik}
+                                  </span>
+                                  <span className={`inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[9px] font-bold font-mono tracking-wider shrink-0 ${
+                                    isLive
+                                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                      : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                                  }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                                    <span>{isLive ? 'Yayında' : 'Onay Bekliyor'}</span>
+                                  </span>
+                                  <span className="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-slate-400 text-[9px] font-bold uppercase tracking-wider shrink-0">
+                                    {item.rozet || 'vip'}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 mt-1 flex-wrap">
+                                  <span className="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-700/80 text-slate-200 font-bold shrink-0">
                                     #{item._id.slice(-6)}
                                   </span>
+                                  <span className="text-slate-600">•</span>
+                                  <span className="flex items-center gap-0.5 text-slate-300 capitalize font-medium">
+                                    <MapPin className="w-3 h-3 text-slate-500 shrink-0" />
+                                    <span>{item.ilSlug}/{item.ilceSlug}</span>
+                                  </span>
                                   {item.createdAt && (
-                                    <span className="text-slate-300 font-medium whitespace-nowrap">
-                                      İlan: {formatDateTime(item.createdAt)} <span className="text-slate-400 font-normal">({getTimeAgoOrLeft(item.createdAt)})</span>
-                                    </span>
+                                    <>
+                                      <span className="text-slate-600">•</span>
+                                      <span className="text-slate-400 font-normal">
+                                        {getTimeAgoOrLeft(item.createdAt)}
+                                      </span>
+                                    </>
                                   )}
                                 </div>
                               </div>
                             </div>
                           </td>
 
-                          {/* Konum */}
-                          <td className="py-3.5 px-3 align-middle whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 text-slate-300 font-medium capitalize text-xs">
-                              <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                              <span>{item.ilSlug} / {item.ilceSlug}</span>
-                            </div>
-                          </td>
-
-                          {/* Rozet & Durum */}
-                          <td className="py-3.5 px-3 align-middle whitespace-nowrap">
-                            <div className="flex flex-col gap-1.5 items-start">
-                              <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-wider ${
-                                isLive
-                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                  : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                              }`}>
-                                <span className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-                                <span>{isLive ? 'Yayında' : 'Onay Bekliyor'}</span>
-                              </span>
-                              <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
-                                {item.rozet || 'vip'}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Kalan Süre (Tek Satır & Sabit Düzen) */}
-                          <td className="py-3.5 px-3 align-middle whitespace-nowrap">
-                            <div className="flex flex-col gap-1 min-w-[150px]">
-                              <div className={`font-mono text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap ${
+                          {/* 2. Kalan Süre */}
+                          <td className="py-3 px-3 align-middle whitespace-nowrap">
+                            <div className="flex flex-col gap-1">
+                              <div className={`font-mono text-xs font-semibold flex items-center gap-1.5 ${
                                 remaining.isExpired ? 'text-rose-400' : 'text-emerald-400'
                               }`}>
                                 <Clock className="w-3.5 h-3.5 shrink-0 text-slate-500" />
                                 <span>{remaining.text}</span>
                               </div>
                               {remaining.expiryStr && (
-                                <div className="text-[11px] font-mono text-slate-400 whitespace-nowrap">
+                                <div className="text-[11px] font-mono text-slate-400">
                                   Bitiş: {remaining.expiryStr}
                                 </div>
                               )}
                               <div className="flex items-center gap-1.5 pt-0.5">
                                 <button
                                   onClick={() => handleExtendDuration(item._id, 7)}
-                                  className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[10px] font-mono font-medium border border-slate-800 transition-colors"
+                                  className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[10px] font-mono font-medium border border-slate-800 transition-colors cursor-pointer"
                                   title="+7 Gün Süre Ekle"
                                 >
                                   +7G
                                 </button>
                                 <button
                                   onClick={() => handleExtendDuration(item._id, 30)}
-                                  className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[10px] font-mono font-medium border border-slate-800 transition-colors"
+                                  className="px-2 py-0.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[10px] font-mono font-medium border border-slate-800 transition-colors cursor-pointer"
                                   title="+30 Gün Süre Ekle"
                                 >
                                   +30G
@@ -1540,8 +1537,8 @@ export default function AdminListingsPage() {
                             </div>
                           </td>
 
-                          {/* İletişim & Şifre & Kullanıcı */}
-                          <td className="py-3.5 px-3 align-middle whitespace-nowrap">
+                          {/* 3. İletişim & Şifre & Kullanıcı */}
+                          <td className="py-3 px-3 align-middle whitespace-nowrap">
                             <div className="flex flex-col gap-1 text-xs">
                               {item.kullaniciAdi ? (
                                 <span className="flex items-center gap-1 text-slate-300 font-mono font-medium bg-slate-900/60 px-2 py-0.5 rounded-lg border border-slate-800/80 w-fit" title="İlan Sahibi Kullanıcı Adı">
@@ -1563,19 +1560,19 @@ export default function AdminListingsPage() {
                             </div>
                           </td>
 
-                          {/* İstatistik & Yorumlar */}
-                          <td className="py-3.5 px-3 text-center align-middle whitespace-nowrap">
+                          {/* 4. İstatistik & Yorumlar */}
+                          <td className="py-3 px-3 text-center align-middle whitespace-nowrap">
                             <div className="flex flex-col items-center gap-1 font-mono text-xs">
-                              <div className="flex items-center justify-center gap-2.5">
-                                <span className="text-slate-200 font-medium flex items-center gap-1" title="Toplam Görüntülenme (Hit)">
+                              <div className="flex items-center justify-center gap-2">
+                                <span className="text-slate-200 font-medium flex items-center gap-1" title="Hit">
                                   <Eye className="w-3.5 h-3.5 text-slate-500" />
                                   <span>{hits.toLocaleString('tr-TR')}</span>
                                 </span>
-                                <span className="text-emerald-400 font-medium flex items-center gap-1" title="WhatsApp Tıklaması">
+                                <span className="text-emerald-400 font-medium flex items-center gap-1" title="WhatsApp Tıklama">
                                   <Phone className="w-3.5 h-3.5" />
                                   <span>{clicks}</span>
                                 </span>
-                                <span className="text-slate-400 font-medium flex items-center gap-0.5" title="Dönüşüm Oranı">
+                                <span className="text-slate-400 font-medium flex items-center gap-0.5" title="Dönüşüm">
                                   <TrendingUp className="w-3.5 h-3.5 text-slate-500" />
                                   <span>%{conversion}</span>
                                 </span>
@@ -1595,14 +1592,14 @@ export default function AdminListingsPage() {
                             </div>
                           </td>
 
-                          {/* Yönetim & Aksiyonlar */}
-                          <td className="py-3.5 px-4 text-right align-middle whitespace-nowrap">
+                          {/* 5. Yönetim & Aksiyonlar (Sticky Right-0: Her Zaman Ekranda Sabit) */}
+                          <td className="py-3 px-3.5 text-right align-middle whitespace-nowrap sticky right-0 bg-[#0c1017] group-hover:bg-[#101520] transition-colors z-10 border-l border-slate-800/80 shadow-[-8px_0_12px_rgba(0,0,0,0.5)]">
                             <div className="flex items-center justify-end gap-1.5 flex-nowrap">
                               {/* 1. Birincil Durum Değiştirme Butonu */}
                               {isPending ? (
                                 <button
                                   onClick={() => handleQuickStatusChange(item._id, 'yayinda')}
-                                  className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-sm active:scale-95 flex items-center gap-1 shrink-0 cursor-pointer"
+                                  className="px-2.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-sm active:scale-95 flex items-center gap-1 shrink-0 cursor-pointer"
                                   title="Hemen Onayla & Yayına Al"
                                 >
                                   <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -1611,7 +1608,7 @@ export default function AdminListingsPage() {
                               ) : (
                                 <button
                                   onClick={() => handleQuickStatusChange(item._id, 'onay_bekliyor')}
-                                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-medium transition-all flex items-center gap-1 shrink-0 cursor-pointer"
+                                  className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-medium transition-all flex items-center gap-1 shrink-0 cursor-pointer"
                                   title="İlanı Durdur / Beklemeye Al"
                                 >
                                   <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -1622,7 +1619,7 @@ export default function AdminListingsPage() {
                               {/* 2. İncele & Düzenle Butonları */}
                               <button
                                 onClick={() => handleOpenInspect(item)}
-                                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-all flex items-center gap-1.5 active:scale-95 shrink-0 cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-all flex items-center gap-1 active:scale-95 shrink-0 cursor-pointer"
                                 title="Detaylı Önizleme & İnceleme"
                               >
                                 <Eye className="w-3.5 h-3.5 text-slate-400" />
@@ -1631,7 +1628,7 @@ export default function AdminListingsPage() {
 
                               <button
                                 onClick={() => handleOpenEdit(item)}
-                                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-all flex items-center gap-1.5 active:scale-95 shrink-0 cursor-pointer"
+                                className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-all flex items-center gap-1 active:scale-95 shrink-0 cursor-pointer"
                                 title="İlanı Düzenle"
                               >
                                 <Edit3 className="w-3.5 h-3.5 text-slate-400" />
