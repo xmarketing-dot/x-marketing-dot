@@ -289,6 +289,75 @@ export async function GET(req: Request) {
       }
     });
 
+    // Canlı Yedekleme: Eğer seçilen domain veya tarih aralığı için özet tabloda kayıt yoksa, doğrudan ham kayıtlardan hesapla
+    if (totalPageviews === 0 && uniqueVisitors === 0) {
+      const [vSummary, eSummary] = await Promise.all([
+        AnalyticsVisitorModel.aggregate([
+          { $match: dateQuery },
+          {
+            $group: {
+              _id: null,
+              totalPageviews: { $sum: 1 },
+              uniqueVisitorsSet: { $addToSet: "$visitorId" },
+              mobileCount: { $sum: { $cond: [{ $eq: ["$device", "mobile"] }, 1, 0] } },
+              desktopCount: { $sum: { $cond: [{ $eq: ["$device", "desktop"] }, 1, 0] } },
+              google: { $sum: { $cond: [{ $eq: ["$refererSource", "google"] }, 1, 0] } },
+              yandex: { $sum: { $cond: [{ $eq: ["$refererSource", "yandex"] }, 1, 0] } },
+              whatsapp: { $sum: { $cond: [{ $eq: ["$refererSource", "whatsapp"] }, 1, 0] } },
+              telegram: { $sum: { $cond: [{ $eq: ["$refererSource", "telegram"] }, 1, 0] } },
+              direct: { $sum: { $cond: [{ $eq: ["$refererSource", "direct"] }, 1, 0] } },
+              instagram: { $sum: { $cond: [{ $eq: ["$refererSource", "instagram"] }, 1, 0] } },
+              x: { $sum: { $cond: [{ $eq: ["$refererSource", "x"] }, 1, 0] } },
+              facebook: { $sum: { $cond: [{ $eq: ["$refererSource", "facebook"] }, 1, 0] } },
+            }
+          }
+        ]),
+        AnalyticsEventModel.aggregate([
+          { $match: dateQuery },
+          {
+            $group: {
+              _id: null,
+              whatsappClicks: { $sum: { $cond: [{ $in: ["$eventType", ["whatsapp_click", "special_ad_whatsapp_click"]] }, 1, 0] } },
+              shares: { $sum: { $cond: [{ $eq: ["$eventType", "share_listing"] }, 1, 0] } },
+              categoryClicks: { $sum: { $cond: [{ $eq: ["$eventType", "category_click"] }, 1, 0] } },
+              cityFilters: { $sum: { $cond: [{ $eq: ["$eventType", "city_filter"] }, 1, 0] } },
+              searches: { $sum: { $cond: [{ $eq: ["$eventType", "search"] }, 1, 0] } },
+              pwaInstalls: { $sum: { $cond: [{ $eq: ["$eventType", "pwa_install"] }, 1, 0] } },
+              pwaUninstalls: { $sum: { $cond: [{ $eq: ["$eventType", "pwa_uninstall"] }, 1, 0] } },
+              specialAdImpressions: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_impression"] }, 1, 0] } },
+              specialAdClicks: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_click"] }, 1, 0] } },
+              specialAdWhatsappClicks: { $sum: { $cond: [{ $eq: ["$eventType", "special_ad_whatsapp_click"] }, 1, 0] } },
+            }
+          }
+        ])
+      ]);
+
+      if (vSummary && vSummary[0]) {
+        const vs = vSummary[0];
+        totalPageviews = vs.totalPageviews || 0;
+        uniqueVisitors = Array.isArray(vs.uniqueVisitorsSet) ? vs.uniqueVisitorsSet.length : 0;
+        mobileCount = vs.mobileCount || 0;
+        desktopCount = vs.desktopCount || 0;
+        sources.google = vs.google || 0;
+        sources.yandex = vs.yandex || 0;
+        sources.whatsapp = vs.whatsapp || 0;
+        sources.telegram = vs.telegram || 0;
+        sources.direct = vs.direct || 0;
+        sources.instagram = vs.instagram || 0;
+        sources.x = vs.x || 0;
+        sources.facebook = vs.facebook || 0;
+      }
+
+      if (eSummary && eSummary[0]) {
+        const es = eSummary[0];
+        for (const [k, v] of Object.entries(es)) {
+          if (k !== '_id') {
+            eventCounts[k] = (v as number) || 0;
+          }
+        }
+      }
+    }
+
     const activeUsers = activeUsersList.length;
 
     // Arama Terimlerini Birleştir (Ziyaretçi Referrer/URL + Canlı Arama Kutusu Etkinlikleri)
@@ -557,6 +626,25 @@ export async function GET(req: Request) {
       domainStatsMap[d].mobileCount += s.mobileCount || 0;
       domainStatsMap[d].whatsappClicks += s.eventCounts?.whatsappClicks || 0;
     });
+
+    // Gateway domainlerinden özette henüz 0 görünen varsa canlı ziyaretçi ve eventlerden tamamla
+    await Promise.all(
+      defaultGatewayDomains.map(async (d) => {
+        if (domainStatsMap[d] && domainStatsMap[d].totalPageviews === 0) {
+          const hostRegex = new RegExp(d.replace('.', '\\.'), 'i');
+          const [vCount, vUnique, eCount] = await Promise.all([
+            AnalyticsVisitorModel.countDocuments({ ...dateQuery, hostname: hostRegex }),
+            AnalyticsVisitorModel.distinct('visitorId', { ...dateQuery, hostname: hostRegex }),
+            AnalyticsEventModel.countDocuments({ ...dateQuery, hostname: hostRegex, eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] } }),
+          ]);
+          if (vCount > 0) {
+            domainStatsMap[d].totalPageviews = vCount;
+            domainStatsMap[d].uniqueVisitors = vUnique.length;
+            domainStatsMap[d].whatsappClicks = eCount;
+          }
+        }
+      })
+    );
 
     const domainBreakdown = Object.values(domainStatsMap).map((d: any) => {
       const conv = d.uniqueVisitors > 0 ? ((d.whatsappClicks / d.uniqueVisitors) * 100).toFixed(1) : '0.0';

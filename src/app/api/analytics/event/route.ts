@@ -97,15 +97,15 @@ export async function POST(req: NextRequest) {
       ip: cleanIp,
     });
 
-    // Real-time atomic daily summary rollup (zero overhead)
-    recordEventRollup({
+    // Real-time atomic daily summary rollup (guaranteed serverless execution)
+    await recordEventRollup({
       hostname: incomingHost,
       eventType,
       targetId: targetId || lId || '',
       targetTitle: finalTitle,
       targetCity: listingInfo?.ilSlug || city,
       path,
-    }).catch(() => {});
+    }).catch((err) => console.error('recordEventRollup error:', err));
 
     // 3. WhatsApp Tıklaması, Paylaşım veya Gösterim/Görüntülenme Sayısını Arttır
     const effectiveTargetId = targetId || lId || metadata?.slug;

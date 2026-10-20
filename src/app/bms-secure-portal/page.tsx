@@ -864,7 +864,10 @@ export default function BmsSecurePortalDashboard() {
             {/* Domain Segmented Control */}
             <div className="flex items-center bg-[#06090e] p-0.5 sm:p-1 rounded-xl border border-slate-800 text-[11px] sm:text-xs shrink-0">
               <button
-                onClick={() => setSelectedDomain('all')}
+                onClick={() => {
+                  setSelectedDomain('all');
+                  adminPortalCache.delete(`bms_analytics_${range}_all`);
+                }}
                 className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
                   selectedDomain === 'all'
                     ? 'bg-slate-800 text-white shadow-sm font-semibold'
@@ -874,7 +877,10 @@ export default function BmsSecurePortalDashboard() {
                 Tüm Siteler
               </button>
               <button
-                onClick={() => setSelectedDomain('besteskort.online')}
+                onClick={() => {
+                  setSelectedDomain('besteskort.online');
+                  adminPortalCache.delete(`bms_analytics_${range}_besteskort.online`);
+                }}
                 className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
                   selectedDomain === 'besteskort.online'
                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold'
@@ -884,7 +890,10 @@ export default function BmsSecurePortalDashboard() {
                 besteskort.online
               </button>
               <button
-                onClick={() => setSelectedDomain('escturkiye.space')}
+                onClick={() => {
+                  setSelectedDomain('escturkiye.space');
+                  adminPortalCache.delete(`bms_analytics_${range}_escturkiye.space`);
+                }}
                 className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium transition-all ${
                   selectedDomain === 'escturkiye.space'
                     ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold'

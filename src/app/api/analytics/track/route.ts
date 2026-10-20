@@ -177,8 +177,8 @@ export async function POST(req: NextRequest) {
       isUniqueToday,
     });
 
-    // Real-time atomic daily summary rollup (zero overhead)
-    recordPageviewRollup({
+    // Real-time atomic daily summary rollup (guaranteed serverless execution)
+    await recordPageviewRollup({
       hostname: incomingHost,
       isMobile,
       source,
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
       path,
       pageTitle,
       searchKeyword,
-    }).catch(() => {});
+    }).catch((err) => console.error('recordPageviewRollup error:', err));
 
     // If viewing a listing, increment listing view count
     if (path && path.startsWith('/ilan/')) {
