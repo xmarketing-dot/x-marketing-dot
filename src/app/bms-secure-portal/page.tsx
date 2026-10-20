@@ -372,15 +372,18 @@ export default function BmsSecurePortalDashboard() {
     fetchAnalytics(!cached);
   }, [range, selectedDomain]);
 
-  const fetchAnalytics = async (showLoading: boolean | any = true) => {
-    const shouldShow = showLoading === true;
+  const fetchAnalytics = async (forceRefresh: boolean | any = false) => {
+    const isManual = forceRefresh === true || (forceRefresh && typeof forceRefresh === 'object');
     const cacheKey = `bms_analytics_${range}_${selectedDomain}`;
-    if (shouldShow && !adminPortalCache.has(cacheKey)) {
+    if (isManual || !adminPortalCache.has(cacheKey)) {
       setLoading(true);
     }
     try {
       const domainQuery = selectedDomain !== 'all' ? `&domain=${encodeURIComponent(selectedDomain)}` : '';
-      const res = await fetch(`/api/admin/analytics?range=${range}${domainQuery}`);
+      const res = await fetch(`/api/admin/analytics?range=${range}${domainQuery}&_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       const json = await res.json();
       if (json.analytics) {
         setData(json.analytics);
@@ -846,9 +849,10 @@ export default function BmsSecurePortalDashboard() {
 
             {/* Mobilde Hızlı Yenile İkonu */}
             <button
-              onClick={fetchAnalytics}
+              type="button"
+              onClick={() => fetchAnalytics(true)}
               disabled={loading}
-              className="p-2 sm:p-2.5 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors xl:hidden shrink-0"
+              className="p-2 sm:p-2.5 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors xl:hidden shrink-0 active:scale-90 cursor-pointer touch-manipulation shadow-sm"
               title="Verileri Yenile"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
@@ -916,9 +920,10 @@ export default function BmsSecurePortalDashboard() {
 
             {/* Masaüstü Yenile Butonu */}
             <button
-              onClick={fetchAnalytics}
+              type="button"
+              onClick={() => fetchAnalytics(true)}
               disabled={loading}
-              className="hidden xl:flex p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0"
+              className="hidden xl:flex p-2 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0 active:scale-95 cursor-pointer shadow-sm"
               title="Verileri Yenile"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-400' : ''}`} />

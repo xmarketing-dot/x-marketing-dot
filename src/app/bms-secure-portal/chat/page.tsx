@@ -123,9 +123,11 @@ export default function AdminChatPage() {
   const initialTargetHandled = useRef(false);
 
   // 1. Fetch thread list
-  const fetchThreads = async () => {
+  const fetchThreads = async (forceRefresh: boolean | any = false) => {
+    const isManual = forceRefresh === true || (forceRefresh && typeof forceRefresh === 'object');
+    if (isManual) setLoading(true);
     try {
-      const res = await fetch('/api/admin/chat/threads', { cache: 'no-store' });
+      const res = await fetch(`/api/admin/chat/threads?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       if (data.threads) {
         setThreads(data.threads);
@@ -485,8 +487,9 @@ export default function AdminChatPage() {
 
                 <button
                   type="button"
-                  onClick={fetchThreads}
-                  className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+                  onClick={() => fetchThreads(true)}
+                  disabled={loading}
+                  className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer active:scale-90 touch-manipulation shadow-sm"
                   title="Listeyi Yenile"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />

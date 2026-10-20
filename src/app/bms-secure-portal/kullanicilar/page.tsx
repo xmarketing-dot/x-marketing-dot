@@ -145,13 +145,16 @@ export default function AdminUsersPage() {
     fetchUsers(!adminPortalCache.has('bms_admin_users'));
   }, []);
 
-  const fetchUsers = async (showLoading: boolean | any = true) => {
-    const shouldShow = showLoading === true;
-    if (shouldShow && !adminPortalCache.has('bms_admin_users')) {
+  const fetchUsers = async (forceRefresh: boolean | any = false) => {
+    const isManual = forceRefresh === true || (forceRefresh && typeof forceRefresh === 'object');
+    if (isManual || !adminPortalCache.has('bms_admin_users')) {
       setLoading(true);
     }
     try {
-      const res = await fetch('/api/admin/users');
+      const res = await fetch(`/api/admin/users?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       const data = await res.json();
       const list = (data.users && Array.isArray(data.users)) ? data.users : (Array.isArray(data) ? data : []);
       if (list.length > 0) {
@@ -295,9 +298,9 @@ export default function AdminUsersPage() {
 
           <button
             type="button"
-            onClick={fetchUsers}
+            onClick={() => fetchUsers(true)}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-all cursor-pointer active:scale-90 touch-manipulation shadow-sm"
             title="Listeyi Yenile"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />

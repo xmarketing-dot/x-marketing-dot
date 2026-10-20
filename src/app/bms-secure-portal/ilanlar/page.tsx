@@ -393,9 +393,12 @@ export default function AdminListingsPage() {
     }
   };
 
-  const fetchListings = async (showLoading: boolean | any = true) => {
-    const shouldShow = showLoading === true;
-    if (shouldShow && !adminPortalCache.has('bms_admin_listings')) {
+  const fetchListings = async (forceRefresh: boolean | any = false) => {
+    const isManual = forceRefresh === true || (forceRefresh && typeof forceRefresh === 'object');
+    if (isManual) {
+      setLoading(true);
+      setIsSyncing(true);
+    } else if (!adminPortalCache.has('bms_admin_listings')) {
       setLoading(true);
     } else {
       setIsSyncing(true);
@@ -1147,11 +1150,13 @@ export default function AdminListingsPage() {
             ) : null}
 
             <button
+              type="button"
               onClick={() => fetchListings(true)}
-              className="p-2.5 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors active:scale-95 shrink-0 cursor-pointer"
+              disabled={loading || isSyncing}
+              className="p-2.5 rounded-xl bg-[#06090e] hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors active:scale-90 shrink-0 cursor-pointer touch-manipulation shadow-sm"
               title="İlanları Yenile"
             >
-              <RefreshCw className={`w-4 h-4 ${loading || isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${(loading || isSyncing) ? 'animate-spin text-emerald-400' : ''}`} />
             </button>
           </div>
         </div>

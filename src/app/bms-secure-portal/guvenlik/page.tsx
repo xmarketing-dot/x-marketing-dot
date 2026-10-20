@@ -104,13 +104,16 @@ export default function AdminSecurityPage() {
     fetchBans(!adminPortalCache.has('bms_security_bans'));
   }, []);
 
-  const fetchBans = async (showLoading: boolean | any = true) => {
-    const shouldShow = showLoading === true;
-    if (shouldShow && !adminPortalCache.has('bms_security_bans')) {
+  const fetchBans = async (forceRefresh: boolean | any = false) => {
+    const isManual = forceRefresh === true || (forceRefresh && typeof forceRefresh === 'object');
+    if (isManual || !adminPortalCache.has('bms_security_bans')) {
       setLoading(true);
     }
     try {
-      const res = await fetch('/api/admin/bans');
+      const res = await fetch(`/api/admin/bans?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       const data = await res.json();
       if (data.bans) {
         setBans(data.bans);
@@ -228,9 +231,10 @@ export default function AdminSecurityPage() {
         </div>
 
         <button
-          onClick={fetchBans}
+          type="button"
+          onClick={() => fetchBans(true)}
           disabled={loading}
-          className="self-end sm:self-auto flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-all shrink-0 cursor-pointer"
+          className="self-end sm:self-auto flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-all shrink-0 cursor-pointer active:scale-90 touch-manipulation shadow-sm"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
           <span className="hidden sm:inline">Verileri Yenile</span>

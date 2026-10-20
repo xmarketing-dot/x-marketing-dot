@@ -85,13 +85,16 @@ export default function AdminBannerManagementPage() {
     fetchBanners(!adminPortalCache.has('bms_admin_banners'));
   }, []);
 
-  const fetchBanners = async (showLoading: boolean | any = true) => {
-    const shouldShow = showLoading === true;
-    if (shouldShow && !adminPortalCache.has('bms_admin_banners')) {
+  const fetchBanners = async (forceRefresh: boolean | any = false) => {
+    const isManual = forceRefresh === true || (forceRefresh && typeof forceRefresh === 'object');
+    if (isManual || !adminPortalCache.has('bms_admin_banners')) {
       setLoading(true);
     }
     try {
-      const res = await fetch('/api/admin/banners');
+      const res = await fetch(`/api/admin/banners?_t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       const data = await res.json();
       if (data.success && data.banners) {
         setBanners(data.banners);
@@ -202,9 +205,10 @@ export default function AdminBannerManagementPage() {
           </Link>
 
           <button
-            onClick={fetchBanners}
+            type="button"
+            onClick={() => fetchBanners(true)}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-all cursor-pointer active:scale-90 touch-manipulation shadow-sm"
             title="Verileri Yenile"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
