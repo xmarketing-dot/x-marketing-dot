@@ -32,7 +32,8 @@ import {
   Bell,
   BellRing,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Radio
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 import AdminFloatingChat from './AdminFloatingChat';
@@ -330,14 +331,41 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          {/* Hızlı Bildirim & Push Masası Erişimi */}
+          <Link
+            href="/bms-secure-portal/bildirimler"
+            className={`p-2 rounded-xl border transition-all relative ${
+              pathname === '/bms-secure-portal/bildirimler' || pathname === '/bms-secure-portal/uygulama'
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm shadow-amber-500/10'
+                : 'bg-slate-800/80 hover:bg-slate-800 text-slate-400 hover:text-amber-400 border-slate-700/80'
+            }`}
+            title="Bildirim & Push Masası"
+          >
+            <BellRing className="w-4 h-4" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+          </Link>
+
           <Link
             href="/"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-semibold"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700/80 text-[11px] font-semibold transition-colors"
           >
-            <Globe className="w-3.5 h-3.5" />
-            <span>Siteye Git</span>
+            <Globe className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Site</span>
           </Link>
+
+          {/* Menü Aç/Kapat Butonu */}
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors relative"
+            title="Tüm Menüyü Aç"
+          >
+            <Menu className="w-4 h-4" />
+            {(badgeCounts.anasayfaBadge > 0 || badgeCounts.bannersBadge > 0 || badgeCounts.kullanicilarBadge > 0) && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            )}
+          </button>
         </div>
       </div>
 
