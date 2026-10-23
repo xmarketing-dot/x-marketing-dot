@@ -363,24 +363,26 @@ export default function BmsSecurePortalDashboard() {
   };
 
   useEffect(() => {
-    const cacheKey = `bms_analytics_${range}_${selectedDomain}`;
+    const cacheKey = `bms_analytics_${range}_${selectedDomain}_${visitorDisplayLimit}`;
     const cached = adminPortalCache.get(cacheKey);
     if (cached) {
       setData(cached);
       setLoading(false);
     }
-    fetchAnalytics(!cached);
-  }, [range, selectedDomain]);
+    fetchAnalytics(!cached, visitorDisplayLimit);
+  }, [range, selectedDomain, visitorDisplayLimit]);
 
-  const fetchAnalytics = async (forceRefresh: boolean | any = false) => {
+  const fetchAnalytics = async (forceRefresh: boolean | any = false, customVisitorLimit?: number) => {
     const isManual = forceRefresh === true || (forceRefresh && typeof forceRefresh === 'object');
-    const cacheKey = `bms_analytics_${range}_${selectedDomain}`;
+    const vLimit = customVisitorLimit !== undefined ? customVisitorLimit : visitorDisplayLimit;
+    const cacheKey = `bms_analytics_${range}_${selectedDomain}_${vLimit}`;
     if (isManual || !adminPortalCache.has(cacheKey)) {
       setLoading(true);
     }
     try {
       const domainQuery = selectedDomain !== 'all' ? `&domain=${encodeURIComponent(selectedDomain)}` : '';
-      const res = await fetch(`/api/admin/analytics?range=${range}${domainQuery}&_t=${Date.now()}`, {
+      const limitQuery = `&visitorLimit=${vLimit}`;
+      const res = await fetch(`/api/admin/analytics?range=${range}${domainQuery}${limitQuery}&_t=${Date.now()}`, {
         cache: 'no-store',
         headers: { 'Cache-Control': 'no-cache' }
       });
@@ -3220,8 +3222,11 @@ export default function BmsSecurePortalDashboard() {
                 {[100, 500, 1000, 9999].map((limit) => (
                   <button
                     key={limit}
-                    onClick={() => setVisitorDisplayLimit(limit)}
-                    className={`px-2 py-1 rounded-lg transition-all font-semibold text-[11px] ${
+                    onClick={() => {
+                      setVisitorDisplayLimit(limit);
+                      fetchAnalytics(true, limit);
+                    }}
+                    className={`px-2 py-1 rounded-lg transition-all font-semibold text-[11px] cursor-pointer ${
                       visitorDisplayLimit === limit
                         ? 'bg-emerald-500 text-slate-950 shadow-sm'
                         : 'text-slate-400 hover:text-white'

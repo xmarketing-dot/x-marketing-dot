@@ -15,6 +15,7 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const range = url.searchParams.get('range') || 'today';
     const domainFilter = url.searchParams.get('domain');
+    const visitorLimit = Math.min(Math.max(parseInt(url.searchParams.get('visitorLimit') || '100', 10), 50), 10000);
 
     let dateQuery: any = {};
     const now = new Date();
@@ -37,13 +38,28 @@ export async function GET(req: Request) {
       dateQuery = { createdAt: { $gte: startOfMonth } };
     }
 
-    if (domainFilter && domainFilter !== 'all') {
-      dateQuery.hostname = { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') };
+    // Domain ve tüm eski/bağlı domain türevlerini (escturkiye.devs.surf, escturkiye.space vb.) kapsayan akıllı regex
+    const getDomainFilterRegex = (domain?: string | null): RegExp | null => {
+      if (!domain || domain === 'all') return null;
+      const d = domain.toLowerCase();
+      if (d.includes('escturkiye') || d.includes('turkiyeescort') || d.includes('turkiyeeskort') || d.includes('escturkye')) {
+        return /(escturkiye|escturkye|turkiyeescort|turkiyeeskort)/i;
+      }
+      if (d.includes('besteskort') || d.includes('bestescort')) {
+        return /(besteskort|bestescort)/i;
+      }
+      return new RegExp(d.replace('.', '\\.'), 'i');
+    };
+
+    const domainRegex = getDomainFilterRegex(domainFilter);
+
+    if (domainRegex) {
+      dateQuery.hostname = { $regex: domainRegex };
     }
 
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
     const activeUsersQuery: any = { createdAt: { $gte: fiveMinutesAgo } };
-    if (domainFilter && domainFilter !== 'all') {
+    if (domainRegex) {
       activeUsersQuery.hostname = dateQuery.hostname;
     }
 
@@ -64,9 +80,12 @@ export async function GET(req: Request) {
       summaryDateFilter = { date: { $gte: thirtyDaysAgoStr } };
     } // 'all' matches all dates
 
-    let summaryHostQuery: any = { hostname: 'all' };
-    if (domainFilter && domainFilter !== 'all') {
-      summaryHostQuery = { hostname: { $regex: new RegExp(domainFilter.replace('.', '\\.'), 'i') } };
+    let summaryHostQuery: any = {};
+    if (domainRegex) {
+      summaryHostQuery = { hostname: { $regex: domainRegex } };
+    } else {
+      // Tüm siteler seçiliyken 'all' özet dökümanını sorgula
+      summaryHostQuery = { hostname: 'all' };
     }
 
     // ── TEK BİR PROMISE.ALL İLE PARALEL ÇALIŞTIRMA (IŞIK HIZINDA) ──
@@ -169,8 +188,8 @@ export async function GET(req: Request) {
         { $limit: 15 }
       ]),
 
-      // 10. Canlı Ziyaretçi Logu (Son 100 kayıt - hafif & anında yüklenir)
-      AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(100).lean(),
+      // 10. Canlı Ziyaretçi Logu (Dinamik limit: 100, 500, 1000 veya tümü)
+      AnalyticsVisitorModel.find(dateQuery).sort({ createdAt: -1 }).limit(visitorLimit).lean(),
 
       // 11. İlan Ziyaretçi & Referrer Dağılımı
       AnalyticsVisitorModel.aggregate([
@@ -306,8 +325,9 @@ export async function GET(req: Request) {
       }
     });
 
-    // Canlı Yedekleme: Eğer seçilen domain veya tarih aralığı için özet tabloda kayıt yoksa, doğrudan ham kayıtlardan hesapla
-    if (totalPageviews === 0 && uniqueVisitors === 0) {
+    // Canlı Senkronizasyon & Yedekleme: Bugün ('today') için her zaman veya özet tabloda eksik kalan aralıklar için
+    // doğrudan ham AnalyticsVisitorModel ve AnalyticsEventModel kayıtlarından hesaplayıp %100 canlı gerçeklik sağla
+    if (range === 'today' || (totalPageviews === 0 && uniqueVisitors === 0)) {
       const [vSummary, eSummary] = await Promise.all([
         AnalyticsVisitorModel.aggregate([
           { $match: dateQuery },
@@ -351,25 +371,32 @@ export async function GET(req: Request) {
 
       if (vSummary && vSummary[0]) {
         const vs = vSummary[0];
-        totalPageviews = vs.totalPageviews || 0;
-        uniqueVisitors = Array.isArray(vs.uniqueVisitorsSet) ? vs.uniqueVisitorsSet.length : 0;
-        mobileCount = vs.mobileCount || 0;
-        desktopCount = vs.desktopCount || 0;
-        sources.google = vs.google || 0;
-        sources.yandex = vs.yandex || 0;
-        sources.whatsapp = vs.whatsapp || 0;
-        sources.telegram = vs.telegram || 0;
-        sources.direct = vs.direct || 0;
-        sources.instagram = vs.instagram || 0;
-        sources.x = vs.x || 0;
-        sources.facebook = vs.facebook || 0;
+        const rawViews = vs.totalPageviews || 0;
+        const rawUnique = Array.isArray(vs.uniqueVisitorsSet) ? vs.uniqueVisitorsSet.length : 0;
+        if (range === 'today' || rawViews > totalPageviews) {
+          totalPageviews = rawViews;
+          uniqueVisitors = rawUnique;
+          mobileCount = vs.mobileCount || 0;
+          desktopCount = vs.desktopCount || 0;
+          sources.google = vs.google || 0;
+          sources.yandex = vs.yandex || 0;
+          sources.whatsapp = vs.whatsapp || 0;
+          sources.telegram = vs.telegram || 0;
+          sources.direct = vs.direct || 0;
+          sources.instagram = vs.instagram || 0;
+          sources.x = vs.x || 0;
+          sources.facebook = vs.facebook || 0;
+        }
       }
 
       if (eSummary && eSummary[0]) {
         const es = eSummary[0];
         for (const [k, v] of Object.entries(es)) {
           if (k !== '_id') {
-            eventCounts[k] = (v as number) || 0;
+            const rawVal = (v as number) || 0;
+            if (range === 'today' || rawVal > (eventCounts[k] || 0)) {
+              eventCounts[k] = rawVal;
+            }
           }
         }
       }
@@ -554,10 +581,14 @@ export async function GET(req: Request) {
       const lifetimeWhatsapp = l.whatsappTiklamaSayisi || 0;
       const lifetimeShares = l.paylasimSayisi || 0;
 
-      const totalViews = isAllTime ? Math.max(lifetimeViews, periodViews) : periodViews;
+      const baseViews = isAllTime ? Math.max(lifetimeViews, periodViews) : periodViews;
       const totalWhatsapp = isAllTime ? Math.max(lifetimeWhatsapp, periodWhatsapp) : periodWhatsapp;
       const totalListingShares = isAllTime ? Math.max(lifetimeShares, periodShares) : periodShares;
-      const conversionRate = totalViews > 0 ? ((totalWhatsapp / totalViews) * 100).toFixed(1) : '0.0';
+      // Tutarlılık Güvencesi: Bir ilanın görüntülenmesi WhatsApp tıklamasından az olamaz (tıklama varsa en az o kadar görülmüştür)
+      const totalViews = Math.max(baseViews, totalWhatsapp);
+      const conversionRate = totalViews > 0 
+        ? Math.min(100, Number(((totalWhatsapp / totalViews) * 100).toFixed(1))).toFixed(1) 
+        : '0.0';
 
       return {
         id: idStr,
@@ -652,7 +683,13 @@ export async function GET(req: Request) {
     });
 
     domainSummaries.forEach((s: any) => {
-      const d = s.hostname || 'Ana Domain';
+      let d = s.hostname || 'Ana Domain';
+      if (d.includes('escturkiye') || d.includes('turkiyeescort') || d.includes('turkiyeeskort') || d.includes('escturkye')) {
+        d = 'escturkiye.space';
+      } else if (d.includes('besteskort') || d.includes('bestescort')) {
+        d = 'besteskort.online';
+      }
+
       if (!domainStatsMap[d]) {
         domainStatsMap[d] = {
           domain: d,
@@ -669,21 +706,19 @@ export async function GET(req: Request) {
       domainStatsMap[d].whatsappClicks += s.eventCounts?.whatsappClicks || 0;
     });
 
-    // Gateway domainlerinden özette henüz 0 görünen varsa canlı ziyaretçi ve eventlerden tamamla
+    // Gateway domainlerinin istatistiklerini canlı ham verilerle harmanla (eksik kalan veya 0 olan varsa kesin tamamla)
     await Promise.all(
       defaultGatewayDomains.map(async (d) => {
-        if (domainStatsMap[d] && domainStatsMap[d].totalPageviews === 0) {
-          const hostRegex = new RegExp(d.replace('.', '\\.'), 'i');
-          const [vCount, vUnique, eCount] = await Promise.all([
-            AnalyticsVisitorModel.countDocuments({ ...dateQuery, hostname: hostRegex }),
-            AnalyticsVisitorModel.distinct('visitorId', { ...dateQuery, hostname: hostRegex }),
-            AnalyticsEventModel.countDocuments({ ...dateQuery, hostname: hostRegex, eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] } }),
-          ]);
-          if (vCount > 0) {
-            domainStatsMap[d].totalPageviews = vCount;
-            domainStatsMap[d].uniqueVisitors = vUnique.length;
-            domainStatsMap[d].whatsappClicks = eCount;
-          }
+        const hostRegex = getDomainFilterRegex(d) || new RegExp(d.replace('.', '\\.'), 'i');
+        const [vCount, vUnique, eCount] = await Promise.all([
+          AnalyticsVisitorModel.countDocuments({ ...dateQuery, hostname: hostRegex }),
+          AnalyticsVisitorModel.distinct('visitorId', { ...dateQuery, hostname: hostRegex }),
+          AnalyticsEventModel.countDocuments({ ...dateQuery, hostname: hostRegex, eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] } }),
+        ]);
+        if (vCount > 0 && (range === 'today' || vCount > (domainStatsMap[d]?.totalPageviews || 0))) {
+          domainStatsMap[d].totalPageviews = vCount;
+          domainStatsMap[d].uniqueVisitors = vUnique.length;
+          domainStatsMap[d].whatsappClicks = Math.max(eCount, domainStatsMap[d]?.whatsappClicks || 0);
         }
       })
     );
