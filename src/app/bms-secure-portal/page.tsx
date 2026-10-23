@@ -842,6 +842,10 @@ export default function BmsSecurePortalDashboard() {
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span>CANLI RADAR</span>
                   </span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] font-bold font-mono tracking-wider shrink-0 shadow-sm shadow-amber-500/10">
+                    <Calendar className="w-3 h-3 text-amber-400" />
+                    <span>Yayın: 30 Ağustos 2026</span>
+                  </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
                   Gerçek zamanlı ziyaretçi akışı, oturumlar ve istihbarat paneli
@@ -2837,9 +2841,12 @@ export default function BmsSecurePortalDashboard() {
                             {range === 'today' ? 'Bugün Görüntülenme' : range === 'yesterday' ? 'Dün Görüntülenme' : 'Görüntülenme'}
                           </span>
                           <span className="font-black text-xs text-white font-heading">{item.totalViews} Kez</span>
+                          <span className="text-[9px] text-slate-400 mt-0.5">
+                            {item.detailViews || 0} Detay • {item.cardImpressions || 0} Liste
+                          </span>
                           {range !== 'all' && (
-                            <span className="text-[9px] text-[#8b949e]">
-                              Toplam: {item.lifetimeViews || 0}
+                            <span className="text-[9px] text-[#8b949e] font-mono">
+                              Toplam: {(item.lifetimeViews || 0).toLocaleString()}
                             </span>
                           )}
                         </div>
@@ -2852,14 +2859,19 @@ export default function BmsSecurePortalDashboard() {
                             {item.whatsappClicks}
                           </span>
                           {range !== 'all' && (
-                            <span className="text-[9px] text-[#8b949e]">
-                              Toplam: {item.lifetimeWhatsapp || 0}
+                            <span className="text-[9px] text-[#8b949e] font-mono">
+                              Toplam: {(item.lifetimeWhatsapp || 0).toLocaleString()}
                             </span>
                           )}
                         </div>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col justify-center">
                           <span className="text-[10px] text-[#8b949e]">Dönüşüm</span>
                           <span className="font-black text-xs text-amber-400 font-mono">%{item.conversionRate}</span>
+                          {item.detailViews > 0 && (
+                            <span className="text-[9px] text-emerald-400 font-mono">
+                              Detay: %{item.detailCtr}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -3024,7 +3036,12 @@ export default function BmsSecurePortalDashboard() {
                                 <span className="font-black text-sm text-white font-heading">
                                   {(item.totalViews || 0).toLocaleString()} Kez
                                 </span>
-                                <span className="text-[10px] text-[#8b949e]">
+                                <div className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                                  <span className="text-emerald-400 font-semibold">{item.detailViews || 0} Detay</span>
+                                  <span>•</span>
+                                  <span className="text-slate-400">{item.cardImpressions || 0} Liste</span>
+                                </div>
+                                <span className="text-[9px] text-[#8b949e] font-mono mt-0.5">
                                   {range !== 'all' 
                                     ? `Dönem: ${item.totalViews} • Toplam: ${(item.lifetimeViews || 0).toLocaleString()}`
                                     : (item.uniqueVisitors > 0 ? `${item.uniqueVisitors} tekil ziyaretçi` : 'Tüm zamanlar')}
@@ -3040,11 +3057,16 @@ export default function BmsSecurePortalDashboard() {
                                   {(item.whatsappClicks || 0).toLocaleString()} Tıklama
                                 </span>
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-black text-[10px] w-fit font-mono">
-                                    %{item.conversionRate} Dönüşüm
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-black text-[10px] w-fit font-mono" title="Genel Görünürlük Dönüşümü (WhatsApp / Toplam)">
+                                    %{item.conversionRate} CTR
                                   </span>
+                                  {item.detailViews > 0 && (
+                                    <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-black text-[10px] w-fit font-mono" title="Sayfa Ziyareti Başına WhatsApp Oranı">
+                                      %{item.detailCtr} Detay CTR
+                                    </span>
+                                  )}
                                   {range !== 'all' && (
-                                    <span className="text-[9px] text-[#8b949e]">
+                                    <span className="text-[9px] text-[#8b949e] font-mono">
                                       Toplam: {(item.lifetimeWhatsapp || 0).toLocaleString()}
                                     </span>
                                   )}

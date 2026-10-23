@@ -33,7 +33,8 @@ import {
   BellRing,
   PanelLeftClose,
   PanelLeftOpen,
-  Radio
+  Radio,
+  Calendar
 } from 'lucide-react';
 import CorporateLogo from '@/components/common/CorporateLogo';
 import AdminFloatingChat from './AdminFloatingChat';
@@ -324,10 +325,15 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
           <CorporateLogo className="w-7 h-7" />
           <div className="flex flex-col">
             <span className="font-bold text-xs text-white tracking-tight">BMS Portal</span>
-            <span className="text-[9px] text-emerald-400 font-semibold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Yönetici Aktif
-            </span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-[9px] text-emerald-400 font-semibold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Yönetici Aktif
+              </span>
+              <span className="text-[9px] text-amber-400 font-mono font-medium">
+                • Yayın: 30 Ağu 2026
+              </span>
+            </div>
           </div>
         </div>
 
@@ -397,9 +403,15 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
                     <span className="font-bold text-sm text-white tracking-tight truncate">
                       BMS System Gate
                     </span>
-                    <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Süper Yönetici Aktif
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Süper Yönetici Aktif
+                      </span>
+                    </div>
+                    <span className="text-[9px] text-amber-300/90 font-mono font-medium flex items-center gap-1 mt-0.5">
+                      <Calendar className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                      <span>Yayın: 30 Ağustos 2026</span>
                     </span>
                   </div>
                 </div>

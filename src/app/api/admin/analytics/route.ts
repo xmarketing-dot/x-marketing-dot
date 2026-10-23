@@ -500,7 +500,10 @@ export async function GET(req: Request) {
         impressions: 0,
         uniqueVisitors: new Set(),
       });
-      if (l.slug) slugToIdMap.set(l.slug.toLowerCase().trim(), idStr);
+      if (l.slug) {
+        const cleanSlug = l.slug.toLowerCase().trim().replace(/^https?:\/\/[^\/]+/, '').replace(/^\/ilan\//, '').replace(/\/$/, '');
+        slugToIdMap.set(cleanSlug, idStr);
+      }
       if (l.baslik) titleToIdMap.set(l.baslik.toLowerCase().trim(), idStr);
     });
 
@@ -513,15 +516,18 @@ export async function GET(req: Request) {
       const metaSlug = (item._id?.metaSlug || item._id?.metaListingSlug || '').toString().toLowerCase().trim();
       const title = (item._id?.targetTitle || '').toString().toLowerCase().trim();
 
+      const cleanTid = tid.replace(/^https?:\/\/[^\/]+/, '').replace(/^\/ilan\//, '').replace(/\/$/, '').toLowerCase();
+      const cleanMetaSlug = metaSlug.replace(/^https?:\/\/[^\/]+/, '').replace(/^\/ilan\//, '').replace(/\/$/, '').toLowerCase();
+
       let targetId: string | null = null;
       if (metaId && listingStatsById.has(metaId)) {
         targetId = metaId;
       } else if (tid && listingStatsById.has(tid)) {
         targetId = tid;
-      } else if (metaSlug && slugToIdMap.has(metaSlug)) {
-        targetId = slugToIdMap.get(metaSlug)!;
-      } else if (tid && slugToIdMap.has(tid.toLowerCase())) {
-        targetId = slugToIdMap.get(tid.toLowerCase())!;
+      } else if (cleanMetaSlug && slugToIdMap.has(cleanMetaSlug)) {
+        targetId = slugToIdMap.get(cleanMetaSlug)!;
+      } else if (cleanTid && slugToIdMap.has(cleanTid)) {
+        targetId = slugToIdMap.get(cleanTid)!;
       } else if (title && titleToIdMap.has(title)) {
         targetId = titleToIdMap.get(title)!;
       }
@@ -539,11 +545,13 @@ export async function GET(req: Request) {
       const imp = item.impressions || 0;
       const uVisitors = item.uniqueImpressionVisitors || [];
 
+      const cleanTid = tid.replace(/^https?:\/\/[^\/]+/, '').replace(/^\/ilan\//, '').replace(/\/$/, '').toLowerCase();
+
       let targetId: string | null = null;
       if (tid && listingStatsById.has(tid)) {
         targetId = tid;
-      } else if (tid && slugToIdMap.has(tid.toLowerCase())) {
-        targetId = slugToIdMap.get(tid.toLowerCase())!;
+      } else if (cleanTid && slugToIdMap.has(cleanTid)) {
+        targetId = slugToIdMap.get(cleanTid)!;
       }
 
       if (targetId && listingStatsById.has(targetId)) {
@@ -570,22 +578,38 @@ export async function GET(req: Request) {
         lastVisitedAt: null,
       };
 
-      const periodViews = (vStats.periodViews || 0) + (eStats.impressions || 0);
+      const detailViews = vStats.periodViews || 0;
+      const cardImpressions = eStats.impressions || 0;
+      const periodViews = detailViews + cardImpressions;
       const periodWhatsapp = eStats.whatsappClicks || 0;
       const periodShares = eStats.shares || 0;
 
       const allUniqueVisitors = new Set([...vStats.uniqueVisitors, ...eStats.uniqueVisitors]);
       const uniqueVisitorsCount = allUniqueVisitors.size > 0 ? allUniqueVisitors.size : (vStats.uniqueVisitorsCount || 0);
 
-      const lifetimeViews = l.goruntulenmeSayisi || 0;
-      const lifetimeWhatsapp = l.whatsappTiklamaSayisi || 0;
-      const lifetimeShares = l.paylasimSayisi || 0;
+      // Veritabanındaki kümülatif sayaçlar
+      const rawDbViews = l.goruntulenmeSayisi || 0;
+      const rawDbWhatsapp = l.whatsappTiklamaSayisi || 0;
+      const rawDbShares = l.paylasimSayisi || 0;
 
-      const baseViews = isAllTime ? Math.max(lifetimeViews, periodViews) : periodViews;
-      const totalWhatsapp = isAllTime ? Math.max(lifetimeWhatsapp, periodWhatsapp) : periodWhatsapp;
-      const totalListingShares = isAllTime ? Math.max(lifetimeShares, periodShares) : periodShares;
-      // Tutarlılık Güvencesi: Bir ilanın görüntülenmesi WhatsApp tıklamasından az olamaz (tıklama varsa en az o kadar görülmüştür)
+      const totalWhatsapp = isAllTime ? Math.max(rawDbWhatsapp, periodWhatsapp) : periodWhatsapp;
+      const totalListingShares = isAllTime ? Math.max(rawDbShares, periodShares) : periodShares;
+
+      const baseViews = isAllTime ? Math.max(rawDbViews, periodViews) : periodViews;
+      // Tutarlılık Güvencesi: Bir ilanın görüntülenmesi WhatsApp tıklamasından az olamaz
       const totalViews = Math.max(baseViews, totalWhatsapp);
+
+      // KESİN MATEMATİK KURALI: "Toplam (Lifetime)" ASLA seçili dönemden küçük olamaz
+      const lifetimeViews = Math.max(rawDbViews, totalViews, totalWhatsapp);
+      const lifetimeWhatsapp = Math.max(rawDbWhatsapp, totalWhatsapp);
+      const lifetimeShares = Math.max(rawDbShares, totalListingShares);
+
+      // Sayfa İçi Dönüşüm (Detay Sayfasına girenlerin WhatsApp'a tıklama oranı)
+      const detailCtr = detailViews > 0
+        ? Math.min(100, Number(((totalWhatsapp / detailViews) * 100).toFixed(1))).toFixed(1)
+        : (totalWhatsapp > 0 ? '100.0' : '0.0');
+
+      // Genel Görünürlük Dönüşümü (Liste + Sayfa gösterimlerine göre WhatsApp oranı)
       const conversionRate = totalViews > 0 
         ? Math.min(100, Number(((totalWhatsapp / totalViews) * 100).toFixed(1))).toFixed(1) 
         : '0.0';
@@ -602,14 +626,18 @@ export async function GET(req: Request) {
         status: l.status,
         createdAt: l.createdAt,
         totalViews,
+        detailViews,
+        cardImpressions,
         periodViews,
         lifetimeViews,
         uniqueVisitors: uniqueVisitorsCount,
         whatsappClicks: totalWhatsapp,
         periodWhatsappClicks: periodWhatsapp,
-        lifetimeWhatsapp: Math.max(lifetimeWhatsapp, periodWhatsapp),
+        lifetimeWhatsapp,
         shares: totalListingShares,
+        lifetimeShares,
         conversionRate,
+        detailCtr,
         referrers: vStats.referrers,
         rawReferrers: Array.from(new Set(vStats.rawReferrers || [])).slice(0, 10),
         lastVisitedAt: vStats.lastVisitedAt,
