@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import SiteNotificationModel from '@/models/SiteNotification';
+import { markVisitorUnreadZero } from '../unread-count/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'visitorId zorunludur' }, { status: 400 });
     }
 
+    markVisitorUnreadZero(visitorId);
     await connectToDatabase();
 
     if (markAll) {
@@ -23,9 +25,11 @@ export async function POST(req: NextRequest) {
       });
 
       for (const item of unreadList) {
-        item.readBy.push(visitorId);
-        item.readCount = item.readBy.length;
-        await item.save();
+        if (!item.readBy.includes(visitorId)) {
+          item.readBy.push(visitorId);
+          item.readCount = (item.readCount || 0) + 1;
+          await item.save();
+        }
       }
 
       return NextResponse.json({ success: true, unreadCount: 0 });

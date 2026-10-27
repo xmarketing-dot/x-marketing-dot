@@ -8,7 +8,11 @@ interface CacheEntry {
   count: number;
   expires: number;
 }
-const unreadCache = new Map<string, CacheEntry>();
+export const unreadCache = new Map<string, CacheEntry>();
+
+export function markVisitorUnreadZero(visitorId: string) {
+  unreadCache.set(visitorId, { count: 0, expires: Date.now() + 60000 });
+}
 
 export async function GET(req: NextRequest) {
   try {

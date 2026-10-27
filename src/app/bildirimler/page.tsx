@@ -265,24 +265,17 @@ export default function NotificationsPage() {
               <Sparkles className="w-3 h-3 text-amber-400" />
               <span>BİLDİRİM MERKEZİ</span>
             </span>
-            {unreadCount > 0 && (
+            {unreadCount > 0 ? (
               <span className="text-[11px] text-rose-400 font-bold font-mono">
                 {unreadCount} Okunmamış
               </span>
+            ) : (
+              <span className="text-[11px] text-emerald-400 font-bold font-mono flex items-center gap-1">
+                <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Tümü Okundu</span>
+              </span>
             )}
           </div>
-
-          {unreadCount > 0 && (
-            <button
-              type="button"
-              onClick={handleMarkAllAsRead}
-              disabled={markingAll}
-              className="text-[11px] text-[#8b949e] hover:text-white flex items-center gap-1 transition-colors cursor-pointer font-bold shrink-0"
-            >
-              <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>{markingAll ? 'Okundu...' : 'Tümünü Okundu Yap'}</span>
-            </button>
-          )}
         </div>
 
         <h1 className="font-heading font-black text-xl sm:text-2xl text-white tracking-tight flex items-center gap-2 mt-0.5">

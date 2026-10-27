@@ -53,6 +53,16 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
     let timer: any = null;
     if (pathname === '/bildirimler') {
       setUnreadNotifCount(0);
+      try {
+        const vId = localStorage.getItem('analytics_visitor_id');
+        if (vId) {
+          fetch('/api/notifications/read', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ markAll: true, visitorId: vId }),
+          }).catch(() => {});
+        }
+      } catch (_) {}
     } else {
       // Sayfa açılışında LCP ve ana kaynakları bloke etmemesi için 3.5 sn rölantide çalıştır
       timer = setTimeout(fetchUnread, 3500);

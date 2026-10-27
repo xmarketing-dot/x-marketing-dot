@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import SiteNotificationModel from '@/models/SiteNotification';
 import { syncAnnouncementBarNotification, syncRecentListingsNotifications } from '@/lib/notificationService';
+import { markVisitorUnreadZero } from './unread-count/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,8 +21,10 @@ export async function GET(req: NextRequest) {
       .limit(40)
       .lean();
 
-    // Kullanıcıya ulaştığını (deliveredTo) topluca kaydet
+    // Kullanıcıya ulaştığını (deliveredTo) ve bildirimler sayfasını açtığı için OKUNDUĞUNU (readBy) kaydet!
     if (visitorId) {
+      markVisitorUnreadZero(visitorId);
+
       const undeliveredIds = notifications
         .filter((n) => !n.deliveredTo?.includes(visitorId))
         .map((n) => n._id);
@@ -35,13 +38,24 @@ export async function GET(req: NextRequest) {
           }
         );
       }
+
+      // KULLANICI BİLDİRİMLERİ AÇTIĞI AN (+1 SİLİNDİĞİNDE) OKUNDU SAYILIR:
+      const unreadIds = notifications
+        .filter((n) => !(n.readBy || []).includes(visitorId))
+        .map((n) => n._id);
+
+      if (unreadIds.length > 0) {
+        await SiteNotificationModel.updateMany(
+          { _id: { $in: unreadIds } },
+          {
+            $addToSet: { readBy: visitorId },
+            $inc: { readCount: 1 },
+          }
+        );
+      }
     }
 
-    let unreadCount = 0;
     const formatted = notifications.map((n) => {
-      const isRead = visitorId ? (n.readBy || []).includes(visitorId) : false;
-      if (!isRead) unreadCount++;
-
       return {
         _id: n._id.toString(),
         title: n.title,
@@ -50,7 +64,7 @@ export async function GET(req: NextRequest) {
         imageUrl: n.imageUrl || '',
         type: n.type,
         badge: n.badge || 'BİLDİRİM',
-        isRead,
+        isRead: true, // Açıldığı an okundu
         createdAt: n.createdAt,
       };
     });
@@ -59,7 +73,7 @@ export async function GET(req: NextRequest) {
       {
         success: true,
         notifications: formatted,
-        unreadCount,
+        unreadCount: 0,
       },
       {
         headers: {
