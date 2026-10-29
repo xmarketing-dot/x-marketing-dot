@@ -18,8 +18,13 @@ export async function GET(req: NextRequest) {
   try {
     await connectToDatabase();
     const id = req.nextUrl.searchParams.get('id');
-    if (id) {
-      const single = await ListingModel.findById(id).lean();
+    const slug = req.nextUrl.searchParams.get('slug');
+    if (id || slug) {
+      const single = id && /^[0-9a-fA-F]{24}$/.test(id)
+        ? await ListingModel.findById(id).lean()
+        : slug
+        ? await ListingModel.findOne({ slug }).lean()
+        : null;
       return NextResponse.json({ listing: single });
     }
 

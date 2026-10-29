@@ -182,8 +182,8 @@ export default function BmsSecurePortalDashboard() {
         .catch(() => {});
     }
 
-    if (itemId) {
-      fetch(`/api/admin/listings?id=${itemId}`)
+    if (itemId || item.slug) {
+      fetch(`/api/admin/listings?id=${encodeURIComponent(itemId || '')}&slug=${encodeURIComponent(item.slug || '')}`)
         .then((res) => res.json())
         .then((resData) => {
           if (resData.listing) {
@@ -2181,16 +2181,27 @@ export default function BmsSecurePortalDashboard() {
                                 </td>
 
                                 <td className="py-3 px-3 text-right">
-                                  {item.slug && (
-                                    <Link
-                                      href={`/ilan/${item.slug}`}
-                                      target="_blank"
-                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] font-sans font-medium transition-colors"
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEdit(item)}
+                                      className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-sans font-medium transition-all flex items-center gap-1 active:scale-95 shrink-0 cursor-pointer"
+                                      title="İlanı Düzenle"
                                     >
-                                      <span>İlana Git</span>
-                                      <ExternalLink className="w-3 h-3" />
-                                    </Link>
-                                  )}
+                                      <Edit3 className="w-3.5 h-3.5 text-slate-400" />
+                                      <span>Düzenle</span>
+                                    </button>
+                                    {item.slug && (
+                                      <Link
+                                        href={`/ilan/${item.slug}`}
+                                        target="_blank"
+                                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 text-xs font-sans font-medium transition-colors"
+                                        title="Canlı İlan Sayfasını Aç"
+                                      >
+                                        <ExternalLink className="w-3.5 h-3.5" />
+                                      </Link>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -3536,9 +3547,10 @@ export default function BmsSecurePortalDashboard() {
                           <button
                             type="button"
                             onClick={() => handleOpenEdit(item)}
-                            className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs transition-colors flex items-center gap-1"
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-all flex items-center gap-1 active:scale-95 shrink-0 cursor-pointer"
+                            title="İlanı Düzenle"
                           >
-                            <Edit3 className="w-3 h-3" />
+                            <Edit3 className="w-3.5 h-3.5 text-slate-400" />
                             <span>Düzenle</span>
                           </button>
                           <Link href={`/ilan/${item.slug}`} target="_blank" className="text-xs text-[#8b949e] hover:text-white flex items-center gap-1">
@@ -3649,7 +3661,7 @@ export default function BmsSecurePortalDashboard() {
                             {/* İlan Bilgisi */}
                             <td className="py-3.5 px-4">
                               <div className="flex items-center gap-3">
-                                <div className="relative w-12 h-16 rounded-xl overflow-hidden bg-[#0c1017] border border-slate-800 shrink-0">
+                                <div onClick={() => handleOpenEdit(item)} className="relative w-12 h-16 rounded-xl overflow-hidden bg-[#0c1017] border border-slate-800 shrink-0 cursor-pointer group/thumb" title="İlanı Düzenle">
                                   <Image
                                     src={item.fotoUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
                                     alt={item.baslik}
@@ -3659,7 +3671,7 @@ export default function BmsSecurePortalDashboard() {
                                   />
                                 </div>
                                 <div className="flex flex-col min-w-0 max-w-[240px]">
-                                  <span className="font-black text-xs text-white truncate font-heading hover:text-amber-400 transition-colors">
+                                  <span onClick={() => handleOpenEdit(item)} className="font-black text-xs text-white truncate font-heading hover:text-emerald-400 transition-colors cursor-pointer" title="İlanı Düzenle">
                                     {item.baslik}
                                   </span>
                                   <div className="flex items-center gap-1.5 mt-1">
@@ -3791,13 +3803,13 @@ export default function BmsSecurePortalDashboard() {
                                   {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                                 </button>
 
-                                 <button
+                                <button
                                   type="button"
                                   onClick={() => handleOpenEdit(item)}
-                                  className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs transition-colors flex items-center gap-1 shadow-md"
-                                  title="İlanı Yönetici Olarak Düzenle"
+                                  className="px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-all flex items-center gap-1 active:scale-95 shrink-0 cursor-pointer"
+                                  title="İlanı Düzenle"
                                 >
-                                  <Edit3 className="w-3.5 h-3.5" />
+                                  <Edit3 className="w-3.5 h-3.5 text-slate-400" />
                                   <span>Düzenle</span>
                                 </button>
 
