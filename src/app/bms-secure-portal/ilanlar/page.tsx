@@ -146,6 +146,8 @@ export default function AdminListingsPage() {
   const [inspectItem, setInspectItem] = useState<any | null>(null);
   const [inspectLoading, setInspectLoading] = useState(false);
   const [inspectActivePhotoIdx, setInspectActivePhotoIdx] = useState(0);
+  const [inspectCustomDate, setInspectCustomDate] = useState<string>('');
+  const [inspectDateLoading, setInspectDateLoading] = useState<boolean>(false);
 
   // Edit Modal states
   const [editingItem, setEditingItem] = useState<any | null>(null);
@@ -158,6 +160,7 @@ export default function AdminListingsPage() {
     whatsappNumara: '',
     status: 'yayinda',
     yayinSuresi: 'haftalik',
+    paketBitisTarihi: '',
     panelSifresi: '',
     kullaniciId: '',
     tamAd: '',
@@ -505,6 +508,14 @@ export default function AdminListingsPage() {
     }
   };
 
+  const toLocalDatetimeInput = (dateVal?: string | Date) => {
+    if (!dateVal) return '';
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   const handleOpenEdit = (item: any) => {
     setEditingItem(item);
     setEditForm({
@@ -516,6 +527,7 @@ export default function AdminListingsPage() {
       whatsappNumara: item.whatsappNumara || '',
       status: item.status || 'yayinda',
       yayinSuresi: item.yayinSuresi || 'haftalik',
+      paketBitisTarihi: item.paketBitisTarihi ? toLocalDatetimeInput(item.paketBitisTarihi) : '',
       panelSifresi: item.panelSifresi || '',
       kullaniciId: item.kullaniciId ? (typeof item.kullaniciId === 'object' ? item.kullaniciId._id || item.kullaniciId.toString() : item.kullaniciId) : '',
       tamAd: item.tamAd || '',
@@ -637,12 +649,16 @@ export default function AdminListingsPage() {
     setInspectItem(item);
     setInspectActivePhotoIdx(0);
     setInspectLoading(true);
+    setInspectCustomDate(item.paketBitisTarihi ? toLocalDatetimeInput(item.paketBitisTarihi) : '');
 
     try {
       const res = await fetch(`/api/admin/listings?id=${item._id}`);
       const data = await res.json();
       if (data.listing) {
         setInspectItem(data.listing);
+        if (data.listing.paketBitisTarihi) {
+          setInspectCustomDate(toLocalDatetimeInput(data.listing.paketBitisTarihi));
+        }
       }
     } catch (e) {
       // Keep basic item
@@ -799,6 +815,7 @@ export default function AdminListingsPage() {
         body: JSON.stringify({
           id: editingItem._id,
           ...editForm,
+          paketBitisTarihi: editForm.paketBitisTarihi ? new Date(editForm.paketBitisTarihi).toISOString() : undefined,
           fotograflar: photoUrls.map((url) => ({ url })),
           anaFotografUrl: coverUrl,
         }),
@@ -873,6 +890,98 @@ export default function AdminListingsPage() {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleDirectUpdateDate = async (listingId: string, customDateStr: string, customYayinSuresi?: string) => {
+    if (!customDateStr) {
+      alert('Lütfen geçerli bir tarih ve saat seçin.');
+      return;
+    }
+    setInspectDateLoading(true);
+    try {
+      const targetDate = new Date(customDateStr);
+      const res = await fetch('/api/admin/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: listingId,
+          paketBitisTarihi: targetDate.toISOString(),
+          ...(customYayinSuresi ? { yayinSuresi: customYayinSuresi } : {}),
+          status: 'yayinda',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert('✅ İlan yayın bitiş tarihi başarıyla güncellendi!');
+        setListings((prev) =>
+          prev.map((l) =>
+            l._id === listingId
+              ? { ...l, paketBitisTarihi: targetDate, status: 'yayinda', ...(customYayinSuresi ? { yayinSuresi: customYayinSuresi } : {}) }
+              : l
+          )
+        );
+        if (inspectItem && inspectItem._id === listingId) {
+          setInspectItem((prev: any) => ({
+            ...prev,
+            paketBitisTarihi: targetDate,
+            status: 'yayinda',
+            ...(customYayinSuresi ? { yayinSuresi: customYayinSuresi } : {}),
+          }));
+        }
+      } else {
+        alert(data.error || 'Tarih güncellenemedi.');
+      }
+    } catch {
+      alert('Bağlantı hatası.');
+    } finally {
+      setInspectDateLoading(false);
+    }
+  };
+
+  const handleSetDurationFromStart = async (listingId: string, days: number, durationType: string, currentItem: any) => {
+    const startDate = currentItem?.onaylanmaTarihi || currentItem?.createdAt || new Date();
+    const targetDate = new Date(new Date(startDate).getTime() + days * 24 * 60 * 60 * 1000);
+    setInspectDateLoading(true);
+    try {
+      const res = await fetch('/api/admin/listings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: listingId,
+          action: 'set_from_start',
+          days,
+          yayinSuresi: durationType,
+          paketBitisTarihi: targetDate.toISOString(),
+          status: 'yayinda',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert(`✅ İlan başlangıçtan itibaren ${days} gün (${durationType}) olarak güncellendi!\nYeni Bitiş: ${formatDateTime(targetDate)}`);
+        setInspectCustomDate(toLocalDatetimeInput(targetDate));
+        setListings((prev) =>
+          prev.map((l) =>
+            l._id === listingId
+              ? { ...l, paketBitisTarihi: targetDate, yayinSuresi: durationType, status: 'yayinda' }
+              : l
+          )
+        );
+        if (inspectItem && inspectItem._id === listingId) {
+          setInspectItem((prev: any) => ({
+            ...prev,
+            paketBitisTarihi: targetDate,
+            yayinSuresi: durationType,
+            status: 'yayinda',
+          }));
+        }
+      } else {
+        alert(data.error || 'İşlem başarısız.');
+      }
+    } catch {
+      alert('Bağlantı hatası.');
+    } finally {
+      setInspectDateLoading(false);
     }
   };
 
@@ -2309,6 +2418,116 @@ export default function AdminListingsPage() {
                 </div>
               </div>
 
+              {/* Bölüm 6: Yayın Paketi & Bitiş Tarihi Yönetimi (Admin Command) */}
+              <div className="p-4 rounded-xl bg-[#070a0f] border border-amber-500/40 shadow-lg flex flex-col gap-3.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                      Yayın Paketi &amp; Bitiş Tarihi Yönetimi
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-slate-400">
+                      Başlangıç: <strong className="text-slate-200 font-mono">{formatDateTime(editingItem.onaylanmaTarihi || editingItem.createdAt)}</strong>
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                      {getRemainingTime(editForm.paketBitisTarihi || editingItem.paketBitisTarihi, editForm.status).text}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Paket Türü */}
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    <span>Yayın Paketi Türü</span>
+                    <select
+                      value={editForm.yayinSuresi}
+                      onChange={(e) => setEditForm({ ...editForm, yayinSuresi: e.target.value })}
+                      className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="haftalik">Haftalık Paket (7 Gün)</option>
+                      <option value="aylik">Aylık Paket (30 Gün)</option>
+                      <option value="gunluk">Günlük Paket (1 Gün)</option>
+                    </select>
+                  </label>
+
+                  {/* Manuel Tarih & Saat Seçici */}
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    <span>Bitiş Tarihi ve Saati (Manuel Belirle)</span>
+                    <input
+                      type="datetime-local"
+                      value={editForm.paketBitisTarihi}
+                      onChange={(e) => setEditForm({ ...editForm, paketBitisTarihi: e.target.value })}
+                      className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-amber-500/50 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                    />
+                  </label>
+                </div>
+
+                {/* Hızlı Hazır Butonlar */}
+                <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-slate-800/80">
+                  <span className="text-[11px] text-slate-400 font-medium">Hızlı Kurulum:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const startDate = editingItem.onaylanmaTarihi || editingItem.createdAt || new Date();
+                      const targetDate = new Date(new Date(startDate).getTime() + 7 * 24 * 60 * 60 * 1000);
+                      setEditForm({
+                        ...editForm,
+                        yayinSuresi: 'haftalik',
+                        paketBitisTarihi: toLocalDatetimeInput(targetDate)
+                      });
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/30 text-[11px] font-bold transition-all"
+                  >
+                    📅 Başlangıçtan +1 Hafta (7G)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const startDate = editingItem.onaylanmaTarihi || editingItem.createdAt || new Date();
+                      const targetDate = new Date(new Date(startDate).getTime() + 30 * 24 * 60 * 60 * 1000);
+                      setEditForm({
+                        ...editForm,
+                        yayinSuresi: 'aylik',
+                        paketBitisTarihi: toLocalDatetimeInput(targetDate)
+                      });
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500 text-purple-300 hover:text-white border border-purple-500/30 text-[11px] font-bold transition-all"
+                  >
+                    📅 Başlangıçtan +1 Ay (30G)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = editForm.paketBitisTarihi ? new Date(editForm.paketBitisTarihi) : new Date();
+                      base.setDate(base.getDate() + 7);
+                      setEditForm({
+                        ...editForm,
+                        paketBitisTarihi: toLocalDatetimeInput(base)
+                      });
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[11px] font-medium transition-all"
+                  >
+                    +7 Gün Ekle
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = editForm.paketBitisTarihi ? new Date(editForm.paketBitisTarihi) : new Date();
+                      base.setDate(base.getDate() + 30);
+                      setEditForm({
+                        ...editForm,
+                        paketBitisTarihi: toLocalDatetimeInput(base)
+                      });
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[11px] font-medium transition-all"
+                  >
+                    +30 Gün Ekle
+                  </button>
+                </div>
+              </div>
+
               {/* Sticky Executive Footer */}
               <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-3 shrink-0">
                 <div className="text-[11px] font-mono text-slate-400 hidden sm:block">
@@ -2490,42 +2709,101 @@ export default function AdminListingsPage() {
                     })()}
 
                     {/* Süre Paketi & Hızlı Uzatma Kartı */}
-                    <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-2.5">
+                    <div className="p-4 rounded-xl bg-[#070a0f] border border-amber-500/40 shadow-xl flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-white font-heading uppercase flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" />
+                          <Clock className="w-3.5 h-3.5 text-amber-400" />
                           <span>Yayın &amp; Paket Süresi</span>
                         </span>
-                        <span className="font-mono text-xs font-semibold text-emerald-400">
+                        <span className="font-mono text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25">
                           {getRemainingTime(inspectItem.paketBitisTarihi, inspectItem.status).text}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-xs text-slate-400 pt-1 border-t border-slate-800">
-                        <span>Bitiş Tarihi:</span>
-                        <span className="font-mono text-slate-300">
-                          {getRemainingTime(inspectItem.paketBitisTarihi, inspectItem.status).expiryStr || 'Belirtilmedi'}
-                        </span>
+                      <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-800">
+                        <div className="flex flex-col">
+                          <span className="text-slate-500">Başlangıç:</span>
+                          <span className="font-mono text-slate-300">
+                            {formatDateTime(inspectItem.onaylanmaTarihi || inspectItem.createdAt)}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-slate-500">Mevcut Bitiş:</span>
+                          <span className="font-mono text-amber-300 font-bold">
+                            {formatDateTime(inspectItem.paketBitisTarihi)}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2 pt-1">
+                      {/* Doğrudan Tarih & Saat Değiştirme Formu */}
+                      <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-800">
+                        <span className="text-[11px] font-bold text-slate-300">Yeni Bitiş Tarih &amp; Saati Belirle:</span>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="datetime-local"
+                            value={inspectCustomDate}
+                            onChange={(e) => setInspectCustomDate(e.target.value)}
+                            className="flex-1 px-2.5 py-1.5 rounded-lg bg-[#0c1017] border border-amber-500/40 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                          />
+                          <button
+                            type="button"
+                            disabled={inspectDateLoading || !inspectCustomDate}
+                            onClick={() => handleDirectUpdateDate(inspectItem._id, inspectCustomDate, inspectItem.yayinSuresi)}
+                            className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase font-heading transition-all disabled:opacity-50 shrink-0 flex items-center gap-1 cursor-pointer"
+                          >
+                            {inspectDateLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                            <span>Kaydet</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Hızlı Preset Butonları */}
+                      <div className="grid grid-cols-2 gap-2 pt-1">
                         <button
+                          type="button"
+                          disabled={inspectDateLoading}
+                          onClick={() => handleSetDurationFromStart(inspectItem._id, 7, 'haftalik', inspectItem)}
+                          className="py-1.5 px-2 rounded-lg bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 text-[10px] font-bold border border-amber-500/30 transition-all text-center cursor-pointer"
+                          title="İlanın oluşturulma/onay tarihinden itibaren tam 7 gün yapar"
+                        >
+                          📅 Başlangıçtan +1 Hafta
+                        </button>
+                        <button
+                          type="button"
+                          disabled={inspectDateLoading}
+                          onClick={() => handleSetDurationFromStart(inspectItem._id, 30, 'aylik', inspectItem)}
+                          className="py-1.5 px-2 rounded-lg bg-purple-500/15 hover:bg-purple-500 text-purple-300 hover:text-white text-[10px] font-bold border border-purple-500/30 transition-all text-center cursor-pointer"
+                          title="İlanın oluşturulma/onay tarihinden itibaren tam 30 gün yapar"
+                        >
+                          📅 Başlangıçtan +1 Ay
+                        </button>
+                        <button
+                          type="button"
+                          disabled={inspectDateLoading}
                           onClick={async () => {
                             await handleExtendDuration(inspectItem._id, 7);
                             const updated = listings.find((l) => l._id === inspectItem._id);
-                            if (updated) setInspectItem(updated);
+                            if (updated) {
+                              setInspectItem(updated);
+                              if (updated.paketBitisTarihi) setInspectCustomDate(toLocalDatetimeInput(updated.paketBitisTarihi));
+                            }
                           }}
-                          className="flex-1 py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-mono font-medium border border-slate-800 transition-colors text-center"
+                          className="py-1.5 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[10px] font-mono font-medium border border-slate-800 transition-colors text-center cursor-pointer"
                         >
                           +7 Gün Uzat
                         </button>
                         <button
+                          type="button"
+                          disabled={inspectDateLoading}
                           onClick={async () => {
                             await handleExtendDuration(inspectItem._id, 30);
                             const updated = listings.find((l) => l._id === inspectItem._id);
-                            if (updated) setInspectItem(updated);
+                            if (updated) {
+                              setInspectItem(updated);
+                              if (updated.paketBitisTarihi) setInspectCustomDate(toLocalDatetimeInput(updated.paketBitisTarihi));
+                            }
                           }}
-                          className="flex-1 py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-mono font-medium border border-slate-800 transition-colors text-center"
+                          className="py-1.5 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-[10px] font-mono font-medium border border-slate-800 transition-colors text-center cursor-pointer"
                         >
                           +30 Gün Uzat
                         </button>

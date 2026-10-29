@@ -5,7 +5,7 @@ import ListingModel from '@/models/Listing';
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { listingId, baslik, aciklama, ilSlug, ilceSlug, rozet, yayinSuresi, whatsappNumara, status, anaFotografUrl, fotograflar } = body;
+    const { listingId, baslik, aciklama, ilSlug, ilceSlug, rozet, yayinSuresi, whatsappNumara, status, anaFotografUrl, fotograflar, paketBitisTarihi, ekleGun, action, days } = body;
 
     if (!listingId) {
       return NextResponse.json({ error: 'listingId zorunludur.' }, { status: 400 });
@@ -31,18 +31,39 @@ export async function PUT(req: NextRequest) {
       listing.yayinSuresi = yayinSuresi;
     }
 
+    if (paketBitisTarihi) {
+      listing.paketBitisTarihi = new Date(paketBitisTarihi);
+    }
+
+    if (action === 'set_from_start') {
+      const dur = yayinSuresi || listing.yayinSuresi || 'haftalik';
+      const dayCount = days ? Number(days) : (dur === 'gunluk' ? 1 : dur === 'aylik' ? 30 : 7);
+      const start = listing.onaylanmaTarihi || listing.createdAt || new Date();
+      listing.paketBitisTarihi = new Date(new Date(start).getTime() + dayCount * 24 * 60 * 60 * 1000);
+      listing.status = 'yayinda';
+    }
+
+    if (ekleGun && typeof ekleGun === 'number') {
+      const base = listing.paketBitisTarihi && listing.paketBitisTarihi > new Date()
+        ? new Date(listing.paketBitisTarihi)
+        : new Date();
+      base.setDate(base.getDate() + ekleGun);
+      listing.paketBitisTarihi = base;
+      listing.status = 'yayinda';
+    }
+
     if (status) {
       const prevStatus = listing.status;
       listing.status = status;
       if (status === 'yayinda' && (prevStatus !== 'yayinda' || !listing.paketBitisTarihi)) {
         const now = Date.now();
         const duration = listing.yayinSuresi || 'haftalik';
-        let days = 7;
-        if (duration === 'gunluk') days = 1;
-        if (duration === 'aylik') days = 30;
+        let dayCount = 7;
+        if (duration === 'gunluk') dayCount = 1;
+        if (duration === 'aylik') dayCount = 30;
 
         listing.onaylanmaTarihi = new Date(now);
-        listing.paketBitisTarihi = new Date(now + days * 24 * 60 * 60 * 1000);
+        listing.paketBitisTarihi = new Date(now + dayCount * 24 * 60 * 60 * 1000);
       }
     }
 

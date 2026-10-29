@@ -133,6 +133,8 @@ export async function PATCH(req: NextRequest) {
         : body.hizmetMekanlari.split(',').map((s: string) => s.trim()).filter(Boolean);
     }
 
+    if (yayinSuresi) updateFields.yayinSuresi = yayinSuresi;
+
     // Onaylama anında otomatik süre başlatma (SADECE ilan onay bekliyorsa veya daha önce yayında değilse)
     let calculatedExpiry = existing.paketBitisTarihi;
     if (status === 'yayinda' && (wasPending || !existing.paketBitisTarihi || existing.status !== 'yayinda')) {
@@ -140,6 +142,17 @@ export async function PATCH(req: NextRequest) {
       calculatedExpiry = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
       updateFields.paketBitisTarihi = calculatedExpiry;
       updateFields.onaylanmaTarihi = new Date();
+    }
+
+    // Başlangıç tarihinden (createdAt veya onaylanmaTarihi) itibaren süreyi yeniden kurma
+    if (body.action === 'set_from_start') {
+      const effectiveDuration = yayinSuresi || existing.yayinSuresi || 'haftalik';
+      const days = body.days ? Number(body.days) : (effectiveDuration === 'gunluk' ? 1 : effectiveDuration === 'aylik' ? 30 : 7);
+      const startDate = existing.onaylanmaTarihi || existing.createdAt || new Date();
+      calculatedExpiry = new Date(new Date(startDate).getTime() + days * 24 * 60 * 60 * 1000);
+      updateFields.paketBitisTarihi = calculatedExpiry;
+      updateFields.status = 'yayinda';
+      if (yayinSuresi) updateFields.yayinSuresi = yayinSuresi;
     }
 
     // Doğrudan manuel paketBitisTarihi güncellemesi (Admin özel tarih girdiyse)
