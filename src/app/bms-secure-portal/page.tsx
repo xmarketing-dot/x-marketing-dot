@@ -9,8 +9,9 @@ import {
   Clock, ShieldCheck, Flame, ExternalLink, Filter, ChevronDown, ChevronUp,
   Link2, TrendingUp, TrendingDown, Minus, Crown, Tag, MousePointerClick, Layers,
   Target, Plus, Trash2, Award, CheckCircle2, Megaphone, Check, Edit3, X, Copy,
-  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key, Route
+  PhoneCall, ArrowRight, SlidersHorizontal, Users, Key, Route, Save, Image as ImageIcon, Upload, Star
 } from 'lucide-react';
+import { turkeyProvinces } from '@/data/turkeyLocations';
 import { OfficialWhatsAppIcon } from '@/components/common/WhatsAppButton';
 import { resolveTargetFromHost } from '@/lib/domainHelper';
 import CircularProgress from '@/components/common/CircularProgress';
@@ -45,9 +46,29 @@ export default function BmsSecurePortalDashboard() {
   const [pageDrawerSearch, setPageDrawerSearch] = useState('');
   const [waDrawerSearch, setWaDrawerSearch] = useState('');
 
-  // Admin Direct Listing Edit States
+  // Admin Direct Listing Edit States (Full Executive Modal)
   const [editingListing, setEditingListing] = useState<any | null>(null);
   const [savingListingEdit, setSavingListingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    baslik: '',
+    aciklama: '',
+    rozet: 'ultravip',
+    ilSlug: 'istanbul',
+    ilceSlug: 'beylikduzu',
+    whatsappNumara: '',
+    status: 'yayinda',
+    yayinSuresi: 'haftalik',
+    paketBitisTarihi: '',
+    panelSifresi: '',
+    kullaniciId: '',
+    tamAd: '',
+    isVerifiedProfile: false,
+    likeSayisi: 55,
+  });
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [coverPhotoIdx, setCoverPhotoIdx] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [systemUsers, setSystemUsers] = useState<any[]>(() => adminPortalCache.get<any[]>('bms_system_users') || []);
 
   // Banner Ads States
   const [bannerList, setBannerList] = useState<any[]>([]);
@@ -88,35 +109,174 @@ export default function BmsSecurePortalDashboard() {
   };
 
 
+  const toLocalDatetimeInput = (dateVal?: string | Date) => {
+    if (!dateVal) return '';
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  const formatDateTime = (dateVal?: string | Date) => {
+    if (!dateVal) return '-';
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleString('tr-TR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const getRemainingTime = (expiryDate?: string | Date, status?: string) => {
+    if (status === 'onay_bekliyor') return { text: 'Onay Bekliyor' };
+    const expiry = expiryDate ? new Date(expiryDate) : null;
+    const hasExpiry = expiry && !isNaN(expiry.getTime());
+    const diffMs = hasExpiry ? expiry.getTime() - Date.now() : 0;
+    const isExpired = status === 'suresi_doldu' || (hasExpiry && diffMs <= 0);
+    if (isExpired) return { text: 'Süresi Doldu' };
+    if (!hasExpiry) return { text: '7 Gün Kaldı' };
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    return { text: diffDays > 0 ? `${diffDays} Gün ${diffHours} Sa Kaldı` : `${diffHours} Saat Kaldı` };
+  };
+
+  const selectedProvince = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
+
+  const handleOpenEdit = (item: any) => {
+    const itemId = item._id || item.id;
+    setEditingListing({ ...item, _id: itemId });
+    setEditForm({
+      baslik: item.baslik || item.title || '',
+      aciklama: item.aciklama || '',
+      rozet: item.rozet || 'vip',
+      ilSlug: item.ilSlug || 'istanbul',
+      ilceSlug: item.ilceSlug || 'beylikduzu',
+      whatsappNumara: item.whatsappNumara || item.phone || '',
+      status: item.status || 'yayinda',
+      yayinSuresi: item.yayinSuresi || 'haftalik',
+      paketBitisTarihi: item.paketBitisTarihi ? toLocalDatetimeInput(item.paketBitisTarihi) : '',
+      panelSifresi: item.panelSifresi || '',
+      kullaniciId: item.kullaniciId ? (typeof item.kullaniciId === 'object' ? item.kullaniciId._id || item.kullaniciId.toString() : item.kullaniciId) : '',
+      tamAd: item.tamAd || item.baslik || '',
+      isVerifiedProfile: Boolean(item.isVerifiedProfile),
+      likeSayisi: item.likeSayisi || 55,
+    });
+
+    const initialPhotos = item.fotograflar && item.fotograflar.length > 0
+      ? item.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url))
+      : [item.anaFotograf?.url || item.fotoUrl || '/placeholder-avatar.webp'];
+    setPhotoUrls(initialPhotos);
+    setCoverPhotoIdx(0);
+
+    if (systemUsers.length === 0) {
+      fetch('/api/admin/users')
+        .then((r) => r.json())
+        .then((d) => {
+          const list = Array.isArray(d) ? d : (d.users || []);
+          setSystemUsers(list);
+          adminPortalCache.set('bms_system_users', list);
+        })
+        .catch(() => {});
+    }
+
+    if (itemId) {
+      fetch(`/api/admin/listings?id=${itemId}`)
+        .then((res) => res.json())
+        .then((resData) => {
+          if (resData.listing) {
+            const full = resData.listing;
+            setEditingListing(full);
+            setEditForm({
+              baslik: full.baslik || '',
+              aciklama: full.aciklama || '',
+              rozet: full.rozet || 'vip',
+              ilSlug: full.ilSlug || 'istanbul',
+              ilceSlug: full.ilceSlug || 'beylikduzu',
+              whatsappNumara: full.whatsappNumara || '',
+              status: full.status || 'yayinda',
+              yayinSuresi: full.yayinSuresi || 'haftalik',
+              paketBitisTarihi: full.paketBitisTarihi ? toLocalDatetimeInput(full.paketBitisTarihi) : '',
+              panelSifresi: full.panelSifresi || '',
+              kullaniciId: full.kullaniciId ? (typeof full.kullaniciId === 'object' ? full.kullaniciId._id || full.kullaniciId.toString() : full.kullaniciId) : '',
+              tamAd: full.tamAd || '',
+              isVerifiedProfile: Boolean(full.isVerifiedProfile),
+              likeSayisi: full.likeSayisi || 55,
+            });
+            if (full.fotograflar && full.fotograflar.length > 0) {
+              const freshPhotos = full.fotograflar.map((f: any) => (typeof f === 'string' ? f : f.url));
+              setPhotoUrls(freshPhotos);
+              const freshCoverIdx = freshPhotos.findIndex((url: string) => url === full.anaFotograf?.url);
+              setCoverPhotoIdx(freshCoverIdx >= 0 ? freshCoverIdx : 0);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    const uploadData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      uploadData.append('files', files[i]);
+    }
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: uploadData });
+      const resData = await res.json();
+      if (resData.urls && resData.urls.length > 0) {
+        setPhotoUrls((prev) => [...prev, ...resData.urls]);
+      } else {
+        alert(resData.error || 'Dosya yükleme hatası.');
+      }
+    } catch {
+      alert('Resim yüklenirken hata oluştu.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const removePhotoUrl = (index: number) => {
+    if (photoUrls.length <= 1) {
+      alert('İlanda en az 1 resim bulunmalıdır!');
+      return;
+    }
+    const updated = photoUrls.filter((_, idx) => idx !== index);
+    setPhotoUrls(updated);
+    if (coverPhotoIdx >= updated.length) {
+      setCoverPhotoIdx(0);
+    }
+  };
+
   const handleAdminListingSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingListing) return;
 
     setSavingListingEdit(true);
     try {
+      const coverUrl = photoUrls[coverPhotoIdx] || photoUrls[0];
       const res = await fetch('/api/admin/listings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: editingListing.id || editingListing._id,
-          baslik: editingListing.baslik,
-          aciklama: editingListing.aciklama,
-          whatsappNumara: editingListing.whatsappNumara,
-          ilSlug: editingListing.ilSlug,
-          ilceSlug: editingListing.ilceSlug,
-          rozet: editingListing.rozet,
-          status: editingListing.status,
-          panelSifresi: editingListing.panelSifresi,
+          id: editingListing._id || editingListing.id,
+          ...editForm,
+          paketBitisTarihi: editForm.paketBitisTarihi ? new Date(editForm.paketBitisTarihi).toISOString() : undefined,
+          fotograflar: photoUrls.map((url) => ({ url })),
+          anaFotografUrl: coverUrl,
         }),
       });
 
-      const data = await res.json();
-      if (data.success || res.ok) {
-        alert('İlan başarıyla güncellendi!');
+      const resData = await res.json();
+      if (resData.success || res.ok) {
         setEditingListing(null);
         fetchAnalytics();
       } else {
-        alert(data.error || 'Güncelleme başarısız.');
+        alert(resData.error || 'Güncelleme başarısız.');
       }
     } catch (err: any) {
       alert('Hata: ' + err.message);
@@ -3372,10 +3532,20 @@ export default function BmsSecurePortalDashboard() {
                           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                         </button>
 
-                        <Link href={`/ilan/${item.slug}`} target="_blank" className="text-xs text-[#8b949e] hover:text-white flex items-center gap-1">
-                          <span>İlana Git</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(item)}
+                            className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs transition-colors flex items-center gap-1"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                            <span>Düzenle</span>
+                          </button>
+                          <Link href={`/ilan/${item.slug}`} target="_blank" className="text-xs text-[#8b949e] hover:text-white flex items-center gap-1">
+                            <span>İlana Git</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
                       </div>
 
                       {isExpanded && (
@@ -3623,7 +3793,7 @@ export default function BmsSecurePortalDashboard() {
 
                                  <button
                                   type="button"
-                                  onClick={() => setEditingListing(item)}
+                                  onClick={() => handleOpenEdit(item)}
                                   className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs transition-colors flex items-center gap-1 shadow-md"
                                   title="İlanı Yönetici Olarak Düzenle"
                                 >
@@ -4163,123 +4333,454 @@ export default function BmsSecurePortalDashboard() {
         </div>
       )}
 
-      {/* ── YÖNETİCİ İLAN DÜZENLEME MODALI ──────────────── */}
+      {/* ── 4. FULL EDITING MODAL (EXECUTIVE ARCHITECTURE) ──────────────── */}
       {editingListing && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-xl bg-[#0c1017] border border-emerald-500/40 rounded-2xl p-6 shadow-2xl flex flex-col gap-5 text-left my-auto">
-            <div className="flex items-center justify-between border-b border-[#30363d] pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-black">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-4xl bg-[#0c1017] border border-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+            
+            {/* Sticky Executive Header */}
+            <div className="px-5 py-4 bg-[#0c1017]/95 backdrop-blur-md border-b border-slate-800 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center font-bold shrink-0">
                   <Edit3 className="w-5 h-5" />
                 </div>
-                <div className="flex flex-col">
-                  <h3 className="font-heading font-black text-base text-white">
-                    İlanı Düzenle (Admin Yetkisi)
-                  </h3>
-                  <span className="text-xs text-[#8b949e] font-mono">
-                    ID: {editingListing.id || editingListing._id}
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-heading font-bold text-base sm:text-lg text-white truncate">
+                      İlanı Düzenle &amp; Görseller
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 font-mono text-[10px]">
+                      #{(editingListing._id || editingListing.id || "").toString().slice(-6)}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                    {editingListing.baslik}
                   </span>
                 </div>
               </div>
+
               <button
-                type="button"
                 onClick={() => setEditingListing(null)}
-                className="p-2 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white"
+                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAdminListingSave} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-heading font-black text-white">İlan Başlığı</label>
-                <input
-                  type="text"
-                  value={editingListing.baslik || ''}
-                  onChange={(e) => setEditingListing({ ...editingListing, baslik: e.target.value })}
-                  required
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-amber-500"
-                />
-              </div>
+            <form onSubmit={handleAdminListingSave} className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-800">
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-heading font-black text-white">WhatsApp Numarası</label>
-                <input
-                  type="text"
-                  value={editingListing.whatsappNumara || ''}
-                  onChange={(e) => setEditingListing({ ...editingListing, whatsappNumara: e.target.value })}
-                  required
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-amber-500"
-                />
-              </div>
+              {/* Bölüm 1: Fotoğraf Galerisi & Kapak Görseli */}
+              <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-slate-400" />
+                    <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                      Görsel Galerisi ({photoUrls.length})
+                    </span>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-heading font-black text-white">Vitrin Rozeti</label>
-                  <select
-                    value={editingListing.rozet || 'vip'}
-                    onChange={(e) => setEditingListing({ ...editingListing, rozet: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none"
-                  >
-                    <option value="ultravip">Ultra VIP 👑</option>
-                    <option value="vip">VIP 💎</option>
-                    <option value="gold">Gold 🥇</option>
-                    <option value="silver">Silver 🥈</option>
-                    <option value="standart">Standart</option>
-                  </select>
+                  <label className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 font-medium text-xs cursor-pointer flex items-center gap-1.5 transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      disabled={uploading}
+                    />
+                    {uploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                    <span>+ Fotoğraf Yükle</span>
+                  </label>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-heading font-black text-white">Yayın Durumu</label>
-                  <select
-                    value={editingListing.status || 'yayinda'}
-                    onChange={(e) => setEditingListing({ ...editingListing, status: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none"
-                  >
-                    <option value="yayinda">Yayında ✓</option>
-                    <option value="onay_bekliyor">Onay Bekliyor ⏳</option>
-                    <option value="reddedildi">Reddedildi ✕</option>
-                    <option value="suresi_doldu">Süresi Doldu</option>
-                  </select>
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5 mt-1">
+                  {photoUrls.map((url, idx) => {
+                    const isCover = idx === coverPhotoIdx;
+                    return (
+                      <div
+                        key={idx}
+                        className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-28 sm:h-32 bg-[#0c1017] transition-all group ${
+                          isCover ? 'border-emerald-500 shadow-sm shadow-emerald-500/20' : 'border-slate-800 hover:border-slate-700'
+                        }`}
+                      >
+                        <img src={url} alt={`Resim ${idx}`} className="absolute inset-0 w-full h-full object-cover z-0" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-10"></div>
+
+                        <div className="relative z-20 flex items-center justify-between w-full">
+                          {isCover ? (
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-500 text-slate-950 font-bold text-[9px] flex items-center gap-0.5 shadow-sm">
+                              <Star className="w-2.5 h-2.5 fill-slate-950" />
+                              Kapak
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setCoverPhotoIdx(idx)}
+                              className="px-2 py-0.5 rounded-md bg-slate-950/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 font-medium text-[9px] transition-colors"
+                            >
+                              Kapak Yap
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => removePhotoUrl(idx)}
+                            className="p-1 rounded-md bg-rose-500/80 hover:bg-rose-500 text-white transition-colors"
+                            title="Fotoğrafı Kaldır"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-heading font-black text-white">İlan Düzenleme Şifresi (Kullanıcı İçin)</label>
-                <input
-                  type="text"
-                  value={editingListing.panelSifresi || ''}
-                  onChange={(e) => setEditingListing({ ...editingListing, panelSifresi: e.target.value })}
-                  placeholder="Örn: 849201"
-                  className="w-full px-4 py-2 rounded-xl bg-[#0d1117] border border-[#30363d] text-amber-300 font-mono text-xs outline-none focus:border-amber-500"
-                />
+              {/* Bölüm 2: Temel Başlık & Açıklama */}
+              <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                  İlan Temel Bilgileri
+                </span>
+
+                <div className="flex flex-col gap-3">
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    <span>İlan Başlığı <strong className="text-rose-400">*</strong></span>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.baslik}
+                      onChange={(e) => setEditForm({ ...editForm, baslik: e.target.value })}
+                      placeholder="Örn: Sultanbeyli Neslihan VIP"
+                      className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 transition-colors"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    <span>Detaylı Açıklama Metni <strong className="text-rose-400">*</strong></span>
+                    <textarea
+                      rows={4}
+                      required
+                      value={editForm.aciklama}
+                      onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
+                      placeholder="İlan profil açıklaması..."
+                      className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 transition-colors leading-relaxed"
+                    />
+                  </label>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-heading font-black text-white">İlan Açıklaması</label>
-                <textarea
-                  rows={4}
-                  value={editingListing.aciklama || ''}
-                  onChange={(e) => setEditingListing({ ...editingListing, aciklama: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#0d1117] border border-[#30363d] text-white text-xs outline-none focus:border-amber-500 resize-none"
-                />
+              {/* Bölüm 3: Model Özellikleri & Rozet */}
+              <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white font-heading uppercase tracking-wide flex items-center gap-1.5">
+                    <Crown className="w-4 h-4 text-slate-400" />
+                    <span>Model Profil &amp; Vitrin Durumu</span>
+                  </span>
+
+                  <label className="flex items-center gap-2 cursor-pointer bg-[#0c1017] px-2.5 py-1 rounded-lg border border-slate-800">
+                    <input
+                      type="checkbox"
+                      checked={editForm.isVerifiedProfile}
+                      onChange={(e) => setEditForm({ ...editForm, isVerifiedProfile: e.target.checked })}
+                      className="w-3.5 h-3.5 rounded text-emerald-500 focus:ring-emerald-400 accent-emerald-500"
+                    />
+                    <span className="text-[11px] text-emerald-400 font-medium">Teyitli Profil</span>
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    Vitrin Rozeti
+                    <select
+                      value={editForm.rozet}
+                      onChange={(e) => setEditForm({ ...editForm, rozet: e.target.value })}
+                      className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                    >
+                      <option value="vip">VIP Vitrin</option>
+                      <option value="gold">Gold Vitrin</option>
+                      <option value="silver">Silver Standart</option>
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    Yayın Durumu
+                    <select
+                      value={editForm.status}
+                      onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
+                      className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                    >
+                      <option value="yayinda">🟢 Yayında</option>
+                      <option value="onay_bekliyor">⏳ Onay Bekliyor</option>
+                      <option value="suresi_doldu">❌ Süresi Doldu</option>
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    Sahne / Tam Adı
+                    <input
+                      type="text"
+                      placeholder="Örn: Neslihan"
+                      value={editForm.tamAd}
+                      onChange={(e) => setEditForm({ ...editForm, tamAd: e.target.value })}
+                      className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 font-medium"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    Beğeni Sayısı (Like)
+                    <input
+                      type="number"
+                      value={editForm.likeSayisi}
+                      onChange={(e) => setEditForm({ ...editForm, likeSayisi: Number(e.target.value) })}
+                      className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                    />
+                  </label>
+                </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#30363d]">
-                <button
-                  type="button"
-                  onClick={() => setEditingListing(null)}
-                  className="px-4 py-2.5 rounded-xl bg-[#21262d] text-[#8b949e] hover:text-white text-xs font-bold"
-                >
-                  İptal
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingListingEdit}
-                  className="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-heading font-black text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20"
-                >
-                  {savingListingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Değişiklikleri Kaydet</span>}
-                </button>
+              {/* Bölüm 4: Konum & İletişim */}
+              <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                  Konum &amp; İletişim
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    İl
+                    <select
+                      value={editForm.ilSlug}
+                      onChange={(e) => {
+                        const newIl = e.target.value;
+                        const prov = turkeyProvinces.find((p) => p.ilSlug === newIl);
+                        setEditForm({
+                          ...editForm,
+                          ilSlug: newIl,
+                          ilceSlug: prov?.ilceler[0]?.slug || 'merkez',
+                        });
+                      }}
+                      className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600"
+                    >
+                      {turkeyProvinces.map((p) => (
+                        <option key={p.ilSlug} value={p.ilSlug}>{p.il}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    İlçe
+                    <select
+                      value={editForm.ilceSlug}
+                      onChange={(e) => setEditForm({ ...editForm, ilceSlug: e.target.value })}
+                      className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600"
+                    >
+                      {selectedProvince.ilceler.map((d) => (
+                        <option key={d.slug} value={d.slug}>{d.ad}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    WhatsApp Numarası
+                    <input
+                      type="text"
+                      required
+                      value={editForm.whatsappNumara}
+                      onChange={(e) => setEditForm({ ...editForm, whatsappNumara: e.target.value })}
+                      placeholder="05xxxxxxxxx"
+                      className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white font-mono text-xs focus:outline-none focus:border-slate-600"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Bölüm 5: Panel Güvenliği & Hesap Eşleştirme */}
+              <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                  Güvenlik &amp; Hesap Bağlantısı
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    Özel Panel Şifresi
+                    <input
+                      type="text"
+                      value={editForm.panelSifresi}
+                      onChange={(e) => setEditForm({ ...editForm, panelSifresi: e.target.value })}
+                      placeholder="123456"
+                      className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-300 font-mono text-xs focus:outline-none focus:border-slate-600"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    Bağlı Kullanıcı Hesabı
+                    <select
+                      value={editForm.kullaniciId}
+                      onChange={(e) => {
+                        const selectedId = e.target.value;
+                        const u = systemUsers.find((user) => user._id === selectedId);
+                        setEditForm({
+                          ...editForm,
+                          kullaniciId: selectedId,
+                          ...(u?.sifreHash ? { panelSifresi: u.sifreHash } : {}),
+                        });
+                      }}
+                      className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600"
+                    >
+                      <option value="">-- Bağımsız İlan (Kullanıcı Atanmamış) --</option>
+                      {systemUsers.map((u) => (
+                        <option key={u._id} value={u._id}>
+                          {u.kullaniciAdi} ({u.telefon || 'Tel Yok'})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              {/* Bölüm 6: Yayın Paketi & Bitiş Tarihi Yönetimi (Admin Command) */}
+              <div className="p-4 rounded-xl bg-[#070a0f] border border-amber-500/40 shadow-lg flex flex-col gap-3.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                      Yayın Paketi &amp; Bitiş Tarihi Yönetimi
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-slate-400">
+                      Başlangıç: <strong className="text-slate-200 font-mono">{formatDateTime(editingListing.onaylanmaTarihi || editingListing.createdAt)}</strong>
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                      {getRemainingTime(editForm.paketBitisTarihi || editingListing.paketBitisTarihi, editForm.status).text}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Paket Türü */}
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    <span>Yayın Paketi Türü</span>
+                    <select
+                      value={editForm.yayinSuresi}
+                      onChange={(e) => setEditForm({ ...editForm, yayinSuresi: e.target.value })}
+                      className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-amber-400"
+                    >
+                      <option value="haftalik">Haftalık Paket (7 Gün)</option>
+                      <option value="aylik">Aylık Paket (30 Gün)</option>
+                      <option value="gunluk">Günlük Paket (1 Gün)</option>
+                    </select>
+                  </label>
+
+                  {/* Manuel Tarih & Saat Seçici */}
+                  <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                    <span>Bitiş Tarihi ve Saati (Manuel Belirle)</span>
+                    <input
+                      type="datetime-local"
+                      value={editForm.paketBitisTarihi}
+                      onChange={(e) => setEditForm({ ...editForm, paketBitisTarihi: e.target.value })}
+                      className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-amber-500/50 text-white font-mono text-xs focus:outline-none focus:border-amber-400"
+                    />
+                  </label>
+                </div>
+
+                {/* Hızlı Hazır Butonlar */}
+                <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-slate-800/80">
+                  <span className="text-[11px] text-slate-400 font-medium">Hızlı Kurulum:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const startDate = editingListing.onaylanmaTarihi || editingListing.createdAt || new Date();
+                      const targetDate = new Date(new Date(startDate).getTime() + 7 * 24 * 60 * 60 * 1000);
+                      setEditForm({
+                        ...editForm,
+                        yayinSuresi: 'haftalik',
+                        paketBitisTarihi: toLocalDatetimeInput(targetDate)
+                      });
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/30 text-[11px] font-bold transition-all"
+                  >
+                    📅 Başlangıçtan +1 Hafta (7G)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const startDate = editingListing.onaylanmaTarihi || editingListing.createdAt || new Date();
+                      const targetDate = new Date(new Date(startDate).getTime() + 30 * 24 * 60 * 60 * 1000);
+                      setEditForm({
+                        ...editForm,
+                        yayinSuresi: 'aylik',
+                        paketBitisTarihi: toLocalDatetimeInput(targetDate)
+                      });
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500 text-purple-300 hover:text-white border border-purple-500/30 text-[11px] font-bold transition-all"
+                  >
+                    📅 Başlangıçtan +1 Ay (30G)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = editForm.paketBitisTarihi ? new Date(editForm.paketBitisTarihi) : new Date();
+                      base.setDate(base.getDate() + 7);
+                      setEditForm({
+                        ...editForm,
+                        paketBitisTarihi: toLocalDatetimeInput(base)
+                      });
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[11px] font-medium transition-all"
+                  >
+                    +7 Gün Ekle
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const base = editForm.paketBitisTarihi ? new Date(editForm.paketBitisTarihi) : new Date();
+                      base.setDate(base.getDate() + 30);
+                      setEditForm({
+                        ...editForm,
+                        paketBitisTarihi: toLocalDatetimeInput(base)
+                      });
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-[11px] font-medium transition-all"
+                  >
+                    +30 Gün Ekle
+                  </button>
+                </div>
+              </div>
+
+              {/* Sticky Executive Footer */}
+              <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-3 shrink-0">
+                <div className="text-[11px] font-mono text-slate-400 hidden sm:block">
+                  Kalan Süre: <span className="text-emerald-400 font-semibold">{getRemainingTime(editingListing.paketBitisTarihi, editingListing.status).text}</span>
+                </div>
+
+                <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setEditingListing(null)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-colors"
+                  >
+                    İptal
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={savingListingEdit || uploading}
+                    className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md flex items-center justify-center gap-1.5 uppercase font-heading active:scale-95 transition-all"
+                  >
+                    {savingListingEdit ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Kaydediliyor...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-3.5 h-3.5" />
+                        <span>Değişiklikleri Kaydet</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </form>
           </div>
