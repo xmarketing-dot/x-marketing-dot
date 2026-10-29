@@ -508,9 +508,8 @@ export default function BmsSecurePortalDashboard() {
   );
 
   const listingsWithWaCount = (detailedListingReports as any[]).filter((l: any) => (l.whatsappClicks || 0) > 0).length;
-  const avgListingCtr = totalListingViews > 0 
-    ? ((effectiveTotalWhatsapp / totalListingViews) * 100).toFixed(1) 
-    : '0.0';
+  const totalDetailViews = (detailedListingReports as any[]).reduce((acc: number, item: any) => acc + (item.detailViews || 0), 0);
+  const avgListingCtr = uniqueVisitors > 0 ? ((effectiveTotalWhatsapp / uniqueVisitors) * 100).toFixed(1) : '0.0';
 
   const filteredListings = (detailedListingReports as any[])
     .filter((item: any) => {
@@ -3163,17 +3162,17 @@ export default function BmsSecurePortalDashboard() {
 
             <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-1 hover:border-amber-500/40 transition-colors">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Toplam Görüntülenme</span>
+                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">İlan Detay Ziyareti</span>
                 <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
                   <Eye className="w-3.5 h-3.5 text-amber-400" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="font-bold font-mono text-2xl text-white">{totalListingViews.toLocaleString()}</span>
-                <span className="text-[10px] text-slate-400">Detay+Liste</span>
+                <span className="font-bold font-mono text-2xl text-white">{totalDetailViews.toLocaleString()}</span>
+                <span className="text-[10px] text-slate-400">Gerçek Tıklama</span>
               </div>
               <span className="text-[10px] text-slate-500">
-                Tüm ilan sayfaları ve kart gösterimleri
+                İlanların detay sayfasına giren ziyaretçiler
               </span>
             </div>
 
@@ -3202,10 +3201,10 @@ export default function BmsSecurePortalDashboard() {
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="font-bold font-mono text-2xl text-purple-300">%{avgListingCtr}</span>
-                <span className="text-[10px] text-purple-400 font-medium">Görüntüleme Başı</span>
+                <span className="text-[10px] text-purple-400 font-medium">Ziyaretçi Başına</span>
               </div>
               <span className="text-[10px] text-slate-500">
-                Görüntülenen her 100 ilandan WhatsApp randevusu
+                Tekil ziyaretçi başına WhatsApp dönüşüm oranı
               </span>
             </div>
           </div>
