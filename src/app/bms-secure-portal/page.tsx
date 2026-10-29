@@ -31,6 +31,8 @@ export default function BmsSecurePortalDashboard() {
   const [expandedVisitorKey, setExpandedVisitorKey] = useState<string | null>(null);
   const [promoFilterType, setPromoFilterType] = useState<'all' | 'listing' | 'banner'>('all');
   const [promoStatusFilter, setPromoStatusFilter] = useState<'all' | 'onay_bekliyor' | 'yayinda' | 'suresi_doldu'>('all');
+  const [groupedLeadSearch, setGroupedLeadSearch] = useState('');
+  const [onlyListingsWithWa, setOnlyListingsWithWa] = useState(false);
 
   // Online Users State
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
@@ -481,6 +483,8 @@ export default function BmsSecurePortalDashboard() {
     detailedListingReports = [],
     totalListingViews = 0,
     totalWhatsappClicks = 0,
+    totalWhatsappLeadsCount = 0,
+    groupedWhatsappLeads = [],
     totalShares = 0,
     googleConversionStats = {
       googleVisitors: 0,
@@ -495,14 +499,29 @@ export default function BmsSecurePortalDashboard() {
     domainBreakdown = [],
   } = data || {};
 
+  const effectiveTotalWhatsapp = Math.max(
+    totalWhatsappLeadsCount || 0,
+    totalWhatsappClicks || 0,
+    eventCounts.whatsappClicks || 0,
+    (groupedWhatsappLeads as any[] || []).reduce((acc: number, curr: any) => acc + (curr.count || 0), 0),
+    (recentWhatsappClicks as any[] || []).length
+  );
+
+  const listingsWithWaCount = (detailedListingReports as any[]).filter((l: any) => (l.whatsappClicks || 0) > 0).length;
+  const avgListingCtr = totalListingViews > 0 
+    ? ((effectiveTotalWhatsapp / totalListingViews) * 100).toFixed(1) 
+    : '0.0';
+
   const filteredListings = (detailedListingReports as any[])
     .filter((item: any) => {
+      if (onlyListingsWithWa && (item.whatsappClicks || 0) <= 0) return false;
       if (!listingSearchTerm) return true;
       const term = listingSearchTerm.toLowerCase();
       return (
         (item.baslik || '').toLowerCase().includes(term) ||
         (item.ilSlug || '').toLowerCase().includes(term) ||
         (item.ilceSlug || '').toLowerCase().includes(term) ||
+        (item.whatsappNumara || '').includes(term) ||
         (item.rozet || '').toLowerCase().includes(term)
       );
     })
@@ -1567,7 +1586,7 @@ export default function BmsSecurePortalDashboard() {
                 <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-2">
                   <span className="text-[10px] text-slate-400 font-medium">Toplam Lead:</span>
                   <span className="text-xs font-bold font-mono text-emerald-400">
-                    {(recentWhatsappClicks as any[] || []).length} Tık
+                    {effectiveTotalWhatsapp} Tık
                   </span>
                 </div>
               </div>
@@ -1577,17 +1596,17 @@ export default function BmsSecurePortalDashboard() {
             <div className="grid grid-cols-2 gap-2 sm:hidden">
               <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Randevu Hit</span>
-                <span className="text-lg font-bold font-mono text-emerald-400 mt-0.5">{eventCounts.whatsappClicks}</span>
+                <span className="text-lg font-bold font-mono text-emerald-400 mt-0.5">{effectiveTotalWhatsapp}</span>
                 <span className="text-[9px] text-slate-500 font-mono">Dönüşüm</span>
               </div>
 
               <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center min-w-0">
                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Lider İlan</span>
                 <span className="text-xs font-bold text-amber-300 truncate max-w-full mt-0.5">
-                  {topContactedListings[0]?._id || 'Kayıt Yok'}
+                  {groupedWhatsappLeads[0]?.title || topContactedListings[0]?._id || 'Kayıt Yok'}
                 </span>
                 <span className="text-[9px] text-amber-400/80 font-mono">
-                  {topContactedListings[0]?.whatsappClicks || 0} Randevu
+                  {groupedWhatsappLeads[0]?.count || topContactedListings[0]?.whatsappClicks || 0} Randevu
                 </span>
               </div>
 
@@ -1602,7 +1621,7 @@ export default function BmsSecurePortalDashboard() {
               <div className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col items-center justify-center text-center">
                 <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Dönüşüm (CTR)</span>
                 <span className="text-lg font-bold font-mono text-purple-300 mt-0.5">
-                  %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
+                  %{uniqueVisitors > 0 ? ((effectiveTotalWhatsapp / uniqueVisitors) * 100).toFixed(1) : '0.0'}
                 </span>
                 <span className="text-[9px] text-slate-500 font-mono">Ziyaretçi Başına</span>
               </div>
@@ -1618,7 +1637,7 @@ export default function BmsSecurePortalDashboard() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-bold font-mono text-2xl text-white">{eventCounts.whatsappClicks}</span>
+                  <span className="font-bold font-mono text-2xl text-white">{effectiveTotalWhatsapp}</span>
                   <span className="text-[11px] text-emerald-400 font-medium">Dönüşüm</span>
                 </div>
                 <span className="text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5">
@@ -1635,10 +1654,10 @@ export default function BmsSecurePortalDashboard() {
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="font-bold text-xs text-amber-300 truncate">
-                    {topContactedListings[0]?._id || 'Kayıt Bekleniyor'}
+                    {groupedWhatsappLeads[0]?.title || topContactedListings[0]?._id || 'Kayıt Bekleniyor'}
                   </span>
                   <span className="text-[11px] font-semibold text-amber-400 font-mono mt-0.5">
-                    {topContactedListings[0]?.whatsappClicks || 0} Randevu Tıklaması
+                    {groupedWhatsappLeads[0]?.count || topContactedListings[0]?.whatsappClicks || 0} Randevu Tıklaması
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-500 border-t border-slate-800/60 pt-1.5">
@@ -1672,7 +1691,7 @@ export default function BmsSecurePortalDashboard() {
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-bold font-mono text-2xl text-purple-300">
-                    %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}
+                    %{uniqueVisitors > 0 ? ((effectiveTotalWhatsapp / uniqueVisitors) * 100).toFixed(1) : '0.0'}
                   </span>
                   <span className="text-[11px] text-purple-400 font-medium">Ziyaretçi Başına</span>
                 </div>
@@ -1709,7 +1728,326 @@ export default function BmsSecurePortalDashboard() {
             </div>
           </div>
 
-          {/* ── ENTERPRISE VERİ TABLOSU (MASAÜSTÜNDE GENİŞ KURUMSAL TABLO, MOBİLDE KART) ── */}
+          {/* ══════════════════════════════════════════════════════════════════════ */}
+          {/* ── 1. BÖLÜM: GRUPLANMIŞ İLAN BAZLI WHATSAPP RANDEVU DAĞILIMI (TÜM İLANLAR) ── */}
+          {/* ══════════════════════════════════════════════════════════════════════ */}
+          {(() => {
+            const rawGrouped = (groupedWhatsappLeads && (groupedWhatsappLeads as any[]).length > 0)
+              ? (groupedWhatsappLeads as any[])
+              : (detailedListingReports as any[])
+                  .filter((l: any) => (l.whatsappClicks || 0) > 0)
+                  .map((l: any) => ({
+                    id: l.id,
+                    title: l.baslik,
+                    slug: l.slug,
+                    ilSlug: l.ilSlug,
+                    ilceSlug: l.ilceSlug,
+                    phone: l.whatsappNumara,
+                    fotoUrl: l.fotoUrl,
+                    count: l.whatsappClicks,
+                    uniqueVisitors: l.uniqueVisitors || 1,
+                    sharePercent: effectiveTotalWhatsapp > 0 ? ((l.whatsappClicks / effectiveTotalWhatsapp) * 100).toFixed(1) : '0',
+                    lastClicked: l.lastVisitedAt || null,
+                  }))
+                  .sort((a, b) => b.count - a.count);
+
+            const filteredGrouped = rawGrouped.filter((item: any) => {
+              if (!groupedLeadSearch) return true;
+              const term = groupedLeadSearch.toLowerCase();
+              return (
+                (item.title || '').toLowerCase().includes(term) ||
+                (item.phone || '').includes(term) ||
+                (item.ilSlug || '').toLowerCase().includes(term) ||
+                (item.ilceSlug || '').toLowerCase().includes(term) ||
+                (item.slug || '').toLowerCase().includes(term)
+              );
+            });
+
+            const totalGroupedClicks = rawGrouped.reduce((acc: number, curr: any) => acc + (curr.count || 0), 0);
+
+            return (
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0c1017] border border-slate-800 shadow-xl flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Layers className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-bold text-sm sm:text-base text-white tracking-tight flex items-center gap-2">
+                          Gruplanmış İlan Bazlı WhatsApp Randevu Dağılımı
+                        </h3>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold">
+                          {rawGrouped.length} Farklı İlan • {totalGroupedClicks || effectiveTotalWhatsapp} Toplam Tık
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Tüm WhatsApp randevu tıklamaları ilanlara göre kümülatif toplanmıştır. Her ilanın toplam lead sayısı, genel payı (%) ve tekil müşteri sayısı listelenir.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Arama Kutusu */}
+                  <div className="relative w-full sm:w-72">
+                    <input
+                      type="text"
+                      placeholder="Gruplanmış ilan veya telefon ara..."
+                      value={groupedLeadSearch}
+                      onChange={(e) => setGroupedLeadSearch(e.target.value)}
+                      className="w-full pl-9 pr-8 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:border-emerald-500/60 focus:outline-none transition-colors"
+                    />
+                    <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
+                    {groupedLeadSearch && (
+                      <button
+                        onClick={() => setGroupedLeadSearch('')}
+                        className="absolute right-2.5 top-2 text-[11px] text-slate-400 hover:text-white"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Gruplanmış Tablo / Kartlar */}
+                {filteredGrouped.length === 0 ? (
+                  <div className="p-8 text-center text-xs text-slate-500 bg-[#070a0f] rounded-xl border border-slate-800">
+                    Arama kriterine uygun gruplanmış WhatsApp randevusu bulunamadı.
+                  </div>
+                ) : (
+                  <>
+                    {/* MOBİL KARTLAR (sm:hidden) */}
+                    <div className="flex flex-col gap-2.5 sm:hidden">
+                      {filteredGrouped.map((item: any, idx: number) => {
+                        const cleanPhone = (item.phone || '').replace(/\D/g, '');
+                        const sharePercent = (totalGroupedClicks || effectiveTotalWhatsapp) > 0 
+                          ? ((item.count / (totalGroupedClicks || effectiveTotalWhatsapp)) * 100).toFixed(1) 
+                          : '0.0';
+
+                        return (
+                          <div
+                            key={item.id || item.slug || idx}
+                            className="p-3 rounded-xl bg-[#070a0f] border border-slate-800/90 flex flex-col gap-2.5 hover:border-emerald-500/40 transition-colors"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              {/* Sıralama Rozeti */}
+                              <span className={`w-6 h-6 rounded-lg text-xs font-black flex items-center justify-center shrink-0 ${
+                                idx === 0 
+                                  ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' 
+                                  : idx === 1 
+                                  ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40' 
+                                  : idx === 2 
+                                  ? 'bg-amber-700/20 text-amber-600 border border-amber-700/40' 
+                                  : 'bg-slate-800 text-slate-400'
+                              }`}>
+                                #{idx + 1}
+                              </span>
+
+                              {/* İlan Foto */}
+                              <div className="relative w-10 h-12 rounded-lg overflow-hidden bg-slate-900 border border-slate-800 shrink-0">
+                                <Image
+                                  src={item.fotoUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
+                                  alt={item.title}
+                                  fill
+                                  sizes="40px"
+                                  className="object-cover"
+                                />
+                              </div>
+
+                              {/* Başlık ve Lokasyon */}
+                              <div className="flex flex-col min-w-0 flex-1">
+                                <span className="font-bold text-xs text-white truncate">{item.title}</span>
+                                <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400">
+                                  <span className="font-mono text-emerald-400 font-semibold">{item.phone || 'Numara Yok'}</span>
+                                  <span>•</span>
+                                  <span className="truncate">{item.ilSlug?.toUpperCase() || 'TR'} {item.ilceSlug ? `/${item.ilceSlug.toUpperCase()}` : ''}</span>
+                                </div>
+                              </div>
+
+                              {/* Tıklama Sayısı */}
+                              <div className="flex flex-col items-end shrink-0">
+                                <span className="text-base font-black font-mono text-emerald-400 flex items-center gap-1">
+                                  <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
+                                  {item.count} Tık
+                                </span>
+                                <span className="text-[9px] text-slate-500 font-mono">%{sharePercent} Pay</span>
+                              </div>
+                            </div>
+
+                            {/* İlerleme Çubuğu */}
+                            <div className="w-full bg-slate-800/80 rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full transition-all duration-500"
+                                style={{ width: `${Math.min(100, Math.max(4, Number(sharePercent)))}%` }}
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between pt-1 border-t border-slate-800/60 text-[10px]">
+                              <span className="text-slate-400 font-mono">
+                                👥 {item.uniqueVisitors || 1} Tekil Kişi
+                                {item.lastClicked && ` • ${new Date(item.lastClicked).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`}
+                              </span>
+
+                              <div className="flex items-center gap-1.5">
+                                {cleanPhone && (
+                                  <a
+                                    href={`https://wa.me/${cleanPhone}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-bold flex items-center gap-1"
+                                  >
+                                    <OfficialWhatsAppIcon className="w-3 h-3 fill-current" />
+                                    <span>Yaz</span>
+                                  </a>
+                                )}
+                                {item.slug && (
+                                  <Link
+                                    href={`/ilan/${item.slug}`}
+                                    target="_blank"
+                                    className="px-2 py-1 rounded-lg bg-slate-800 text-slate-300 hover:text-white"
+                                  >
+                                    İlana Git ↗
+                                  </Link>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* MASAÜSTÜ TABLO (hidden sm:block) */}
+                    <div className="hidden sm:block overflow-x-auto rounded-xl border border-slate-800 bg-[#070a0f]">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="border-b border-slate-800 bg-[#0c1017] text-slate-400 font-semibold text-[11px] uppercase tracking-wider">
+                            <th className="py-3 px-3 w-12 text-center">Sıra</th>
+                            <th className="py-3 px-3">İlan Bilgisi</th>
+                            <th className="py-3 px-3">WhatsApp Telefon</th>
+                            <th className="py-3 px-3 text-center">Toplam Randevu Lead</th>
+                            <th className="py-3 px-3 text-center">Tekil Ziyaretçi</th>
+                            <th className="py-3 px-3 w-48">Genel Lead Payı (%)</th>
+                            <th className="py-3 px-3">Son Randevu Tıklama</th>
+                            <th className="py-3 px-3 text-right">İşlem</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60 font-mono">
+                          {filteredGrouped.map((item: any, idx: number) => {
+                            const cleanPhone = (item.phone || '').replace(/\D/g, '');
+                            const sharePercent = (totalGroupedClicks || effectiveTotalWhatsapp) > 0 
+                              ? ((item.count / (totalGroupedClicks || effectiveTotalWhatsapp)) * 100).toFixed(1) 
+                              : '0.0';
+
+                            return (
+                              <tr key={item.id || item.slug || idx} className="hover:bg-slate-900/50 transition-colors">
+                                <td className="py-3 px-3 text-center">
+                                  <span className={`inline-flex items-center justify-center w-6 h-6 rounded-lg text-xs font-bold ${
+                                    idx === 0 
+                                      ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40' 
+                                      : idx === 1 
+                                      ? 'bg-slate-300/20 text-slate-200 border border-slate-300/40' 
+                                      : idx === 2 
+                                      ? 'bg-amber-700/20 text-amber-600 border border-amber-700/40' 
+                                      : 'text-slate-500'
+                                  }`}>
+                                    #{idx + 1}
+                                  </span>
+                                </td>
+
+                                <td className="py-3 px-3">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="relative w-9 h-11 rounded-lg overflow-hidden bg-slate-900 border border-slate-800 shrink-0">
+                                      <Image
+                                        src={item.fotoUrl || 'https://images.unsplash.com/photo-1524781289445-ddf8d5695e71?w=100'}
+                                        alt={item.title}
+                                        fill
+                                        sizes="36px"
+                                        className="object-cover"
+                                      />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                      <span className="font-bold text-xs text-white truncate max-w-xs font-sans">{item.title}</span>
+                                      <span className="text-[10px] text-slate-400 font-mono mt-0.5">
+                                        📍 {item.ilSlug?.toUpperCase() || 'TR'} {item.ilceSlug ? `• ${item.ilceSlug?.toUpperCase()}` : ''}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+
+                                <td className="py-3 px-3">
+                                  {cleanPhone ? (
+                                    <a
+                                      href={`https://wa.me/${cleanPhone}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-xs font-bold transition-colors"
+                                    >
+                                      <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
+                                      <span>{item.phone}</span>
+                                    </a>
+                                  ) : (
+                                    <span className="text-slate-500 text-xs">—</span>
+                                  )}
+                                </td>
+
+                                <td className="py-3 px-3 text-center">
+                                  <span className="text-sm font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 rounded-xl inline-flex items-center gap-1">
+                                    <OfficialWhatsAppIcon className="w-3 h-3 fill-emerald-400" />
+                                    {item.count} Tık
+                                  </span>
+                                </td>
+
+                                <td className="py-3 px-3 text-center text-slate-300 text-xs">
+                                  {item.uniqueVisitors || 1} Kişi
+                                </td>
+
+                                <td className="py-3 px-3">
+                                  <div className="flex flex-col gap-1">
+                                    <div className="flex items-center justify-between text-[10px]">
+                                      <span className="text-emerald-400 font-bold">%{sharePercent}</span>
+                                      <span className="text-slate-500">{item.count} / {totalGroupedClicks || effectiveTotalWhatsapp}</span>
+                                    </div>
+                                    <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                                      <div
+                                        className="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full"
+                                        style={{ width: `${Math.min(100, Math.max(3, Number(sharePercent)))}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                </td>
+
+                                <td className="py-3 px-3 text-slate-400 text-[11px] whitespace-nowrap">
+                                  {item.lastClicked 
+                                    ? new Date(item.lastClicked).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
+                                    : 'Kayıtlı'}
+                                </td>
+
+                                <td className="py-3 px-3 text-right">
+                                  {item.slug && (
+                                    <Link
+                                      href={`/ilan/${item.slug}`}
+                                      target="_blank"
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] font-sans font-medium transition-colors"
+                                    >
+                                      <span>İlana Git</span>
+                                      <ExternalLink className="w-3 h-3" />
+                                    </Link>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* ══════════════════════════════════════════════════════════════════════ */}
+          {/* ── 2. BÖLÜM: CANLI TEKİL WHATSAPP TIKLAMA AKIŞI (HAM LOGLAR & İSTİHBARAT) ── */}
+          {/* ══════════════════════════════════════════════════════════════════════ */}
           {(() => {
             const leads = (recentWhatsappClicks as any[] || []).filter((item: any) => {
               if (!whatsappLeadSearchTerm) return true;
@@ -2794,13 +3132,152 @@ export default function BmsSecurePortalDashboard() {
             <div className="relative w-full sm:w-64">
               <input
                 type="text"
-                placeholder="İlan adı veya şehir ara..."
+                placeholder="İlan adı, şehir veya telefon ara..."
                 value={listingSearchTerm}
                 onChange={(e) => setListingSearchTerm(e.target.value)}
                 className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs placeholder-slate-500 focus:border-amber-500/60 focus:outline-none transition-colors"
               />
               <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-2.5" />
             </div>
+          </div>
+
+          {/* Executive KPI Bar (Lead İstihbarat Merkezi ile %100 Senkronize) */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-1 hover:border-emerald-500/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Toplam WhatsApp Tıklama</span>
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                  <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold font-mono text-2xl text-emerald-400">{effectiveTotalWhatsapp}</span>
+                <span className="text-[10px] text-emerald-400 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                  %100 Senkron
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-500">
+                Lead İstihbarat Merkezi ile tam senkronize
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-1 hover:border-amber-500/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Toplam Görüntülenme</span>
+                <div className="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                  <Eye className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold font-mono text-2xl text-white">{totalListingViews.toLocaleString()}</span>
+                <span className="text-[10px] text-slate-400">Detay+Liste</span>
+              </div>
+              <span className="text-[10px] text-slate-500">
+                Tüm ilan sayfaları ve kart gösterimleri
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-1 hover:border-blue-500/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">WhatsApp Alan İlanlar</span>
+                <div className="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                  <Flame className="w-3.5 h-3.5 text-blue-400" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold font-mono text-2xl text-blue-400">{listingsWithWaCount}</span>
+                <span className="text-[10px] text-slate-400 font-mono">/ {(detailedListingReports as any[]).length} İlan</span>
+              </div>
+              <span className="text-[10px] text-slate-500">
+                Aktif olarak WhatsApp randevusu çeken ilanlar
+              </span>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-[#070a0f] border border-slate-800/80 flex flex-col justify-between gap-1 hover:border-purple-500/40 transition-colors">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Ortalama Dönüşüm (CR)</span>
+                <div className="w-6 h-6 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                  <TrendingUp className="w-3.5 h-3.5 text-purple-400" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="font-bold font-mono text-2xl text-purple-300">%{avgListingCtr}</span>
+                <span className="text-[10px] text-purple-400 font-medium">Görüntüleme Başı</span>
+              </div>
+              <span className="text-[10px] text-slate-500">
+                Görüntülenen her 100 ilandan WhatsApp randevusu
+              </span>
+            </div>
+          </div>
+
+          {/* Hızlı Filtre & Sıralama Araç Çubuğu */}
+          <div className="flex flex-wrap items-center gap-2 pt-1 pb-1">
+            <button
+              type="button"
+              onClick={() => { setOnlyListingsWithWa(false); }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold font-mono flex items-center gap-1.5 transition-colors ${
+                !onlyListingsWithWa 
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm' 
+                  : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white'
+              }`}
+            >
+              <span>Tüm İlanlar</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-[10px]">{(detailedListingReports as any[]).length}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setOnlyListingsWithWa(true); setListingSortBy('whatsapp'); }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold font-mono flex items-center gap-1.5 transition-colors ${
+                onlyListingsWithWa 
+                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm' 
+                  : 'bg-slate-900 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/10'
+              }`}
+            >
+              <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-current" />
+              <span>Sadece WhatsApp Alanlar</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-[10px] font-bold">{listingsWithWaCount}</span>
+            </button>
+
+            <div className="h-4 w-px bg-slate-800 hidden sm:block mx-1" />
+
+            <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">Sıralama:</span>
+
+            <button
+              type="button"
+              onClick={() => setListingSortBy('whatsapp')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors ${
+                listingSortBy === 'whatsapp'
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold'
+                  : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              🔥 En Çok WhatsApp
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setListingSortBy('views')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors ${
+                listingSortBy === 'views'
+                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold'
+                  : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              👁️ En Çok Görüntülenen
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setListingSortBy('ctr')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-colors ${
+                listingSortBy === 'ctr'
+                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/40 font-bold'
+                  : 'bg-slate-900/80 text-slate-400 hover:text-white border border-slate-800'
+              }`}
+            >
+              📈 En Yüksek Dönüşüm (CTR)
+            </button>
           </div>
 
           {/* İlan Detay Tablosu (Masaüstü) & Kartlar (Mobil) */}

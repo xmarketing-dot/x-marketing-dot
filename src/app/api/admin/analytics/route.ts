@@ -105,6 +105,7 @@ export async function GET(req: Request) {
       listingImpressionAgg,
       rawListings,
       recentWhatsappClicks,
+      groupedWhatsappLeadsAgg,
       recentPwaInstalls
     ] = await Promise.all([
       // 1. Pre-aggregated Daily Summaries (Süper Hızlı < 5ms)
@@ -260,14 +261,41 @@ export async function GET(req: Request) {
         .select('_id baslik slug ilSlug ilceSlug rozet whatsappNumara anaFotograf.url goruntulenmeSayisi whatsappTiklamaSayisi paylasimSayisi status isPromo promoType promoBitisTarihi paketBitisTarihi createdAt')
         .lean(),
 
-      // 14. Son WhatsApp Tıklama İstihbaratı (Son 50)
+      // 14. Son WhatsApp Tıklama İstihbaratı (Dinamik Limit: min 500 veya visitorLimit)
       AnalyticsEventModel.find({
         ...dateQuery,
         eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] }
       })
         .sort({ createdAt: -1 })
-        .limit(50)
+        .limit(Math.max(500, visitorLimit))
         .lean(),
+
+      // 14b. Gruplanmış WhatsApp Tıklama & Randevu Dağılımı (Tüm İlanlar)
+      AnalyticsEventModel.aggregate([
+        {
+          $match: {
+            ...dateQuery,
+            eventType: { $in: ['whatsapp_click', 'special_ad_whatsapp_click'] },
+          }
+        },
+        {
+          $group: {
+            _id: {
+              targetId: "$targetId",
+              targetTitle: "$targetTitle",
+              metaSlug: "$metadata.slug",
+              metaListingId: "$metadata.listingId",
+              metaListingSlug: "$metadata.listingSlug",
+              phone: "$metadata.listingPhone",
+              location: "$metadata.listingLocation",
+            },
+            count: { $sum: 1 },
+            lastClicked: { $max: "$createdAt" },
+            uniqueVisitors: { $addToSet: "$visitorId" }
+          }
+        },
+        { $sort: { count: -1 } }
+      ]),
 
       // 15. PWA / Uygulama Kurulum & Kaldırma İstihbaratı (Son 50)
       AnalyticsEventModel.find({
@@ -644,8 +672,101 @@ export async function GET(req: Request) {
       };
     });
 
+    // ── GRUPLANMIŞ WHATSAPP LEADERBOARD & İLAN HARİTALAMA (%100 KUSURSUZ EŞLEŞTİRME) ──
+    const listingByIdMap = new Map<string, any>();
+    rawListings.forEach((l: any) => {
+      listingByIdMap.set(l._id.toString(), l);
+    });
+
+    const groupedWhatsappMap = new Map<string, {
+      id: string;
+      title: string;
+      slug: string;
+      ilSlug: string;
+      ilceSlug: string;
+      phone: string;
+      fotoUrl: string | null;
+      count: number;
+      uniqueVisitors: Set<string>;
+      lastClicked: any;
+    }>();
+
+    let grandTotalWhatsappLeads = 0;
+
+    groupedWhatsappLeadsAgg.forEach((item: any) => {
+      const count = item.count || 0;
+      grandTotalWhatsappLeads += count;
+
+      const tid = (item._id?.targetId || '').toString().trim();
+      const metaId = (item._id?.metaListingId || '').toString().trim();
+      const metaSlug = (item._id?.metaSlug || item._id?.metaListingSlug || '').toString().toLowerCase().trim();
+      const title = (item._id?.targetTitle || '').toString().toLowerCase().trim();
+
+      const cleanTid = tid.replace(/^https?:\/\/[^\/]+/, '').replace(/^\/ilan\//, '').replace(/\/$/, '').toLowerCase();
+      const cleanMetaSlug = metaSlug.replace(/^https?:\/\/[^\/]+/, '').replace(/^\/ilan\//, '').replace(/\/$/, '').toLowerCase();
+
+      let targetId: string | null = null;
+      if (metaId && listingByIdMap.has(metaId)) {
+        targetId = metaId;
+      } else if (tid && listingByIdMap.has(tid)) {
+        targetId = tid;
+      } else if (cleanMetaSlug && slugToIdMap.has(cleanMetaSlug)) {
+        targetId = slugToIdMap.get(cleanMetaSlug)!;
+      } else if (cleanTid && slugToIdMap.has(cleanTid)) {
+        targetId = slugToIdMap.get(cleanTid)!;
+      } else if (title && titleToIdMap.has(title)) {
+        targetId = titleToIdMap.get(title)!;
+      }
+
+      const rawL = targetId ? listingByIdMap.get(targetId) : null;
+      const key = targetId || cleanTid || cleanMetaSlug || title || 'diger_lead';
+
+      if (!groupedWhatsappMap.has(key)) {
+        groupedWhatsappMap.set(key, {
+          id: targetId || tid || '',
+          title: rawL?.baslik || item._id?.targetTitle || 'İlan Randevusu',
+          slug: rawL?.slug || cleanMetaSlug || cleanTid || '',
+          ilSlug: rawL?.ilSlug || (item._id?.location ? item._id.location.split('/')[0]?.trim() : 'istanbul'),
+          ilceSlug: rawL?.ilceSlug || (item._id?.location ? item._id.location.split('/')[1]?.trim() : ''),
+          phone: rawL?.whatsappNumara || item._id?.phone || '',
+          fotoUrl: rawL?.anaFotograf?.url || null,
+          count: 0,
+          uniqueVisitors: new Set<string>(),
+          lastClicked: item.lastClicked,
+        });
+      }
+
+      const gItem = groupedWhatsappMap.get(key)!;
+      gItem.count += count;
+      (item.uniqueVisitors || []).forEach((v: string) => {
+        if (v) gItem.uniqueVisitors.add(v);
+      });
+      if (item.lastClicked && (!gItem.lastClicked || new Date(item.lastClicked) > new Date(gItem.lastClicked))) {
+        gItem.lastClicked = item.lastClicked;
+      }
+    });
+
+    const groupedWhatsappLeads = Array.from(groupedWhatsappMap.values())
+      .map((item) => ({
+        id: item.id,
+        title: item.title,
+        slug: item.slug,
+        ilSlug: item.ilSlug,
+        ilceSlug: item.ilceSlug,
+        phone: item.phone,
+        fotoUrl: item.fotoUrl,
+        count: item.count,
+        uniqueVisitors: item.uniqueVisitors.size,
+        sharePercent: grandTotalWhatsappLeads > 0 
+          ? Number(((item.count / grandTotalWhatsappLeads) * 100).toFixed(1)) 
+          : 0,
+        lastClicked: item.lastClicked,
+      }))
+      .sort((a, b) => b.count - a.count);
+
     const totalListingViews = detailedListingReports.reduce((acc: number, item: any) => acc + item.totalViews, 0);
-    const totalWhatsappClicks = detailedListingReports.reduce((acc: number, item: any) => acc + item.whatsappClicks, 0);
+    const sumDetailedWhatsapp = detailedListingReports.reduce((acc: number, item: any) => acc + item.whatsappClicks, 0);
+    const totalWhatsappClicks = Math.max(grandTotalWhatsappLeads, sumDetailedWhatsapp);
     const totalShares = detailedListingReports.reduce((acc: number, item: any) => acc + item.shares, 0);
 
     const googleVisitors = sources.google || 0;
@@ -823,7 +944,7 @@ export async function GET(req: Request) {
           breakdown: specialAdBreakdown,
         },
         eventCounts: {
-          whatsappClicks: (eventCounts.whatsappClicks || 0) + (eventCounts.specialAdWhatsappClicks || 0),
+          whatsappClicks: Math.max(grandTotalWhatsappLeads, (eventCounts.whatsappClicks || 0) + (eventCounts.specialAdWhatsappClicks || 0)),
           shares: eventCounts.shares || 0,
           categoryClicks: eventCounts.categoryClicks || 0,
           cityFilters: eventCounts.cityFilters || 0,
@@ -839,6 +960,8 @@ export async function GET(req: Request) {
         detailedListingReports,
         totalListingViews,
         totalWhatsappClicks,
+        totalWhatsappLeadsCount: Math.max(grandTotalWhatsappLeads, totalWhatsappClicks),
+        groupedWhatsappLeads,
         totalShares,
         recentVisitors,
         recentWhatsappClicks,
