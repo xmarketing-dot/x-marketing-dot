@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Crown, Award, Medal, ChevronRight, Sparkles } from 'lucide-react';
 import CompactListingCard from '@/components/common/CompactListingCard';
 import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import PostAdPromoCard from '@/components/common/PostAdPromoCard';
 
 interface CategorizedListingsSectionProps {
   vipListings: any[];
@@ -32,6 +33,41 @@ export default function CategorizedListingsSection({
   const displayedAll = allListings;
 
   const hasCategorized = vipListings.length > 0 || goldListings.length > 0 || silverListings.length > 0;
+
+  // Promo kartın her zaman 3'lü gridin TAM ORTASINDA (Card 5, Card 8 veya Card 11) ve random sırada gösterimi
+  const [promoMiddleSlots, setPromoMiddleSlots] = useState<{ vip: number; gold: number; silver: number; all: number }>({
+    vip: 3,
+    gold: 6,
+    silver: 3,
+    all: 3,
+  });
+
+  useEffect(() => {
+    // 3'lü gridde orta sütun kartları:
+    // Card 5 = 2. satır ortası (index 3'ten sonra)
+    // Card 8 = 3. satır ortası (index 6'dan sonra)
+    // Card 11 = 4. satır ortası (index 9'dan sonra)
+    const middleOptions = [3, 6, 9];
+    const pickRandomMiddle = (total: number) => {
+      const available = middleOptions.filter((opt) => total > opt);
+      if (available.length > 0) {
+        return available[Math.floor(Math.random() * available.length)];
+      }
+      return total >= 2 ? 0 : 0;
+    };
+
+    setPromoMiddleSlots({
+      vip: pickRandomMiddle(displayedVip.length),
+      gold: pickRandomMiddle(displayedGold.length),
+      silver: pickRandomMiddle(displayedSilver.length),
+      all: pickRandomMiddle(displayedAll.length),
+    });
+  }, [displayedVip.length, displayedGold.length, displayedSilver.length, displayedAll.length]);
+
+  const shouldShowPromo = (index: number, chosenSlot: number) => {
+    return index === chosenSlot;
+  };
+
 
   return (
     <div className="flex flex-col gap-5 w-full pt-1">
@@ -67,6 +103,9 @@ export default function CategorizedListingsSection({
             {displayedVip.map((listing: any, index: number) => (
               <React.Fragment key={listing._id || index}>
                 <CompactListingCard listing={listing} priority={index < 6} />
+                {shouldShowPromo(index, promoMiddleSlots.vip) && (
+                  <PostAdPromoCard title="ESKORT İLANI VER" />
+                )}
                 {(index + 1) % 12 === 0 && index < displayedVip.length - 1 && (
                   <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
@@ -110,6 +149,9 @@ export default function CategorizedListingsSection({
             {displayedGold.map((listing: any, index: number) => (
               <React.Fragment key={listing._id || index}>
                 <CompactListingCard listing={listing} priority={false} />
+                {shouldShowPromo(index, promoMiddleSlots.gold) && (
+                  <PostAdPromoCard title="ESKORT İLANI VER" />
+                )}
                 {(index + 1) % 12 === 0 && index < displayedGold.length - 1 && (
                   <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
@@ -153,6 +195,9 @@ export default function CategorizedListingsSection({
             {displayedSilver.map((listing: any, index: number) => (
               <React.Fragment key={listing._id || index}>
                 <CompactListingCard listing={listing} priority={false} />
+                {shouldShowPromo(index, promoMiddleSlots.silver) && (
+                  <PostAdPromoCard title="ESKORT İLANI VER" />
+                )}
                 {(index + 1) % 12 === 0 && index < displayedSilver.length - 1 && (
                   <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
@@ -217,6 +262,9 @@ export default function CategorizedListingsSection({
             {displayedAll.map((listing: any, index: number) => (
               <React.Fragment key={listing._id || index}>
                 <CompactListingCard listing={listing} priority={index < 6} />
+                {shouldShowPromo(index, promoMiddleSlots.all) && (
+                  <PostAdPromoCard title="ESKORT İLANI VER" />
+                )}
                 {(index + 1) % 12 === 0 && index < displayedAll.length - 1 && (
                   <div className="col-span-3 w-full">
                     <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
