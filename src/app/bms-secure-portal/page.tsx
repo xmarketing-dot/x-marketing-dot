@@ -585,10 +585,10 @@ export default function BmsSecurePortalDashboard() {
           ))}
         </div>
 
-        {/* Mobil 2x2 KPI Skeleton */}
+        {/* Mobil KPI Skeleton */}
         <div className="grid grid-cols-2 gap-2 sm:hidden">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="p-3 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center gap-1.5 text-center">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className={`p-3 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center gap-1.5 text-center ${i === 5 ? 'col-span-2' : ''}`}>
               <div className="w-6 h-6 rounded-md bg-slate-800/70" />
               <div className="h-5 w-16 rounded bg-slate-800/80 mt-1" />
               <div className="h-2.5 w-20 rounded bg-slate-800/50" />
@@ -596,9 +596,9 @@ export default function BmsSecurePortalDashboard() {
           ))}
         </div>
 
-        {/* Masaüstü 4'lü KPI Strip Skeleton */}
-        <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {[1, 2, 3, 4].map((i) => (
+        {/* Masaüstü 5'li KPI Strip Skeleton */}
+        <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3.5">
+          {[1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="p-4 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <div className="h-3 w-24 rounded bg-slate-800/70" />
@@ -1238,7 +1238,7 @@ export default function BmsSecurePortalDashboard() {
 
           {/* ── 4'LÜ HERO KPI KARTLARI (MOBİLDE NATIVE COMPACT 2x2 / MASAÜSTÜNDE 4'LÜ STRIP) ──── */}
           
-          {/* 1. MOBİL ÖZEL: Native 2x2 Kompakt ve Ortalanmış Kartlar (Revolut / Apple Health Havası) */}
+          {/* 1. MOBİL ÖZEL: 5'li Kompakt Hero Kartları (Tekil Ziyaret + Sayfa Hit Yan Yana) */}
           <div className="grid grid-cols-2 gap-2 sm:hidden">
             {/* Mobil Kart 1: Tekil Ziyaret */}
             <div className="p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm">
@@ -1250,11 +1250,27 @@ export default function BmsSecurePortalDashboard() {
               </span>
               <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-tight">Tekil Ziyaret</span>
               <span className="text-[9px] text-slate-500 font-mono truncate max-w-full">
-                {totalPageviews.toLocaleString()} Hit • {uniqueVisitors > 0 ? (totalPageviews / uniqueVisitors).toFixed(1) : '1.0'} s/k
+                Gerçek Ziyaretçi
               </span>
             </div>
 
-            {/* Mobil Kart 2: WhatsApp Randevu */}
+            {/* Mobil Kart 2: Toplam Sayfa Hit (Tekil Ziyaretin Hemen Yanında) */}
+            <div 
+              className="p-2.5 rounded-xl bg-[#0e131f] border border-cyan-500/30 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm"
+            >
+              <div className="w-6 h-6 rounded-md bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                <Eye className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xl font-bold font-mono text-cyan-300 tracking-tight leading-tight mt-0.5">
+                {totalPageviews.toLocaleString()}
+              </span>
+              <span className="text-[10px] font-semibold text-cyan-400 uppercase tracking-tight">Sayfa Hit</span>
+              <span className="text-[9px] text-cyan-400/80 font-mono truncate max-w-full">
+                Kişi Başı {uniqueVisitors > 0 ? (totalPageviews / uniqueVisitors).toFixed(1) : '1.0'} Sayfa
+              </span>
+            </div>
+
+            {/* Mobil Kart 3: WhatsApp Randevu */}
             <div 
               onClick={() => setActiveTab('whatsapp_leads')}
               className="p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm active:scale-95 transition-all cursor-pointer"
@@ -1263,15 +1279,15 @@ export default function BmsSecurePortalDashboard() {
                 <OfficialWhatsAppIcon className="w-3.5 h-3.5 fill-emerald-400" />
               </div>
               <span className="text-xl font-bold font-mono text-emerald-400 tracking-tight leading-tight mt-0.5">
-                {eventCounts.whatsappClicks.toLocaleString()}
+                {(totalWhatsappLeadsCount || totalWhatsappClicks || eventCounts.whatsappClicks || 0).toLocaleString()}
               </span>
               <span className="text-[10px] font-semibold text-emerald-300 uppercase tracking-tight">WhatsApp Hit</span>
               <span className="text-[9px] text-emerald-400/80 font-mono truncate max-w-full">
-                %CTR: {uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'} →
+                %CTR: {uniqueVisitors > 0 ? (((totalWhatsappLeadsCount || totalWhatsappClicks || eventCounts.whatsappClicks || 0) / uniqueVisitors) * 100).toFixed(1) : '0.0'} →
               </span>
             </div>
 
-            {/* Mobil Kart 3: Organik Arama */}
+            {/* Mobil Kart 4: Organik Arama */}
             <div className="p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm">
               <div className="w-6 h-6 rounded-md bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
                 <Search className="w-3.5 h-3.5" />
@@ -1285,27 +1301,32 @@ export default function BmsSecurePortalDashboard() {
               </span>
             </div>
 
-            {/* Mobil Kart 4: Mobil Cihaz & PWA */}
+            {/* Mobil Kart 5: Mobil Cihaz & PWA (Tam Genişlik) */}
             <div 
               onClick={() => setActiveTab('pwa_installs')}
-              className="p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex flex-col items-center justify-center text-center gap-0.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+              className="col-span-2 p-2.5 rounded-xl bg-[#0e131f] border border-slate-800/80 flex items-center justify-between px-3 shadow-sm active:scale-95 transition-all cursor-pointer"
             >
-              <div className="w-6 h-6 rounded-md bg-purple-500/10 text-purple-400 flex items-center justify-center">
-                <Smartphone className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                  <Smartphone className="w-4 h-4" />
+                </div>
+                <div className="flex flex-col text-left">
+                  <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-tight">Mobil &amp; PWA Trafiği</span>
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    {mobileCount.toLocaleString()} Mobil Hit • {pwaInstalls || recentPwaInstalls?.length || 0} PWA Cihaz
+                  </span>
+                </div>
               </div>
-              <span className="text-xl font-bold font-mono text-white tracking-tight leading-tight mt-0.5">
-                %{mobilePercentage}
-              </span>
-              <span className="text-[10px] font-semibold text-slate-300 uppercase tracking-tight">Mobil Cihaz</span>
-              <span className="text-[9px] text-slate-500 font-mono truncate max-w-full">
-                {mobileCount.toLocaleString()} Hit • {pwaInstalls || recentPwaInstalls?.length || 0} PWA
-              </span>
+              <div className="flex items-baseline gap-1 font-mono">
+                <span className="text-lg font-bold text-white tracking-tight">%{mobilePercentage}</span>
+                <span className="text-[10px] text-purple-400">mobil payı</span>
+              </div>
             </div>
           </div>
 
-          {/* 2. MASAÜSTÜ ÖZEL: Geniş 4'lü Executive Hero Strip */}
-          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            {/* 1. Tekil Ziyaret & Sayfa Hit */}
+          {/* 2. MASAÜSTÜ ÖZEL: Geniş 5'li Executive Hero Strip */}
+          <div className="hidden sm:grid sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3.5">
+            {/* 1. Tekil Ziyaret */}
             <div className="bg-[#0e131f] border border-slate-800/90 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-md hover:border-slate-700 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Tekil Ziyaret</span>
@@ -1317,13 +1338,35 @@ export default function BmsSecurePortalDashboard() {
                 <span className="text-2xl sm:text-3xl font-bold text-white font-mono tracking-tight">{uniqueVisitors.toLocaleString()}</span>
                 <span className="text-xs text-slate-400">kişi</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5">
-                <span>{totalPageviews.toLocaleString()} Sayfa Hit</span>
-                <span className="font-mono text-emerald-400">Ort. {uniqueVisitors > 0 ? (totalPageviews / uniqueVisitors).toFixed(1) : '1.0'} s/k</span>
+              <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5 font-mono">
+                <span>Net Ziyaretçi</span>
+                <span className="text-emerald-400">Gerçek Kişi</span>
               </div>
             </div>
 
-            {/* 2. WhatsApp & Randevu Dönüşümü */}
+            {/* 2. Toplam Sayfa Hit (Sayfa Gösterimi - Tekil Ziyaretin Hemen Yanında!) */}
+            <div 
+              className="bg-[#0e131f] border border-cyan-500/30 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-md"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-cyan-400">Sayfa Hit / Gösterim</span>
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                  <Eye className="w-4 h-4" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-bold text-cyan-300 font-mono tracking-tight">{totalPageviews.toLocaleString()}</span>
+                <span className="text-xs text-cyan-400/80 font-medium">sayfa hit</span>
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5 font-mono">
+                <span className="text-cyan-300">Kişi Başı {uniqueVisitors > 0 ? (totalPageviews / uniqueVisitors).toFixed(1) : '1.0'} Sayfa</span>
+                <span className="text-slate-500 text-[11px] font-sans">
+                  Genel Özet
+                </span>
+              </div>
+            </div>
+
+            {/* 3. WhatsApp & Randevu Dönüşümü */}
             <div 
               onClick={() => setActiveTab('whatsapp_leads')}
               className="bg-[#0e131f] border border-slate-800/90 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-md hover:border-emerald-500/40 cursor-pointer transition-all group"
@@ -1335,18 +1378,18 @@ export default function BmsSecurePortalDashboard() {
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-bold text-emerald-400 font-mono tracking-tight">{eventCounts.whatsappClicks.toLocaleString()}</span>
+                <span className="text-2xl sm:text-3xl font-bold text-emerald-400 font-mono tracking-tight">{(totalWhatsappLeadsCount || totalWhatsappClicks || eventCounts.whatsappClicks || 0).toLocaleString()}</span>
                 <span className="text-xs text-emerald-400/80 font-medium">dönüşüm</span>
               </div>
               <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5">
-                <span>CTR: %{uniqueVisitors > 0 ? ((eventCounts.whatsappClicks / uniqueVisitors) * 100).toFixed(1) : '0.0'}</span>
+                <span>CTR: %{uniqueVisitors > 0 ? (((totalWhatsappLeadsCount || totalWhatsappClicks || eventCounts.whatsappClicks || 0) / uniqueVisitors) * 100).toFixed(1) : '0.0'}</span>
                 <span className="text-emerald-400 font-medium group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
                   Randevular →
                 </span>
               </div>
             </div>
 
-            {/* 3. Organik Arama Trafiği (SEO) */}
+            {/* 4. Organik Arama Trafiği (SEO) */}
             <div className="bg-[#0e131f] border border-slate-800/90 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-md hover:border-slate-700 transition-colors">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Organik Arama (SEO)</span>
@@ -1358,13 +1401,13 @@ export default function BmsSecurePortalDashboard() {
                 <span className="text-2xl sm:text-3xl font-bold text-white font-mono tracking-tight">{((sources.yandex || 0) + (sources.google || 0)).toLocaleString()}</span>
                 <span className="text-xs text-slate-400">arama hiti</span>
               </div>
-              <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5">
-                <span className="text-red-400 font-mono">{sources.yandex || 0} Yandex</span>
-                <span className="text-blue-400 font-mono">{sources.google || 0} Google</span>
+              <div className="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800/80 pt-2.5 font-mono">
+                <span className="text-red-400">{sources.yandex || 0} Yandex</span>
+                <span className="text-blue-400">{sources.google || 0} Google</span>
               </div>
             </div>
 
-            {/* 4. Mobil Cihaz & PWA */}
+            {/* 5. Mobil Cihaz & PWA */}
             <div 
               onClick={() => setActiveTab('pwa_installs')}
               className="bg-[#0e131f] border border-slate-800/90 rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-md hover:border-slate-700 cursor-pointer transition-colors group"
