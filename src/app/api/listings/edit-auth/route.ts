@@ -142,7 +142,8 @@ export async function POST(req: NextRequest) {
           : updateData.hizmetMekanlari.split(',').map((s: string) => s.trim()).filter(Boolean);
       }
 
-      await listing.save();
+      if (listing.anonimYorumlar && Array.isArray(listing.anonimYorumlar)) { listing.markModified('anonimYorumlar'); }
+      await listing.save({ validateModifiedOnly: true });
 
       return NextResponse.json({
         success: true,

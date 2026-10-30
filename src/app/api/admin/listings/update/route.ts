@@ -67,7 +67,7 @@ export async function PUT(req: NextRequest) {
       }
     }
 
-    await listing.save();
+    await listing.save({ validateModifiedOnly: true });
 
     return NextResponse.json({ success: true, listing: JSON.parse(JSON.stringify(listing)) });
   } catch (error: any) {
