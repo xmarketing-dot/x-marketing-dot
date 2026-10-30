@@ -80,17 +80,6 @@ export default function PanelimPage() {
     whatsappNumara: '',
     ilSlug: 'istanbul',
     ilceSlug: 'kadikoy',
-    tamAd: '',
-    yas: 23,
-    boy: 173,
-    kilo: 54,
-    gogusOlcusu: '85C (Doğal)',
-    sacRengi: 'Kumral',
-    gozRengi: 'Ela',
-    uyruk: 'Türkiye',
-    diller: 'Türkçe, İngilizce',
-    hizmetMekanlari: 'Kendi Evi, Lüks Otel, Rezidans',
-    hakkindaBiyografi: '',
   });
   const [editPhotos, setEditPhotos] = useState<string[]>([]);
   const [editCoverIdx, setEditCoverIdx] = useState(0);
@@ -922,17 +911,6 @@ export default function PanelimPage() {
                               whatsappNumara: item.whatsappNumara || '',
                               ilSlug: item.ilSlug || 'istanbul',
                               ilceSlug: item.ilceSlug || 'kadikoy',
-                              tamAd: item.tamAd || '',
-                              yas: item.yas || 23,
-                              boy: item.boy || 173,
-                              kilo: item.kilo || 54,
-                              gogusOlcusu: item.gogusOlcusu || '85C (Doğal)',
-                              sacRengi: item.sacRengi || 'Kumral',
-                              gozRengi: item.gozRengi || 'Ela',
-                              uyruk: item.uyruk || 'Türkiye',
-                              diller: Array.isArray(item.diller) ? item.diller.join(', ') : (item.diller || 'Türkçe, İngilizce'),
-                              hizmetMekanlari: Array.isArray(item.hizmetMekanlari) ? item.hizmetMekanlari.join(', ') : (item.hizmetMekanlari || 'Kendi Evi, Lüks Otel, Rezidans'),
-                              hakkindaBiyografi: item.hakkindaBiyografi || '',
                             });
                           }}
                           className="flex-1 h-9 px-2 rounded-xl bg-[#090d14] hover:bg-slate-800 border border-slate-800 active:scale-95 text-slate-200 text-[11px] sm:text-xs font-medium flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
@@ -1586,136 +1564,6 @@ export default function PanelimPage() {
                         />
                       </label>
                     </div>
-                  </div>
-
-                  {/* Bölüm 4: Model Profil & Fiziksel Detaylar */}
-                  <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
-                    <span className="text-xs font-bold text-white font-heading uppercase tracking-wide flex items-center gap-1.5">
-                      <Crown className="w-4 h-4 text-slate-400" />
-                      <span>Model Profil &amp; Fiziksel Özellikler</span>
-                    </span>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Sahne / Tam Adı
-                        <input
-                          type="text"
-                          placeholder="Örn: Neslihan"
-                          value={editForm.tamAd}
-                          onChange={(e) => setEditForm({ ...editForm, tamAd: e.target.value })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Yaş
-                        <input
-                          type="number"
-                          value={editForm.yas}
-                          onChange={(e) => setEditForm({ ...editForm, yas: Number(e.target.value) || 20 })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Boy (cm)
-                        <input
-                          type="number"
-                          value={editForm.boy}
-                          onChange={(e) => setEditForm({ ...editForm, boy: Number(e.target.value) || 170 })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Kilo (kg)
-                        <input
-                          type="number"
-                          value={editForm.kilo}
-                          onChange={(e) => setEditForm({ ...editForm, kilo: Number(e.target.value) || 55 })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Göğüs Ölçüsü
-                        <input
-                          type="text"
-                          placeholder="Örn: 85C (Doğal)"
-                          value={editForm.gogusOlcusu}
-                          onChange={(e) => setEditForm({ ...editForm, gogusOlcusu: e.target.value })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Saç Rengi
-                        <input
-                          type="text"
-                          placeholder="Örn: Kumral"
-                          value={editForm.sacRengi}
-                          onChange={(e) => setEditForm({ ...editForm, sacRengi: e.target.value })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Göz Rengi
-                        <input
-                          type="text"
-                          placeholder="Örn: Ela"
-                          value={editForm.gozRengi}
-                          onChange={(e) => setEditForm({ ...editForm, gozRengi: e.target.value })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Uyruk
-                        <input
-                          type="text"
-                          placeholder="Örn: Türkiye"
-                          value={editForm.uyruk}
-                          onChange={(e) => setEditForm({ ...editForm, uyruk: e.target.value })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Diller
-                        <input
-                          type="text"
-                          placeholder="Örn: Türkçe, İngilizce"
-                          value={editForm.diller}
-                          onChange={(e) => setEditForm({ ...editForm, diller: e.target.value })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-
-                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
-                        Hizmet Mekanları
-                        <input
-                          type="text"
-                          placeholder="Örn: Kendi Evi, Lüks Otel, Rezidans"
-                          value={editForm.hizmetMekanlari}
-                          onChange={(e) => setEditForm({ ...editForm, hizmetMekanlari: e.target.value })}
-                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
-                        />
-                      </label>
-                    </div>
-
-                    <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400 mt-1">
-                      Hakkında Biyografi / Özel Notlar
-                      <textarea
-                        rows={3}
-                        value={editForm.hakkindaBiyografi}
-                        onChange={(e) => setEditForm({ ...editForm, hakkindaBiyografi: e.target.value })}
-                        placeholder="Modelin kendini tanıttığı özel notlar..."
-                        className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 transition-colors leading-relaxed"
-                      />
-                    </label>
                   </div>
 
                   {/* Sticky Executive Footer */}
