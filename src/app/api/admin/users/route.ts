@@ -165,24 +165,42 @@ export async function DELETE(req: NextRequest) {
     if (user) {
       const phoneDigits = (user.telefon || '').replace(/\D/g, '');
       
-      // Cascade delete user's listings
-      await ListingModel.deleteMany({
-        $or: [
-          { kullaniciId: user._id },
-          { kullaniciId: user._id.toString() },
-          ...(user.telefon ? [{ whatsappNumara: user.telefon }] : []),
-          ...(phoneDigits.length >= 10 ? [{ whatsappNumara: { $regex: phoneDigits.slice(-10) } }] : []),
-        ],
-      });
+      // KULLANICI SİLİNDİĞİNDE İLANLAR ASLA SİLİNMEZ!
+      // İlanları güvenli şekilde ana yönetici (@rafet) hesabına aktar
+      const rafetUser = await UserModel.findOne({ kullaniciAdi: 'rafet' });
+      await ListingModel.updateMany(
+        {
+          $or: [
+            { kullaniciId: user._id },
+            { kullaniciId: user._id.toString() },
+            ...(user.telefon ? [{ whatsappNumara: user.telefon }] : []),
+            ...(phoneDigits.length >= 10 ? [{ whatsappNumara: { $regex: phoneDigits.slice(-10) } }] : []),
+          ],
+        },
+        {
+          $set: {
+            kullaniciId: rafetUser ? rafetUser._id : null
+          }
+        }
+      );
 
-      // Cascade delete user's banner ads
-      await BannerAdModel.deleteMany({
-        $or: [
-          ...(user.telefon ? [{ musteriIletisim: user.telefon }] : []),
-          ...(phoneDigits.length >= 10 ? [{ musteriIletisim: { $regex: phoneDigits.slice(-10) } }] : []),
-          ...(user.kullaniciAdi ? [{ musteriIletisim: user.kullaniciAdi }] : []),
-        ],
-      });
+      // Banner reklamlarını da rafet kullanıcısına aktar (silme)
+      if (rafetUser) {
+        await BannerAdModel.updateMany(
+          {
+            $or: [
+              ...(user.telefon ? [{ musteriIletisim: user.telefon }] : []),
+              ...(phoneDigits.length >= 10 ? [{ musteriIletisim: { $regex: phoneDigits.slice(-10) } }] : []),
+              ...(user.kullaniciAdi ? [{ musteriIletisim: user.kullaniciAdi }] : []),
+            ],
+          },
+          {
+            $set: {
+              musteriIletisim: rafetUser.telefon || rafetUser.kullaniciAdi
+            }
+          }
+        );
+      }
 
       await UserModel.findByIdAndDelete(id);
     }
