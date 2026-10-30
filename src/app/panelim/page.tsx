@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   User as UserIcon,
+  ImageIcon,
+  Trash2,
   Lock,
   Sparkles,
   Edit3,
@@ -78,8 +80,6 @@ export default function PanelimPage() {
     whatsappNumara: '',
     ilSlug: 'istanbul',
     ilceSlug: 'kadikoy',
-    fiyat: 2500,
-    paraBirimi: 'TL',
     tamAd: '',
     yas: 23,
     boy: 173,
@@ -417,6 +417,17 @@ export default function PanelimPage() {
     const activePass = currentUser.password || currentUser.panelSifresi || '';
     const activeIdent = currentUser.identifier || currentUser.telefon || '';
 
+    // Auto-normalize phone number
+    let cleanWa = (editForm.whatsappNumara || '').trim();
+    const digits = cleanWa.replace(/\D/g, '');
+    if (digits.length === 10 && digits.startsWith('5')) {
+      cleanWa = '0' + digits;
+    } else if (digits.length === 11 && digits.startsWith('05')) {
+      cleanWa = digits;
+    } else if (digits.length === 12 && digits.startsWith('905')) {
+      cleanWa = '0' + digits.slice(2);
+    }
+
     try {
       const res = await fetch('/api/listings/edit-auth', {
         method: 'POST',
@@ -430,6 +441,7 @@ export default function PanelimPage() {
           listingId: editingListing._id,
           updateData: {
             ...editForm,
+            whatsappNumara: cleanWa,
             fotograflar: editPhotos.map(url => ({ url })),
             anaFotograf: { url: editPhotos[editCoverIdx] || editPhotos[0] || '' }
           }
@@ -439,7 +451,19 @@ export default function PanelimPage() {
       const data = await res.json();
       if (data.success) {
         setEditingListing(null);
-        fetchListings(activeIdent, activePass);
+        // If phone changed, sync currentUser
+        if (cleanWa && currentUser.telefon !== cleanWa) {
+          const updatedUser = {
+            ...currentUser,
+            telefon: cleanWa,
+            identifier: (currentUser.identifier === currentUser.telefon) ? cleanWa : currentUser.identifier
+          };
+          setCurrentUser(updatedUser);
+          localStorage.setItem('panel_user_session', JSON.stringify(updatedUser));
+          fetchListings(updatedUser.identifier, activePass);
+        } else {
+          fetchListings(activeIdent, activePass);
+        }
       } else {
         alert(data.error || 'Güncelleme yapılamadı.');
       }
@@ -887,16 +911,17 @@ export default function PanelimPage() {
                         <button
                           onClick={() => {
                             setEditingListing(item);
-                            setEditPhotos((item.fotograflar || []).map((f: any) => typeof f === 'string' ? f : f.url).filter(Boolean));
-                            setEditCoverIdx(0);
+                            const photos = (item.fotograflar || []).map((f: any) => typeof f === 'string' ? f : f.url).filter(Boolean);
+                            setEditPhotos(photos);
+                            const coverUrl = item.anaFotograf?.url || (typeof item.anaFotograf === 'string' ? item.anaFotograf : '') || photos[0] || '';
+                            const foundCoverIdx = photos.findIndex((u: string) => u === coverUrl);
+                            setEditCoverIdx(foundCoverIdx >= 0 ? foundCoverIdx : 0);
                             setEditForm({
                               baslik: item.baslik || '',
                               aciklama: item.aciklama || '',
                               whatsappNumara: item.whatsappNumara || '',
                               ilSlug: item.ilSlug || 'istanbul',
                               ilceSlug: item.ilceSlug || 'kadikoy',
-                              fiyat: item.fiyat || 2500,
-                              paraBirimi: item.paraBirimi || 'TL',
                               tamAd: item.tamAd || '',
                               yas: item.yas || 23,
                               boy: item.boy || 173,
@@ -1359,17 +1384,37 @@ export default function PanelimPage() {
 
       </main>
 
-      {/* ── MODAL: İLAN DÜZENLE ──────────────── */}
+      {/* ── MODAL: İLAN DÜZENLE (EXECUTIVE ARCHITECTURE - İLANLAR SAYFASIYLA %100 AYNI MODERN TASARIM) ── */}
       {editingListing && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-fadeIn">
-          <div className="w-full max-w-lg bg-[#0c1017] border border-slate-800 rounded-t-2xl sm:rounded-2xl p-4 sm:p-5 flex flex-col gap-3.5 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="w-full max-w-4xl bg-[#0c1017] border border-slate-800 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
 
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <span className="font-semibold text-sm text-white flex items-center gap-2">
-                <Edit3 className="w-4 h-4 text-emerald-400" />
-                <span>İlanı Düzenle</span>
-              </span>
-              <button onClick={() => setEditingListing(null)} className="p-1 text-slate-400 hover:text-white rounded-lg">
+            {/* Sticky Executive Header */}
+            <div className="px-5 py-4 bg-[#0c1017]/95 backdrop-blur-md border-b border-slate-800 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 flex items-center justify-center font-bold shrink-0">
+                  <Edit3 className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-heading font-bold text-base sm:text-lg text-white truncate">
+                      İlanı Düzenle &amp; Görseller
+                    </h2>
+                    <span className="px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400 font-mono text-[10px]">
+                      #{(editingListing._id || '').toString().slice(-6)}
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-400 font-medium truncate mt-0.5">
+                    {editingListing.baslik}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setEditingListing(null)}
+                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 transition-colors shrink-0 cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -1378,144 +1423,336 @@ export default function PanelimPage() {
               const selectedEditProv = turkeyProvinces.find((p) => p.ilSlug === editForm.ilSlug) || turkeyProvinces[0];
 
               return (
-                <form onSubmit={handleSaveEdit} className="flex flex-col gap-3 text-left">
-                  <label className="flex flex-col gap-1 text-xs font-medium text-slate-300">
-                    İlan Başlığı
-                    <input
-                      type="text"
-                      required
-                      value={editForm.baslik}
-                      onChange={(e) => setEditForm({ ...editForm, baslik: e.target.value })}
-                      className="px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-500/60"
-                    />
-                  </label>
+                <form onSubmit={handleSaveEdit} className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-slate-800">
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <label className="flex flex-col gap-1 text-xs font-medium text-slate-300">
-                      Şehir
-                      <select
-                        value={editForm.ilSlug}
-                        onChange={(e) => {
-                          const newIl = e.target.value;
-                          const prov = turkeyProvinces.find((p) => p.ilSlug === newIl);
-                          setEditForm({
-                            ...editForm,
-                            ilSlug: newIl,
-                            ilceSlug: prov?.ilceler?.[0]?.slug || 'merkez',
-                          });
-                        }}
-                        className="px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-500/60"
-                      >
-                        {turkeyProvinces.map((prov) => (
-                          <option key={prov.ilSlug} value={prov.ilSlug}>{prov.il}</option>
-                        ))}
-                      </select>
-                    </label>
+                  {/* Bölüm 1: Fotoğraf Galerisi & Kapak Görseli */}
+                  <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-slate-400" />
+                        <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                          Görsel Galerisi ({editPhotos.length})
+                        </span>
+                      </div>
 
-                    <label className="flex flex-col gap-1 text-xs font-medium text-slate-300">
-                      İlçe
-                      <select
-                        value={editForm.ilceSlug}
-                        onChange={(e) => setEditForm({ ...editForm, ilceSlug: e.target.value })}
-                        className="px-3 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-500/60"
-                      >
-                        {selectedEditProv.ilceler.map((ilce) => (
-                          <option key={ilce.slug} value={ilce.slug}>{ilce.ad}</option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
+                      <label className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 font-medium text-xs cursor-pointer flex items-center gap-1.5 transition-colors">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleEditFileUpload}
+                          className="hidden"
+                          disabled={uploadingEditPhotos}
+                        />
+                        {uploadingEditPhotos ? <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-400" /> : <Upload className="w-3.5 h-3.5" />}
+                        <span>+ Fotoğraf Yükle</span>
+                      </label>
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <label className="flex flex-col gap-1 text-xs font-medium text-slate-300">
-                      WhatsApp
-                      <input
-                        type="tel"
-                        required
-                        value={editForm.whatsappNumara}
-                        onChange={(e) => setEditForm({ ...editForm, whatsappNumara: e.target.value })}
-                        className="px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-500/60 font-mono"
-                      />
-                    </label>
-
-                    <label className="flex flex-col gap-1 text-xs font-medium text-slate-300">
-                      Fiyat (TL)
-                      <input
-                        type="number"
-                        value={editForm.fiyat}
-                        onChange={(e) => setEditForm({ ...editForm, fiyat: Number(e.target.value) || 0 })}
-                        className="px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-500/60 font-mono"
-                      />
-                    </label>
-                  </div>
-
-                  <label className="flex flex-col gap-1 text-xs font-medium text-slate-300">
-                    Açıklama
-                    <textarea
-                      required
-                      rows={3}
-                      value={editForm.aciklama}
-                      onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
-                      className="px-3.5 py-2.5 rounded-xl bg-[#070a0f] border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-500/60 resize-none leading-relaxed"
-                    />
-                  </label>
-
-                  {/* Fotoğraflar */}
-                  <div className="flex flex-col gap-2">
-                    <label className="p-3 border border-dashed border-slate-800 rounded-xl bg-[#070a0f] flex items-center justify-center gap-2 cursor-pointer hover:border-emerald-500/50 transition-colors">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleEditFileUpload}
-                        className="hidden"
-                      />
-                      {uploadingEditPhotos ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 text-emerald-400" />
-                          <span className="text-xs font-medium text-slate-300">Fotoğraf Ekle ({editPhotos.length})</span>
-                        </>
-                      )}
-                    </label>
-
-                    {editPhotos.length > 0 && (
-                      <div className="grid grid-cols-4 gap-2">
-                        {editPhotos.map((url, idx) => (
-                          <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-slate-800">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={url} alt="" className="w-full h-full object-cover" />
-                            <button
-                              type="button"
-                              onClick={() => removeEditPhoto(idx)}
-                              className="absolute top-1 right-1 p-1 bg-rose-600 rounded text-white text-[8px]"
+                    {editPhotos.length === 0 ? (
+                      <div className="p-6 text-center text-xs text-slate-500 border border-dashed border-slate-800 rounded-xl">
+                        Henüz fotoğraf yüklenmemiş. Yukarıdaki butondan fotoğraf ekleyebilirsiniz.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5 mt-1">
+                        {editPhotos.map((url, idx) => {
+                          const isCover = idx === editCoverIdx;
+                          return (
+                            <div
+                              key={idx}
+                              className={`relative rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1.5 h-28 sm:h-32 bg-[#0c1017] transition-all group ${
+                                isCover ? 'border-emerald-500 shadow-sm shadow-emerald-500/20' : 'border-slate-800 hover:border-slate-700'
+                              }`}
                             >
-                              ✕
-                            </button>
-                          </div>
-                        ))}
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={url} alt={`Resim ${idx}`} className="absolute inset-0 w-full h-full object-cover z-0" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-10" />
+
+                              <div className="relative z-20 flex items-center justify-between w-full">
+                                {isCover ? (
+                                  <span className="px-2 py-0.5 rounded-md bg-emerald-500 text-slate-950 font-bold text-[9px] flex items-center gap-0.5 shadow-sm">
+                                    <Star className="w-2.5 h-2.5 fill-slate-950" />
+                                    Kapak
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditCoverIdx(idx)}
+                                    className="px-2 py-0.5 rounded-md bg-slate-950/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 font-medium text-[9px] transition-colors cursor-pointer"
+                                  >
+                                    Kapak Yap
+                                  </button>
+                                )}
+
+                                <button
+                                  type="button"
+                                  onClick={() => removeEditPhoto(idx)}
+                                  className="p-1 rounded-md bg-rose-500/80 hover:bg-rose-500 text-white transition-colors cursor-pointer"
+                                  title="Fotoğrafı Kaldır"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => setEditingListing(null)}
-                      className="w-1/3 py-2.5 rounded-xl bg-[#070a0f] hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-medium cursor-pointer"
-                    >
-                      Vazgeç
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={savingEdit}
-                      className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs uppercase shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      {savingEdit ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      <span>Kaydet</span>
-                    </button>
+                  {/* Bölüm 2: Temel Başlık & Açıklama */}
+                  <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                    <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                      İlan Temel Bilgileri
+                    </span>
+
+                    <div className="flex flex-col gap-3">
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        <span>İlan Başlığı <strong className="text-rose-400">*</strong></span>
+                        <input
+                          type="text"
+                          required
+                          value={editForm.baslik}
+                          onChange={(e) => setEditForm({ ...editForm, baslik: e.target.value })}
+                          placeholder="Örn: Sultanbeyli Neslihan VIP"
+                          className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 transition-colors"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        <span>Detaylı Açıklama Metni <strong className="text-rose-400">*</strong></span>
+                        <textarea
+                          rows={4}
+                          required
+                          value={editForm.aciklama}
+                          onChange={(e) => setEditForm({ ...editForm, aciklama: e.target.value })}
+                          placeholder="İlan profil açıklaması..."
+                          className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 transition-colors leading-relaxed"
+                        />
+                      </label>
+                    </div>
                   </div>
+
+                  {/* Bölüm 3: Konum & İletişim */}
+                  <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                    <span className="text-xs font-bold text-white font-heading uppercase tracking-wide">
+                      Konum &amp; İletişim
+                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        <span>İl <strong className="text-rose-400">*</strong></span>
+                        <select
+                          value={editForm.ilSlug}
+                          onChange={(e) => {
+                            const newIl = e.target.value;
+                            const prov = turkeyProvinces.find((p) => p.ilSlug === newIl);
+                            setEditForm({
+                              ...editForm,
+                              ilSlug: newIl,
+                              ilceSlug: prov?.ilceler?.[0]?.slug || 'merkez',
+                            });
+                          }}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600"
+                        >
+                          {turkeyProvinces.map((p) => (
+                            <option key={p.ilSlug} value={p.ilSlug}>{p.il}</option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        <span>İlçe <strong className="text-rose-400">*</strong></span>
+                        <select
+                          value={editForm.ilceSlug}
+                          onChange={(e) => setEditForm({ ...editForm, ilceSlug: e.target.value })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600"
+                        >
+                          {selectedEditProv.ilceler.map((d) => (
+                            <option key={d.slug} value={d.slug}>{d.ad}</option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        <span>WhatsApp Numarası <strong className="text-rose-400">*</strong></span>
+                        <input
+                          type="text"
+                          required
+                          value={editForm.whatsappNumara}
+                          onChange={(e) => setEditForm({ ...editForm, whatsappNumara: e.target.value })}
+                          placeholder="05xxxxxxxxx"
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white font-mono text-xs focus:outline-none focus:border-slate-600"
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Bölüm 4: Model Profil & Fiziksel Detaylar */}
+                  <div className="p-4 rounded-xl bg-[#070a0f] border border-slate-800 flex flex-col gap-3">
+                    <span className="text-xs font-bold text-white font-heading uppercase tracking-wide flex items-center gap-1.5">
+                      <Crown className="w-4 h-4 text-slate-400" />
+                      <span>Model Profil &amp; Fiziksel Özellikler</span>
+                    </span>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Sahne / Tam Adı
+                        <input
+                          type="text"
+                          placeholder="Örn: Neslihan"
+                          value={editForm.tamAd}
+                          onChange={(e) => setEditForm({ ...editForm, tamAd: e.target.value })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Yaş
+                        <input
+                          type="number"
+                          value={editForm.yas}
+                          onChange={(e) => setEditForm({ ...editForm, yas: Number(e.target.value) || 20 })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Boy (cm)
+                        <input
+                          type="number"
+                          value={editForm.boy}
+                          onChange={(e) => setEditForm({ ...editForm, boy: Number(e.target.value) || 170 })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Kilo (kg)
+                        <input
+                          type="number"
+                          value={editForm.kilo}
+                          onChange={(e) => setEditForm({ ...editForm, kilo: Number(e.target.value) || 55 })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Göğüs Ölçüsü
+                        <input
+                          type="text"
+                          placeholder="Örn: 85C (Doğal)"
+                          value={editForm.gogusOlcusu}
+                          onChange={(e) => setEditForm({ ...editForm, gogusOlcusu: e.target.value })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Saç Rengi
+                        <input
+                          type="text"
+                          placeholder="Örn: Kumral"
+                          value={editForm.sacRengi}
+                          onChange={(e) => setEditForm({ ...editForm, sacRengi: e.target.value })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Göz Rengi
+                        <input
+                          type="text"
+                          placeholder="Örn: Ela"
+                          value={editForm.gozRengi}
+                          onChange={(e) => setEditForm({ ...editForm, gozRengi: e.target.value })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Uyruk
+                        <input
+                          type="text"
+                          placeholder="Örn: Türkiye"
+                          value={editForm.uyruk}
+                          onChange={(e) => setEditForm({ ...editForm, uyruk: e.target.value })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Diller
+                        <input
+                          type="text"
+                          placeholder="Örn: Türkçe, İngilizce"
+                          value={editForm.diller}
+                          onChange={(e) => setEditForm({ ...editForm, diller: e.target.value })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+
+                      <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400">
+                        Hizmet Mekanları
+                        <input
+                          type="text"
+                          placeholder="Örn: Kendi Evi, Lüks Otel, Rezidans"
+                          value={editForm.hizmetMekanlari}
+                          onChange={(e) => setEditForm({ ...editForm, hizmetMekanlari: e.target.value })}
+                          className="px-3 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-slate-200 text-xs focus:outline-none focus:border-slate-600 font-medium"
+                        />
+                      </label>
+                    </div>
+
+                    <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-400 mt-1">
+                      Hakkında Biyografi / Özel Notlar
+                      <textarea
+                        rows={3}
+                        value={editForm.hakkindaBiyografi}
+                        onChange={(e) => setEditForm({ ...editForm, hakkindaBiyografi: e.target.value })}
+                        placeholder="Modelin kendini tanıttığı özel notlar..."
+                        className="px-3.5 py-2.5 rounded-xl bg-[#0c1017] border border-slate-800 text-white text-xs focus:outline-none focus:border-slate-600 transition-colors leading-relaxed"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Sticky Executive Footer */}
+                  <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-3 shrink-0">
+                    <div className="text-[11px] font-mono text-slate-400 hidden sm:block">
+                      İlan Durumu: <span className="text-emerald-400 font-semibold">{editingListing.status === 'yayinda' ? '🟢 Yayında' : '⏳ Kontrol Ediliyor'}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setEditingListing(null)}
+                        className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-medium transition-colors cursor-pointer"
+                      >
+                        İptal
+                      </button>
+
+                      <button
+                        type="submit"
+                        disabled={savingEdit || uploadingEditPhotos}
+                        className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md flex items-center justify-center gap-1.5 uppercase font-heading active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {savingEdit ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span>Kaydediliyor...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-3.5 h-3.5" />
+                            <span>Değişiklikleri Kaydet</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
                 </form>
               );
             })()}

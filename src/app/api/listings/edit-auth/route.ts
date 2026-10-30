@@ -58,6 +58,7 @@ export async function POST(req: NextRequest) {
         $or: [
           { telefon: rawIdent },
           { telefon: cleanPhone },
+          ...(cleanPhone.length >= 10 ? [{ telefon: { $regex: cleanPhone.slice(-10) } }] : []),
           { email: rawIdent.toLowerCase() },
           { kullaniciAdi: rawIdent.toLowerCase() },
         ],
@@ -86,7 +87,24 @@ export async function POST(req: NextRequest) {
 
       if (updateData.baslik) listing.baslik = updateData.baslik.trim();
       if (updateData.aciklama) listing.aciklama = updateData.aciklama.trim();
-      if (updateData.whatsappNumara) listing.whatsappNumara = updateData.whatsappNumara.trim();
+      if (updateData.whatsappNumara) {
+        let cleanNum = updateData.whatsappNumara.toString().trim();
+        const digits = cleanNum.replace(/\D/g, '');
+        if (digits.length === 10 && digits.startsWith('5')) {
+          cleanNum = '0' + digits;
+        } else if (digits.length === 11 && digits.startsWith('05')) {
+          cleanNum = digits;
+        } else if (digits.length === 12 && digits.startsWith('905')) {
+          cleanNum = '0' + digits.slice(2);
+        }
+        listing.whatsappNumara = cleanNum;
+
+        if (listing.kullaniciId) {
+          await UserModel.findByIdAndUpdate(listing.kullaniciId, {
+            $set: { telefon: cleanNum }
+          }).catch(() => {});
+        }
+      }
       if (updateData.ilSlug) listing.ilSlug = updateData.ilSlug;
       if (updateData.ilceSlug) listing.ilceSlug = updateData.ilceSlug;
       if (updateData.fiyat !== undefined) listing.fiyat = Number(updateData.fiyat) || 0;
@@ -94,6 +112,13 @@ export async function POST(req: NextRequest) {
       if (updateData.fotograflar && Array.isArray(updateData.fotograflar) && updateData.fotograflar.length > 0) {
         listing.fotograflar = updateData.fotograflar;
         listing.anaFotograf = updateData.anaFotograf || updateData.fotograflar[0];
+      }
+
+      // Sanitize anonimYorumlar to prevent any validation errors on save
+      if (listing.anonimYorumlar && Array.isArray(listing.anonimYorumlar)) {
+        listing.anonimYorumlar = listing.anonimYorumlar.filter(
+          (c: any) => c && typeof c.yorum === 'string' && c.yorum.trim().length > 0
+        );
       }
 
       // Detay profil alanları

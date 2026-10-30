@@ -96,7 +96,7 @@ const PhotoSchema = new Schema<IPhoto>({
 
 const CommentSchema = new Schema<IComment>({
   yazar: { type: String, default: 'Anonim Kullanıcı' },
-  yorum: { type: String, required: true },
+  yorum: { type: String, default: '' },
   puan: { type: Number, default: 5, min: 1, max: 5 },
   onayli: { type: Boolean, default: true },
   userIp: { type: String },

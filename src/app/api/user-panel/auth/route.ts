@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
         { kullaniciAdi: rawIdent },
         { telefon: rawIdent },
         { telefon: cleanPhone },
+        ...(cleanPhone.length >= 10 ? [{ telefon: { $regex: cleanPhone.slice(-10) } }] : []),
         { email: cleanIdent },
       ],
     });
@@ -200,7 +201,10 @@ export async function POST(req: NextRequest) {
     ])).filter(Boolean);
 
     const listingMatches = await ListingModel.find({
-      whatsappNumara: { $in: phoneVariants },
+      $or: [
+        { whatsappNumara: { $in: phoneVariants } },
+        ...(cleanPhone.length >= 10 ? [{ whatsappNumara: { $regex: cleanPhone.slice(-10) } }] : [])
+      ],
       panelSifresi: cleanPass,
       status: { $in: ['yayinda', 'onay_bekliyor', 'odeme_bekliyor', 'taslak'] },
     }).sort({ createdAt: -1 });
