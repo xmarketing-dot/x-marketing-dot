@@ -250,24 +250,58 @@ export async function PATCH(req: NextRequest) {
           const liveListingUrl = `${origin}/ilan/${updatedListing.slug}`;
           const panelUrl = `${origin}/panelim`;
 
-          // Panel Kullanıcı Adı Çözümleme
-          let panelUsername = updatedListing.whatsappNumara || '';
-          if (updatedListing.kullaniciId) {
-            try {
-              const UserModel = (await import('@/models/User')).default;
+          // Panel Kullanıcı Adı Çözümleme (Kesinlikle Gerçek Kullanıcı Adı)
+          let panelUsername = '';
+
+          try {
+            const UserModel = (await import('@/models/User')).default;
+
+            // 1. İlanın bağlı olduğu UserModel varsa doğrudan kullaniciAdi al
+            if (updatedListing.kullaniciId) {
               const linkedUser = await UserModel.findById(updatedListing.kullaniciId).select('kullaniciAdi telefon').lean();
               if (linkedUser && (linkedUser as any).kullaniciAdi) {
                 panelUsername = (linkedUser as any).kullaniciAdi;
               }
-            } catch (uErr) {}
-          }
-          if (!panelUsername) {
-            try {
-              const threadObj = await ChatThreadModel.findById(targetThreadId).select('username kullaniciTelefon').lean();
-              if (threadObj) {
-                panelUsername = (threadObj as any).username || (threadObj as any).kullaniciTelefon || '';
+            }
+
+            // 2. Eğer hala yoksa telefon numarası üzerinden UserModel ara
+            if (!panelUsername && updatedListing.whatsappNumara) {
+              const cleanPhone = updatedListing.whatsappNumara.replace(/\D/g, '');
+              const userByPhone = await UserModel.findOne({
+                $or: [
+                  { telefon: updatedListing.whatsappNumara },
+                  { telefon: cleanPhone },
+                  ...(cleanPhone.length >= 10 ? [{ telefon: { $regex: cleanPhone.slice(-10) } }] : [])
+                ]
+              }).select('kullaniciAdi').lean();
+              if (userByPhone && (userByPhone as any).kullaniciAdi) {
+                panelUsername = (userByPhone as any).kullaniciAdi;
               }
-            } catch (tErr) {}
+            }
+
+            // 3. Thread üzerinde kayıtlı username var mı?
+            if (!panelUsername) {
+              const threadObj = await ChatThreadModel.findById(targetThreadId).select('username').lean();
+              if (threadObj && (threadObj as any).username) {
+                panelUsername = (threadObj as any).username;
+              }
+            }
+
+            // 4. Eğer hiçbir kullanıcı hesabı bulunamadıysa, anında otomatik UserModel hesabı oluştur
+            if (!panelUsername) {
+              const cleanPhone = (updatedListing.whatsappNumara || '').replace(/\D/g, '');
+              const autoUsername = `uye_${cleanPhone ? cleanPhone.slice(-6) : Math.random().toString(36).slice(2, 8)}`;
+              const createdUser = await UserModel.create({
+                ad: updatedListing.baslik,
+                kullaniciAdi: autoUsername,
+                telefon: updatedListing.whatsappNumara || '',
+                sifreHash: updatedListing.panelSifresi || '123456',
+              });
+              await ListingModel.findByIdAndUpdate(updatedListing._id, { kullaniciId: createdUser._id });
+              panelUsername = autoUsername;
+            }
+          } catch (userErr) {
+            console.error('Panel username resolution error:', userErr);
           }
 
           const expiryStr = calculatedExpiry ? new Date(calculatedExpiry).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '7 Gün';
@@ -286,7 +320,9 @@ ${liveListingUrl}
 
 🔑 İlan Yönetim Paneliniz:
 ${panelUrl}
-${panelUsername ? `Kullanıcı Adı: ${panelUsername}\n` : ''}${updatedListing.panelSifresi ? `Şifreniz: ${updatedListing.panelSifresi}\n` : ''}
+
+Kullanıcı Adı: ${panelUsername}
+${updatedListing.panelSifresi ? `Şifreniz: ${updatedListing.panelSifresi}\n` : ''}
 Bol kazançlar ve bol müşteriler dileriz! 🚀💎`;
 
           const newMsg = await ChatMessageModel.create({
