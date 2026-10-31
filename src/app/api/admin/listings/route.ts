@@ -246,9 +246,29 @@ export async function PATCH(req: NextRequest) {
         }
 
         if (targetThreadId) {
-          const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 'https://besteskort.com';
+          const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/').slice(0, 3).join('/') || 'https://besteskort.online';
           const liveListingUrl = `${origin}/ilan/${updatedListing.slug}`;
           const panelUrl = `${origin}/panelim`;
+
+          // Panel Kullanıcı Adı Çözümleme
+          let panelUsername = updatedListing.whatsappNumara || '';
+          if (updatedListing.kullaniciId) {
+            try {
+              const UserModel = (await import('@/models/User')).default;
+              const linkedUser = await UserModel.findById(updatedListing.kullaniciId).select('kullaniciAdi telefon').lean();
+              if (linkedUser && (linkedUser as any).kullaniciAdi) {
+                panelUsername = (linkedUser as any).kullaniciAdi;
+              }
+            } catch (uErr) {}
+          }
+          if (!panelUsername) {
+            try {
+              const threadObj = await ChatThreadModel.findById(targetThreadId).select('username kullaniciTelefon').lean();
+              if (threadObj) {
+                panelUsername = (threadObj as any).username || (threadObj as any).kullaniciTelefon || '';
+              }
+            } catch (tErr) {}
+          }
 
           const expiryStr = calculatedExpiry ? new Date(calculatedExpiry).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '7 Gün';
           const tierStr = (updatedListing.rozet || 'ultravip').toUpperCase();
@@ -266,7 +286,7 @@ ${liveListingUrl}
 
 🔑 İlan Yönetim Paneliniz:
 ${panelUrl}
-${updatedListing.panelSifresi ? `Şifreniz: ${updatedListing.panelSifresi}\n` : ''}
+${panelUsername ? `Kullanıcı Adı: ${panelUsername}\n` : ''}${updatedListing.panelSifresi ? `Şifreniz: ${updatedListing.panelSifresi}\n` : ''}
 Bol kazançlar ve bol müşteriler dileriz! 🚀💎`;
 
           const newMsg = await ChatMessageModel.create({
@@ -281,6 +301,7 @@ Bol kazançlar ve bol müşteriler dileriz! 🚀💎`;
             listingId: updatedListing._id.toString(),
             listingBaslik: updatedListing.baslik,
             listingSlug: updatedListing.slug,
+            username: panelUsername || undefined,
             password: updatedListing.panelSifresi || undefined,
             sonMesajOzeti: '🎉 Tebrikler! İlanınız onaylandı ve yayına alındı.',
             updatedAt: new Date(),
