@@ -3457,176 +3457,259 @@ export default function AdminListingsPage() {
         </div>
       )}
 
-      {/* ── 7. SIFIRDAN YENİ VİP MODEL & İLAN EKLEME MODALI (MOBİL UYUMLU) ──────────────── */}
+      {/* ── 7. SIFIRDAN YENİ VİP MODEL & İLAN EKLEME MODALI (MODERN LÜKS SİBER TASARIM) ──────────────── */}
       {showCreateModal && (
         <div
           onClick={() => setShowCreateModal(false)}
-          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 selection:bg-amber-500 selection:text-slate-950"
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 selection:bg-rose-500 selection:text-white animate-in fade-in duration-200"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl bg-[#0c1017] border-2 border-amber-500/60 rounded-2xl sm:rounded-2xl p-4 sm:p-6 shadow-2xl flex flex-col gap-4 text-left max-h-[92vh] overflow-y-auto"
+            className="w-full max-w-3xl bg-[#0c101b] border border-white/15 rounded-3xl p-5 sm:p-7 shadow-2xl flex flex-col gap-5 text-left max-h-[92vh] overflow-y-auto backdrop-blur-xl relative [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-white/10 [&::-webkit-scrollbar-track]:bg-transparent"
           >
+            {/* Arka Plan Üst Işıma */}
+            <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-96 h-28 bg-gradient-to-r from-amber-500/15 via-rose-500/15 to-emerald-500/10 blur-3xl pointer-events-none rounded-full" />
+
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shrink-0">
-                  <Crown className="w-4 h-4 stroke-[2.5]" />
+            <div className="relative z-10 flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/25 shrink-0">
+                  <Crown className="w-5 h-5 stroke-[2.5]" />
                 </div>
                 <div className="flex flex-col">
-                  <h3 className="font-heading font-black text-sm sm:text-base text-white">
-                    Sıfırdan Yeni VIP Model Ekle
-                  </h3>
-                  <span className="text-[10px] text-amber-400 font-bold">
-                    Özel Profil, Biyografi &amp; Fotoğraflar
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-heading font-black text-base sm:text-lg text-white">
+                      Sıfırdan Yeni VIP Model &amp; İlan Ekle
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-black uppercase tracking-wider font-heading">
+                      YÖNETİCİ ÖZEL
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-400 font-medium mt-0.5">
+                    Türkiye geneli ve Kıbrıs için anında yayına alınacak VIP profil &amp; ilan kartı
                   </span>
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="p-1.5 rounded-xl bg-slate-900 text-slate-400 hover:text-white"
+                className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white border border-white/10 transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="flex flex-col gap-3 text-xs font-heading">
+            <form onSubmit={handleCreateSubmit} className="relative z-10 flex flex-col gap-4 text-xs font-heading">
 
-              {/* Başlık & Model Sahne Adı */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                  İlan Başlığı *
-                  <input
-                    type="text"
-                    required
-                    placeholder="Örn: Beylikdüzü VIP Merve"
-                    value={createForm.baslik}
-                    onChange={(e) => setCreateForm({ ...createForm, baslik: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
+              {/* KART 1: Temel İlan & Sahne Kimliği */}
+              <div className="p-4 rounded-2xl bg-[#070a13] border border-white/10 flex flex-col gap-3">
+                <span className="text-[11px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Temel Profil &amp; Sahne Bilgileri</span>
+                </span>
 
-                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                  Model Sahne / Tam Adı *
-                  <input
-                    type="text"
-                    required
-                    placeholder="Örn: Merve Özdemir"
-                    value={createForm.tamAd}
-                    onChange={(e) => setCreateForm({ ...createForm, tamAd: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
-              </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span>İlan Başlığı *</span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Örn: Beylikdüzü VIP Merve veya Girne VIP Melis"
+                      value={createForm.baslik}
+                      onChange={(e) => setCreateForm({ ...createForm, baslik: e.target.value })}
+                      className="px-3.5 py-2.5 rounded-xl bg-[#141824] border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400/20 transition-all"
+                    />
+                  </label>
 
-              {/* Vitrin Paketi & Facebook Like & Şifre */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                  Vitrin Rozeti *
-                  <select
-                    value={createForm.rozet}
-                    onChange={(e) => setCreateForm({ ...createForm, rozet: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-amber-500/50 text-amber-400 font-bold text-xs focus:outline-none focus:border-amber-400"
-                  >
-                    <option value="vip">👑 VIP Vitrin</option>
-                    <option value="gold">🥇 Gold Vitrin</option>
-                    <option value="silver">🥈 Silver</option>
-                  </select>
-                </label>
-
-                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                  👍 Başlangıç Like
-                  <input
-                    type="number"
-                    value={createForm.likeSayisi}
-                    onChange={(e) => setCreateForm({ ...createForm, likeSayisi: Number(e.target.value) })}
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-blue-500/50 text-blue-300 font-bold text-xs focus:outline-none focus:border-blue-400"
-                  />
-                </label>
-
-                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                  Panel Şifresi
-                  <input
-                    type="text"
-                    value={createForm.panelSifresi}
-                    onChange={(e) => setCreateForm({ ...createForm, panelSifresi: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-emerald-400 font-mono font-bold text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
-              </div>
-
-              {/* Konum & WhatsApp */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                  İl Seçin *
-                  <select
-                    value={createForm.ilSlug}
-                    onChange={(e) => {
-                      const newIl = e.target.value;
-                      const prov = turkeyProvinces.find((p) => p.ilSlug === newIl);
-                      setCreateForm({
-                        ...createForm,
-                        ilSlug: newIl,
-                        ilceSlug: prov?.ilceler[0]?.slug || 'merkez',
-                      });
-                    }}
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
-                  >
-                    {turkeyProvinces.map((p) => (
-                      <option key={p.ilSlug} value={p.ilSlug}>{p.il}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                  İlçe Seçin *
-                  <select
-                    value={createForm.ilceSlug}
-                    onChange={(e) => setCreateForm({ ...createForm, ilceSlug: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
-                  >
-                    {(turkeyProvinces.find((p) => p.ilSlug === createForm.ilSlug) || turkeyProvinces[0]).ilceler.map((d) => (
-                      <option key={d.slug} value={d.slug}>{d.ad}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                  WhatsApp Numarası *
-                  <input
-                    type="text"
-                    required
-                    value={createForm.whatsappNumara}
-                    onChange={(e) => setCreateForm({ ...createForm, whatsappNumara: e.target.value })}
-                    className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
-                  />
-                </label>
-              </div>
-
-              {/* Biyografi */}
-              <label className="flex flex-col gap-1 text-xs font-bold text-slate-200">
-                Açıklama &amp; Biyografi
-                <textarea
-                  rows={2}
-                  placeholder="Hizmet tarzı, hijyen ve detaylar..."
-                  value={createForm.aciklama}
-                  onChange={(e) => setCreateForm({ ...createForm, aciklama: e.target.value })}
-                  className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-amber-400"
-                />
-              </label>
-
-              {/* Fotoğraf Yükleme Alanı */}
-              <div className="flex flex-col gap-2 p-3 rounded-xl bg-[#070a0f] border border-amber-500/30">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-amber-400 font-heading uppercase flex items-center gap-1">
-                    <ImageIcon className="w-3.5 h-3.5" />
-                    <span>Fotoğraflar ({createPhotoUrls.length})</span>
-                  </span>
-                  <span className="text-[10px] text-slate-400">JPG, PNG, WEBP</span>
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span>Model Sahne / Tam Adı *</span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Örn: Merve Özdemir"
+                      value={createForm.tamAd}
+                      onChange={(e) => setCreateForm({ ...createForm, tamAd: e.target.value })}
+                      className="px-3.5 py-2.5 rounded-xl bg-[#141824] border border-white/10 text-amber-300 font-bold text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/20 transition-all"
+                    />
+                  </label>
                 </div>
 
-                <label className="relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-dashed border-amber-500/40 hover:border-amber-400 bg-amber-500/5 cursor-pointer transition-all text-center gap-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span className="flex items-center gap-1 text-amber-400">
+                      <Crown className="w-3.5 h-3.5" />
+                      <span>Vitrin Rozeti *</span>
+                    </span>
+                    <select
+                      value={createForm.rozet}
+                      onChange={(e) => setCreateForm({ ...createForm, rozet: e.target.value })}
+                      className="px-3 py-2.5 rounded-xl bg-[#141824] border border-amber-500/40 text-amber-300 font-bold text-xs focus:outline-none focus:border-amber-400 transition-all cursor-pointer"
+                    >
+                      <option value="vip">👑 VIP Vitrin (Öncelikli Sıralama)</option>
+                      <option value="gold">⭐ Gold Vitrin (Lüks Altın)</option>
+                      <option value="silver">🥈 Silver Vitrin (Platin)</option>
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span className="flex items-center gap-1 text-sky-400">
+                      <ThumbsUp className="w-3.5 h-3.5" />
+                      <span>Başlangıç Like Sayısı</span>
+                    </span>
+                    <input
+                      type="number"
+                      value={createForm.likeSayisi}
+                      onChange={(e) => setCreateForm({ ...createForm, likeSayisi: Number(e.target.value) })}
+                      className="px-3 py-2.5 rounded-xl bg-[#141824] border border-sky-500/30 text-sky-300 font-bold text-xs focus:outline-none focus:border-sky-400 transition-all"
+                    />
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span className="flex items-center gap-1 text-emerald-400">
+                      <KeyRound className="w-3.5 h-3.5" />
+                      <span>Panel Giriş Şifresi</span>
+                    </span>
+                    <input
+                      type="text"
+                      value={createForm.panelSifresi}
+                      onChange={(e) => setCreateForm({ ...createForm, panelSifresi: e.target.value })}
+                      className="px-3 py-2.5 rounded-xl bg-[#141824] border border-emerald-500/30 text-emerald-400 font-mono font-bold text-xs focus:outline-none focus:border-emerald-400 transition-all"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* KART 2: Lokasyon & WhatsApp İletişim */}
+              <div className="p-4 rounded-2xl bg-[#070a13] border border-white/10 flex flex-col gap-3">
+                <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Şehir, İlçe &amp; Doğrudan İletişim</span>
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span>İl / Bölge Seçin *</span>
+                    <select
+                      value={createForm.ilSlug}
+                      onChange={(e) => {
+                        const newIl = e.target.value;
+                        const prov = turkeyProvinces.find((p) => p.ilSlug === newIl);
+                        setCreateForm({
+                          ...createForm,
+                          ilSlug: newIl,
+                          ilceSlug: prov?.ilceler[0]?.slug || 'merkez',
+                        });
+                      }}
+                      className="px-3 py-2.5 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all cursor-pointer"
+                    >
+                      {turkeyProvinces.map((p) => (
+                        <option key={p.ilSlug} value={p.ilSlug}>{p.il}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span>İlçe / Semt Seçin *</span>
+                    <select
+                      value={createForm.ilceSlug}
+                      onChange={(e) => setCreateForm({ ...createForm, ilceSlug: e.target.value })}
+                      className="px-3 py-2.5 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all cursor-pointer"
+                    >
+                      {(turkeyProvinces.find((p) => p.ilSlug === createForm.ilSlug) || turkeyProvinces[0]).ilceler.map((d) => (
+                        <option key={d.slug} value={d.slug}>{d.ad}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span className="flex items-center gap-1 text-emerald-400">
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>WhatsApp Numarası *</span>
+                    </span>
+                    <input
+                      type="text"
+                      required
+                      placeholder="0530 000 00 00"
+                      value={createForm.whatsappNumara}
+                      onChange={(e) => setCreateForm({ ...createForm, whatsappNumara: e.target.value })}
+                      className="px-3 py-2.5 rounded-xl bg-[#141824] border border-emerald-500/30 text-white text-xs font-mono focus:outline-none focus:border-emerald-400 transition-all"
+                    />
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span>Model Yaşı</span>
+                    <input
+                      type="number"
+                      placeholder="22"
+                      value={createForm.yas || ''}
+                      onChange={(e) => setCreateForm({ ...createForm, yas: Number(e.target.value) })}
+                      className="px-3 py-2 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span>Boy (cm)</span>
+                    <input
+                      type="number"
+                      placeholder="172"
+                      value={createForm.boy || ''}
+                      onChange={(e) => setCreateForm({ ...createForm, boy: Number(e.target.value) })}
+                      className="px-3 py-2 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span>Kilo (kg)</span>
+                    <input
+                      type="number"
+                      placeholder="54"
+                      value={createForm.kilo || ''}
+                      onChange={(e) => setCreateForm({ ...createForm, kilo: Number(e.target.value) })}
+                      className="px-3 py-2 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all"
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                    <span>Hizmet Mekanları</span>
+                    <input
+                      type="text"
+                      placeholder="Otel, Kendi Evi"
+                      value={createForm.hizmetMekanlari || ''}
+                      onChange={(e) => setCreateForm({ ...createForm, hizmetMekanlari: e.target.value })}
+                      className="px-3 py-2 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* KART 3: Biyografi & Açıklama */}
+              <div className="p-4 rounded-2xl bg-[#070a13] border border-white/10 flex flex-col gap-2">
+                <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
+                  <span className="flex items-center gap-1.5 text-rose-300">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span>Açıklama &amp; Biyografi</span>
+                  </span>
+                  <textarea
+                    rows={2}
+                    placeholder="Hizmet tarzı, hijyen, samimi diyalog ve randevu detayları..."
+                    value={createForm.aciklama}
+                    onChange={(e) => setCreateForm({ ...createForm, aciklama: e.target.value })}
+                    className="px-3.5 py-2.5 rounded-xl bg-[#141824] border border-white/10 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-rose-400 focus:ring-1 focus:ring-rose-400/20 transition-all"
+                  />
+                </label>
+              </div>
+
+              {/* KART 4: Fotoğraf Yükleme Alanı */}
+              <div className="flex flex-col gap-3 p-4 rounded-2xl bg-[#070a13] border border-white/10">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-rose-400 font-heading uppercase flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4" />
+                    <span>Fotoğraf Galerisi ({createPhotoUrls.length}/7)</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-semibold">JPG, PNG, WEBP</span>
+                </div>
+
+                <label className="relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-dashed border-rose-500/40 hover:border-rose-400 bg-rose-500/5 hover:bg-rose-500/10 cursor-pointer transition-all text-center gap-2 group">
                   <input
                     type="file"
                     accept="image/*"
@@ -3636,42 +3719,50 @@ export default function AdminListingsPage() {
                     disabled={createUploading}
                   />
                   {createUploading ? (
-                    <div className="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <div className="flex items-center gap-2 text-rose-400 font-bold text-xs">
+                      <Loader2 className="w-4 h-4 animate-spin" />
                       <span>Fotoğraflar Yükleniyor...</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 text-white text-xs font-bold font-heading">
-                      <Upload className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Galeriden Fotoğraf Seç &amp; Yükle</span>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 to-pink-600 text-white flex items-center justify-center group-hover:scale-105 transition-transform shadow-md">
+                        <Upload className="w-5 h-5 stroke-[2.5]" />
+                      </div>
+                      <span className="text-white text-xs font-bold font-heading mt-1">
+                        📱 Galeriden Fotoğraf Seç &amp; Yükle
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {createPhotoUrls.length === 0 ? 'En az 1 görsel önerilir' : `${7 - createPhotoUrls.length} adet daha ekleyebilirsiniz`}
+                      </span>
                     </div>
                   )}
                 </label>
 
                 {createPhotoUrls.length > 0 && (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-1">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2.5 mt-1">
                     {createPhotoUrls.map((url, idx) => {
                       const isCover = idx === createCoverIdx;
                       return (
                         <div
                           key={idx}
-                          className={`relative aspect-square rounded-xl overflow-hidden border-2 flex flex-col justify-between p-1 bg-[#0c1017] ${isCover ? 'border-amber-400 shadow-md shadow-amber-500/30' : 'border-slate-800'
-                            }`}
+                          className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-2 flex flex-col justify-between p-1.5 bg-[#070a13] ${
+                            isCover ? 'border-rose-400 shadow-lg shadow-rose-500/20' : 'border-white/10'
+                          }`}
                         >
                           <img src={url} alt={`Foto ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover z-0" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 z-10" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30 z-10" />
 
                           <div className="relative z-20 flex items-center justify-between w-full">
                             {isCover ? (
-                              <span className="px-1 py-0.2 rounded bg-amber-500 text-slate-950 font-black text-[8px] flex items-center gap-0.5">
-                                <Star className="w-2.5 h-2.5 fill-slate-950" />
+                              <span className="px-1.5 py-0.5 rounded-lg bg-rose-600 text-white font-black text-[9px] flex items-center gap-0.5 shadow-md font-heading">
+                                <Star className="w-2.5 h-2.5 fill-white" />
                                 Kapak
                               </span>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => setCreateCoverIdx(idx)}
-                                className="px-1 py-0.2 rounded bg-[#0c1017]/90 text-amber-400 font-bold text-[8px] hover:bg-amber-500 hover:text-slate-950"
+                                className="px-1.5 py-0.5 rounded-lg bg-black/80 text-rose-300 font-bold text-[9px] hover:bg-rose-600 hover:text-white transition-colors cursor-pointer"
                               >
                                 Kapak Yap
                               </button>
@@ -3680,10 +3771,10 @@ export default function AdminListingsPage() {
                             <button
                               type="button"
                               onClick={() => removeCreatePhotoUrl(idx)}
-                              className="p-1 rounded bg-red-600/90 text-white hover:bg-red-500"
+                              className="p-1 rounded-lg bg-red-600/90 text-white hover:bg-red-500 transition-colors cursor-pointer"
                               title="Sil"
                             >
-                              <Trash2 className="w-2.5 h-2.5" />
+                              <Trash2 className="w-3 h-3" />
                             </button>
                           </div>
                         </div>
@@ -3694,11 +3785,11 @@ export default function AdminListingsPage() {
               </div>
 
               {/* Submit Buttons */}
-              <div className="flex items-center gap-2 pt-1">
+              <div className="flex items-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="w-1/3 py-2.5 px-3 rounded-xl bg-slate-900 text-white font-bold text-xs border border-slate-800"
+                  className="w-1/3 py-3.5 px-4 rounded-2xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs border border-white/10 transition-colors cursor-pointer"
                 >
                   İptal
                 </button>
@@ -3706,14 +3797,14 @@ export default function AdminListingsPage() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-md flex items-center justify-center gap-1.5 active:scale-95"
+                  className="flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
                 >
                   {creating ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
                   ) : (
                     <>
-                      <Save className="w-3.5 h-3.5" />
-                      <span>İlanı Şimdi Yayına Al</span>
+                      <Save className="w-4 h-4 stroke-[2.5]" />
+                      <span>İlanı Şimdi Yayına Al (Canlı)</span>
                     </>
                   )}
                 </button>

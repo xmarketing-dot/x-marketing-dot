@@ -330,7 +330,7 @@ export default async function HomePage() {
             <div className="flex flex-col">
               <div className="flex items-center gap-2">
                 <span className="font-heading font-black text-sm text-white group-hover:text-amber-400 transition-colors">
-                  Türkiye Geneli 81 İl Rehberi
+                  Türkiye Geneli 81 İl & Kıbrıs Rehberi
                 </span>
                 <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[8px] font-heading font-black">
                   81 ŞEHİR
@@ -490,7 +490,7 @@ export default async function HomePage() {
 
             <div className="pt-2 border-t border-white/5">
               <p className="text-[10px] text-[#6e7681] mb-1.5 font-bold uppercase tracking-wider">
-                Tüm İlçeler ve Semtler (81 İl Kapsamında Tüm İlçeler)
+                Tüm İlçeler ve Semtler (81 İl ve Kıbrıs Kapsamında Tüm Bölgeler)
               </p>
               <div className="flex flex-wrap gap-x-2.5 gap-y-1.5 text-[10.5px] leading-relaxed max-h-[360px] overflow-y-auto pr-1">
                 {turkeyProvinces.flatMap((prov) =>
