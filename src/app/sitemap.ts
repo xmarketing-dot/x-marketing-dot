@@ -91,12 +91,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // ── TIER 2: Şehir ve İlçe sayfaları ──
-  const megaCities = ['istanbul', 'izmir', 'ankara', 'antalya', 'bursa'];
+  const megaCities = ['istanbul', 'izmir', 'ankara', 'antalya', 'bursa', 'kibris', 'girne'];
   const hotDistricts = [
     'beylikduzu', 'kadikoy', 'sisli', 'besiktas', 'bakirkoy',
     'alsancak', 'konak', 'karsiyaka', 'bornova', 'cankaya',
     'esenyurt', 'bahcelievler', 'bagcilar', 'pendik', 'umraniye',
     'maltepe', 'kartal', 'atakum', 'muratpasa', 'kepez',
+    'girne', 'lefkosa', 'bafra', 'genel',
   ];
 
   // Hedef domain (örn: izmireskort.devs.surf veya beylikduzuescort.devs.surf) ise o bölgeyi odakla

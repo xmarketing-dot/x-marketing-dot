@@ -3523,10 +3523,9 @@ export default function AdminListingsPage() {
                   </label>
 
                   <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
-                    <span>Model Sahne / Tam Adı *</span>
+                    <span>Model Sahne / Tam Adı (Opsiyonel)</span>
                     <input
                       type="text"
-                      required
                       placeholder="Örn: Merve Özdemir"
                       value={createForm.tamAd}
                       onChange={(e) => setCreateForm({ ...createForm, tamAd: e.target.value })}
@@ -3634,49 +3633,6 @@ export default function AdminListingsPage() {
                       value={createForm.whatsappNumara}
                       onChange={(e) => setCreateForm({ ...createForm, whatsappNumara: e.target.value })}
                       className="px-3 py-2.5 rounded-xl bg-[#141824] border border-emerald-500/30 text-white text-xs font-mono focus:outline-none focus:border-emerald-400 transition-all"
-                    />
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1">
-                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
-                    <span>Model Yaşı</span>
-                    <input
-                      type="number"
-                      placeholder="22"
-                      value={createForm.yas || ''}
-                      onChange={(e) => setCreateForm({ ...createForm, yas: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
-                    <span>Boy (cm)</span>
-                    <input
-                      type="number"
-                      placeholder="172"
-                      value={createForm.boy || ''}
-                      onChange={(e) => setCreateForm({ ...createForm, boy: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
-                    <span>Kilo (kg)</span>
-                    <input
-                      type="number"
-                      placeholder="54"
-                      value={createForm.kilo || ''}
-                      onChange={(e) => setCreateForm({ ...createForm, kilo: Number(e.target.value) })}
-                      className="px-3 py-2 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all"
-                    />
-                  </label>
-                  <label className="flex flex-col gap-1.5 text-xs font-bold text-slate-200">
-                    <span>Hizmet Mekanları</span>
-                    <input
-                      type="text"
-                      placeholder="Otel, Kendi Evi"
-                      value={createForm.hizmetMekanlari || ''}
-                      onChange={(e) => setCreateForm({ ...createForm, hizmetMekanlari: e.target.value })}
-                      className="px-3 py-2 rounded-xl bg-[#141824] border border-white/10 text-white text-xs focus:outline-none focus:border-rose-400 transition-all"
                     />
                   </label>
                 </div>
