@@ -67,6 +67,8 @@ const AnalyticsEventSchema = new Schema<IAnalyticsEvent>(
 AnalyticsEventSchema.index({ eventType: 1, createdAt: -1 });
 AnalyticsEventSchema.index({ targetId: 1, eventType: 1 });
 AnalyticsEventSchema.index({ createdAt: -1 });
+// 15 gunluk otomatik yasam suresi (TTL)
+AnalyticsEventSchema.index({ createdAt: 1 }, { expireAfterSeconds: 15 * 24 * 60 * 60 });
 
 const AnalyticsEventModel: Model<IAnalyticsEvent> =
   mongoose.models.AnalyticsEvent || mongoose.model<IAnalyticsEvent>('AnalyticsEvent', AnalyticsEventSchema);
