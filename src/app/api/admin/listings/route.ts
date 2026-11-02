@@ -8,6 +8,7 @@ import { chatEmitter } from '@/lib/chatEmitter';
 import UserModel from '@/models/User';
 import { submitToIndexNow } from '@/lib/indexnow';
 import { getSiteUrl } from '@/lib/siteUrl';
+import { postListingToTelegramChannel } from '@/lib/telegramNotify';
 
 export const dynamic = 'force-dynamic';
 
@@ -360,6 +361,13 @@ Bol kazançlar ve bol müşteriler dileriz! 🚀💎`;
       const siteUrl = getSiteUrl();
       const listingUrl = `${siteUrl}/ilan/${updatedListing.slug}`;
       submitToIndexNow([listingUrl]).catch(() => {});
+    }
+
+    // ── OTOMATİK TELEGRAM KANALI POSTU (@besteskortagency) ──
+    if (updatedListing.status === 'yayinda' && (wasPending || body.action === 'post_to_telegram')) {
+      postListingToTelegramChannel(updatedListing).catch((err) => {
+        console.error('[Telegram Channel Auto-post Error]:', err);
+      });
     }
 
     adminListingsCache = null;

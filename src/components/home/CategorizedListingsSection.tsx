@@ -2,39 +2,37 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Crown, Award, Medal, ChevronRight, Sparkles } from 'lucide-react';
+import { Crown, Award, Medal, Sparkles, ChevronRight } from 'lucide-react';
 import CompactListingCard from '@/components/common/CompactListingCard';
-import SponsorBannerArea from '@/components/common/SponsorBannerArea';
+import SponsorBannerArea, { BannerAdData } from '@/components/common/SponsorBannerArea';
 import PostAdPromoCard from '@/components/common/PostAdPromoCard';
 
-interface CategorizedListingsSectionProps {
-  vipListings: any[];
-  goldListings: any[];
-  silverListings: any[];
-  allListings: any[];
+interface Props {
+  vipListings?: any[];
+  goldListings?: any[];
+  silverListings?: any[];
   passiveListings?: any[];
-  banner?: any;
+  allListings?: any[];
+  banner?: BannerAdData | null;
 }
 
 export default function CategorizedListingsSection({
-  vipListings,
-  goldListings,
-  silverListings,
-  allListings,
-  passiveListings,
+  vipListings = [],
+  goldListings = [],
+  silverListings = [],
+  passiveListings = [],
+  allListings = [],
   banner,
-}: CategorizedListingsSectionProps) {
-  // Kontenjan sınırları: VIP (50), Gold (100), Silver (200) - Tümü doğrudan gösterilir
+}: Props) {
   const displayedVip = vipListings.slice(0, 50);
   const displayedGold = goldListings.slice(0, 100);
   const displayedSilver = silverListings.slice(0, 200);
-  // Pasif ilanların tümü listenin en sonunda ayrı bölümde gösterilir
   const displayedPassive = passiveListings || [];
   const displayedAll = allListings;
 
   const hasCategorized = vipListings.length > 0 || goldListings.length > 0 || silverListings.length > 0;
 
-  // Promo kartın her zaman 3'lü gridin TAM ORTASINDA (Card 5, Card 8 veya Card 11) ve random sırada gösterimi
+  // Promo kartın her zaman 3'lü gridin TAM ORTASINDA (Card 5, Card 8 veya Card 11) gösterimi
   const [promoMiddleSlots, setPromoMiddleSlots] = useState<{ vip: number; gold: number; silver: number; all: number }>({
     vip: 3,
     gold: 6,
@@ -43,10 +41,6 @@ export default function CategorizedListingsSection({
   });
 
   useEffect(() => {
-    // 3'lü gridde orta sütun kartları:
-    // Card 5 = 2. satır ortası (index 3'ten sonra)
-    // Card 8 = 3. satır ortası (index 6'dan sonra)
-    // Card 11 = 4. satır ortası (index 9'dan sonra)
     const middleOptions = [3, 6, 9];
     const pickRandomMiddle = (total: number) => {
       const available = middleOptions.filter((opt) => total > opt);
@@ -64,10 +58,83 @@ export default function CategorizedListingsSection({
     });
   }, [displayedVip.length, displayedGold.length, displayedSilver.length, displayedAll.length]);
 
-  const shouldShowPromo = (index: number, chosenSlot: number) => {
-    return index === chosenSlot;
-  };
+  /**
+   * 3'LÜ GRİD İÇİN HATASIZ DİZİLİM YARDIMCISI:
+   * Banner sadece ve sadece tam 3'lü satır kapandıktan sonra (slotsInRow === 0) yerleştirilir.
+   * Bu sayede banner'ın üstünde ASLA 1 veya 2 kartlık boşluk kalmaz!
+   */
+  const renderListingGridWithBanner = (
+    listings: any[],
+    promoSlot: number,
+    isPrioritySection: boolean = false
+  ) => {
+    type GridItem =
+      | { type: 'listing'; listing: any; priority: boolean; key: string }
+      | { type: 'promo'; key: string }
+      | { type: 'banner'; key: string };
 
+    const items: GridItem[] = [];
+    let slotsInRow = 0;
+    let slotsSinceLastBanner = 0;
+
+    listings.forEach((listing, index) => {
+      // 1. Normal ilan kartı ekle
+      items.push({
+        type: 'listing',
+        listing,
+        priority: isPrioritySection && index < 6,
+        key: `listing-${listing._id || index}`,
+      });
+      slotsInRow = (slotsInRow + 1) % 3;
+      slotsSinceLastBanner++;
+
+      // 2. Rastgele orta slota denk geldiyse "İlan Ver" tanıtım kartı ekle
+      if (index === promoSlot) {
+        items.push({
+          type: 'promo',
+          key: `promo-${index}`,
+        });
+        slotsInRow = (slotsInRow + 1) % 3;
+        slotsSinceLastBanner++;
+      }
+
+      // 3. Banner'ı SADECE satır tamamlandıysa (slotsInRow === 0) ve yeterli kart gösterildiyse ekle
+      if (slotsSinceLastBanner >= 12 && slotsInRow === 0 && index < listings.length - 1) {
+        items.push({
+          type: 'banner',
+          key: `banner-${index}`,
+        });
+        slotsSinceLastBanner = 0;
+      }
+    });
+
+    return (
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
+        {items.map((item) => {
+          if (item.type === 'listing') {
+            return (
+              <CompactListingCard
+                key={item.key}
+                listing={item.listing}
+                priority={item.priority}
+              />
+            );
+          }
+          if (item.type === 'promo') {
+            return <PostAdPromoCard key={item.key} title="ESKORT İLANI VER" />;
+          }
+          if (item.type === 'banner') {
+            return (
+              <div key={item.key} className="col-span-3 w-full">
+                <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
+              </div>
+            );
+          }
+          return null;
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-5 w-full pt-1">
@@ -98,22 +165,8 @@ export default function CategorizedListingsSection({
             </Link>
           </div>
 
-          {/* 3'LÜ YAN YANA İLAN GRID */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
-            {displayedVip.map((listing: any, index: number) => (
-              <React.Fragment key={listing._id || index}>
-                <CompactListingCard listing={listing} priority={index < 6} />
-                {shouldShowPromo(index, promoMiddleSlots.vip) && (
-                  <PostAdPromoCard title="ESKORT İLANI VER" />
-                )}
-                {(index + 1) % 12 === 0 && index < displayedVip.length - 1 && (
-                  <div className="col-span-3 w-full">
-                    <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+          {/* 3'LÜ YAN YANA İLAN GRID (Hizasızlık ve boşluklar giderildi) */}
+          {renderListingGridWithBanner(displayedVip, promoMiddleSlots.vip, true)}
         </section>
       )}
 
@@ -145,21 +198,7 @@ export default function CategorizedListingsSection({
           </div>
 
           {/* 3'LÜ YAN YANA İLAN GRID */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
-            {displayedGold.map((listing: any, index: number) => (
-              <React.Fragment key={listing._id || index}>
-                <CompactListingCard listing={listing} priority={false} />
-                {shouldShowPromo(index, promoMiddleSlots.gold) && (
-                  <PostAdPromoCard title="ESKORT İLANI VER" />
-                )}
-                {(index + 1) % 12 === 0 && index < displayedGold.length - 1 && (
-                  <div className="col-span-3 w-full">
-                    <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+          {renderListingGridWithBanner(displayedGold, promoMiddleSlots.gold, false)}
         </section>
       )}
 
@@ -191,25 +230,11 @@ export default function CategorizedListingsSection({
           </div>
 
           {/* 3'LÜ YAN YANA İLAN GRID */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
-            {displayedSilver.map((listing: any, index: number) => (
-              <React.Fragment key={listing._id || index}>
-                <CompactListingCard listing={listing} priority={false} />
-                {shouldShowPromo(index, promoMiddleSlots.silver) && (
-                  <PostAdPromoCard title="ESKORT İLANI VER" />
-                )}
-                {(index + 1) % 12 === 0 && index < displayedSilver.length - 1 && (
-                  <div className="col-span-3 w-full">
-                    <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+          {renderListingGridWithBanner(displayedSilver, promoMiddleSlots.silver, false)}
         </section>
       )}
 
-      {/* ── 4. SÜRESİ DOLAN / PASİF İLANLAR (EN SON SIRADA, EN FAZLA 1-2 TANE) ── */}
+      {/* ── 4. SÜRESİ DOLAN / PASİF İLANLAR (EN SON SIRADA) ── */}
       {displayedPassive.length > 0 && (
         <section className="px-1.5 sm:px-4 flex flex-col gap-2 opacity-85">
           <div className="flex items-center justify-between pb-1.5 border-b border-zinc-800">
@@ -258,24 +283,9 @@ export default function CategorizedListingsSection({
           </div>
 
           {/* 3'LÜ YAN YANA İLAN GRID */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
-            {displayedAll.map((listing: any, index: number) => (
-              <React.Fragment key={listing._id || index}>
-                <CompactListingCard listing={listing} priority={index < 6} />
-                {shouldShowPromo(index, promoMiddleSlots.all) && (
-                  <PostAdPromoCard title="ESKORT İLANI VER" />
-                )}
-                {(index + 1) % 12 === 0 && index < displayedAll.length - 1 && (
-                  <div className="col-span-3 w-full">
-                    <SponsorBannerArea konum="anasayfa" initialBanner={banner} />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+          {renderListingGridWithBanner(displayedAll, promoMiddleSlots.all, true)}
         </section>
       )}
     </div>
   );
 }
-

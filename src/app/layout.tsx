@@ -149,6 +149,9 @@ const jsonLd = {
       name: 'Best Eskort',
       url: siteUrl,
       logo: `${siteUrl}/api/og/site`,
+      sameAs: [
+        'https://t.me/besteskortagency',
+      ],
     },
   ],
 };
