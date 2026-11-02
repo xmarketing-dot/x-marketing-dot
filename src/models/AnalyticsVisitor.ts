@@ -60,6 +60,8 @@ AnalyticsVisitorSchema.index({ createdAt: -1 });
 AnalyticsVisitorSchema.index({ path: 1, createdAt: -1 });
 AnalyticsVisitorSchema.index({ visitorId: 1, path: 1, createdAt: -1 });
 AnalyticsVisitorSchema.index({ refererSource: 1, createdAt: -1 });
+// 15 gunluk otomatik yasam suresi (TTL)
+AnalyticsVisitorSchema.index({ createdAt: 1 }, { expireAfterSeconds: 15 * 24 * 60 * 60 });
 
 const AnalyticsVisitorModel: Model<IAnalyticsVisitor> =
   mongoose.models.AnalyticsVisitor || mongoose.model<IAnalyticsVisitor>('AnalyticsVisitor', AnalyticsVisitorSchema);
