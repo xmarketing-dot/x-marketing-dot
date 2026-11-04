@@ -35,6 +35,20 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
 
     const fetchUnread = async () => {
       try {
+        if (isSearchEngineBot()) return;
+
+        const now = Date.now();
+        const cachedRaw = sessionStorage.getItem('bms_notif_cache');
+        if (cachedRaw) {
+          try {
+            const { count, time } = JSON.parse(cachedRaw);
+            if (now - time < 180000) { // 3 dakika boyunca önbellekten döner (Vercel fonksiyonunu uyandırmaz)
+              setUnreadNotifCount(count || 0);
+              return;
+            }
+          } catch (_) {}
+        }
+
         let vId = localStorage.getItem('analytics_visitor_id');
         if (!vId) {
           vId = 'v_' + Math.random().toString(36).substring(2, 10);
@@ -44,7 +58,11 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
         if (res.ok) {
           const d = await res.json();
           if (d.success) {
-            setUnreadNotifCount(d.unreadCount || 0);
+            const count = d.unreadCount || 0;
+            setUnreadNotifCount(count);
+            try {
+              sessionStorage.setItem('bms_notif_cache', JSON.stringify({ count, time: now }));
+            } catch (_) {}
           }
         }
       } catch (_) {}
@@ -54,6 +72,7 @@ export default function MobileShell({ children, forceCorporate = false }: Mobile
     if (pathname === '/bildirimler') {
       setUnreadNotifCount(0);
       try {
+        sessionStorage.setItem('bms_notif_cache', JSON.stringify({ count: 0, time: Date.now() }));
         const vId = localStorage.getItem('analytics_visitor_id');
         if (vId) {
           fetch('/api/notifications/read', {

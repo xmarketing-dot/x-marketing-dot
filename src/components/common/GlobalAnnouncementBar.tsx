@@ -61,23 +61,44 @@ export default function GlobalAnnouncementBar() {
       }
 
       try {
-        const res = await fetch('/api/announcement-bar');
-        const json = await res.json();
-        if (!json.success || !json.data || !json.data.isActive) return;
+        const now = Date.now();
+        const cachedRaw = sessionStorage.getItem('bms_announcement_cache');
+        let config: AnnouncementData | null = null;
 
-        const config: AnnouncementData = json.data;
-        const storageKey = `announcement_seen_${config.campaignId}`;
+        if (cachedRaw) {
+          try {
+            const { data: cachedData, time } = JSON.parse(cachedRaw);
+            if (now - time < 300000) { // 5 dakika oturum önbelleği
+              if (!cachedData) return;
+              config = cachedData;
+            }
+          } catch (_) {}
+        }
+
+        if (!config) {
+          const res = await fetch('/api/announcement-bar');
+          const json = await res.json();
+          if (!json.success || !json.data || !json.data.isActive) {
+            try { sessionStorage.setItem('bms_announcement_cache', JSON.stringify({ data: null, time: now })); } catch (_) {}
+            return;
+          }
+          config = json.data;
+          try { sessionStorage.setItem('bms_announcement_cache', JSON.stringify({ data: config, time: now })); } catch (_) {}
+        }
+        if (!config) return;
+        const validConfig = config;
+        const storageKey = `announcement_seen_${validConfig.campaignId}`;
         const hasSeen = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
 
         // Tek seferlik gösterim kuralı: Kullanıcı bu kampanyayı daha önce gördüyse/kapattıysa gösterme
         if (hasSeen) return;
 
-        const delay = (typeof config.delaySeconds === 'number' ? config.delaySeconds : 3) * 1000;
+        const delay = (typeof validConfig.delaySeconds === 'number' ? validConfig.delaySeconds : 3) * 1000;
 
         timerId = setTimeout(() => {
           if (!isMounted || !isMobileDevice()) return;
 
-          setData(config);
+          setData(validConfig);
           setIsVisible(true);
 
           // Görüntülenme (View) logunu backend'e gönder
@@ -87,7 +108,7 @@ export default function GlobalAnnouncementBar() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               eventType: 'view',
-              campaignId: config.campaignId,
+              campaignId: validConfig.campaignId,
               visitorId,
               device: 'mobile',
             }),

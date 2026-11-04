@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { isSearchEngineBot } from '@/lib/botDetection';
 
 // Declare global tracking window function
 declare global {
@@ -71,6 +72,7 @@ function getOrSetEntryReferrer(): string {
 
 export function trackEvent(eventType: string, payload: Record<string, any> = {}) {
   if (typeof window === 'undefined') return;
+  if (isSearchEngineBot()) return;
   try {
     const vid = getOrSetVisitorId();
     const sid = getOrSetSessionId();
@@ -138,6 +140,10 @@ if (typeof window !== 'undefined') {
 
 export default function AnalyticsTracker() {
   const pathname = usePathname();
+
+  if (typeof window !== 'undefined' && isSearchEngineBot()) {
+    return null;
+  }
   const lastTrackedPathRef = useRef<string>('');
   const lastTrackedTimeRef = useRef<number>(0);
   const durationIntervalRef = useRef<NodeJS.Timeout | null>(null);
