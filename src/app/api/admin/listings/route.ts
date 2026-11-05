@@ -363,6 +363,25 @@ Bol kazançlar ve bol müşteriler dileriz! 🚀💎`;
       submitToIndexNow([listingUrl]).catch(() => {});
     }
 
+    // ── OTOMATİK SİTE İÇİ BİLDİRİM (Yayın Onayında) ──
+    if (updatedListing.status === 'yayinda' && (wasPending || body.sendSiteNotification)) {
+      try {
+        const { createNotification } = await import('@/lib/notificationService');
+        const coverPhoto = updatedListing.anaFotograf?.url || (updatedListing.fotograflar && updatedListing.fotograflar[0]?.url) || '';
+        await createNotification({
+          title: `🌟 Yeni VIP İlan: ${updatedListing.baslik}`,
+          message: `${(updatedListing.ilSlug || 'İSTANBUL').toUpperCase()} bölgesinde yeni ilan yayınlandı! İncelemek için dokunun.`,
+          url: `/ilan/${updatedListing.slug}`,
+          imageUrl: coverPhoto,
+          type: 'new_listing',
+          badge: (updatedListing.rozet || 'VIP').toUpperCase(),
+          sourceId: `listing_${updatedListing._id}`,
+        });
+      } catch (notifErr) {
+        console.error('[Site Notification Auto-post Error]:', notifErr);
+      }
+    }
+
     // ── OTOMATİK TELEGRAM KANALI POSTU (@besteskortagency) ──
     if (updatedListing.status === 'yayinda' && (wasPending || body.action === 'post_to_telegram')) {
       postListingToTelegramChannel(updatedListing).catch((err) => {
