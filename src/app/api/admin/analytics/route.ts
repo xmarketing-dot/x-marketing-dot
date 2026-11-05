@@ -353,9 +353,9 @@ export async function GET(req: Request) {
       }
     });
 
-    // Canlı Senkronizasyon & Yedekleme: Bugün ('today') için her zaman veya özet tabloda eksik kalan aralıklar için
+    // Canlı Senkronizasyon & Yedekleme: Bugün ('today'), dün ('yesterday') veya özet tabloda eksik kalan aralıklar için
     // doğrudan ham AnalyticsVisitorModel ve AnalyticsEventModel kayıtlarından hesaplayıp %100 canlı gerçeklik sağla
-    if (range === 'today' || (totalPageviews === 0 && uniqueVisitors === 0)) {
+    if (range === 'today' || range === 'yesterday' || sources.google === 0 || (totalPageviews === 0 && uniqueVisitors === 0)) {
       const [vSummary, eSummary] = await Promise.all([
         AnalyticsVisitorModel.aggregate([
           { $match: dateQuery },
@@ -401,19 +401,19 @@ export async function GET(req: Request) {
         const vs = vSummary[0];
         const rawViews = vs.totalPageviews || 0;
         const rawUnique = Array.isArray(vs.uniqueVisitorsSet) ? vs.uniqueVisitorsSet.length : 0;
-        if (range === 'today' || rawViews > totalPageviews) {
-          totalPageviews = rawViews;
-          uniqueVisitors = rawUnique;
-          mobileCount = vs.mobileCount || 0;
-          desktopCount = vs.desktopCount || 0;
-          sources.google = vs.google || 0;
-          sources.yandex = vs.yandex || 0;
-          sources.whatsapp = vs.whatsapp || 0;
-          sources.telegram = vs.telegram || 0;
-          sources.direct = vs.direct || 0;
-          sources.instagram = vs.instagram || 0;
-          sources.x = vs.x || 0;
-          sources.facebook = vs.facebook || 0;
+        if (range === 'today' || range === 'yesterday' || rawViews > totalPageviews || (vs.google || 0) > sources.google) {
+          totalPageviews = Math.max(totalPageviews, rawViews);
+          uniqueVisitors = Math.max(uniqueVisitors, rawUnique);
+          mobileCount = vs.mobileCount || mobileCount;
+          desktopCount = vs.desktopCount || desktopCount;
+          sources.google = Math.max(sources.google, vs.google || 0);
+          sources.yandex = Math.max(sources.yandex, vs.yandex || 0);
+          sources.whatsapp = Math.max(sources.whatsapp, vs.whatsapp || 0);
+          sources.telegram = Math.max(sources.telegram, vs.telegram || 0);
+          sources.direct = Math.max(sources.direct, vs.direct || 0);
+          sources.instagram = Math.max(sources.instagram, vs.instagram || 0);
+          sources.x = Math.max(sources.x, vs.x || 0);
+          sources.facebook = Math.max(sources.facebook, vs.facebook || 0);
         }
       }
 
