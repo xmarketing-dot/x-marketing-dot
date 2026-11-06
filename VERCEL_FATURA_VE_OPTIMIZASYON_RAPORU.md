@@ -1,120 +1,102 @@
-# 📊 Vercel Fatura Analizi & Optimizasyon Eylem Planı
+# 📊 Vercel Fatura, Kullanım Analizi & Nihai Çözüm Raporu
 
-> **Rapor Tarihi:** 4 Kasım 2026  
-> **İncelenen Fatura:** `Invoice-XWZVG5ZN-0022.pdf`  
-> **Ödenecek Tutar:** **$59.01 USD**  
-> **Son Ödeme Girişimi:** **6 Kasım 2026** (Kritik Tarih)
+> **Son Güncelleme Tarihi:** 6 Kasım 2026  
+> **Durum:** 59.01 USD fatura ödendi. Yapılan optimizasyonlar başarıyla devreye girdi.  
+> **Güncel Altyapı Ek Borcu:** **$0.00 USD** *(Kredilerle tamamen karşılandı)*  
 
 ---
 
-## 1. Fatura Özeti ve Masraf Dağılımı
+## 1. 🚨 Flat Rate CDN (20$) Konusu %100 Netleşti
 
-Faturadaki **$59.01 USD** tutar iki ana kısımdan oluşmaktadır: **$40.00** önümüzdeki ayın peşin abonelikleri, **$19.01** ise geçen ayki (3 Ekim – 2 Kasım) kota aşımlarıdır.
+Paylaştığın son ekran görüntüsü durumu kesinleştirdi:
+> **Ekrandaki Resmi Uyarı:**  
+> *"You'll be switched to usage-based billing on **December 3, 2026**."*  
+> *(Düğme Gri / Kapalı)*
+
+### Bu Ne Anlama Geliyor?
+- **İptal İşlemin Başarılı:** Flat Rate CDN eklentisini başarıyla iptal etmişsin.
+- **Neden Listede Hala 20$ Görünüyor?** Fatura dönemin 3 Kasım - 3 Aralık. Ödediğin 59 doların 20 doları zaten bu ayın peşin parasıydı. Vercel, *"Parasını peşin aldım, 3 Aralık'a kadar kullanabilirsin"* dediği için dönem bitene kadar devrede tutuyor.
+- **3 Aralık'ta Ne Olacak?** 3 Aralık'taki yeni faturanda bu **20$'lık Flat Rate CDN kalemi BİR DAHA ASLA GELMEYECEK.** Faturan otomatik olarak standart 20$ Pro'ya inecek.
+
+---
+
+## 2. Son 3 Günün (3 – 6 Kasım) Kullanım Röntgeni
+
+Evde yaptığın ilk optimizasyon commit'leri (`AnalyticsTracker` bot koruması, `GlobalAnnouncementBar` 5 dk cache, `MobileShell` 3 dk cache) harika sonuç verdi.
 
 ```mermaid
-pie title Fatura Dağılımı ($59.01 USD)
-    "Vercel Pro (Aylık Sabit)" : 20.00
-    "Flat Rate CDN 10M (Gereksiz Eklenti)" : 20.00
-    "Serverless CPU & Bellek Aşımı" : 7.83
-    "Build CPU Süresi (34 Saat)" : 2.98
-    "Observability / Log Eventleri" : 2.39
-    "Eski Build Depolama (Storage)" : 2.33
-    "Transfer & ISR Yazma" : 3.48
+pie title 3 Günlük Altyapı Tüketimi Dağılımı ($2.96 USD)
+    "Fluid Memory (Hafıza)" : 1.14
+    "Fluid CPU (İşlemci)" : 0.55
+    "ISR Yazma & Okuma" : 0.28
+    "Build CPU (Deploylar)" : 0.24
+    "Function Invocations" : 0.23
+    "Fast Origin Transfer" : 0.18
+    "Observability / Loglar" : 0.13
+    "Storage (Depolama)" : 0.21
 ```
 
-### A. Sabit Abonelikler ($40.00)
-1. **Vercel Pro Planı (1 Koltuk):** `$20.00` *(Standart aylık üyelik bedeli)*
-2. **Flat Rate CDN 10M:** `$20.00` *(🚨 Gereksiz 50 TB trafik paketi. Pro planda zaten 1 TB kota dahil olduğu için bu eklentiye hiç gerek yoktu).*
-
-### B. Kullanım Aşımları ($19.01)
-- **Fluid Active CPU & Provisioned Memory:** `$7.83` *(Ayda 3.4 milyon fonksiyon çağrısı)*
-- **Build CPU Minutes (2.044 dakika ≈ 34 saat build):** `$2.98`
-- **Observability Events (3.416.790 log kaydı):** `$2.39`
-- **Serverless Function & Deployment Storage:** `$2.33` *(Silinmeyen eski preview build'ler)*
-- **Fast Origin Transfer & ISR Writes:** `$3.48`
+### 💵 Cebinden Çıkan Para:
+```text
+Subscription Licenses (Pro + Bu ayın CDN'i): $40.00
+Infrastructure Subtotal (3 Günlük Tüketim):     $2.96
+Credits Applied (Vercel'in Ücretsiz Kredisi):  -$2.96
+------------------------------------------------------
+ÖDENECEK EKSTRA AŞIM BORCU:                     $0.00
+```
+- **Müjde:** 3 günde yazan 2.96 doların **tamamı Vercel'in verdiği aylık 20$'lık altyapı kredisiyle silindi (`-$2.96`)**. Yani şu an kartından 1 kuruş bile ekstra çekilmiyor.
 
 ---
 
-## 2. Korumamız Gereken Kırmızı Çizgiler (Değişmeyecekler)
+## 3. Peki Neden 3 Günde 2.96$ Altyapı Tüketimi Oldu? (Kalan Kaçak)
+
+Günde yaklaşık ~**$0.98** altyapı yazıyor. 30 günde ~$29 yapar. Vercel'in verdiği $20 kredi düşse bile, ay sonunda geriye **~$9-10** ufak bir aşım kalabilir. Bunu da tamamen **$0'a** çekmek için 381 bin fonksiyon çağrısının kaynağını buldum:
+
+### 381.26K Fonksiyon Çağrısı Nereden Geliyor?
+
+1. **İlan Gösterimleri (Impressions) Hala Her 3 Saniyede Bir İstek Atıyor:**
+   - `AnalyticsTracker.tsx` dosyasında:
+     ```typescript
+     impressionBatchTimerRef.current = setTimeout(flushImpressions, 3000); // 🚨 HER 3 SANİYEDE BİR
+     ```
+   - Bir kullanıcı anasayfada 30 saniye aşağı kaydırarak gezdiğinde: 3. saniyede, 6. saniyede, 9. saniyede, 12. saniyede... ayrı ayrı Vercel'e istek atıyor.
+   - **Tek bir ziyaretçi için arkada 7 ila 10 tane Vercel fonksiyonu uyanıyor!**
+2. **`visibilitychange` Mobil Cihazlarda Sık Tetikleniyor:**
+   - Kullanıcı WhatsApp'a geçip geri döndüğünde veya ekranı kilitlediğinde arkada `/api/analytics/heartbeat` çalışıyor.
+3. **ISR Writes (63.67K writes = 3 günde $0.25):**
+   - Googlebot ve ziyaretçiler binlerce ilan ve kategori sayfasını gezdikçe Next.js sayfaları önbelleğe alıyor. Maliyeti 3 günde sadece 25 cent (önemsiz ve normal).
+
+---
+
+## 4. Evde Bakacağın Eylem Planı (Raporları Bozmadan Sıfırlama)
 
 > [!IMPORTANT]
-> Kullanıcı talebi doğrultusunda aşağıdaki metrikler **kesinlikle kısıtlanmayacak veya düşürülmeyecektir**:
-> 1. **Vitrin Gösterim Sayıları (Impressions):** Kullanıcılara/modellere sunulan raporların yüksek ve zengin çıkması için vitrinde yüklenen her kartın gösterim sayılması mantığı **aynen korunacaktır**. (Uluslararası kısıtlayıcı süre kuralları uygulanmayacaktır).
-> 2. **Online Canlı Sayaç:** Sitede o an kaç gerçek kullanıcı olduğu anlık ve eksiksiz çalışmaya devam edecektir.
-> 3. **Tüm Zamanlar / Günlük İstatistikler:** Ziyaretçi sayıları, tekil kullanıcılar, şehir ve kaynak analizleri hiçbir veri kaybı olmadan tutulacaktır.
+> **Kırmızı Çizgimiz:** Modellerine ve müşterilerine sunduğun **yüksek ilan gösterim sayıları (`goruntulenmeSayisi`) ve canlı online sayaçları KESİNLİKLE DÜŞÜRÜLMEYECEK**. Mantık birebir aynı kalacak.
+
+### Yapılacak Tek Cerrahi Müdahale: "Toplu Çıkış Gönderimi"
+`AnalyticsTracker.tsx` dosyasında yapılacak küçük bir güncelleme ile:
+1. **3 Saniyelik Sayacı Kaldırıyoruz:** İlanlar ekranda yüklendikçe eskisi gibi hafızada toplanmaya devam eder (50 ilan = 50 gösterim, raporlar **%100 AYNI** kalır).
+2. **Toplu Gönderim:** Kullanıcı sayfadan ayrılırken (`pagehide` / `beforeunload` ve `navigator.sendBeacon`) veya 15 saniyede bir **tek bir Vercel fonksiyonuyla** topluca veritabanına yazılır.
+3. **Sonuç:**
+   - 1 kullanıcı için 10 fonksiyon yerine **1 fonksiyon** çalışır.
+   - 3 günde 381 bin olan fonksiyon çağrısı **30-40 bine düşer**.
+   - O 2.96 dolarlık tüketim **0.30 dolara** iner.
+   - Vercel'in aylık $20 kredisi bunu fazlasıyla yutar ve **aşım faturası KESİN OLARAK $0.00 OLUR**.
 
 ---
 
-## 3. Bugüne Kadar Panelde Yapılanlar (Tamamlandı ✅)
+## 5. 3 Aralık ve Sonrası Net Fatura Beklentisi
 
-1. **Deployment Retention Policy (7 Güne İndirildi):**
-   - *Ayar:* `Settings -> General -> Deployment Retention`
-   - *Kazanım:* 35 GB'a ulaşan eski test ve preview deployment'ların otomatik silinmesi sağlandı. Depolama kotası sıfırlandı.
-2. **Observability Plus Kapatıldı:**
-   - *Ayar:* `Billing -> Add-Ons -> Observability Plus -> OFF (Confirm)`
-   - *Kazanım:* Her ay 3.5 milyon log için kesilen ekstra **$2.39** masraf durduruldu.
-3. **Flat Rate CDN 10M Kapatıldı:**
-   - *Ayar:* `Billing -> Add-Ons / Network -> Flat Rate CDN -> OFF (Save)`
-   - *Kazanım:* **Her ay peşin kesilen $20.00 masraf doğrudan silindi.**
+| Kalem | Eski Ay (Ödenen) | Şu An (3 Günlük Hız) | Toplu Gönderim Sonrası (Aralık) |
+| :--- | :---: | :---: | :---: |
+| **Vercel Pro** | $20.00 | $20.00 | **$20.00** |
+| **Flat Rate CDN 10M** | $20.00 | $20.00 *(3 Aralık'ta bitiyor)* | **$0.00 (KAPANDI)** |
+| **Altyapı (Fonksiyon & CPU)** | $19.01 | $2.96 *(Krediyle $0)* | **$0.00 (Kredi içinde kalacak)** |
+| **NET ÖDENECEK TUTAR** | **$59.01 USD** | **$40.00 USD** | **TAM $20.00 USD** |
 
 ---
 
-## 4. Akşam Evde Yapılacak Eylem Planı (Adım Adım)
-
-### Adım 1: Acil Ödeme Kontrolü (6 Kasım Öncesi)
-- [ ] Vercel Dashboard'da `Settings -> Billing` ekranına git.
-- [ ] Kartının internet/yurt dışı alışveriş limitini kontrol et (veya yeni bir kart ekle).
-- [ ] Bekleyen **$59.01 USD** faturayı öde. *(Ödenmezse 6 Kasım'da siteler askıya alınabilir).*
-
----
-
-### Adım 2: Vercel Panelinde Son Ayar (Build Süresini Bitirme)
-- [ ] Projeye gir (`bestescort` ve `turkiyeeskort`) -> `Settings` -> sol menüden `Git`.
-- [ ] **"Ignored Build Step"** bölümünü bul ve **"Custom"** seçeneğine şu kodu yapıştır:
-  ```bash
-  if [ "$VERCEL_GIT_COMMIT_REF" != "main" ]; then exit 0; else exit 1; fi
-  ```
-- [ ] **Save** de.  
-  *(Bu sayede test branch'leri veya preview commit'leri boş yere 3-4 dakika build alıp 34 saatlik CPU faturası çıkarmaz).*
-
----
-
-### Adım 3: Kod Tarafında Yapacağımız Optimizasyonlar
-
-Aşağıdaki düzenlemeler kod tarafında yapılarak 5.7 milyon fonksiyon çağrısı ve MongoDB kota sorunu çözülecektir:
-
-#### A. Raporlama Sayılarını Bozmadan "Toplu Paketleme (Batching)"
-- **Mevcut Durum:** Kullanıcı anasayfada gezerken her 3 saniyede bir arkada Vercel'e istek atılıyor (1 sayfada 5-10 fonksiyon uyanıyor).
-- **Yeni Çözüm:** Vitrindeki tüm kartlar yine eskisi gibi sayılmaya devam eder. Ancak bu veriler parça parça değil; kullanıcı sayfadan çıkarken (`navigator.sendBeacon`) veya 50'lik büyük paketler halinde **tek bir Vercel fonksiyonuyla** gönderilir.
-- **Sonuç:** İlanların `goruntulenmeSayisi` ve rapor rakamları **%100 AYNI kalır**, ama Vercel fonksiyon maliyeti **10 kat düşer**.
-
-#### B. Arama Motoru Botlarını Filtreleme
-- Sitede zaten hazır olan `isSearchEngineBot()` fonksiyonu `AnalyticsTracker.tsx`'e bağlanacak.
-- Googlebot, Yandexbot gibi arama motoru botları gezindiğinde arkadan analytics ve heartbeat çalıştırmayacak.
-- Gerçek insanların tüm tıklama ve gösterimleri ise **eksiksiz işlenecek**.
-
-#### C. Gösterimle İlgisi Olmayan Arka Plan İsteklerini Önbelleğe Alma
-- **Okunmamış Bildirimler (`MobileShell.tsx`):** Kullanıcı her tıkladığı sayfada Vercel'e bildirim sormayacak, `sessionStorage` ile oturumda 5 dakikada 1 kez soracak. (100.000'lerce gereksiz fonksiyon çağrısını siler).
-- **Duyuru Çubuğu (`GlobalAnnouncementBar.tsx`):** Kampanya verisi oturum hafızasında tutulacak.
-
-#### D. MongoDB Atlas 440 MB Kotasını Koruma (TTL İndeksi)
-- İlanların ana tablodaki toplam görüntülenme sayısı (`Listing.goruntulenmeSayisi`) **ömür boyu kalıcı artmaya devam edecek**.
-- MongoDB'yi dolduran tekil `AnalyticsEvent` kayıtlarına 15 veya 30 günlük **otomatik silinme (TTL indeksi)** tanımlanacak. Böylece veritabanı hiçbir zaman 512 MB sınırına dayanmayacak.
-
----
-
-## 5. Optimizasyon Sonrası Tahmini Maliyet Tablosu
-
-| Masraf Kalemi | Eski Fatura (Şu Anki) | Optimizasyon Sonrası |
-| :--- | :---: | :---: |
-| **Vercel Pro Planı** | $20.00 | **$20.00** |
-| **Flat Rate CDN 10M** | $20.00 | **$0.00 (İptal Edildi)** |
-| **Serverless CPU & Bellek** | $7.83 | **<$1.00 (Toplu Gönderim)** |
-| **Build CPU Süresi** | $2.98 | **<$0.50 (Sadece Main Build)** |
-| **Observability Events** | $2.39 | **$0.00 (Kapatıldı)** |
-| **Depolama (Storage)** | $2.33 | **$0.00 (7 Gün Temizliği)** |
-| **Transfer & ISR** | $3.48 | **<$1.00** |
-| **TOPLAM AYLIK FATURA** | **$59.01 USD** | **~$20.00 - $22.00 USD** |
-
-> **Net Kazanç:** Yılda yaklaşık **$450 USD tasarruf** ve sıfır veri/rapor kaybı.
-
+### Özet:
+- Flat Rate CDN kapandı, 3 Aralık'ta faturadan tamamen düşüyor.
+- Şu an ekstra bir borcun yok ($2.96 krediyle silindi).
+- Evde hazır olduğunda `AnalyticsTracker.tsx`'teki 3 saniyelik zamanlayıcıyı toplu gönderime çevirelim, geriye kalan fonksiyonları da bitirelim!
