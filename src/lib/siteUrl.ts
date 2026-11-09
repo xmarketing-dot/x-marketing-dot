@@ -4,13 +4,22 @@ import { headers } from 'next/headers';
  * Returns the canonical site URL based on environment variables (fallback).
  */
 export function getSiteUrl(): string {
+  let url = '';
   if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, '');
+    url = process.env.NEXT_PUBLIC_SITE_URL.replace(/\/+$/, '');
+  } else if (process.env.SITE_URL) {
+    url = process.env.SITE_URL.replace(/\/+$/, '');
+  } else {
+    url = 'https://www.besteskort.online';
   }
-  if (process.env.SITE_URL) {
-    return process.env.SITE_URL.replace(/\/+$/, '');
+
+  // Canonical domain normalizasyonu: escturkiye.space canlıda www'ye yönlendiği için
+  // Search Console ve sitemap'te daima doğrudan 200 OK veren www.escturkiye.space kullanılmalı
+  if (url.includes('escturkiye.space') && !url.includes('www.escturkiye.space')) {
+    url = url.replace('escturkiye.space', 'www.escturkiye.space');
   }
-  return 'https://www.besteskort.online';
+
+  return url;
 }
 
 /**
@@ -20,9 +29,15 @@ export function getSiteUrl(): string {
 export async function getRequestSiteUrl(): Promise<string> {
   try {
     const headerList = await headers();
-    const host = headerList.get('x-forwarded-host') || headerList.get('host');
+    let host = headerList.get('x-forwarded-host') || headerList.get('host');
     const proto = headerList.get('x-forwarded-proto') || 'https';
     if (host) {
+      host = host.split(':')[0].trim();
+      // escturkiye.space canlıda www.escturkiye.space'e 308 yönlendiği için
+      // sitemap ve robots linkleri mutlaka www ile üretilmelidir (Search Console 308 kabul etmez)
+      if (host.toLowerCase() === 'escturkiye.space') {
+        host = 'www.escturkiye.space';
+      }
       return `${proto}://${host}`.replace(/\/+$/, '');
     }
   } catch (e) {

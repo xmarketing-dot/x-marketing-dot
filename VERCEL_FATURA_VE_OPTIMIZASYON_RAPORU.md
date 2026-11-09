@@ -1,6 +1,6 @@
 # 📊 Vercel Fatura, Kullanım Analizi & Nihai Çözüm Raporu
 
-> **Son Güncelleme Tarihi:** 6 Kasım 2026  
+> **Son Güncelleme Tarihi:** 9 Kasım 2026  
 > **Durum:** 59.01 USD fatura ödendi. Yapılan optimizasyonlar başarıyla devreye girdi.  
 > **Güncel Altyapı Ek Borcu:** **$0.00 USD** *(Kredilerle tamamen karşılandı)*  
 
@@ -8,7 +8,7 @@
 
 ## 1. 🚨 Flat Rate CDN (20$) Konusu %100 Netleşti
 
-Paylaştığın son ekran görüntüsü durumu kesinleştirdi:
+Paylaştığın ekran görüntüsü durumu kesinleştirdi:
 > **Ekrandaki Resmi Uyarı:**  
 > *"You'll be switched to usage-based billing on **December 3, 2026**."*  
 > *(Düğme Gri / Kapalı)*
@@ -96,7 +96,22 @@ Günde yaklaşık ~**$0.98** altyapı yazıyor. 30 günde ~$29 yapar. Vercel'in 
 
 ---
 
-### Özet:
-- Flat Rate CDN kapandı, 3 Aralık'ta faturadan tamamen düşüyor.
-- Şu an ekstra bir borcun yok ($2.96 krediyle silindi).
-- Evde hazır olduğunda `AnalyticsTracker.tsx`'teki 3 saniyelik zamanlayıcıyı toplu gönderime çevirelim, geriye kalan fonksiyonları da bitirelim!
+## 6. 🌐 Google Search Console: Sitemap'in "Aylardır Çekmeme" Sorunu ve Çözümü
+
+### Sorunun Kök Nedeni:
+1. Siten canlıda `https://www.escturkiye.space` (başında `www.` ile) çalışıyor ve `https://escturkiye.space` adresi `308 Permanent Redirect` ile `www`'ye yönleniyor.
+2. Search Console'daki mülk de `https://www.escturkiye.space/`.
+3. Ancak `sitemap.xml` dosyası oluşturulurken linklerin tümü **`https://escturkiye.space/...` (WWW olmadan)** basılıyordu!
+4. **Google'ın Reaksiyonu:**
+   - Google `www` mülküne girip `non-www` linkleri görünce mülk uyuşmazlığı hatası veriyordu.
+   - Linkleri açmaya kalktığında ise `308 Yönlendirme` ile karşılaşıyordu. Google kurallarına göre **sitemap içindeki linkler asla 301/308 yönlendirme içeremez**, doğrudan `200 OK` vermek zorundadır. Bu yüzden Google sitemap'i aylardır reddediyordu.
+
+### Yapılan Koddaki Düzeltme:
+- `src/lib/siteUrl.ts` dosyasına otomatik normalizasyon eklendi: `escturkiye.space` için üretilen tüm sitemap ve robots linkleri artık doğrudan canlı kanonik adres olan **`https://www.escturkiye.space/...`** (200 OK veren `www.` hali) olarak basılacak.
+- `robots.txt` içindeki `Host:` başlığı temizlendi.
+
+### Şimdi Ne Yapılmalı?
+Kod yayına çıktıktan (Vercel deploy tamamlandıktan) sonra:
+1. Google Search Console'a gir -> Sol menüden **Site Haritaları (Sitemaps)** sekmesini aç.
+2. Eski sitemap'i silip tekrar `sitemap.xml` yazarak **Gönder**'e bas.
+3. Artık linkler doğrudan `www.` ve 200 OK vereceği için Google yeşil renkte **"Başarılı"** yazacak ve 165 sayfayı sırayla indekslemeye başlayacak.
