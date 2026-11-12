@@ -69,7 +69,35 @@ Sonda `| Esc Türkiye | Esc Türkiye` iki kez yazılıyor. Next.js `metadata.tit
 
 ---
 
-## 🛠️ 3. Evde Yapılacak Adım Adım Düzeltme Rehberi
+## ⚡ 3. Hızlı Sistem Ping & IndexNow Sonuçlarının Analizi
+
+Admin panelinden yapılan 792 URL'lik toplu gönderim raporu:
+```text
+Yandex IndexNow:       ⚠️ Başarısız
+Bing IndexNow:         ✅ İletildi
+Google Indexing API:   ⚠️ Kota/Hata
+Sitemap Ping:          ✅ İletildi
+```
+
+### 1) Google Indexing API Neden `⚠️ Kota/Hata` Verdi?
+* **200 URL Kotası:** Google Indexing API günlük standart olarak **en fazla 200 URL** kabul eder. Tek seferde 792 URL gönderildiğinde `429 Quota Exceeded (Kota Aşıldı)` hatası döner.
+* **Sektör ve Şema Engeli:** Google bu API'yi resmi olarak sadece `JobPosting` (iş ilanı) ve `BroadcastEvent` (canlı yayın) sayfaları için tutmaktadır. Standart içerik sayfalarında 200 OK dönse bile Google algoritması bu sayfaları dizine basmadan çöpe atar.
+
+### 2) Yandex Neden `⚠️ Başarısız` Verdi ve Bing `✅ İletildi` Ne Anlama Geliyor?
+* **Doğrulama Anahtarı Eksikliği:** Yandex IndexNow, sitenin kök dizininde bir anahtar dosyası (`https://www.escturkiye.space/<key>.txt`) arar. `www` ve `non-www` uyuşmazlığından veya anahtar dosyasının eksikliğinden dolayı Yandex doğrudan çağrıyı reddetmiştir.
+* **Bing Üzerinden Otomatik Dağıtım (Kritik Avantaj):** IndexNow protokolünün kurucusu Microsoft Bing'dir. Bing'e `✅ İletildi` olması yeterlidir; çünkü Bing protokol gereği bu 792 URL'yi **arka planda otomatik olarak Yandex ve diğer IndexNow arama motoru havuzuna aktarır.**
+
+---
+
+## 🎯 4. "Tarandı - Şu Anda Dizine Eklenmiş Değil" Uyarısının İki Yönü
+
+Bu uyarının arkasında iki temel faktör vardır:
+1. **Teknik Engel (Canonical & 308 Çelişkisi):** Sayfa `www` iken canonical `non-www` gösteriyor, `non-www` ise 308 ile `www`ye yönleniyor. Bu çözülmeden sayfaların dizine girmesi imkansızdır (Zorunlu 1. Adım).
+2. **Algoritmik Engel (Zayıf İçerik / Thin Content):** Eğer bir il/ilçe sayfasında (`/edirne`, `/mugla`) sadece 0-1 aktif ilan varsa ve tanıtım metinleri diğer şehirlerle kopyala-yapıştır aynıysa, Google botu sayfayı gezer ama *"Kullanıcıya sunmaya değer zengin içerik yok"* diyerek dizine eklemeyi erteler.
+
+---
+
+## 🛠️ 5. Evde Yapılacak Adım Adım Düzeltme Rehberi
 
 Hedef projenin (`escturkiye.space` / `turkiyeeskort`) kaynak kodunu açtığında yapman gerekenler:
 
@@ -130,4 +158,3 @@ Sayfalarda `title: "Muğla Escort, ... | Esc Türkiye"` yazıyorsa sondaki `| Es
    * **Tarandı - şu anda dizine eklenmiş değil** raporuna gir.
    * **"DÜZELTMEYİ DOĞRULA" (Validate Fix)** butonuna tıkla.
 4. Google botu canonical ve yönlendirmenin artık birebir `www` ile eşleştiğini görünce sayfaları hızla arama sonuçlarına almaya başlayacaktır.
-
