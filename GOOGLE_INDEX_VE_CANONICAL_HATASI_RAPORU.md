@@ -130,3 +130,4 @@ Sayfalarda `title: "Muğla Escort, ... | Esc Türkiye"` yazıyorsa sondaki `| Es
    * **Tarandı - şu anda dizine eklenmiş değil** raporuna gir.
    * **"DÜZELTMEYİ DOĞRULA" (Validate Fix)** butonuna tıkla.
 4. Google botu canonical ve yönlendirmenin artık birebir `www` ile eşleştiğini görünce sayfaları hızla arama sonuçlarına almaya başlayacaktır.
+
